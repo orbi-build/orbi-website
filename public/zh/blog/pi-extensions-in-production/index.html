@@ -187,7 +187,7 @@
           </ol>
         </details>
 <p>Pi 扩展（extension）是 <a href="https://pi.dev">Pi 编程 agent</a> 启动时加载的 TypeScript（或 JavaScript）模块：每个扩展导出一个函数，拿到扩展 API，就能注册模型可以调用的工具、加命令、订阅会话事件。Pi 找扩展有好几条路，在自己的笔记本上每一条都方便。在一个没人盯着的服务里，其中两条自动的路也可能把你没选过的代码带进会话。</p>
-<p>我是 Larry 🍀 Orbi，Orbi 的创始人。Orbi 无人值守地跑 Pi：接一张 GitHub Issue，起一个 Pi 写改动，再起另一个 Pi 评审，评审和 CI 都过了才合并。<a href="/zh/guides/pi-coding-agent/">Pi 专题页</a>讲的是这些会话外面那层 runner（Orbi 里负责领票、起 Pi、合并的那个常驻程序），<a href="/zh/blog/orbi-on-pi-coding-agent/">系列第一篇</a>跟着一张 Issue 走完全程。这一篇只讲 Pi 扩展：Orbi 怎么加载，改成这样之前出过什么事，以及我们自己最后写了哪两个扩展。下面的命令、以及这份配置的样子，就是今天在跑的，Pi 版本 1.2.0；文中的 Orbi 版本号都是开源引擎的发布版本。</p><aside class="post-cta-inline"><span>Orbi 把你的 Issue 一路做到发版。</span><a class="button button-signal" data-cta="post-inline-start" href="/zh/cloud/login">免费试 __FREE_DELIVERIES__ 次 →</a></aside>
+<p>我是 Larry 🍀 Orbi，Orbi 的创始人。Orbi 无人值守地跑 Pi：接一张 GitHub Issue，起一个 Pi 写改动，再起另一个 Pi 评审，评审和 CI 都过了才合并。<a href="/zh/guides/pi-coding-agent/">Pi 专题页</a>讲的是这些会话外面那层 runner（Orbi 里负责领票、起 Pi、合并的那个常驻程序），<a href="/zh/blog/orbi-on-pi-coding-agent/">系列第一篇</a>跟着一张 Issue 走完全程。这一篇只讲 Pi 扩展：Orbi 怎么加载，改成这样之前出过什么事，以及我们自己最后写了哪两个扩展。下面的命令、以及这份配置的样子，就是今天在跑的，Pi 版本 1.2.0；文中的 Orbi 版本号都是开源引擎的发布版本。</p><aside class="post-cta-inline"><span>Orbi 把你的 Issue 一路做到发版。</span><a class="button button-signal" data-cta="post-inline-start" href="/zh/cloud/login">免费试用 Orbi Cloud →</a></aside>
 <h2 id="pi-扩展是什么-pi-从哪三个地方加载它">Pi 扩展是什么，Pi 从哪三个地方加载它</h2>
 <p>最简单的 Pi 扩展就是一个文件。下面这个来自 Pi 的<a href="https://pi.dev/docs/latest/extensions">扩展文档</a>，能加载，只做一件事：</p>
 <div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="已复制">复制</button><pre><code class="language-ts" data-copy-source>import { type ExtensionAPI } from &quot;@earendil-works/pi-coding-agent&quot;;
@@ -351,7 +351,7 @@ cat &quot;$out&quot;
 <p>我们这边还有一个口子没堵：skill 还没有同样的待遇，跑 runner 的那个用户账号装的 skill，除了 <code class="post-code--spaced">orbi suggest</code> 的两个会话，仍然可能加载进 Orbi runner 的每一个会话（Orbi Cloud 的起草会话自己传了 <code class="post-code--single">--no-skills</code>）。</p>
 <aside class="post-cta">
   <h2>Orbi 把你的 Issue 一路做到发版。</h2>
-  <a class="button button-signal" data-cta="post-start" href="/zh/cloud/login">免费试 __FREE_DELIVERIES__ 次 →</a>
+  <a class="button button-signal" data-cta="post-start" href="/zh/cloud/login">免费试用 Orbi Cloud →</a>
   <p class="post-cta-note">不用绑定信用卡 · 只授权你选的仓库</p>
   <a class="post-cta-link" data-cta="post-selfhost" href="https://github.com/orbi-build/orbi">想自己部署？开源免费（AGPL）→</a>
 </aside><h2 id="相关">相关</h2>
@@ -428,12 +428,14 @@ cat &quot;$out&quot;
           <img src="https://toolradar.com/api/badge/orbi?type=review&style=light&v=4" alt="Orbi on Toolradar" width="147" height="42" />
         </a>
         <a href="https://nicklaunches.com/products/orbi/" target="_blank" rel="noopener"><img src="https://nicklaunches.com/badges/featured.png" alt="Featured on Nick Launches" width="244" height="56" /></a>
-        <a href="https://yourhack.ai" target="_blank">yourhack.ai</a>
+        <a href="https://yourhack.ai" target="_blank" rel="noopener"><img src="https://yourhack.ai/badge/yourhack.svg" alt="Listed on yourhack.ai" width="131" height="20" /></a>
         <a href="https://showmebest.ai" target="_blank"><img src="https://showmebest.ai/badge/feature-badge-white.webp" alt="Featured on ShowMeBestAI" width="220" height="60"></a>
         <a href="https://goodaitools.com/ai/orbi" target="_blank"><img src="https://goodaitools.com/assets/images/badge.png" alt="Good AI Tools" height="54"></a>
         <a href="https://aixcollection.com/ai/orbi" target="_blank"><img src="https://aixcollection.com/assets/images/badge.png" alt="AI X Collection" height="54"></a>
         <a href="https://launchtory.com/projects/orbi-build">Orbi on Launchtory</a>
         <a href="https://dofollow.tools" target="_blank" rel="noopener noreferrer"><img alt="Featured on Dofollow.Tools" width="200" height="54" src="https://dofollow.tools/badge/badge_dark.svg"></a>
+        <a href="https://gets.tools" target="_blank" rel="noopener noreferrer"><img alt="Featured on Gets.Tools" width="200" height="54" src="https://gets.tools/badge/badge_dark.svg"></a>
+        <a href="https://siftfox.com/tool/orbi" target="_blank"><img src="https://siftfox.com/badges/live-light.svg" alt="Live on SiftFox" width="168" height="56" /></a>
         <a href="https://altern.ai/ai/orbi" target="_blank" rel="noopener">
           <img src="https://data.altern.ai/alternbadge.png" alt="Featured on Altern" width="150" />
         </a>
@@ -492,6 +494,11 @@ cat &quot;$out&quot;
         <a href="https://saasgrow.app?ref=orbi.build" target="_blank" rel="noopener"><img src="https://saasgrow.app/api/badge?type=featured&style=light" alt="Orbi on SaaSGrow" width="240" height="54" /></a>
         <a href="https://navfolders.com" target="_blank"><img src="https://navfolders.com/badge/nav_light.svg" alt="NavFolders" width="200" height="54" /></a>
         <a href="https://huzzler.so/products/xxBk2zzN1n/orbi-build?utm_source=huzzler_product_website&amp;utm_medium=badge&amp;utm_campaign=free_listing" target="_blank" rel="noopener noreferrer"><img alt="Huzzler Embed Badge" src="https://huzzler.so/assets/images/embeddable-badges/featured.png" width="159" height="55" /></a>
+        <a href="https://productwing.com/product/orbi" target="_blank"><img src="https://productwing.com/assets/images/badge.png" alt="Product Wing" height="54" /></a>
+        <a href="https://unitelist.com/product/orbi" target="_blank"><img src="https://unitelist.com/assets/images/badge.png" alt="Unite List" height="54" /></a>
+        <a href="https://appalist.com/ai/orbi" target="_blank"><img src="https://appalist.com/assets/images/badge.png" alt="Appa List" height="54" /></a>
+        <a href="https://weliketools.com/tool/orbi" target="_blank"><img src="https://weliketools.com/assets/images/badge.png" alt="We Like Tools" height="54" /></a>
+        <a href="https://bowora.com/?via=4rnfymxi" target="_blank">Featured on Bowora</a>
         </div>
       </div>
       <button class="footer-badges-toggle" type="button" data-footer-badges-toggle data-label-pause="暂停" data-label-play="播放">暂停</button>

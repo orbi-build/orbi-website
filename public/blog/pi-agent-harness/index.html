@@ -209,7 +209,7 @@
           </ol>
         </details>
 <p>The Pi harness, also called the Pi agent harness, is the loop inside <a href="https://pi.dev">Pi</a>, the open-source coding agent from Earendil: it sends your prompt to a model, runs the tool calls the model asks for, records the conversation, and repeats until the model stops asking for tools. This post is for developers who run coding agents unattended: I start the same task in three Pi setups, kill each one partway through, and show what survives and who has to restart it. You also get install commands, a supervisor script for <code class="post-code--spaced">pi --print</code>, and runnable AI SDK and Cloudflare examples, all retested on 6 November 2026 on Pi 1.5.0 and Pi Durable 1.5.0. On 1 October 2026 Earendil shipped Pi 1.0 and, next to it, an experimental second harness called Pi Durable, which checkpoints every step so a run can outlive the process running it.</p>
-<p>I&#39;m Larry 🍀 Orbi, the creator of Orbi, which runs Pi with nobody watching: it hands Pi a GitHub issue and, when things go well, gets back a reviewed, merged pull request. How Orbi starts Pi is in <a href="/blog/orbi-on-pi-coding-agent/">the first post of this series</a>; the runner around Pi is described in the <a href="/guides/pi-coding-agent/">Pi hub</a>. I first ran these tests on 6 October 2026 on Pi 1.0.0 and reran all of them on 6 November 2026 on Pi 1.5.0 and the current adapter and Durable Object packages; this version reports the November results and says where they differ.</p><aside class="post-cta-inline"><span>Orbi takes your Issues all the way to a release.</span><a class="button button-signal" data-cta="post-inline-start" href="/cloud/login">Try __FREE_DELIVERIES__ deliveries free →</a></aside>
+<p>I&#39;m Larry 🍀 Orbi, the creator of Orbi, which runs Pi with nobody watching: it hands Pi a GitHub issue and, when things go well, gets back a reviewed, merged pull request. How Orbi starts Pi is in <a href="/blog/orbi-on-pi-coding-agent/">the first post of this series</a>; the runner around Pi is described in the <a href="/guides/pi-coding-agent/">Pi hub</a>. I first ran these tests on 6 October 2026 on Pi 1.0.0 and reran all of them on 6 November 2026 on Pi 1.5.0 and the current adapter and Durable Object packages; this version reports the November results and says where they differ.</p><aside class="post-cta-inline"><span>Orbi takes your Issues all the way to a release.</span><a class="button button-signal" data-cta="post-inline-start" href="/cloud/login">Try Orbi Cloud free →</a></aside>
 <h2 id="what-is-the-pi-harness">What is the Pi harness?</h2>
 <p>A harness is the program around the model. It builds each request, executes the tools, stores the conversation and decides when a run is over; the model itself only produces text and tool calls. Pi keeps its harness small on purpose. The system prompt is short, and the model gets four tools by default, <code class="post-code--single">read</code>, <code class="post-code--single">bash</code>, <code class="post-code--single">edit</code> and <code class="post-code--single">write</code> (Pi&#39;s <a href="https://pi.dev/docs/latest/cli">CLI docs</a>). By default, the coding agent saves a session as a JSONL file with one entry per line: messages, tool results, and changes such as a model switch. Conversation entries point to their parent entry, so you can branch from any earlier point. Extensions are TypeScript modules loaded into the Pi process, skills are instructions the model loads when it needs them, and features such as sub-agents and permission prompts are left to those. The <a href="/blog/orbi-on-pi-coding-agent/#what-pi-leaves-to-you-and-where-orbi-puts-it">first post</a> lists what Pi leaves out and what Orbi adds in its place.</p>
 <p>Pi has four CLI modes: the interactive terminal, print, JSON, and RPC over stdin and stdout. Separately, an SDK embeds it in a Node program. Pi&#39;s <a href="https://pi.dev/docs/latest/how-pi-works">How Pi works</a> page says, &quot;All interfaces use the same agent and session mechanisms.&quot; I didn&#39;t test RPC. The AI SDK adapter below is built on Pi&#39;s SDK, but keeps the session in memory and hands it back in its lifecycle state.</p>
@@ -508,7 +508,7 @@ export default {
 <p>None of the three decides which task runs next, makes sure only one worker takes it, reviews the result, decides whether it may merge, or ships a release. I went through those questions for Claude Code in <a href="/blog/run-claude-code-unattended/">Run Claude Code unattended</a>, and they don&#39;t depend on the harness. Orbi is the layer I built for them on top of <code class="post-code--spaced">pi --print</code>: it claims issues by label, reviews each pull request in a separate Pi session, merges only through a gate, and cuts a release when you open a release issue. <a href="/cloud/">Orbi Cloud</a> runs it on your repositories.</p>
 <aside class="post-cta">
   <h2>Orbi takes your Issues all the way to a release.</h2>
-  <a class="button button-signal" data-cta="post-start" href="/cloud/login">Try __FREE_DELIVERIES__ deliveries free →</a>
+  <a class="button button-signal" data-cta="post-start" href="/cloud/login">Try Orbi Cloud free →</a>
   <p class="post-cta-note">No credit card required · Orbi only sees the repos you pick</p>
   <a class="post-cta-link" data-cta="post-selfhost" href="https://github.com/orbi-build/orbi">Prefer to self-host? It's open source (AGPL) →</a>
 </aside><h2 id="related">Related</h2>
@@ -585,12 +585,14 @@ export default {
           <img src="https://toolradar.com/api/badge/orbi?type=review&style=light&v=4" alt="Orbi on Toolradar" width="147" height="42" />
         </a>
         <a href="https://nicklaunches.com/products/orbi/" target="_blank" rel="noopener"><img src="https://nicklaunches.com/badges/featured.png" alt="Featured on Nick Launches" width="244" height="56" /></a>
-        <a href="https://yourhack.ai" target="_blank">yourhack.ai</a>
+        <a href="https://yourhack.ai" target="_blank" rel="noopener"><img src="https://yourhack.ai/badge/yourhack.svg" alt="Listed on yourhack.ai" width="131" height="20" /></a>
         <a href="https://showmebest.ai" target="_blank"><img src="https://showmebest.ai/badge/feature-badge-white.webp" alt="Featured on ShowMeBestAI" width="220" height="60"></a>
         <a href="https://goodaitools.com/ai/orbi" target="_blank"><img src="https://goodaitools.com/assets/images/badge.png" alt="Good AI Tools" height="54"></a>
         <a href="https://aixcollection.com/ai/orbi" target="_blank"><img src="https://aixcollection.com/assets/images/badge.png" alt="AI X Collection" height="54"></a>
         <a href="https://launchtory.com/projects/orbi-build">Orbi on Launchtory</a>
         <a href="https://dofollow.tools" target="_blank" rel="noopener noreferrer"><img alt="Featured on Dofollow.Tools" width="200" height="54" src="https://dofollow.tools/badge/badge_dark.svg"></a>
+        <a href="https://gets.tools" target="_blank" rel="noopener noreferrer"><img alt="Featured on Gets.Tools" width="200" height="54" src="https://gets.tools/badge/badge_dark.svg"></a>
+        <a href="https://siftfox.com/tool/orbi" target="_blank"><img src="https://siftfox.com/badges/live-light.svg" alt="Live on SiftFox" width="168" height="56" /></a>
         <a href="https://altern.ai/ai/orbi" target="_blank" rel="noopener">
           <img src="https://data.altern.ai/alternbadge.png" alt="Featured on Altern" width="150" />
         </a>
@@ -649,6 +651,11 @@ export default {
         <a href="https://saasgrow.app?ref=orbi.build" target="_blank" rel="noopener"><img src="https://saasgrow.app/api/badge?type=featured&style=light" alt="Orbi on SaaSGrow" width="240" height="54" /></a>
         <a href="https://navfolders.com" target="_blank"><img src="https://navfolders.com/badge/nav_light.svg" alt="NavFolders" width="200" height="54" /></a>
         <a href="https://huzzler.so/products/xxBk2zzN1n/orbi-build?utm_source=huzzler_product_website&amp;utm_medium=badge&amp;utm_campaign=free_listing" target="_blank" rel="noopener noreferrer"><img alt="Huzzler Embed Badge" src="https://huzzler.so/assets/images/embeddable-badges/featured.png" width="159" height="55" /></a>
+        <a href="https://productwing.com/product/orbi" target="_blank"><img src="https://productwing.com/assets/images/badge.png" alt="Product Wing" height="54" /></a>
+        <a href="https://unitelist.com/product/orbi" target="_blank"><img src="https://unitelist.com/assets/images/badge.png" alt="Unite List" height="54" /></a>
+        <a href="https://appalist.com/ai/orbi" target="_blank"><img src="https://appalist.com/assets/images/badge.png" alt="Appa List" height="54" /></a>
+        <a href="https://weliketools.com/tool/orbi" target="_blank"><img src="https://weliketools.com/assets/images/badge.png" alt="We Like Tools" height="54" /></a>
+        <a href="https://bowora.com/?via=4rnfymxi" target="_blank">Featured on Bowora</a>
         </div>
       </div>
       <button class="footer-badges-toggle" type="button" data-footer-badges-toggle data-label-pause="Pause" data-label-play="Play">Pause</button>

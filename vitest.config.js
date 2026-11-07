@@ -30,13 +30,10 @@ const BROWSER_SUITES = [
   "tests/compare-cloud-cta.test.js",
   "tests/film-dialog.test.js",
   "tests/footer-overflow.test.js",
-  "tests/heading-wrap.test.js",
   "tests/hero-counter.test.js",
-  "tests/hero-layout.test.js",
-  "tests/homepage-heading.test.js",
   "tests/homepage.smoke.test.js",
+  "tests/horizontal-scroll.test.js",
   "tests/nav-menu-width.test.js",
-  "tests/social-proof-layout.test.js",
 ];
 
 // `.worktrees/` holds the delivery runner's per-Issue checkouts — full copies

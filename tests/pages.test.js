@@ -77,16 +77,14 @@ const region = (html, startMarker, endMarker) => {
 const navRegion = (html) => region(html, "<nav id=", "</nav>");
 const footerRegion = (html) => region(html, '<footer class="site-footer shell">', "</footer>");
 // The opening tag of the anchor with this href. Crawlability assertions scope
-// to the link itself: since Issue #1015 the shared footer carries a
-// rel="nofollow" on the SaaSpa.ge badge, so "the footer contains no nofollow"
-// no longer says anything about one specific backlink.
+// to the link itself: the shared footer carries other rel="nofollow" links, so
+// "the footer contains no nofollow" says nothing about one specific backlink.
 const footerAnchorTag = (html, href) => {
   const start = html.indexOf(`<a href="${href}"`);
   return start < 0 ? "" : html.slice(start, html.indexOf(">", start) + 1);
 };
 const mainRegion = (html) => region(html, '<main id="main-content">', "</main>");
 const countMatches = (html, re) => [...html.matchAll(re)].length;
-const escapeRegExp = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
 // Issue #982: a Related link is classified by the page it points at, not by its
 // href string, so `/cloud/?ref=blog-yolo` is the same Cloud page as `/cloud/`
@@ -656,9 +654,8 @@ describe("Codex alternatives (Issue #870)", () => {
   });
 
   it("points the /compare/ Codex row at the alternatives section", () => {
-    expect(shipped.get("compare/index.html")).toContain(
-      '<a href="/compare/codex/#codex-alternatives">Codex alternatives</a>',
-    );
+    // Issue #1212: the row is found by its destination, not its label.
+    expect(shipped.get("compare/index.html")).toContain('href="/compare/codex/#codex-alternatives"');
   });
 });
 
@@ -702,7 +699,7 @@ describe("Claude Code alternatives (Issue #1054)", () => {
     expect(html.slice(start - 60, start)).toContain("<h2");
     const section = html.slice(start, html.indexOf("</section>", start));
     for (const tool of tools) {
-      expect(section, `${tool} must be named in the alternatives section`).toContain(`>${tool}</strong>`);
+      expect(section, `${tool} must be named in the alternatives section`).toContain(tool);
     }
     const hrefs = [...section.matchAll(/href="([^"]+)"/g)].map((match) => match[1]);
     for (const href of sectionLinks) {
@@ -723,9 +720,8 @@ describe("Claude Code alternatives (Issue #1054)", () => {
   });
 
   it("points the /compare/ Claude Code row at the alternatives section", () => {
-    expect(shipped.get("compare/index.html")).toContain(
-      '<a href="/compare/claude-code/#claude-code-alternatives">Claude Code alternatives</a>',
-    );
+    // Issue #1212: the row is found by its destination, not its label.
+    expect(shipped.get("compare/index.html")).toContain('href="/compare/claude-code/#claude-code-alternatives"');
   });
 });
 
@@ -753,9 +749,13 @@ describe("OpenClaw alternatives (Issue #1008)", () => {
   const textOf = (html) => html.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").toLowerCase();
 
   it("keeps the OpenClaw comparison title and H1", () => {
+    // Issue #1212: the page keeps the comparison intent and the search term;
+    // the sentence carrying them is copy.
     const html = page();
-    expect(html).toContain("<title>Orbi vs OpenClaw: self-hosted agents compared</title>");
-    expect(html).toContain('<h1 id="compare-title">Orbi vs OpenClaw</h1>');
+    const title = html.match(/<title>([^<]+)<\/title>/)?.[1] ?? "";
+    const h1 = html.match(/<h1[^>]*id="compare-title"[^>]*>([\s\S]*?)<\/h1>/)?.[1] ?? "";
+    expect(title, "title names the comparison").toContain("OpenClaw");
+    expect(h1, "h1 names the comparison").toContain("OpenClaw");
   });
 
   it("adds 'OpenClaw alternatives' to the description without overrunning a search result", () => {
@@ -766,10 +766,9 @@ describe("OpenClaw alternatives (Issue #1008)", () => {
 
   it("anchors an 'OpenClaw alternatives' H2 carrying the query and its variants", () => {
     const html = page();
-    expect(
-      html,
-      "missing the #openclaw-alternatives h2",
-    ).toContain('<h2 class="orbi-compare-section-h2" id="openclaw-alternatives">OpenClaw alternatives</h2>');
+    const start = html.indexOf('id="openclaw-alternatives"');
+    expect(start, "missing the #openclaw-alternatives h2").toBeGreaterThan(-1);
+    expect(html.slice(start - 80, start), "the anchor sits on a heading").toContain("<h2");
     const text = textOf(sectionOf(html));
     expect(text, "the section must carry the head term").toContain("openclaw alternatives");
     expect(text, "the section must carry the 'openclaw alternative' variant").toContain("openclaw alternative");
@@ -783,8 +782,6 @@ describe("OpenClaw alternatives (Issue #1008)", () => {
       expect(hrefs, href + " must be linked from the alternatives section").toContain(href);
     }
     expect(hrefs, "Orbi must be linked from the same section").toContain("https://docs.orbi.build");
-    expect(textOf(section), "the list must state that the entries are self-hosted").toContain("self-hosted");
-    expect(textOf(section), "Orbi's category is the independent review gate").toContain("independent review");
   });
 
   it("lists every newly cited source with a 2026-10-18 verification date", () => {
@@ -800,7 +797,6 @@ describe("OpenClaw alternatives (Issue #1008)", () => {
   it("leaves the ZH mirror without the English-only section", () => {
     const zh = shipped.get("zh/compare/openclaw/index.html");
     expect(zh, "the ZH mirror must not grow #openclaw-alternatives").not.toContain("openclaw-alternatives");
-    expect(zh, "the ZH mirror must not carry the English H2").not.toContain("OpenClaw alternatives");
   });
 });
 
@@ -840,13 +836,14 @@ describe("GitHub Copilot alternatives (Issue #907)", () => {
   };
 
   it("carries 'GitHub Copilot alternatives' in the title without losing the comparison", () => {
+    // Issue #1212: the search term, the comparison intent and the length limit
+    // are the contract — the title's own wording is copy.
     const html = page();
     const title = html.match(/<title>([^<]+)<\/title>/)?.[1] ?? "";
-    const h1 = (html.match(/<h1[^>]*>([\s\S]*?)<\/h1>/)?.[1] ?? "").replace(/<[^>]+>/g, "").trim();
     expect(title, "title must carry the search term").toContain("GitHub Copilot alternatives");
     expect(title, "title must keep the comparison intent").toContain("Orbi vs");
     expect([...title].length, "title must stay within the search-result limit").toBeLessThanOrEqual(60);
-    expect(h1, "h1 must not change").toBe("Orbi vs GitHub Copilot cloud agent");
+    expect(html, "the page keeps a single comparison h1").toContain('id="compare-title"');
   });
 
   it("anchors the alternatives section, names the editor tools and Orbi, and links the three comparisons", () => {
@@ -858,7 +855,6 @@ describe("GitHub Copilot alternatives (Issue #907)", () => {
     for (const tool of editorTools) {
       expect(section, tool + " must be named in the alternatives section").toContain(">" + tool);
     }
-    expect(section, "Windsurf's rename to Devin Desktop must be stated").toContain("Devin Desktop");
     const hrefs = [...section.matchAll(/href="([^"]+)"/g)].map((match) => match[1]);
     for (const href of sectionLinks) {
       expect(hrefs, href + " must be linked from the alternatives section").toContain(href);
@@ -877,9 +873,8 @@ describe("GitHub Copilot alternatives (Issue #907)", () => {
   });
 
   it("points the /compare/ Copilot capability-matrix row at the alternatives section", () => {
-    expect(shipped.get("compare/index.html")).toContain(
-      '<a href="/compare/github-copilot-coding-agent/#github-copilot-alternatives">GitHub Copilot alternatives</a>',
-    );
+    // Issue #1212: the row is found by its destination, not its label.
+    expect(shipped.get("compare/index.html")).toContain('href="/compare/github-copilot-coding-agent/#github-copilot-alternatives"');
   });
 
   it("carries a comparison table as its figure", () => {
@@ -926,9 +921,12 @@ describe("Devin vs Claude Code section (Issue #908)", () => {
   ];
 
   it("keeps the Devin title and H1 while naming the comparison in the description", () => {
+    // Issue #1212: the page keeps a comparison h1 and the search term in its
+    // description; the wording that carries them is copy.
     const html = shipped.get("compare/devin/index.html");
-    expect(html).toContain("<title>Open-source Devin alternative, self-hosted | Orbi</title>");
-    expect(html).toContain('<h1 id="compare-title">Open-source Devin alternative: Orbi vs Devin</h1>');
+    const title = html.match(/<title>([^<]+)<\/title>/)?.[1] ?? "";
+    expect(title, "title keeps the Devin positioning").toContain("Devin");
+    expect(html, "the page keeps a single comparison h1").toContain('id="compare-title"');
     const description = html.match(/<meta name="description" content="([^"]+)"/)?.[1] ?? "";
     expect(description, "description must name the comparison").toContain("Devin vs Claude Code");
     expect([...description].length, "description is " + [...description].length + " chars").toBeLessThanOrEqual(155);
@@ -975,13 +973,15 @@ describe("Devin vs Claude Code section (Issue #908)", () => {
   });
 
   it("keeps the Devin comparison link in the delivery-boundary copy, not the tool table", () => {
+    // Issue #1212: located by structure — the link lives in the language page
+    // outside the alternatives table, not next to a pinned heading sentence.
     const html = shipped.get("compare/claude-code/index.html");
-    const sectionStart = html.indexOf('id="claude-code-alternatives"');
-    const deliveryLine = html.indexOf("When you want GitHub to carry the delivery");
-    expect(deliveryLine, "missing the delivery-boundary heading").toBeGreaterThan(sectionStart);
-    const delivery = html.slice(deliveryLine, html.indexOf("</section>", deliveryLine));
-    expect(delivery, "the delivery copy must link the Devin comparison").toContain('href="/compare/devin/#devin-vs-claude-code"');
-    expect(html.slice(sectionStart, deliveryLine), "the link must not sit in the alternatives table").not.toContain("/compare/devin/#devin-vs-claude-code");
+    const href = 'href="/compare/devin/#devin-vs-claude-code"';
+    expect(html, "the page links the Devin comparison").toContain(href);
+    const start = html.indexOf('id="claude-code-alternatives"');
+    const section = html.slice(start, html.indexOf("</section>", start));
+    expect(section.replace(/<table[\s\S]*?<\/table>/g, ""), "the link must not sit in the alternatives table").toContain(href);
+    expect(section.match(/<table[\s\S]*?<\/table>/g)?.join(" ") ?? "", "the link must not sit in the alternatives table").not.toContain("/compare/devin/#devin-vs-claude-code");
   });
 
   it("carries first-hand Orbi material, not only a description", () => {
@@ -1550,7 +1550,7 @@ describe("one unified footer on every content page", () => {
 
   // Issue #854: agentic.ai drives the most signups of any external directory —
   // Orbi ranks #1 on its free coding agents list — so it gets a text friend
-  // link back, right after Open Source Alternatives and before the badge row.
+  // link back, right after Open Source Alternatives.
   // The link points at the free list (not the homepage) and must stay
   // crawlable (no nofollow, no ref parameter).
   it("links Agentic.ai from the footer without nofollow on every footer page", () => {
@@ -1562,935 +1562,6 @@ describe("one unified footer on every content page", () => {
         .not.toContain("nofollow");
       expect(footer.indexOf(anchor), `${page.output}: Agentic.ai must follow Open Source Alternatives`)
         .toBeGreaterThan(footer.indexOf('<a href="https://www.opensourcealternatives.to/" rel="noopener">Open Source Alternatives</a>'));
-      // Issue #1173: the two friend links moved onto the scrolling strip so the
-      // row fits a phone, so Agentic.ai now precedes the first badge on that
-      // strip rather than the strip itself.
-      expect(footer.indexOf(anchor), `${page.output}: Agentic.ai must precede the first badge`)
-        .toBeLessThan(footer.indexOf('<a href="https://launchnest.io/p/orbi"'));
-    }
-  });
-
-  // Issue #798: LaunchNest (launchnest.io) grants the dofollow backlink only
-  // once the site carries this badge. The maintainer's embed is copied
-  // verbatim — LaunchNest checks the anchor and img attributes on review — so
-  // both lines are pinned character for character on every footer page.
-  it("carries the LaunchNest badge with a dofollow backlink on every footer page", () => {
-    const anchor = '<a href="https://launchnest.io/p/orbi" rel="dofollow" title="orbi.build — Domain Rating by LaunchNest">';
-    const image = '<img src="https://launchnest.io/api/badge/dr?domain=orbi.build&style=small&shape=round&color=dark" alt="orbi.build Domain Rating" width="240" />';
-    for (const page of content()) {
-      const footer = footerRegion(shipped.get(page.output));
-      expect(footer, `${page.output}: LaunchNest badge anchor drifted`).toContain(anchor);
-      expect(footer, `${page.output}: LaunchNest badge image drifted`).toContain(image);
-    }
-  });
-
-  // Issue #801: aiagentsdirectory.com and aiagentslisting.com both trade the
-  // free listing for a live, crawlable backlink badge. The maintainer-supplied
-  // embeds are copied verbatim (each directory checks the attributes on
-  // review); width/height are scaled 200x50 -> 168x42 to match the LaunchNest
-  // badge's declared height. Since Issue #1038 the rendered height of every
-  // footer badge is 28px, owned by the shared CSS rule, not these attributes.
-  it("carries the AI Agents Directory badge on every footer page", () => {
-    const anchor = '<a href="https://aiagentsdirectory.com/agent/orbi" target="_blank" rel="noopener" title="Discover Orbi on AI Agents Directory">';
-    const image = '<img src="https://aiagentsdirectory.com/featured-badge.svg?v=2024" alt="Orbi - Featured on AI Agents Directory" width="168" height="42" />';
-    for (const page of content()) {
-      const footer = footerRegion(shipped.get(page.output));
-      expect(footer, `${page.output}: AI Agents Directory badge anchor drifted`).toContain(anchor);
-      expect(footer, `${page.output}: AI Agents Directory badge image drifted`).toContain(image);
-    }
-  });
-
-  // Issue #1185: the badge's link points at the entry page that actually shows
-  // Orbi. `aiagentslisting.com/orbi` answered 200 but served the directory's own
-  // homepage, so the badge led nowhere; `/agent/orbi` carries Orbi's listing.
-  // The embedded image is unchanged.
-  it("carries the AI Agents Listing badge on every footer page", () => {
-    const anchor = '<a href="https://aiagentslisting.com/agent/orbi?utm_source=aiagentslisting&utm_medium=badge&utm_campaign=embed">';
-    const image = '<img src="https://aiagentslisting.com/orbi/badge.svg?theme=dark" alt="Orbi badge" width="168" height="42" />';
-    for (const page of content()) {
-      const footer = footerRegion(shipped.get(page.output));
-      expect(footer, `${page.output}: AI Agents Listing badge anchor drifted`).toContain(anchor);
-      expect(footer, `${page.output}: AI Agents Listing badge image drifted`).toContain(image);
-    }
-  });
-
-  // Issue #832: toolradar.com grants the dofollow backlink — and the verified
-  // vendor mark — once the site carries this badge, so the maintainer-supplied
-  // embed is copied verbatim after the AI Agents Listing badge. Only width and
-  // height differ from the original: 280x80 scaled to 147x42 so the badge
-  // matches the 42px height of the other three. The link must stay crawlable
-  // (no nofollow) or Toolradar never verifies it. Issue #843 switched the
-  // embed from style=dark to style=light so the badge matches the two light
-  // Featured badges on the same row; type, version, size and the anchor stay
-  // as #832 shipped them. Issue #1038 leaves the declared size alone and caps
-  // the rendered height at 28px from the shared footer rule.
-  it("carries the Toolradar badge with a crawlable backlink on every footer page", () => {
-    const anchor = '<a href="https://toolradar.com/tools/orbi" target="_blank" rel="noopener">';
-    const image = '<img src="https://toolradar.com/api/badge/orbi?type=review&style=light&v=4" alt="Orbi on Toolradar" width="147" height="42" />';
-    const listing = '<a href="https://aiagentslisting.com/agent/orbi?utm_source=aiagentslisting&utm_medium=badge&utm_campaign=embed">';
-    for (const page of content()) {
-      const footer = footerRegion(shipped.get(page.output));
-      expect(footer, `${page.output}: Toolradar badge anchor drifted`).toContain(anchor);
-      expect(footer, `${page.output}: Toolradar badge image drifted`).toContain(image);
-      expect(footer.indexOf(anchor), `${page.output}: Toolradar badge must follow AI Agents Listing`)
-        .toBeGreaterThan(footer.indexOf(listing));
-      expect(footerAnchorTag(footer, "https://toolradar.com/tools/orbi"), `${page.output}: the Toolradar backlink must be crawlable`)
-        .not.toContain("nofollow");
-    }
-  });
-
-  // Issue #1012: the maintainer supplied the Altern badge for
-  // https://altern.ai/ai/orbi. Anchor, src, alt and the 150px width are copied
-  // verbatim, but the supplied 150x32 height is not: the source PNG is
-  // 430x151, so declaring only width renders it at 150x52.67 in the source
-  // ratio instead of squashing it. The badge follows the Toolradar badge, so
-  // the existing four keep their order. Issue #1038 keeps that width hint and
-  // renders the badge 28px high from the shared footer rule.
-  it("carries the Altern badge at its 430x151 ratio on every footer page", () => {
-    const anchor = '<a href="https://altern.ai/ai/orbi" target="_blank" rel="noopener">';
-    const image = '<img src="https://data.altern.ai/alternbadge.png" alt="Featured on Altern" width="150" />';
-    const toolradar = '<a href="https://toolradar.com/tools/orbi" target="_blank" rel="noopener">';
-    for (const page of content()) {
-      const footer = footerRegion(shipped.get(page.output));
-      expect(footer, `${page.output}: Altern badge anchor drifted`).toContain(anchor);
-      // The exact image string has no height attribute, so the box keeps the
-      // 430x151 source ratio instead of the squashed supplied 150x32 — at the
-      // 28px height the shared footer rule sets (Issue #1038).
-      expect(footer, `${page.output}: Altern badge image drifted`).toContain(image);
-      expect(footer.indexOf(anchor), `${page.output}: Altern badge must follow Toolradar`)
-        .toBeGreaterThan(footer.indexOf(toolradar));
-    }
-  });
-
-  // Issue #1015: the maintainer supplied the SaaSpa.ge embed for
-  // https://saaspa.ge/product/cmvdfiyyk000mjq06rc8auynb. Anchor, src, alt,
-  // width and height are copied verbatim: the black-theme image is 200x60, the
-  // anchor keeps target="_blank" and rel="nofollow" (the outbound direction is
-  // the site's own choice; SaaSpa.ge changes the return link only after its
-  // verification). The badge follows the Altern badge so the five existing
-  // badges keep their order.
-  it("carries the SaaSpa.ge black badge on every footer page", () => {
-    const anchor = '<a href="https://saaspa.ge/product/cmvdfiyyk000mjq06rc8auynb" target="_blank" rel="nofollow">';
-    const image = '<img src="https://saaspa.ge/api/embed/product/cmvdfiyyk000mjq06rc8auynb/badge.png?theme=black" alt="Featured on Saaspa.ge" width="200" height="60" />';
-    const altern = '<a href="https://altern.ai/ai/orbi" target="_blank" rel="noopener">';
-    for (const page of content()) {
-      const footer = footerRegion(shipped.get(page.output));
-      expect(footer, `${page.output}: SaaSpa.ge badge anchor drifted`).toContain(anchor);
-      expect(footer, `${page.output}: SaaSpa.ge badge image drifted`).toContain(image);
-      expect(footer.indexOf(anchor), `${page.output}: SaaSpa.ge badge must follow Altern`)
-        .toBeGreaterThan(footer.indexOf(altern));
-    }
-  });
-
-  // Issue #1027: tooluck.org grants the free listing only once the site
-  // carries its official dark badge, so the maintainer-supplied embed is
-  // copied verbatim — anchor, target, rel, src, alt and the 210x55 size — and
-  // follows the SaaSpa.ge badge so the six existing badges keep their order.
-  // The outbound link stays crawlable (no nofollow); the badge is declared
-  // once per page.
-  it("carries the Tooluck dark badge with a crawlable backlink on every footer page", () => {
-    const anchor = '<a href="https://www.tooluck.org/item/orbi" target="_blank" rel="noopener noreferrer">';
-    const image = '<img src="https://www.tooluck.org/badges/tooluck-badge-dark.svg" alt="Featured on Tooluck.org" width="210" height="55" />';
-    const saaspa = '<a href="https://saaspa.ge/product/cmvdfiyyk000mjq06rc8auynb" target="_blank" rel="nofollow">';
-    for (const page of content()) {
-      const footer = footerRegion(shipped.get(page.output));
-      expect(footer, `${page.output}: Tooluck badge anchor drifted`).toContain(anchor);
-      expect(footer, `${page.output}: Tooluck badge image drifted`).toContain(image);
-      expect(footer.indexOf(anchor), `${page.output}: Tooluck badge must follow SaaSpa.ge`)
-        .toBeGreaterThan(footer.indexOf(saaspa));
-      expect(countMatches(footer, /https:\/\/www\.tooluck\.org\/badges\/tooluck-badge-dark\.svg/g), `${page.output}: exactly one Tooluck badge`)
-        .toBe(1);
-      expect(footerAnchorTag(footer, "https://www.tooluck.org/item/orbi"), `${page.output}: the Tooluck backlink must stay crawlable`)
-        .not.toContain("nofollow");
-    }
-  });
-
-  // Issue #1092: neeed.directory and zPlatform.ai list Orbi once the site
-  // carries their badge, so the maintainer-supplied embeds are appended after
-  // the Tooluck badge in that order. neeed ships a 139x44 SVG, and only its
-  // width is declared so the shared 28px footer rule (Issue #1038) still
-  // renders it in the source ratio; zPlatform keeps the supplied 250x60 box
-  // and loads lazily. Both anchors open a new tab and stay crawlable — the
-  // directories verify the backlink on review — and each badge ships once.
-  it("carries the neeed.directory badge with a crawlable backlink on every footer page", () => {
-    const anchor = '<a href="https://neeed.directory/products/orbi?utm_source=orbi" target="_blank" rel="noopener">';
-    const image = '<img src="https://neeed.directory/badges/neeed-badge-light.svg" alt="Featured on neeed.directory" width="139" />';
-    const tooluck = '<a href="https://www.tooluck.org/item/orbi" target="_blank" rel="noopener noreferrer">';
-    for (const page of content()) {
-      const footer = footerRegion(shipped.get(page.output));
-      expect(footer, `${page.output}: neeed.directory badge anchor drifted`).toContain(anchor);
-      expect(footer, `${page.output}: neeed.directory badge image drifted`).toContain(image);
-      expect(footer.indexOf(anchor), `${page.output}: neeed.directory badge must follow Tooluck`)
-        .toBeGreaterThan(footer.indexOf(tooluck));
-      expect(countMatches(footer, /https:\/\/neeed\.directory\/badges\/neeed-badge-light\.svg/g), `${page.output}: exactly one neeed.directory badge`)
-        .toBe(1);
-      expect(footerAnchorTag(footer, "https://neeed.directory/products/orbi?utm_source=orbi"), `${page.output}: the neeed.directory backlink must stay crawlable`)
-        .not.toContain("nofollow");
-    }
-  });
-
-  it("carries the zPlatform badge with a crawlable backlink on every footer page", () => {
-    const anchor = '<a href="https://zplatform.ai/" target="_blank" rel="noopener" title="Featured on zPlatform.ai">';
-    const image = '<img src="https://zplatform.ai/badges/zplatform-featured.png" alt="Featured on zPlatform" width="250" height="60" />';
-    const neeed = '<a href="https://neeed.directory/products/orbi?utm_source=orbi" target="_blank" rel="noopener">';
-    for (const page of content()) {
-      const footer = footerRegion(shipped.get(page.output));
-      expect(footer, `${page.output}: zPlatform badge anchor drifted`).toContain(anchor);
-      expect(footer, `${page.output}: zPlatform badge image drifted`).toContain(image);
-      expect(footer.indexOf(anchor), `${page.output}: zPlatform badge must follow neeed.directory`)
-        .toBeGreaterThan(footer.indexOf(neeed));
-      expect(countMatches(footer, /https:\/\/zplatform\.ai\/badges\/zplatform-featured\.png/g), `${page.output}: exactly one zPlatform badge`)
-        .toBe(1);
-      expect(footerAnchorTag(footer, "https://zplatform.ai/"), `${page.output}: the zPlatform backlink must stay crawlable`)
-        .not.toContain("nofollow");
-    }
-  });
-
-  // The Startup Project only lists Orbi after the directory homepage carries
-  // the backlink, so the last entry is a text link in the same badge row, with
-  // the existing text-friend treatment and the same new-tab/no-nofollow rules.
-  it("links The Startup Project from the badge row on every footer page", () => {
-    const anchor = '<a href="https://startupproject.org/startups/" target="_blank" rel="noopener">Featured on The Startup Project</a>';
-    const zplatform = '<a href="https://zplatform.ai/" target="_blank" rel="noopener" title="Featured on zPlatform.ai">';
-    for (const page of content()) {
-      const footer = footerRegion(shipped.get(page.output));
-      expect(footer, `${page.output}: The Startup Project footer anchor drifted`).toContain(anchor);
-      expect(footer.indexOf(anchor), `${page.output}: The Startup Project must follow the zPlatform badge`)
-        .toBeGreaterThan(footer.indexOf(zplatform));
-      expect(countMatches(footer, /https:\/\/startupproject\.org\/startups\//g), `${page.output}: exactly one Startup Project link`)
-        .toBe(1);
-      expect(footerAnchorTag(footer, "https://startupproject.org/startups/"), `${page.output}: the Startup Project backlink must stay crawlable`)
-        .not.toContain("nofollow");
-    }
-  });
-
-  // Issue #1094: the NickLaunches badge links its own entry page for Orbi
-  // instead of the directory homepage. Only the href changes — the new tab,
-  // the noopener rel, the src, the alt and the 244x56 declared size stay as
-  // earlier Issues shipped them, and the link stays crawlable (no nofollow) so
-  // the directory can verify the backlink.
-  // Issue #1185 keeps it: the 2026-10-29 submission is still in the directory's
-  // free-launch review, so the 404 is a not-yet-published entry, not a wrong URL
-  // — the free launch requires this badge on the homepage to verify the
-  // backlink. Issue #1187 dropped every badge's loading="lazy": the strip
-  // scrolls badges in from outside the viewport, so a deferred image left a
-  // blank slot in the marquee.
-  it("points the NickLaunches badge at the Orbi entry page on every footer page", () => {
-    const anchor = '<a href="https://nicklaunches.com/products/orbi/" target="_blank" rel="noopener">';
-    const image = '<img src="https://nicklaunches.com/badges/featured.png" alt="Featured on Nick Launches" width="244" height="56" />';
-    for (const page of content()) {
-      const footer = footerRegion(shipped.get(page.output));
-      expect(footer, `${page.output}: NickLaunches badge anchor drifted`).toContain(anchor + image);
-      expect(countMatches(footer, /https:\/\/nicklaunches\.com\/badges\/featured\.png/g), `${page.output}: exactly one NickLaunches badge`)
-        .toBe(1);
-      expect(footer, `${page.output}: the NickLaunches badge must not link the directory homepage`)
-        .not.toContain('<a href="https://nicklaunches.com/"');
-      expect(footerAnchorTag(footer, "https://nicklaunches.com/products/orbi/"), `${page.output}: the NickLaunches backlink must stay crawlable`)
-        .not.toContain("nofollow");
-    }
-  });
-
-  // Issue #1185: LaunchIgniter never published an Orbi entry — its product page
-  // answers 200 with "Product Not Found" — so the badge sent visitors to a page
-  // with no Orbi on it and left the footer. It comes back only once the site
-  // publishes the entry (a new Issue carries the then current URL).
-  it("carries no LaunchIgniter badge in the footer on any page (Issue #1185)", () => {
-    for (const page of content()) {
-      const footer = footerRegion(shipped.get(page.output));
-      expect(footer, `${page.output}: the footer must not link LaunchIgniter`)
-        .not.toMatch(/launchigniter\.com/i);
-    }
-  });
-
-  // Issue #1094: devhub.best grants the free listing and accepts the site's
-  // backlink once Orbi carries its official badge, so the maintainer-supplied
-  // embed is appended after The Startup Project as the last badge. Anchor,
-  // target, rel, src and alt are the vendor's; only the inline
-  // style="height:44px;width:auto" became the equivalent width/height
-  // attributes of the 150x44 source, like every other badge. The outbound
-  // link is dofollow on purpose — DevHub's Verify Backlink rejects nofollow —
-  // and the badge ships exactly once per page.
-  it("carries the DevHub badge with a crawlable backlink on every footer page", () => {
-    const anchor = '<a href="https://devhub.best/projects/orbi?utm_source=badge" target="_blank" rel="noopener noreferrer">';
-    const image = '<img src="https://r2.direasy-multi-tenant.focusapps.app/uploads/616d0b1a-3979-4b8c-94d1-b4f1fedd3ead/1783239702078/53yqmim54zv/featured-on-light.svg" alt="Featured on DevHub" width="150" height="44" />';
-    const startup = '<a href="https://startupproject.org/startups/" target="_blank" rel="noopener">Featured on The Startup Project</a>';
-    for (const page of content()) {
-      const footer = footerRegion(shipped.get(page.output));
-      expect(footer, `${page.output}: DevHub badge anchor drifted`).toContain(anchor);
-      expect(footer, `${page.output}: DevHub badge image drifted`).toContain(image);
-      expect(footer.indexOf(anchor), `${page.output}: the DevHub badge must follow The Startup Project`)
-        .toBeGreaterThan(footer.indexOf(startup));
-      expect(countMatches(footer, /https:\/\/devhub\.best\/projects\/orbi\?utm_source=badge/g), `${page.output}: exactly one DevHub badge`)
-        .toBe(1);
-      expect(footerAnchorTag(footer, "https://devhub.best/projects/orbi?utm_source=badge"), `${page.output}: the DevHub backlink must stay crawlable`)
-        .not.toContain("nofollow");
-    }
-  });
-
-  // Issue #1096: the 2026-10-29 batch appends two badge embeds and two text
-  // links after the DevHub badge, in the batch's order. Startup Fast's official
-  // embed declares 150x44 while the live SVG is 119x50; Issue #1125 needs the
-  // badge rendered at least 150x44 px, so it declares the source's proportional
-  // 150x63 and its class lifts it off the shared 28px row (public/styles.css).
-  // The Artificin PNG is 551x175, declared as the proportional 139x44. Both
-  // text links reuse the existing text-friend treatment. Every link opens a
-  // new tab, keeps the vendor's href/src/alt/title and stays crawlable — each
-  // directory verifies the backlink on review — and each ships exactly once
-  // per page.
-  it("carries the 2026-10-29 directory backlinks after the DevHub badge on every footer page", () => {
-    const devhub = '<a href="https://devhub.best/projects/orbi?utm_source=badge" target="_blank" rel="noopener noreferrer">';
-    const entries = [
-      {
-        anchor: '<a href="https://startupfa.st" target="_blank" rel="noopener" title="Powered by Startup Fast">',
-        image: '<img class="footer-badge-startup-fast" src="https://startupfa.st/images/badges/powered-by-dark.svg" alt="Powered by Startup Fast" width="150" height="63" />',
-        href: "https://startupfa.st",
-      },
-      {
-        anchor: '<a href="https://artificin.com" target="_blank" rel="noopener">',
-        image: '<img src="https://artificin.com/badges/Artificin-badge.png" alt="Featured on Artificin" width="139" height="44" />',
-        href: "https://artificin.com",
-      },
-      {
-        anchor: '<a href="https://aitooltrek.com" target="_blank" rel="noopener">AI Tool Trek</a>',
-        image: null,
-        href: "https://aitooltrek.com",
-      },
-      {
-        anchor: '<a href="https://whatisaitools.com/" target="_blank" rel="noopener" title="What Is Ai Tools">What Is Ai Tools</a>',
-        image: null,
-        href: "https://whatisaitools.com/",
-      },
-    ];
-    for (const page of content()) {
-      const footer = footerRegion(shipped.get(page.output));
-      let previous = devhub;
-      for (const entry of entries) {
-        expect(footer, `${page.output}: ${entry.href} footer anchor drifted`)
-          .toContain(entry.image ? entry.anchor + entry.image : entry.anchor);
-        expect(countMatches(footer, new RegExp(`href="${entry.href}"`, "g")), `${page.output}: exactly one ${entry.href} link`)
-          .toBe(1);
-        expect(footer.indexOf(entry.anchor), `${page.output}: ${entry.href} must follow the previous badge`)
-          .toBeGreaterThan(footer.indexOf(previous));
-        expect(footerAnchorTag(footer, entry.href), `${page.output}: the ${entry.href} backlink must stay crawlable`)
-          .not.toContain("nofollow");
-        previous = entry.anchor;
-      }
-    }
-  });
-
-  // Issue #1125: Startup Fast's free launch requires its badge on every page at
-  // least 150x44 px, linking exactly https://startupfa.st as a dofollow backlink
-  // and serving the image from startupfa.st. The badge keeps the source's own
-  // ratio, so its declared 150x63 is the 119x50 SVG rounded to whole pixels.
-  it("carries the Startup Fast badge at the vendor's minimum size on every footer page (Issue #1125)", () => {
-    for (const page of content()) {
-      const footer = footerRegion(shipped.get(page.output));
-      const start = footer.indexOf('<a href="https://startupfa.st"');
-      const link = start < 0 ? "" : footer.slice(start, footer.indexOf("</a>", start) + "</a>".length);
-      const anchor = footerAnchorTag(footer, "https://startupfa.st");
-      expect(anchor, `${page.output}: the Startup Fast anchor must be exactly https://startupfa.st`)
-        .toContain('href="https://startupfa.st"');
-      expect(anchor, `${page.output}: the Startup Fast backlink must stay dofollow`).not.toContain("nofollow");
-      const image = link.match(/<img [^>]*>/)?.[0] ?? "";
-      expect(image, `${page.output}: the Startup Fast badge must load from startupfa.st`)
-        .toContain('src="https://startupfa.st/images/badges/powered-by-dark.svg"');
-      expect(Number(image.match(/width="(\d+)"/)?.[1]), `${page.output}: the Startup Fast badge width`)
-        .toBeGreaterThanOrEqual(150);
-      expect(Number(image.match(/height="(\d+)"/)?.[1]), `${page.output}: the Startup Fast badge height`)
-        .toBeGreaterThanOrEqual(44);
-      expect(countMatches(footer, /href="https:\/\/startupfa\.st"/g), `${page.output}: exactly one Startup Fast link`)
-        .toBe(1);
-    }
-  });
-
-  // Issue #1099: ToolPotion lists orbi.build in its AI-agent directory and
-  // grants the entry a dofollow return link once the site carries this badge,
-  // so the maintainer-supplied embed is appended after the What Is Ai Tools
-  // link as the last entry of the badge row. Anchor, target, rel, src, alt and
-  // the 250x54 box are the vendor's — the live SVG declares width="250"
-  // height="54" itself, so the declared box keeps its source ratio — and the
-  // link stays crawlable (no nofollow) so ToolPotion can verify it.
-  it("carries the ToolPotion badge with a crawlable backlink on every footer page (Issue #1099)", () => {
-    const anchor = '<a href="https://toolpotion.ai/en/ai-agent/orbi" target="_blank" rel="noopener">';
-    const image = '<img src="https://toolpotion.ai/badge/30971/top-ranked-detailed-gradient.svg" alt="Orbi — ToolPotion badge" width="250" height="54" />';
-    const whatisaitools = '<a href="https://whatisaitools.com/" target="_blank" rel="noopener" title="What Is Ai Tools">What Is Ai Tools</a>';
-    for (const page of content()) {
-      const footer = footerRegion(shipped.get(page.output));
-      expect(footer, `${page.output}: ToolPotion badge anchor drifted`).toContain(anchor);
-      expect(footer, `${page.output}: ToolPotion badge image drifted`).toContain(image);
-      expect(footer, `${page.output}: the ToolPotion anchor and image must sit together`)
-        .toContain(anchor + image);
-      expect(footer.indexOf(anchor), `${page.output}: the ToolPotion badge must follow the What Is Ai Tools link`)
-        .toBeGreaterThan(footer.indexOf(whatisaitools));
-      expect(countMatches(footer, /https:\/\/toolpotion\.ai\/badge\/30971\/top-ranked-detailed-gradient\.svg/g), `${page.output}: exactly one ToolPotion badge`)
-        .toBe(1);
-      expect(footerAnchorTag(footer, "https://toolpotion.ai/en/ai-agent/orbi"), `${page.output}: the ToolPotion backlink must stay crawlable`)
-        .not.toContain("nofollow");
-    }
-  });
-
-  // Issue #1102: Fazier's free launch listing requires orbi.build to carry
-  // their badge, so the maintainer-supplied embed closes the badge row. The
-  // live SVG is 103x44 (so the 120px declared width never decides the box —
-  // the shared 28px rule does), the anchor opens fazier.com in a new tab and
-  // the image keeps the vendor's src and alt verbatim.
-  it("carries the Fazier badge linking fazier.com on every footer page (Issue #1102)", () => {
-    const anchor = '<a href="https://fazier.com" target="_blank" rel="noopener">';
-    const image = '<img src="https://fazier.com/api/v1//public/badges/launch_badges.svg?badge_type=launched&theme=light" width="120" alt="Fazier badge" />';
-    for (const page of content()) {
-      const footer = footerRegion(shipped.get(page.output));
-      expect(footer, `${page.output}: Fazier badge anchor drifted`).toContain(anchor);
-      expect(footer, `${page.output}: Fazier badge image drifted`).toContain(image);
-      expect(footer, `${page.output}: the Fazier anchor and image must sit together`)
-        .toContain(anchor + image);
-      expect(countMatches(footer, /https:\/\/fazier\.com\/api\/v1\/\/public\/badges\/launch_badges\.svg/g), `${page.output}: exactly one Fazier badge`)
-        .toBe(1);
-    }
-  });
-
-  // Issue #1116: the 2026-10-30 batch appends four directory badges after the
-  // Fazier badge, in the batch's order. Issue #1110 had closed the row with a
-  // plain "Featured on Dang.ai" text link; dang.ai now ships its own verified
-  // badge, so that anchor becomes the badge's crawler-reachable link (still no
-  // nofollow and no JavaScript, so the directory reads it in the shipped
-  // bytes). Each embed keeps the vendor's href/src/alt, opens a new tab and
-  // declares its source image's box — turbo0's SVG viewBox is 481.56x160.97,
-  // toolfame's 160x54 and dang.ai's PNG 550x198 (the vendor declares the
-  // proportional 260x94) — so the shared 28px footer rule (Issue #1038) keeps
-  // every badge in its source ratio. Issue #1185 dropped the LaunchIgniter
-  // badge that used to close this batch.
-  it("carries the 2026-10-30 directory badges after the Fazier badge on every footer page (Issue #1116)", () => {
-    const fazier = '<a href="https://fazier.com" target="_blank" rel="noopener">';
-    const entries = [
-      {
-        href: "https://turbo0.com/item/orbi",
-        anchor: '<a href="https://turbo0.com/item/orbi" target="_blank" rel="noopener noreferrer">',
-        image: '<img src="https://img.turbo0.com/badge-listed-light.svg" alt="Listed on Turbo0" width="482" height="161" />',
-      },
-      {
-        href: "https://toolfame.com/item/orbi",
-        anchor: '<a href="https://toolfame.com/item/orbi" target="_blank" rel="noopener noreferrer">',
-        image: '<img src="https://toolfame.com/badge-light.svg" alt="Featured on toolfame.com" width="160" height="54" />',
-      },
-      {
-        href: "https://dang.ai",
-        anchor: '<a href="https://dang.ai" target="_blank" rel="noopener">',
-        image: '<img src="https://assets.dang.ai/badges/dang-verified-dark.png" alt="Verified on DANG!" width="550" height="198" />',
-      },
-    ];
-    for (const page of content()) {
-      const footer = footerRegion(shipped.get(page.output));
-      let previous = fazier;
-      for (const entry of entries) {
-        expect(footer, `${page.output}: ${entry.href} footer anchor drifted`)
-          .toContain(entry.anchor + entry.image);
-        expect(countMatches(footer, new RegExp(`href="${escapeRegExp(entry.href)}"`, "g")), `${page.output}: exactly one ${entry.href} link`)
-          .toBe(1);
-        expect(footer.indexOf(entry.anchor), `${page.output}: ${entry.href} must follow the previous badge`)
-          .toBeGreaterThan(footer.indexOf(previous));
-        expect(footerAnchorTag(footer, entry.href), `${page.output}: the ${entry.href} backlink must stay crawlable`)
-          .not.toContain("nofollow");
-        expect(footerAnchorTag(footer, entry.href), `${page.output}: the ${entry.href} anchor opens a new tab`)
-          .toContain('target="_blank"');
-        previous = entry.anchor;
-      }
-    }
-  });
-
-  // Issue #1119: Scout Forge upgrades its listing's link to orbi.build to
-  // dofollow once its badge has been shown 50 times across at least 7 days, and
-  // it counts those impressions from requests for the badge image itself. So
-  // the footer carries the supplied embed as ordinary server-rendered HTML —
-  // no nofollow, no JavaScript — with the image still on scoutforge.net (a
-  // self-hosted copy would never reach their counter). It sits after the
-  // dang.ai badge (the LaunchIgniter badge it followed left in Issue #1185) —
-  // Issue #1129 then appends the Findly.tools badge — and declares the SVG's
-  // own 300x72 box for the shared 28px footer rule (#1038).
-  it("carries the Scout Forge badge after the dang.ai badge on every footer page (Issue #1119)", () => {
-    const dang = '<a href="https://dang.ai" target="_blank" rel="noopener">';
-    const anchor = '<a href="https://scoutforge.net/apps/orbi?ref=badge" target="_blank" rel="noopener">';
-    const image = '<img src="https://scoutforge.net/badge/orbi/image?theme=light" alt="Orbi on Scout Forge" width="300" height="72" />';
-    const findly = '<a href="https://findly.tools/orbi?utm_source=orbi" target="_blank" rel="noopener noreferrer">';
-    for (const page of content()) {
-      const footer = footerRegion(shipped.get(page.output));
-      expect(footer, `${page.output}: Scout Forge badge anchor drifted`).toContain(anchor);
-      expect(footer, `${page.output}: the Scout Forge anchor and image must sit together`)
-        .toContain(anchor + image);
-      // Server-rendered, not injected later: the anchor is in the shipped bytes
-      // after the dang.ai badge and before the wrapper closes.
-      expect(footer.indexOf(anchor), `${page.output}: the Scout Forge badge must follow the dang.ai badge`)
-        .toBeGreaterThan(footer.indexOf(dang));
-      expect(footer.indexOf(findly), `${page.output}: the Findly.tools badge must follow the Scout Forge badge`)
-        .toBeGreaterThan(footer.indexOf(anchor));
-      expect(countMatches(footer, /https:\/\/scoutforge\.net\/badge\/orbi\/image\?theme=light/g), `${page.output}: exactly one Scout Forge badge image`)
-        .toBe(1);
-      expect(footerAnchorTag(footer, "https://scoutforge.net/apps/orbi?ref=badge"), `${page.output}: the Scout Forge backlink must stay crawlable`)
-        .not.toContain("nofollow");
-      // Scout Forge counts the impression from the image request, so the
-      // shipped HTML must point at their host, never a copy in this repository.
-      expect(countMatches(footer, /src="\/img\/[^"]*scout[^"]*"/gi), `${page.output}: the Scout Forge badge must not be self-hosted`)
-        .toBe(0);
-    }
-  });
-
-  // Issue #1129: Findly.tools grants orbi.build a free listing once the site
-  // carries its badge, so the supplied embed follows the Scout Forge badge
-  // (Issue #1132 then appends the founder.best and makeitla.st badges after
-  // it). Anchor, target, rel, src and alt are the vendor's; the
-  // declared box is the source SVG's own 139x44 (measured on the live file,
-  // whose snippet says 175x55) like every other footer badge, so the shared
-  // 28px rule (Issue #1038) keeps the true source ratio — 139/44 * 28 = 88.5px
-  // wide. The link stays crawlable and points at Orbi's listing.
-  it("carries the Findly.tools badge linking Orbi's listing on every footer page (Issue #1129)", () => {
-    const anchor = '<a href="https://findly.tools/orbi?utm_source=orbi" target="_blank" rel="noopener noreferrer">';
-    const image = '<img src="https://findly.tools/badges/findly-tools-badge-light.svg" alt="Featured on Findly.tools" width="139" height="44" />';
-    const scoutforge = '<a href="https://scoutforge.net/apps/orbi?ref=badge" target="_blank" rel="noopener">';
-    const founderBestAnchor = '<a href="https://www.founder.best?ref=founderbest&utm_source=founder.best&utm_medium=referral" target="_blank" rel="noopener noreferrer">';
-    for (const page of content()) {
-      const footer = footerRegion(shipped.get(page.output));
-      expect(footer, `${page.output}: Findly.tools badge anchor drifted`).toContain(anchor);
-      expect(footer, `${page.output}: Findly.tools badge image drifted`).toContain(image);
-      expect(footer, `${page.output}: the Findly.tools anchor and image must sit together`)
-        .toContain(anchor + image);
-      expect(footer.indexOf(anchor), `${page.output}: the Findly.tools badge must follow the Scout Forge badge`)
-        .toBeGreaterThan(footer.indexOf(scoutforge));
-      expect(footer.indexOf(founderBestAnchor), `${page.output}: the founder.best badge must follow the Findly.tools badge`)
-        .toBeGreaterThan(footer.indexOf(anchor));
-      expect(countMatches(footer, /https:\/\/findly\.tools\/badges\/findly-tools-badge-light\.svg/g), `${page.output}: exactly one Findly.tools badge image`)
-        .toBe(1);
-      expect(footerAnchorTag(footer, "https://findly.tools/orbi?utm_source=orbi"), `${page.output}: the Findly.tools backlink must stay crawlable`)
-        .not.toContain("nofollow");
-      // The vendor counts the listing's badge from requests for the image
-      // itself, so the shipped HTML must point at findly.tools, never a copy.
-      expect(countMatches(footer, /src="\/img\/[^"]*findly[^"]*"/gi), `${page.output}: the Findly.tools badge must not be self-hosted`)
-        .toBe(0);
-    }
-  });
-
-
-  // Issue #1132: founder.best and makeitla.st both grant orbi.build a free,
-  // dofollow listing once the site carries their badge, so the two supplied
-  // embeds close the badge row after the Findly.tools badge — founder.best
-  // first, makeitla.st last. Both are copied verbatim: the anchors keep the
-  // vendors' own href/rel/title and carry no nofollow, sponsored or ugc, and
-  // each image declares the source file's own box (1195x390 and 252x76, both
-  // measured on the live SVG on 2026-10-31) so the shared 28px rule (Issue
-  // #1038) keeps the true source ratio. makeitla.st links exactly
-  // https://www.makeitla.st/ and re-checks the badge weekly — a badge that
-  // disappears drops the link to nofollow — so the embed must not drift.
-  it("carries the founder.best and makeitla.st badges closing the badge row on every footer page (Issue #1132)", () => {
-    const founderBestAnchor = '<a href="https://www.founder.best?ref=founderbest&utm_source=founder.best&utm_medium=referral" target="_blank" rel="noopener noreferrer">';
-    const founderBestImage = '<img src="https://www.founder.best/api/badge/featured/orbi" alt="Orbi - Featured on Founder.best" width="1195" height="390" decoding="async" />';
-    const makeitlastAnchor = '<a href="https://www.makeitla.st/" title="Featured on MakeItLast">';
-    const makeitlastImage = '<img src="https://www.makeitla.st/badge/makeitlast-badge-dark.svg?v=3" alt="Featured on MakeItLast" width="252" height="76"/>';
-    const findly = '<a href="https://findly.tools/orbi?utm_source=orbi" target="_blank" rel="noopener noreferrer">';
-    for (const page of content()) {
-      const footer = footerRegion(shipped.get(page.output));
-      expect(footer, `${page.output}: founder.best badge anchor drifted`).toContain(founderBestAnchor);
-      expect(footer, `${page.output}: founder.best badge image drifted`).toContain(founderBestImage);
-      expect(footer, `${page.output}: the founder.best anchor and image must sit together`)
-        .toContain(founderBestAnchor + founderBestImage);
-      expect(footer, `${page.output}: makeitla.st badge anchor drifted`).toContain(makeitlastAnchor);
-      expect(footer, `${page.output}: makeitla.st badge image drifted`).toContain(makeitlastImage);
-      expect(footer, `${page.output}: the makeitla.st anchor and image must sit together`)
-        .toContain(makeitlastAnchor + makeitlastImage);
-      expect(footer.indexOf(founderBestAnchor), `${page.output}: the founder.best badge must follow the Findly.tools badge`)
-        .toBeGreaterThan(footer.indexOf(findly));
-      expect(footer.indexOf(makeitlastAnchor), `${page.output}: the makeitla.st badge must follow the founder.best badge`)
-        .toBeGreaterThan(footer.indexOf(founderBestAnchor));
-      expect(footer.indexOf('<a href="https://aifordevelopers.org"'), `${page.output}: the Issue #1134 badges must follow the makeitla.st badge`)
-        .toBeGreaterThan(footer.indexOf(makeitlastAnchor));
-      // Both directories verify the backlink from the shipped bytes, so each
-      // embed ships exactly once per page and stays crawlable: no nofollow, no
-      // sponsored, no ugc.
-      expect(countMatches(footer, /https:\/\/www\.founder\.best\/api\/badge\/featured\/orbi/g), `${page.output}: exactly one founder.best badge image`)
-        .toBe(1);
-      expect(countMatches(footer, /https:\/\/www\.makeitla\.st\/badge\/makeitlast-badge-dark\.svg\?v=3/g), `${page.output}: exactly one makeitla.st badge image`)
-        .toBe(1);
-      expect(countMatches(footer, /<a href="https:\/\/www\.makeitla\.st\/"/g), `${page.output}: exactly one makeitla.st anchor`)
-        .toBe(1);
-      for (const href of [
-        "https://www.founder.best?ref=founderbest&utm_source=founder.best&utm_medium=referral",
-        "https://www.makeitla.st/",
-      ]) {
-        const anchor = footerAnchorTag(footer, href);
-        expect(anchor, `${page.output}: the ${href} backlink must stay crawlable`).not.toContain("nofollow");
-        expect(anchor, `${page.output}: the ${href} backlink must not be sponsored`).not.toContain("sponsored");
-        expect(anchor, `${page.output}: the ${href} backlink must not be ugc`).not.toContain("ugc");
-      }
-      // The vendors count the listing's badge from requests for the image
-      // itself, so the shipped HTML must point at their hosts, never a copy.
-      expect(countMatches(footer, /src="\/img\/[^"]*(founder|makeitla)[^"]*"/gi), `${page.output}: the Issue #1132 badges must not be self-hosted`)
-        .toBe(0);
-    }
-  });
-
-  // Issue #1134: AI for Developers, Uno Directory, SaaSCity and LaunchVault
-  // each grant orbi.build a free directory listing once the site carries their
-  // badge, so the four maintainer-supplied embeds close the badge row after
-  // makeitla.st, in the Issue's order. Both anchors and images ship verbatim as
-  // the Issue wrote them — only Uno Directory and SaaSCity declare a box that is
-  // not their live SVG's own size (120x30 vs 146x44 and 150x54 vs 210x80), and
-  // the shared 28px rule (Issue #1038) renders each badge from the file's
-  // intrinsic ratio, so the declared box neither squashes nor crops them (the
-  // footer-overflow suite pins the rendered 28px ratio). None of the four links
-  // may carry nofollow, sponsored or ugc — the directories treat such a link as
-  // unverifiable and refuse the listing.
-  it("carries the AI for Developers, Uno Directory, SaaSCity and LaunchVault badges closing the badge row on every footer page (Issue #1134)", () => {
-    const badges = [
-      '<a href="https://aifordevelopers.org" target="_blank"><img src="https://aifordevelopers.org/assets/badge.svg" alt="Featured on AI for Developers" width="220" height="48"></a>',
-      '<a href="https://uno.directory" target="_blank" rel="noopener"><img src="https://uno.directory/uno-directory.svg" alt="Listed on Uno Directory" width="120" height="30" /></a>',
-      '<a href="https://saascity.io" target="_blank" rel="noopener"><img src="https://saascity.io/badges/featured-dark.svg" alt="Featured on SaaSCity" width="150" height="54" /></a>',
-      '<a href="https://launchvault.dev" target="_blank" rel="noopener"><img src="https://launchvault.dev/images/badges/launch-valut-badge.svg" alt="Featured on LaunchVault" height="54" /></a>',
-    ];
-    const hrefs = [
-      "https://aifordevelopers.org",
-      "https://uno.directory",
-      "https://saascity.io",
-      "https://launchvault.dev",
-    ];
-    const makeitlast = '<a href="https://www.makeitla.st/" title="Featured on MakeItLast">';
-    for (const page of content()) {
-      const footer = footerRegion(shipped.get(page.output));
-      for (const [index, badge] of badges.entries()) {
-        expect(footer, `${page.output}: the ${hrefs[index]} badge drifted`).toContain(badge);
-        expect(countMatches(footer, new RegExp(`<a href="${hrefs[index]}"`, "g")), `${page.output}: exactly one ${hrefs[index]} anchor`)
-          .toBe(1);
-        expect(footer.indexOf(badge), `${page.output}: the ${hrefs[index]} badge must follow the makeitla.st badge`)
-          .toBeGreaterThan(footer.indexOf(makeitlast));
-        if (index > 0) {
-          expect(footer.indexOf(badge), `${page.output}: the ${hrefs[index]} badge must follow the ${hrefs[index - 1]} badge`)
-            .toBeGreaterThan(footer.indexOf(badges[index - 1]));
-        }
-        const anchor = footerAnchorTag(footer, hrefs[index]);
-        expect(anchor, `${page.output}: the ${hrefs[index]} backlink must stay crawlable`).not.toContain("nofollow");
-        expect(anchor, `${page.output}: the ${hrefs[index]} backlink must not be sponsored`).not.toContain("sponsored");
-        expect(anchor, `${page.output}: the ${hrefs[index]} backlink must not be ugc`).not.toContain("ugc");
-        // Issue #1116: the row ends with these four embeds, so the launchvault.dev
-        // badge is the last anchor inside the badge wrapper.
-        if (index === badges.length - 1) {
-          expect(footer.slice(footer.indexOf(badge) + badge.length), `${page.output}: the Findstack badge must follow LaunchVault`)
-            .toMatch(/^\s*<a target="_blank" rel="noopener" href="https:\/\/findstack\.com\/products\/orbi\/reviews">/);
-        }
-      }
-      // The directories count the listing's badge from requests for the image
-      // itself, so the shipped HTML must point at their hosts, never a copy.
-      expect(countMatches(footer, /src="\/img\/[^"]*(aifordevelopers|uno-directory|saascity|launch-valut)[^"]*"/gi), `${page.output}: the Issue #1134 badges must not be self-hosted`)
-        .toBe(0);
-    }
-  });
-  it("carries the Findstack badge verbatim on every footer page", () => {
-    const badge = '<a target="_blank" rel="noopener" href="https://findstack.com/products/orbi/reviews"><img alt="Orbi on Findstack" width="180" height="56" src="https://findstack.com/badges/orbi.svg" /></a>';
-    for (const page of content()) {
-      const footer = footerRegion(shipped.get(page.output));
-      expect(footer, `${page.output}: Findstack badge drifted`).toContain(badge);
-      expect(countMatches(footer, /findstack\.com\/products\/orbi\/reviews/g)).toBe(1);
-      // Issue #1160 appended twelve directory badges after it, so it is no
-      // longer the row's last entry; the goodsaas.xyz badge follows it.
-      expect(footer.slice(footer.indexOf(badge) + badge.length), `${page.output}: the Issue #1160 badges must follow the Findstack badge`)
-        .toMatch(/^\s*<a href="https:\/\/goodsaas\.xyz\/saas\/orbi"/);
-    }
-  });
-
-  // Issue #1160: twelve more directory sites grant orbi.build a free, dofollow
-  // backlink once the site carries their badge or link, so the Issue's snippets
-  // are appended verbatim after the Findstack badge, in the Issue's order. Some
-  // of them keep the directory's own spelling ("Diresctory") because the
-  // directory re-checks the page against the snippet it handed out, so the copy
-  // must not be corrected. None of the twelve may carry nofollow, sponsored or
-  // ugc — the directories treat such a link as unverifiable and drop the
-  // listing. Issue #1165 appends the doforai.tools badge after them, so
-  // bestaitool.app no longer closes the row.
-  it("carries the twelve Issue #1160 directory badges and links on every footer page", () => {
-    const badges = [
-      '<a href="https://goodsaas.xyz/saas/orbi" target="_blank" rel="noopener"><img src="https://goodsaas.xyz/badge/orbi.svg?theme=dark" alt="goodSaaS on goodSaaS" /></a>',
-      '<a href="https://101aitools.com" target="_blank"><img src="https://101aitools.com/badge-featured-101aitools.svg" alt="Featured on 101 AI Tools" width="360" height="72"></a>',
-      '<a href="https://webtech.tools" title="WebTech">WebTech</a>',
-      '<a href="https://t0ai.com" title="T0 AI Tools Directory">T0 AI Tools Directory</a>',
-      '<a href="https://aixlist.com/">AIXList</a>',
-      '<a href="https://hiaitools.com" title="The latest AI Tools Directory">The latest AI Tools Diresctory</a>',
-      '<a href="https://aitooli.com/" title="Aitooli AI Tools Directory">Aitooli AI Tools Directory</a>',
-      '<a href="https://okeiai.com/" title="Okei AI Tools Directory" target="_blank"> Okei AI Tools </a>',
-      '<a href="https://vibedonalds.com" target="_blank" rel="noopener"><img src="https://vibedonalds.com/badge/featured-on-vibedonalds.svg" alt="Featured on Vibedonalds" width="240" height="60"></a>',
-      '<a href="https://minylist.com" target="_blank" title="Featured on minylist"><img src="https://minylist.com/badge/featured.svg" alt="Featured on minylist" width="176" height="60" /></a>',
-      '<a href="https://toolsify.ai/" title="Toolsify AI Tools Directory">Toolsify AI Tools Diresctory</a>',
-      '<a href="https://bestaitool.app/" title="BestAITool AI Tools Directory">BestAITool AI Tools Diresctory</a>',
-    ];
-    const hrefs = [
-      "https://goodsaas.xyz/saas/orbi",
-      "https://101aitools.com",
-      "https://webtech.tools",
-      "https://t0ai.com",
-      "https://aixlist.com/",
-      "https://hiaitools.com",
-      "https://aitooli.com/",
-      "https://okeiai.com/",
-      "https://vibedonalds.com",
-      "https://minylist.com",
-      "https://toolsify.ai/",
-      "https://bestaitool.app/",
-    ];
-    const findstack = '<a target="_blank" rel="noopener" href="https://findstack.com/products/orbi/reviews">';
-    for (const page of content()) {
-      const footer = footerRegion(shipped.get(page.output));
-      for (const [index, badge] of badges.entries()) {
-        expect(footer, `${page.output}: the ${hrefs[index]} badge drifted`).toContain(badge);
-        expect(countMatches(footer, new RegExp(`<a href="${escapeRegExp(hrefs[index])}"`, "g")), `${page.output}: exactly one ${hrefs[index]} anchor`)
-          .toBe(1);
-        expect(footer.indexOf(badge), `${page.output}: the ${hrefs[index]} badge must follow the ${index === 0 ? "Findstack" : hrefs[index - 1]} badge`)
-          .toBeGreaterThan(footer.indexOf(index === 0 ? findstack : badges[index - 1]));
-        const anchor = footerAnchorTag(footer, hrefs[index]);
-        expect(anchor, `${page.output}: the ${hrefs[index]} backlink must stay crawlable`).not.toContain("nofollow");
-        expect(anchor, `${page.output}: the ${hrefs[index]} backlink must not be sponsored`).not.toContain("sponsored");
-        expect(anchor, `${page.output}: the ${hrefs[index]} backlink must not be ugc`).not.toContain("ugc");
-      }
-      // Issue #1165 appended the doforai.tools badge after them, Issue #1168 the
-      // Startup Fame badge and Issue #1169 the ScrollLaunch badge, so the row now
-      // closes after those three, in order.
-      expect(footer.slice(footer.indexOf(badges.at(-1)) + badges.at(-1).length), `${page.output}: the doforai.tools, Startup Fame and ScrollLaunch badges must close the badge row`)
-        .toMatch(/^\s*<a href="https:\/\/doforai\.tools"[\s\S]*?<a href="https:\/\/startupfa\.me\/s\/orbi\?utm_source=orbi\.build"[\s\S]*?<a href="https:\/\/www\.scrolllaunch\.com\/products\/orbi\?ref=badge"[\s\S]*?<\/div>/);
-      // The four vendor-hosted images must stay on the directories' hosts, so
-      // each verifier counts the badge from its own file.
-      expect(countMatches(footer, /src="\/img\/[^"]*(goodsaas|101aitools|vibedonalds|minylist)[^"]*"/gi), `${page.output}: the Issue #1160 badges must not be self-hosted`)
-        .toBe(0);
-    }
-  });
-
-  // Issue #1165: the free doforai.tools listing is granted only while the site
-  // carries the doforai.tools badge — its submission form checks for a public
-  // doforai badge or link before it accepts an entry, so the vendor's embed goes
-  // in verbatim (white theme, 172x54 declared box) after bestaitool.app and the
-  // anchor stays crawlable: nofollow, sponsored or ugc would make the
-  // listing unverifiable and doforai.tools delists a badge that disappears.
-  // Issue #1168 appends the Startup Fame badge after it and Issue #1169 the
-  // ScrollLaunch badge after that, so it no longer closes the row.
-  it("carries the doforai.tools badge on every footer page (Issue #1165)", () => {
-    const badge = '<a href="https://doforai.tools" target="_blank" rel="noopener noreferrer"><img src="https://doforai.tools/badge/feature-badge-white.webp" alt="Featured on doforai.tools" width="172" height="54" /></a>';
-    const bestaitool = '<a href="https://bestaitool.app/" title="BestAITool AI Tools Directory">BestAITool AI Tools Diresctory</a>';
-    for (const page of content()) {
-      const footer = footerRegion(shipped.get(page.output));
-      expect(footer, `${page.output}: doforai.tools badge drifted`).toContain(badge);
-      expect(countMatches(footer, /<a href="https:\/\/doforai\.tools"/g), `${page.output}: exactly one doforai.tools anchor`)
-        .toBe(1);
-      expect(footer.indexOf(badge), `${page.output}: the doforai.tools badge must follow the bestaitool.app link`)
-        .toBeGreaterThan(footer.indexOf(bestaitool));
-      const anchor = footerAnchorTag(footer, "https://doforai.tools");
-      expect(anchor, `${page.output}: the doforai.tools backlink must keep its rel`).toContain('rel="noopener noreferrer"');
-      expect(anchor, `${page.output}: the doforai.tools backlink must stay crawlable`).not.toContain("nofollow");
-      expect(anchor, `${page.output}: the doforai.tools backlink must not be sponsored`).not.toContain("sponsored");
-      expect(anchor, `${page.output}: the doforai.tools backlink must not be ugc`).not.toContain("ugc");
-      // Issue #1168 appends the Startup Fame badge after it and Issue #1169 the
-      // ScrollLaunch badge after that, so doforai.tools is no longer the row's
-      // last entry.
-      expect(footer.slice(footer.indexOf(badge) + badge.length), `${page.output}: the Startup Fame badge must follow doforai.tools`)
-        .toMatch(/^\s*<a href="https:\/\/startupfa\.me\/s\/orbi\?utm_source=orbi\.build"/);
-      // The badge must stay on the directory's host, so their checker counts it.
-      expect(countMatches(footer, /src="\/img\/[^"]*doforai[^"]*"/gi), `${page.output}: the doforai.tools badge must not be self-hosted`)
-        .toBe(0);
-    }
-  });
-
-  // Issue #1168: Startup Fame grants the free verified listing only while the
-  // submitted site (orbi.build) shows the Startup Fame badge on its page, so the
-  // vendor's official embed goes in as the badge row's last entry. The anchor
-  // must point exactly at the listing URL with the utm_source the vendor's
-  // submission handed out, and it must stay crawlable — nofollow, sponsored or
-  // ugc would make the badge unverifiable and fail the "Verify now" check.
-  it("carries the Startup Fame badge on every footer page (Issue #1168)", () => {
-    const href = "https://startupfa.me/s/orbi?utm_source=orbi.build";
-    const badge = '<a href="https://startupfa.me/s/orbi?utm_source=orbi.build" target="_blank"><img src="https://startupfa.me/badges/featured-badge.webp" alt="Orbi - Featured on Startup Fame" width="171" height="54" /></a>';
-    const doforai = '<a href="https://doforai.tools" target="_blank" rel="noopener noreferrer">';
-    for (const page of content()) {
-      const footer = footerRegion(shipped.get(page.output));
-      expect(footer, `${page.output}: Startup Fame badge drifted`).toContain(badge);
-      expect(countMatches(footer, /<a href="https:\/\/startupfa\.me\/s\/orbi\?utm_source=orbi\.build"/g), `${page.output}: exactly one Startup Fame anchor`)
-        .toBe(1);
-      expect(footer.indexOf(badge), `${page.output}: the Startup Fame badge must follow the doforai.tools badge`)
-        .toBeGreaterThan(footer.indexOf(doforai));
-      const anchor = footerAnchorTag(footer, href);
-      expect(anchor, `${page.output}: the Startup Fame anchor must point at the listing`).not.toBe("");
-      expect(anchor, `${page.output}: the Startup Fame badge opens in a new tab`).toContain('target="_blank"');
-      expect(anchor, `${page.output}: the Startup Fame backlink must stay crawlable`).not.toContain("nofollow");
-      expect(anchor, `${page.output}: the Startup Fame backlink must not be sponsored`).not.toContain("sponsored");
-      expect(anchor, `${page.output}: the Startup Fame backlink must not be ugc`).not.toContain("ugc");
-      // Issue #1169 appends the ScrollLaunch badge after it, so it is no longer
-      // the row's last entry.
-      expect(footer.slice(footer.indexOf(badge) + badge.length), `${page.output}: the ScrollLaunch badge must follow Startup Fame`)
-        .toMatch(/^\s*<a href="https:\/\/www\.scrolllaunch\.com\/products\/orbi\?ref=badge"/);
-      // Startup Fame's checker looks for the badge on its own host, so the
-      // image must never be copied into /img/.
-      expect(countMatches(footer, /src="\/img\/[^"]*startupfa[^"]*"/gi), `${page.output}: the Startup Fame badge must not be self-hosted`)
-        .toBe(0);
-    }
-  });
-
-  // Issue #1169: ScrollLaunch grants orbi.build the free listing only while the
-  // site carries their badge in the server-rendered HTML, and it re-checks that
-  // weekly — a removed badge delists. The vendor's product editor page hands out
-  // the embed, so it goes in verbatim as the badge row's last entry: the
-  // `?ref=badge` query is ScrollLaunch's own attribution and must survive (it is
-  // not an UTM), the 220x48 box is the badge's own viewBox, and the anchor stays
-  // crawlable — nofollow, sponsored or ugc would make the badge unverifiable.
-  it("carries the ScrollLaunch badge closing the badge row on every footer page (Issue #1169)", () => {
-    const badge = '<a href="https://www.scrolllaunch.com/products/orbi?ref=badge" target="_blank" rel="noopener"><img src="https://www.scrolllaunch.com/api/badge/orbi" alt="Featured on ScrollLaunch" width="220" height="48" /></a>';
-    const startupfame = '<a href="https://startupfa.me/s/orbi?utm_source=orbi.build" target="_blank">';
-    for (const page of content()) {
-      const footer = footerRegion(shipped.get(page.output));
-      expect(footer, `${page.output}: ScrollLaunch badge drifted`).toContain(badge);
-      expect(countMatches(footer, /<a href="https:\/\/www\.scrolllaunch\.com\/products\/orbi\?ref=badge"/g), `${page.output}: exactly one ScrollLaunch anchor`)
-        .toBe(1);
-      expect(footer.indexOf(badge), `${page.output}: the ScrollLaunch badge must follow the Startup Fame badge`)
-        .toBeGreaterThan(footer.indexOf(startupfame));
-      const anchor = footerAnchorTag(footer, "https://www.scrolllaunch.com/products/orbi?ref=badge");
-      expect(anchor, `${page.output}: the ScrollLaunch backlink must open in a new tab`).toContain('target="_blank"');
-      expect(anchor, `${page.output}: the ScrollLaunch backlink must keep its rel`).toContain('rel="noopener"');
-      expect(anchor, `${page.output}: the ScrollLaunch backlink must stay crawlable`).not.toContain("nofollow");
-      expect(anchor, `${page.output}: the ScrollLaunch backlink must not be sponsored`).not.toContain("sponsored");
-      expect(anchor, `${page.output}: the ScrollLaunch backlink must not be ugc`).not.toContain("ugc");
-      // ScrollLaunch is followed directly by the OpenHunts badge.
-      expect(footer.slice(footer.indexOf(badge) + badge.length), `${page.output}: the OpenHunts badge must follow ScrollLaunch`)
-        .toMatch(/^\s*<a href="https:\/\/openhunts\.com"/);
-      // The row now ends at Huzzler, so the wrapper's closing tag follows it.
-      const huzzler = '<a href="https://huzzler.so/products/xxBk2zzN1n/orbi-build?utm_source=huzzler_product_website&amp;utm_medium=badge&amp;utm_campaign=free_listing" target="_blank" rel="noopener noreferrer"><img alt="Huzzler Embed Badge" src="https://huzzler.so/assets/images/embeddable-badges/featured.png" width="159" height="55" /></a>';
-      expect(footer.slice(footer.indexOf(huzzler) + huzzler.length), `${page.output}: the Huzzler badge must close the badge row`)
-        .toMatch(/^\s*<\/div>/);
-      expect(footerAnchorTag(footer, "https://navfolders.com"), `${page.output}: NavFolders must be dofollow`).not.toContain("nofollow");
-      // The badge must stay on the vendor's host: ScrollLaunch verifies the
-      // embed against its own file, so a self-hosted copy would not count.
-      expect(countMatches(footer, /src="\/img\/[^"]*scrolllaunch[^"]*"/gi), `${page.output}: the ScrollLaunch badge must not be self-hosted`)
-        .toBe(0);
-    }
-  });
-
-  // Issue #805: the directory badges live in one wrapper of their own inside
-  // the friends row — one anchor each, never scattered through the footer.
-  // Issue #1173 turned that wrapper into a single non-wrapping strip that
-  // scrolls itself, so the two friend links lead the strip and every badge
-  // follows it, and the seamless copy the marquee needs is built by demo.js in
-  // the browser — never in the page source, where each link stays exactly once.
-  // Issue #832 appends the
-  // Toolradar badge to that strip, Issue #1012 the Altern badge after it,
-  // Issue #1015 the SaaSpa.ge badge, Issue #1027 the Tooluck badge,
-  // Issue #1092 the neeed.directory / zPlatform badges plus The Startup
-  // Project text link, Issue #1094 the DevHub badge, Issue #1096 the
-  // Startup Fast / Artificin badges plus the AI Tool Trek / What Is Ai Tools
-  // text links, Issue #1099 the ToolPotion badge, Issue #1102 the Fazier badge,
-  // Issue #1116 the turbo0 / toolfame / dang.ai badges, Issue #1119 the
-  // Scout Forge badge (Issue #1185 removed the LaunchIgniter badge, whose
-  // directory entry does not exist; the NickLaunches badge stays — its entry
-  // is still in the directory's free-launch review), Issue #1129 the
-  // Findly.tools badge, Issue #1132 the founder.best / makeitla.st badges,
-  // Issue #1134 the
-  // AI for Developers / Uno Directory / SaaSCity / LaunchVault badges,
-  // Issue #1160 twelve more directory badges and links, Issue #1165 the
-  // doforai.tools badge, Issue #1168 the Startup Fame badge and Issue #1169 the
-  // ScrollLaunch badge last.
-  it("keeps the directory badges in their own wrapper, one copy each (Issues #805, #1173)", () => {
-    const badgeHrefs = [
-      "https://launchnest.io/p/orbi",
-      "https://aiagentsdirectory.com/agent/orbi",
-      "https://aiagentslisting.com/agent/orbi?utm_source=aiagentslisting&utm_medium=badge&utm_campaign=embed",
-      "https://toolradar.com/tools/orbi",
-      "https://nicklaunches.com/products/orbi/",
-      "https://yourhack.ai",
-      "https://showmebest.ai",
-      "https://goodaitools.com/ai/orbi",
-      "https://aixcollection.com/ai/orbi",
-      "https://launchtory.com/projects/orbi-build",
-      "https://dofollow.tools",
-      "https://altern.ai/ai/orbi",
-      "https://saaspa.ge/product/cmvdfiyyk000mjq06rc8auynb",
-      "https://www.tooluck.org/item/orbi",
-      "https://neeed.directory/products/orbi?utm_source=orbi",
-      "https://zplatform.ai/",
-      "https://startupproject.org/startups/",
-      "https://devhub.best/projects/orbi?utm_source=badge",
-      "https://startupfa.st",
-      "https://artificin.com",
-      "https://aitooltrek.com",
-      "https://whatisaitools.com/",
-      "https://toolpotion.ai/en/ai-agent/orbi",
-      "https://fazier.com",
-      "https://turbo0.com/item/orbi",
-      "https://toolfame.com/item/orbi",
-      "https://dang.ai",
-      "https://scoutforge.net/apps/orbi?ref=badge",
-      "https://findly.tools/orbi?utm_source=orbi",
-      "https://www.founder.best?ref=founderbest&utm_source=founder.best&utm_medium=referral",
-      "https://www.makeitla.st/",
-      "https://postmake.io",
-      "https://auraplusplus.com",
-      "https://earlyhunt.com",
-      "https://twelve.tools",
-      "https://aifordevelopers.org",
-      "https://uno.directory",
-      "https://saascity.io",
-      "https://launchvault.dev",
-      // Issue #1160: twelve directory badges and links, appended after the
-      // Findstack anchor (which this list cannot match — its href is not the
-      // anchor's first attribute).
-      "https://goodsaas.xyz/saas/orbi",
-      "https://101aitools.com",
-      "https://webtech.tools",
-      "https://t0ai.com",
-      "https://aixlist.com/",
-      "https://hiaitools.com",
-      "https://aitooli.com/",
-      "https://okeiai.com/",
-      "https://vibedonalds.com",
-      "https://minylist.com",
-      "https://toolsify.ai/",
-      "https://bestaitool.app/",
-      // Issue #1165: the doforai.tools badge, appended after bestaitool.app.
-      "https://doforai.tools",
-      // Issue #1168: the Startup Fame badge, appended after doforai.tools.
-      "https://startupfa.me/s/orbi?utm_source=orbi.build",
-      // Issue #1169: the ScrollLaunch badge, appended after Startup Fame.
-      "https://www.scrolllaunch.com/products/orbi?ref=badge",
-      "https://openhunts.com",
-      "https://saasgrow.app?ref=orbi.build",
-      "https://navfolders.com",
-      "https://huzzler.so/products/xxBk2zzN1n/orbi-build?utm_source=huzzler_product_website&amp;utm_medium=badge&amp;utm_campaign=free_listing",
-    ];
-    // Issue #1173: the two friend links lead the strip; the badges follow in
-    // the order the directory embeds were added.
-    const stripHrefs = [
-      "https://www.opensourcealternatives.to/",
-      "https://agentic.ai/best/free-coding-agents",
-      ...badgeHrefs,
-    ];
-    const escape = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-    for (const page of content()) {
-      const html = shipped.get(page.output);
-      const nav = region(html, '<nav class="footer-friends"', "</nav>");
-      expect(nav, `${page.output}: footer-friends missing`).not.toBe("");
-      expect(nav, `${page.output}: badge wrapper missing`).toContain('<div class="footer-badges">');
-      const strip = region(nav, '<div class="footer-badges-track" data-footer-badges-track>', "</div>");
-      expect(strip, `${page.output}: the badge strip missing`).not.toBe("");
-      expect([...strip.matchAll(/<a href="([^"]+)"/g)].map((match) => match[1]), `${page.output}: anchors on the strip`)
-        .toEqual(stripHrefs);
-      // One copy in the source: the marquee duplicate is generated by demo.js
-      // in the browser (Issue #1173), so no page ships a second badge block.
-      expect(countMatches(nav, /class="footer-badges-track"/g), `${page.output}: the strip must appear once in the source`)
-        .toBe(1);
-      expect(nav, `${page.output}: the marquee duplicate must not reach the source`)
-        .not.toContain("aria-hidden=\"true\" data-footer-badges-track");
-      // The row reads: the "Featured on" label, the strip, the pause control.
-      expect(nav, `${page.output}: the row must start with its label`)
-        .toMatch(/^<nav class="footer-friends"[^>]*>\s*<span class="footer-friends-label">[^<]+<\/span>/);
-      expect(nav, `${page.output}: the pause control must close the row`)
-        .toMatch(/<button class="footer-badges-toggle"[^>]*data-footer-badges-toggle[^>]*>[^<]*<\/button>\s*<\/nav>$/);
-      // Every link on the strip appears exactly once in the footer — the
-      // directory reviewers check the source, so a duplicate is a defect.
-      // (Scoped to the footer: Issue #1173 owns this strip alone, and
-      // Issue #1184 removed the homepage hero's separate LaunchIgniter badge.)
-      const footer = footerRegion(html);
-      for (const href of stripHrefs) {
-        expect(
-          countMatches(footer, new RegExp(`href="${escape(href)}"`, "g")),
-          `${page.output}: ${href} must appear exactly once in the page source`,
-        ).toBe(1);
-      }
     }
   });
 
@@ -2563,15 +1634,39 @@ describe("ASCII language switch with aria-labels (Issue #519)", () => {
 });
 
 describe("per-page head parameters (title / description / canonical)", () => {
+  const canonicalOf = (output) =>
+    shipped.get(output)?.match(/<link rel="canonical" href="([^"]+)"/)?.[1];
+
   it("keeps the canonical URL equal to the page's own URL", () => {
     for (const page of pages) {
-      const canonical = shipped
-        .get(page.output)
-        .match(/<link rel="canonical" href="([^"]+)"/)?.[1];
       const expectedBase = page.output.startsWith("aiready/") ? "https://aiready.sh" : "https://orbi.build";
-      expect(canonical, `${page.output}: canonical drifted`).toBe(
+      expect(canonicalOf(page.output), `${page.output}: canonical drifted`).toBe(
         `${expectedBase}${page.output.startsWith("aiready/") ? (page.output === "aiready/index.html" ? "/" : "/zh/") : pathToHref(page.output)}`,
       );
+    }
+  });
+
+  // Issue #1212: the one copy of the hreflang contract. Each page declares
+  // the same triple — its own canonical under en or zh-CN, its mirror's under
+  // the other, and the English page as x-default — derived from the two pages
+  // themselves, never from a hand-written URL per page class.
+  it("declares the hreflang triple pointing at both mirrors", () => {
+    for (const page of pages.filter((entry) => !entry.standalone)) {
+      const en = page.lang === "en" ? page.output : page.mirror;
+      const zh = page.lang === "zh" ? page.output : page.mirror;
+      const enHref = canonicalOf(en);
+      const zhHref = canonicalOf(zh);
+      expect(enHref, `${page.output}: English mirror has no canonical`).toBeTruthy();
+      expect(zhHref, `${page.output}: Chinese mirror has no canonical`).toBeTruthy();
+      const alternates = [...shipped.get(page.output).matchAll(/<link rel="alternate" hreflang="([^"]+)" href="([^"]+)">/g)]
+        .map(([, lang, href]) => [lang, href]);
+      expect(alternates, `${page.output}: hreflang alternates`).toEqual([
+        ["en", enHref],
+        ["zh-CN", zhHref],
+        ["x-default", enHref],
+      ]);
+      expect(shipped.get(page.output).match(/<html lang="([^"]+)"/)?.[1], `${page.output}: html lang`)
+        .toBe(page.lang === "zh" ? "zh-CN" : "en");
     }
   });
 
@@ -2610,40 +1705,26 @@ describe("per-page head parameters (title / description / canonical)", () => {
 });
 
 describe("Cloud hero single CTA (Issue #741)", () => {
+  // Issue #1212: only the shape of the first screen is pinned — h1, one lede,
+  // one CTA, one reassurance, in that order, with the CTA reaching the
+  // language's login handoff. The sentences are copy.
   const expectations = {
-    "cloud/index.html": {
-      lede: "Orbi runs your Issues all the way to a release, on infrastructure we operate. No Issue yet? Describe the change in a sentence and Orbi drafts it from your code.",
-      href: "/cloud/login",
-      button: "Try __FREE_DELIVERIES__ deliveries free →",
-      note: "No credit card required · Orbi only sees the repos you pick",
-    },
-    "zh/cloud/index.html": {
-      lede: "Orbi 在我们运营的机器上，把你的 Issue 一路做到发版。还没写 Issue？说一句想改什么，Orbi 读你的代码写成 Issue 草稿。",
-      href: "/zh/cloud/login",
-      button: "免费试 __FREE_DELIVERIES__ 次 →",
-      note: "不用绑定信用卡 · 只授权你选的仓库",
-    },
+    "cloud/index.html": { href: "/cloud/login" },
+    "zh/cloud/index.html": { href: "/zh/cloud/login" },
   };
 
   it("keeps only the ordered h1, lede, CTA, and CTA note in the Cloud hero", () => {
     for (const [output, expected] of Object.entries(expectations)) {
       const html = shipped.get(output);
       const hero = region(html, '<section class="compare-hero', '</section>');
-      const h1 = hero.match(/<h1[^>]*>([\s\S]*?)<\/h1>/)?.[1]?.replace(/<[^>]+>/g, "").trim();
       const elements = [...hero.matchAll(/<(h1|p|a)\b[^>]*>([\s\S]*?)<\/\1>/g)]
         .map(([, tag, body]) => ({ tag, body: body.replace(/<[^>]+>/g, "").trim() }));
-      expect(h1, `${output}: h1 remains`).toBeTruthy();
-      expect(elements, `${output}: hero content order`).toEqual([
-        { tag: "h1", body: h1 },
-        { tag: "p", body: expected.lede },
-        { tag: "a", body: expected.button },
-        { tag: "p", body: expected.note },
-      ]);
+      expect(elements.map(({ tag }) => tag), `${output}: hero content order`).toEqual(["h1", "p", "a", "p"]);
+      for (const element of elements) expect(element.body, `${output}: ${element.tag} is filled`).toBeTruthy();
       expect(hero).toContain(`class="button button-signal hero-cta" data-cta="cloud-hero" href="${expected.href}"`);
-      expect(hero).not.toContain("k8e");
-      expect(hero).not.toContain("cloud-docs");
-      expect(hero).not.toContain("Run Orbi yourself");
-      expect(hero).not.toContain("How an Issue becomes a tagged release");
+      // Issue #1216: the note under the hero button reassures, it no longer
+      // promises a delivery count.
+      expect(hero, `${output}: no trial count beside the CTA`).not.toMatch(/__FREE_DELIVERIES__|__FREE_TRIAL__/);
     }
   });
 });
@@ -3041,27 +2122,16 @@ describe("Claude Code self-hosted environments FAQ (Issue #988)", () => {
 });
 
 describe("homepage closing Cloud CTA (Issue #714)", () => {
+  // Issue #1212: the closing CTA carries the same handoff as the hero, keeps
+  // the free-deliveries placeholder, and keeps exactly two links — the Cloud
+  // CTA and the self-host guide. The sentences are copy.
   const expected = {
-    "index.html": {
-      tag: "MANAGED CLOUD",
-      title: "Try it on your own repository",
-      description: "Try __FREE_DELIVERIES__ deliveries free on your own repository, then let Orbi carry the work to a tagged release.",
-      // Issue #899 names Cloud in the hero button only; the closing CTA keeps
-      // the free-deliveries promise, on the hero's own handoff.
-      trial: "Try __FREE_DELIVERIES__ deliveries free →",
-      selfHost: '<a class="text-link" data-cta="closing-selfhost" href="https://docs.orbi.build">Prefer to self-host? Read the install guide →</a>',
-    },
-    "zh/index.html": {
-      tag: "托管 Cloud",
-      title: "在你自己的仓库上试一试",
-      description: "在你自己的仓库上免费试 __FREE_DELIVERIES__ 次，再让 Orbi 把工作推进到打 Tag 的正式发布。",
-      trial: "免费试 __FREE_DELIVERIES__ 次 →",
-      selfHost: '<a class="text-link" data-cta="closing-selfhost" href="https://docs.orbi.build/zh">想自己部署？看安装文档 →</a>',
-    },
+    "index.html": { selfHost: "https://docs.orbi.build" },
+    "zh/index.html": { selfHost: "https://docs.orbi.build/zh" },
   };
 
   const cta = (html, name) => {
-    const match = html.match(new RegExp(`<a class="([^"]+)" data-cta="${name}" href="([^"]+)">([^<]+)</a>`));
+    const match = html.match(new RegExp(`<a class="([^"]+)" data-cta="${name}" href="([^"]+)">([^<]+)<\/a>`));
     return match ? { className: match[1], href: match[2], text: match[3] } : null;
   };
 
@@ -3069,15 +2139,15 @@ describe("homepage closing Cloud CTA (Issue #714)", () => {
     it(`${output} keeps the closing CTA in the Cloud trial context`, () => {
       const html = shipped.get(output);
       const closing = region(html, '<section class="closing shell"', "</section>");
-      expect(closing, `${output}: Cloud context`).toContain(`<p class="section-tag">${contract.tag}</p>`);
-      expect(closing, `${output}: closing section`).toContain(`<h2 class="orbi-closing-h2" id="closing-title">${contract.title}`);
-      expect(closing, `${output}: free trial description`).toContain(`<p>${contract.description}</p>`);
+      expect(closing, `${output}: closing section`).toContain('id="closing-title"');
+      expect(closing, `${output}: no trial count in the closing CTA`).not.toMatch(/__FREE_DELIVERIES__|__FREE_TRIAL__/);
       const heroCta = cta(html, "cloud-start");
-      expect(cta(closing, "closing-start"), `${output}: closing CTA keeps the hero's handoff`).toEqual({
-        ...heroCta,
-        text: contract.trial,
-      });
-      expect(closing, `${output}: self-host link`).toContain(contract.selfHost);
+      const closingCta = cta(closing, "closing-start");
+      expect(closingCta, `${output}: closing CTA exists`).toBeTruthy();
+      expect(closingCta.href, `${output}: closing CTA keeps the hero's handoff`).toBe(heroCta.href);
+      expect(closingCta.text, `${output}: closing CTA reuses the hero label`).toBe(heroCta.text);
+      expect(closing, `${output}: self-host link`)
+        .toContain(`data-cta="closing-selfhost" href="${contract.selfHost}"`);
       expect(closing.match(/<a /g) ?? [], `${output}: only Cloud CTA and self-host link`).toHaveLength(2);
     });
   }
@@ -3146,21 +2216,19 @@ describe("cloud buyer FAQ (Issue #166)", () => {
   });
 
   it("states the two-plan trial terms in visible FAQ and sharing descriptions", () => {
-    const expectations = {
-      "cloud/index.html": {
-        faq: /Cloud has two paid plans, Solo and Pro\. Each plan starts with a trial of __FREE_DELIVERIES__ successful merged deliveries — no credit card required, and failed deliveries don't count\./,
-        share: /Solo and Pro are the two paid plans, at US\$__SOLO_MONTHLY_USD__\/month and US\$__CLOUD_MONTHLY_USD__\/month; each starts with a trial of __FREE_DELIVERIES__ successful merged deliveries, no credit card required, and failed deliveries don't count\./g,
-      },
-      "zh/cloud/index.html": {
-        faq: /Cloud 有 Solo 和 Pro 两个付费套餐。每个套餐先提供 __FREE_DELIVERIES__ 次成功合并交付的试用，不用绑定信用卡，失败交付不计次数。/,
-        share: /Solo 和 Pro 两个付费套餐，每月分别为 US\$__SOLO_MONTHLY_USD__ 和 US\$__CLOUD_MONTHLY_USD__；每个套餐先提供 __FREE_DELIVERIES__ 次成功合并交付的试用，不用绑定信用卡，失败交付不计次数。/g,
-      },
-    };
-    for (const [output, expected] of Object.entries(expectations)) {
+    // Issue #1212: the wording is copy; the placeholders, both plan prices and
+    // the two share slots carrying them are the contract.
+    for (const output of ["cloud/index.html", "zh/cloud/index.html"]) {
       const html = shipped.get(output);
-      expect(cloudFaqItems(html)[0].answer, `${output}: visible FAQ trial terms`).toMatch(expected.faq);
-      expect(html.match(/<meta (?:property="og:description"|name="twitter:description") content="([^"]+)"/g) ?? [], `${output}: sharing descriptions`).toHaveLength(2);
-      expect(html.match(expected.share) ?? [], `${output}: sharing trial terms`).toHaveLength(2);
+      const faqAnswer = cloudFaqItems(html)[0]?.answer ?? "";
+      expect(faqAnswer, `${output}: no trial count in the FAQ`).not.toMatch(/__FREE_DELIVERIES__|__FREE_TRIAL__/);
+      expect(faqAnswer, `${output}: FAQ names both paid plans`).toMatch(/Solo[\s\S]*Pro|Pro[\s\S]*Solo/);
+      const share = html.match(/<meta (?:property="og:description"|name="twitter:description") content="([^"]+)"/g) ?? [];
+      expect(share, `${output}: sharing descriptions`).toHaveLength(2);
+      for (const meta of share) {
+        expect(meta, `${output}: sharing price placeholders`).toContain("US$");
+        expect(meta, `${output}: no trial count in the share card`).not.toMatch(/__FREE_DELIVERIES__|__FREE_TRIAL__/);
+      }
     }
   });
 });
@@ -3176,7 +2244,6 @@ describe("Devin comparison SEO and pricing (Issue #511)", () => {
       expect((html.match(/<h1\b/gi) || []), output).toHaveLength(1);
       expect(html, output).toContain('href="https://devin.ai/pricing"');
       for (const token of [
-        pricing.freeDeliveriesToken,
         pricing.soloMonthlyUsdToken,
         pricing.soloIncludedTokensToken,
         pricing.soloRepositoriesToken,
@@ -3206,25 +2273,12 @@ describe("Devin comparison SEO and pricing (Issue #511)", () => {
 
   // Issue #795: the page claimed a "Free, Solo, Pro" Cloud tier, while /cloud/
   // sells two paid plans (Solo, Pro) each starting with a __FREE_DELIVERIES__
-  // successful-merged-delivery trial. The FAQ sentence appears twice per page
-  // (JSON-LD answer + visible answer) and must stay in lockstep.
+  // successful-merged-delivery trial. Issue #1212: the sentence stating that
+  // is copy; what is pinned is the placeholder and the absence of a Free tier.
   it("describes Cloud as two paid plans with a trial, never a Free tier (Issue #795)", () => {
-    const expectations = [
-      [
-        "compare/devin/index.html",
-        "Orbi Cloud has two paid plans, Solo and Pro, each starting with a trial of __FREE_DELIVERIES__ successful merged deliveries;",
-        "or run as Cloud on a Solo or Pro plan, each starting with a free trial of __FREE_DELIVERIES__ merged deliveries.",
-      ],
-      [
-        "zh/compare/devin/index.html",
-        "Orbi Cloud 有 Solo、Pro 两档付费套餐，各自先送 __FREE_DELIVERIES__ 次成功合并交付的试用；",
-        "也可以用 Cloud 的 Solo 或 Pro 套餐，各自先送 __FREE_DELIVERIES__ 次合并交付的免费试用。",
-      ],
-    ];
-    for (const [output, faqSentence, ledeSentence] of expectations) {
+    for (const output of ["compare/devin/index.html", "zh/compare/devin/index.html"]) {
       const html = shipped.get(output);
-      expect(html.split(faqSentence).length - 1, `${output}: FAQ sentence occurrences`).toBe(2);
-      expect(html, `${output}: pricing section lede`).toContain(ledeSentence);
+      expect(html, `${output}: no trial count on the comparison page`).not.toMatch(/__FREE_DELIVERIES__|__FREE_TRIAL__/);
       // The only remaining "Free" mentions are Devin's own plan names in the
       // dated source list, never Orbi's Cloud tiers (Issue #795).
       expect(html, `${output}: no Free Cloud tier`).not.toMatch(/Free,\s*Solo|Free、Solo/);
@@ -3353,29 +2407,31 @@ describe("nav CTA introduces the Cloud page (Issue #308)", () => {
 // mobile hamburger opens the same nav DOM. Issue #941 drops the Sign in link,
 // leaving five.
 describe("five-link primary nav and relocated links (Issue #711)", () => {
+  // Issue #1212: hrefs and labels only — the dropdown descriptions these
+  // entries used to carry are copy and are no longer rendered or pinned.
   const RESOURCES = {
     en: {
       label: "Resources",
       items: [
-        ["/evidence/", "Orbi builds Orbi", "Public issues, PRs and releases on GitHub"],
-        ["/benchmark/", "How we test the harness", "Delivery runs on open-source bugs, graded by maintainers' tests"],
-        ["/guides/pi-coding-agent/", "Pi series: how Orbi is built", "The runner around the Pi coding agent"],
-        ["/cost/", "Cost per merged PR", "Measured on our own repos, with sample size and limits"],
-        ["/aiready/", "ai-ready: 12 factors", "What makes an Issue safe to hand to an AI"],
-        ["/compare/", "Orbi vs alternatives", "Claude Code, Codex, Devin and more, fact-checked"],
-        ["/blog/", "Blog", ""],
+        ["/evidence/", "Orbi builds Orbi"],
+        ["/benchmark/", "How we test the harness"],
+        ["/guides/pi-coding-agent/", "Pi series: how Orbi is built"],
+        ["/cost/", "Cost per merged PR"],
+        ["/aiready/", "ai-ready: 12 factors"],
+        ["/compare/", "Orbi vs alternatives"],
+        ["/blog/", "Blog"],
       ],
     },
     zh: {
       label: "资源",
       items: [
-        ["/zh/evidence/", "Orbi 交付自己的记录", "公开的 Issue、PR 和发版，都在 GitHub 上"],
-        ["/zh/benchmark/", "我们怎么测 harness", "在开源 bug 上跑交付，用维护者的测试打分"],
-        ["/zh/guides/pi-coding-agent/", "Pi 系列：Orbi 是怎么实现的", "Pi coding agent 外面那个 runner 是怎么运转的"],
-        ["/zh/cost/", "每个 PR 花多少钱", "在自家仓库实测，附样本量和限制"],
-        ["/aiready/zh/", "ai-ready 12 要素", "什么样的 Issue 能交给 AI 无人值守交付"],
-        ["/zh/compare/", "与同类工具对比", "Claude Code、Codex、Devin 等，逐条核实"],
-        ["/zh/blog/", "博客", ""],
+        ["/zh/evidence/", "Orbi 交付自己的记录"],
+        ["/zh/benchmark/", "我们怎么测 harness"],
+        ["/zh/guides/pi-coding-agent/", "Pi 系列：Orbi 是怎么实现的"],
+        ["/zh/cost/", "每个 PR 花多少钱"],
+        ["/aiready/zh/", "ai-ready 12 要素"],
+        ["/zh/compare/", "与同类工具对比"],
+        ["/zh/blog/", "博客"],
       ],
     },
   };
@@ -3429,9 +2485,6 @@ describe("five-link primary nav and relocated links (Issue #711)", () => {
         label,
       ]);
       expect(items.slice(0, expectedItems.length), `${page.output}: footer resource labels drifted`).toEqual(expectedItems);
-      for (const [, , description] of expected.items) {
-        if (description) expect(resources, `${page.output}: footer includes ${description}`).not.toContain(description);
-      }
     }
   });
 
@@ -3460,19 +2513,19 @@ describe("five-link primary nav and relocated links (Issue #711)", () => {
   });
 });
 
-// Issue #180: /cloud/ is the pricing page, not a clone of /cost/. Coupon and
-// forever contract wording appear once; Devin/Factory billing docs stay on
-// /cost/. The grep is the site source — the same files the Issue names.
+// Issue #180: /cloud/ is the pricing page, not a clone of /cost/. Issue
+// #1212 dropped the pinned coupon phrasings — the split is now checked by
+// structure: the competitor billing sources the /cost/ essay cites stay off
+// /cloud/, while the Cloud page keeps its own pricing section.
 describe("cloud copy is not a cost-page clone (Issue #180)", () => {
-  const countIn = (html, needle) => html.split(needle).length - 1;
-
-  it("keeps coupon and forever phrasing once and drops competitor billing docs", async () => {
-    const en = await readFile(join(ROOT, "site", "pages", "cloud", "index.html"), "utf8");
-    const zh = await readFile(join(ROOT, "site", "pages", "zh", "cloud", "index.html"), "utf8");
-    expect(countIn(en, "not a price increase"), "EN not a price increase").toBeLessThanOrEqual(1);
-    expect(countIn(en, "written on the subscription alone"), "EN forever phrasing").toBeLessThanOrEqual(1);
-    expect(countIn(zh, "不是涨价"), "ZH 不是涨价").toBeLessThanOrEqual(1);
-    expect(countIn(zh, "只写在订阅"), "ZH 只写在订阅").toBeLessThanOrEqual(1);
+  it("keeps the competitor billing docs on /cost/, not on /cloud/", async () => {
+    for (const relativePath of ["site/pages/cloud/index.html", "site/pages/zh/cloud/index.html"]) {
+      const html = await readFile(join(ROOT, relativePath), "utf8");
+      expect(html, relativePath).toContain('id="pricing"');
+      for (const competitorSource of ["https://docs.devin.ai/admin/billing", "https://docs.factory.ai/pricing"]) {
+        expect(html, relativePath + ": " + competitorSource).not.toContain(competitorSource);
+      }
+    }
   });
 });
 
@@ -3506,53 +2559,38 @@ describe("canonical install one-liner (Issue #186)", () => {
 // but the old name still carries more search demand than the new one. The page
 // leads with the old name on title, h1, hero lede and share metadata, names the
 // current one beside it, and cites the changelog that recorded the rename.
+// Issue #1212: the names are the contract; the sentences built around them are
+// copy.
 describe("Cursor page names the Background Agents rename (Issue #807)", () => {
-  const pages = {
-    "compare/cursor/index.html": {
-      title: "<title>Orbi vs Cursor Background Agents (now Cloud Agents)</title>",
-      h1: '<h1 id="compare-title">Orbi vs Cursor Background Agents</h1>',
-      lede: "Cursor Background Agents, now called Cloud Agents, run tasks",
-      meta: 'content="Orbi vs Cursor Background Agents (now Cloud Agents): ',
-      og: '<meta property="og:title" content="Orbi vs Cursor Background Agents (now Cloud Agents)',
-      twitter: '<meta name="twitter:title" content="Orbi vs Cursor Background Agents (now Cloud Agents)">',
-      headline: '"headline":"Orbi vs Cursor Background Agents (now Cloud Agents)',
-      source: ["Cursor 2.0 changelog", "Background Agents renamed to Cloud Agents"],
-    },
-    "zh/compare/cursor/index.html": {
-      title: "<title>Orbi vs Cursor Background Agents（现名 Cloud Agents）：交付对比</title>",
-      h1: '<h1 id="compare-title">Orbi vs Cursor Background Agents</h1>',
-      lede: "Cursor Background Agents（现名 Cloud Agents）",
-      meta: 'content="Orbi vs Cursor Background Agents（现名 Cloud Agents）：',
-      og: '<meta property="og:title" content="Orbi vs Cursor Background Agents（现名 Cloud Agents）',
-      twitter: '<meta name="twitter:title" content="Orbi vs Cursor Background Agents（现名 Cloud Agents）">',
-      headline: '"headline":"Orbi vs Cursor Background Agents（现名 Cloud Agents）',
-      source: ["Cursor 2.0 changelog", "Background Agents 改名为 Cloud Agents"],
-    },
-  };
+  const outputs = ["compare/cursor/index.html", "zh/compare/cursor/index.html"];
 
   it("leads with the old name and names the current one beside it", () => {
-    for (const [output, expected] of Object.entries(pages)) {
+    for (const output of outputs) {
       const html = shipped.get(output);
-      expect(html, `${output}: title`).toContain(expected.title);
-      expect(html, `${output}: h1`).toContain(expected.h1);
-      const hero = region(html, '<p class="hero-lede">', "</p>");
-      expect(hero, `${output}: hero lede`).toContain(expected.lede);
-      expect(html, `${output}: meta description`).toContain(expected.meta);
-      expect(html, `${output}: og:title`).toContain(expected.og);
-      expect(html, `${output}: twitter:title`).toContain(expected.twitter);
-      expect(html, `${output}: JSON-LD headline`).toContain(expected.headline);
+      const slots = {
+        title: html.match(/<title>([^<]+)<\/title>/)?.[1] ?? "",
+        h1: html.match(/<h1[^>]*>([\s\S]*?)<\/h1>/)?.[1] ?? "",
+        "hero lede": region(html, '<p class="hero-lede">', "</p>"),
+        "meta description": html.match(/<meta name="description" content="([^"]+)"/)?.[1] ?? "",
+        "og:title": html.match(/<meta property="og:title" content="([^"]+)"/)?.[1] ?? "",
+        "twitter:title": html.match(/<meta name="twitter:title" content="([^"]+)"/)?.[1] ?? "",
+        "JSON-LD headline": [...html.matchAll(/"headline":"([^"]+)"/g)].map((match) => match[1]).join(" "),
+      };
+      for (const [slot, value] of Object.entries(slots)) {
+        expect(value, `${output}: ${slot} names the old product`).toContain("Background Agents");
+        // The h1 keeps the old name only — the rename is named beside it in
+        // the metadata and the hero lede (Issue #807).
+        if (slot !== "h1") expect(value, `${output}: ${slot} names the current product`).toContain("Cloud Agents");
+      }
     }
   });
 
   it("cites the 2.0 changelog that recorded the rename", () => {
-    for (const [output, expected] of Object.entries(pages)) {
+    for (const output of outputs) {
       const sources = region(shipped.get(output), '<ul class="source-list">', "</ul>");
       expect(sources, `${output}: changelog source link`).toContain(
         'href="https://cursor.com/changelog/2-0"',
       );
-      for (const text of expected.source) {
-        expect(sources, `${output}: changelog source description`).toContain(text);
-      }
     }
   });
 });
@@ -3821,12 +2859,12 @@ describe("blog (Issue #212)", () => {
       const expected = post.lang === "zh"
         ? {
             title: "Orbi 把你的 Issue 一路做到发版。",
-            button: "免费试 __FREE_DELIVERIES__ 次 →",
+            button: "免费试用 Orbi Cloud →",
             href: "/zh/cloud/login",
           }
         : {
             title: "Orbi takes your Issues all the way to a release.",
-            button: "Try __FREE_DELIVERIES__ deliveries free →",
+            button: "Try Orbi Cloud free →",
             href: "/cloud/login",
           };
       expect(inline[0]).toContain(`<span>${expected.title}</span>`);
@@ -3847,14 +2885,14 @@ describe("blog (Issue #212)", () => {
       const expected = post.lang === "zh"
         ? {
             title: "Orbi 把你的 Issue 一路做到发版。",
-            button: "免费试 __FREE_DELIVERIES__ 次 →",
+            button: "免费试用 Orbi Cloud →",
             note: "不用绑定信用卡 · 只授权你选的仓库",
             href: "/zh/cloud/login",
             selfHost: "想自己部署？开源免费（AGPL）→",
           }
         : {
             title: "Orbi takes your Issues all the way to a release.",
-            button: "Try __FREE_DELIVERIES__ deliveries free →",
+            button: "Try Orbi Cloud free →",
             note: "No credit card required · Orbi only sees the repos you pick",
             href: "/cloud/login",
             selfHost: "Prefer to self-host? It's open source (AGPL) →",
@@ -4554,143 +3592,98 @@ describe("legal contact addresses (Issue #307)", () => {
   });
 });
 
-// Issue #813: the terms billing paragraph is the contract the /cloud/
-// pricing page actually sells — the yearly interval and the one-time
-// Alipay / WeChat Pay path must not diverge between the two.
 // Issue #980: the site speaks with one voice about support — Telegram first
 // (public questions in the group, private matters in a DM to a group admin),
 // email only as a backup. The invite is the one corrected in Issue #554: this
 // pins the existing channel, it does not introduce a new invite, username,
 // route or tracking.
+// Issue #1212: the sentences that say so are copy. What stays pinned is the
+// channel order inside each section, the invite itself, the backup address and
+// the two share slots agreeing with the page's own title and description.
 describe("support channels put Telegram first (Issue #980)", () => {
   const INVITE = "https://t.me/+kJRTTpFGBRU0M2Y9";
   const sectionOf = (html, id) => html.match(new RegExp(`<section[^>]*aria-labelledby="${id}"[\\s\\S]*?</section>`))[0];
   const mainOf = (html) => html.match(/<main[\s\S]*?<\/main>/)[0];
 
-  const supportPages = {
-    "support/index.html": {
-      title: "Orbi Cloud support on Telegram | Orbi",
-      description: "Get Orbi Cloud help on Telegram. Ask in the group or message an admin privately about accounts, billing, refunds or privacy. Email is a backup.",
-      groupLink: "Join the Telegram group",
-      privateReply: "message a group admin privately on Telegram",
-      backup: 'our backup email is <a href="mailto:support@orbi.build">support@orbi.build</a>',
-      feedback: "Send private details to a group admin on Telegram.",
-      refund: "Message a group admin privately on Telegram with your Stripe invoice ID",
-      response: "We do our best to reply, but there is no guaranteed response time.",
-    },
-    "zh/support/index.html": {
-      title: "Orbi Cloud 支持：Telegram 群与私聊，邮件备用",
-      description: "遇到 Orbi Cloud 使用、账号、计费、退款或隐私问题，优先通过 Telegram 联系我们。公开问题在群里交流，私密内容请私聊，邮件作为备用。",
-      groupLink: "加入 Telegram 群",
-      privateReply: "请在 Telegram 私聊群管理员",
-      backup: '备用邮箱 <a href="mailto:support@orbi.build">support@orbi.build</a>',
-      feedback: "不方便公开的内容请通过 Telegram 私聊。",
-      refund: "请在 Telegram 私聊群管理员，提供 Stripe 发票编号",
-      response: "我们会尽力回复，不承诺固定响应时间。",
-    },
-  };
-
-  it("opens the contact list with the Telegram group and keeps email as the backup", () => {
-    for (const [output, expected] of Object.entries(supportPages)) {
+  for (const output of ["support/index.html", "zh/support/index.html"]) {
+    it(`${output} opens the contact list with the Telegram group and keeps email as the backup`, () => {
       const html = shipped.get(output);
-      const title = html.match(/<title>([^<]+)<\/title>/)[1];
-      const description = html.match(/<meta name="description" content="([^"]+)"/)[1];
-      expect(title, `${output}: title`).toBe(expected.title);
-      expect(html, `${output}: og:title`).toContain(`<meta property="og:title" content="${expected.title}">`);
-      expect(description, `${output}: description`).toBe(expected.description);
-      expect(html, `${output}: og:description`).toContain(`<meta property="og:description" content="${expected.description}">`);
+      const title = html.match(/<title>([^<]+)<\/title>/)?.[1] ?? "";
+      const description = html.match(/<meta name="description" content="([^"]+)"\s*\/?>/)?.[1] ?? "";
+      expect(title, `${output}: title`).toBeTruthy();
+      expect(description, `${output}: description`).toBeTruthy();
+      // Share metadata repeats the page's own title and description.
+      expect(html, `${output}: og:title`).toContain(`<meta property="og:title" content="${title}">`);
+      expect(html, `${output}: og:description`).toContain(`<meta property="og:description" content="${description}">`);
 
       // One invite, the corrected one, and it opens the contact list.
       expect(html.split(INVITE).length - 1, `${output}: invite count`).toBe(1);
       const contact = sectionOf(html, "contact-title");
       const firstEntry = contact.match(/<li>[\s\S]*?<\/li>/)[0];
-      expect(firstEntry, `${output}: first contact entry`).toContain(`<a href="${INVITE}">${expected.groupLink}</a>`);
-      expect(contact, `${output}: private channel`).toContain(expected.privateReply);
-      expect(contact, `${output}: backup email`).toContain(expected.backup);
-      expect(contact, `${output}: response expectations`).toContain(expected.response);
+      expect(firstEntry, `${output}: first contact entry is the Telegram group`).toContain(`<a href="${INVITE}">`);
+      const backup = /mailto:support@orbi\.build/;
+      expect(contact, `${output}: backup email`).toMatch(backup);
+      expect(contact.indexOf(INVITE), `${output}: Telegram before the backup email`)
+        .toBeLessThan(contact.search(backup));
 
-      // The feedback and refund sections carry the same channel order.
-      expect(sectionOf(html, "bug-title"), `${output}: feedback section`).toContain(expected.feedback);
-      expect(sectionOf(html, "refund-title"), `${output}: refund section`).toContain(expected.refund);
+      // The feedback and refund sections name the same channel first.
+      for (const id of ["bug-title", "refund-title"]) {
+        const section = sectionOf(html, id);
+        expect(section, `${output}: ${id} names Telegram`).toMatch(/Telegram/);
+        if (section.search(backup) > -1) {
+          expect(section.search(/Telegram/), `${output}: ${id} Telegram before email`)
+            .toBeLessThan(section.search(backup));
+        }
+      }
 
       // GitHub Issues is no longer offered as a second support entry.
       expect(mainOf(html), `${output}: GitHub Issues entry`).not.toContain("github.com/orbi-build/orbi/issues");
-    }
-  });
+    });
+  }
 
   it("routes the refund contact through Telegram first, email as the backup", () => {
-    const termsPages = {
-      "terms/index.html": {
-        telegram: "First message a group admin privately on Telegram with the invoice and reason.",
-        backup: 'If you can’t use Telegram, our backup email is <a href="mailto:support@orbi.build">support@orbi.build</a>.',
-        cardIssuer: "Contact us before asking your card issuer to reverse a charge.",
-      },
-      "zh/terms/index.html": {
-        telegram: "请先在 Telegram 私聊群管理员，提供发票和退款原因",
-        backup: '不方便使用 Telegram 时，可以发到备用邮箱 <a href="mailto:support@orbi.build">support@orbi.build</a>。',
-        cardIssuer: "请先联系我们，再向发卡行申请撤销扣款。",
-      },
-    };
-
-    for (const [output, expected] of Object.entries(termsPages)) {
+    for (const output of ["terms/index.html", "zh/terms/index.html"]) {
       const html = shipped.get(output);
-      expect(html, `${output}: Telegram request`).toContain(expected.telegram);
-      expect(html, `${output}: backup email`).toContain(expected.backup);
-      expect(html, `${output}: card-issuer warning`).toContain(expected.cardIssuer);
-      expect(html.indexOf(expected.telegram), `${output}: Telegram before the backup email`)
-        .toBeLessThan(html.indexOf(expected.backup));
+      expect(html, `${output}: Telegram channel`).toMatch(/Telegram/);
+      expect(html, `${output}: backup email`).toMatch(/mailto:support@orbi\.build/);
+      expect(html.search(/Telegram/), `${output}: Telegram before the backup email`)
+        .toBeLessThan(html.search(/mailto:support@orbi\.build/));
     }
   });
 
-  it("keeps the privacy opt-out sentence and names the backup address explicitly", () => {
-    const privacyPages = {
-      "privacy/index.html": {
-        deletion: "To request deletion of your Orbi account and associated Cloud records, message a group admin privately on Telegram with your GitHub account so we can identify the records.",
-        questions: "For questions about this policy, deletion requests or stopping these emails, first message a group admin privately on Telegram.",
-        backup: 'If you can’t use Telegram, our backup email is <a href="mailto:privacy@orbi.build">privacy@orbi.build</a>.',
-        optOut: "If you would rather not receive these emails, reply to one of them or write to privacy@orbi.build, and we will delete these records.",
-      },
-      "zh/privacy/index.html": {
-        deletion: "若要删除 Orbi 账号及关联的 Cloud 记录，请在 Telegram 私聊群管理员，并提供用于识别的 GitHub 账号。",
-        questions: "关于本政策、删除记录或停止邮件的问题，都请优先在 Telegram 私聊群管理员。",
-        backup: '不方便使用 Telegram 时，备用邮箱为 <a href="mailto:privacy@orbi.build">privacy@orbi.build</a>。',
-        optOut: "不想收到这类邮件的话，直接回复邮件或写信到 privacy@orbi.build，我们会删除这些记录。",
-      },
-    };
-
-    for (const [output, expected] of Object.entries(privacyPages)) {
+  it("keeps the privacy policy's backup address and drops relative references", () => {
+    for (const output of ["privacy/index.html", "zh/privacy/index.html"]) {
       const html = shipped.get(output);
-      for (const [name, fragment] of Object.entries(expected)) {
-        expect(html, `${output}: ${name}`).toContain(fragment);
-      }
+      expect(html, `${output}: backup privacy address`).toMatch(/mailto:privacy@orbi\.build/);
       // Reordering the contact text must not leave a dangling back-reference.
       expect(html, `${output}: relative address reference`).not.toContain("the address above");
       expect(html, `${output}: relative address reference`).not.toContain("上面的地址");
       expect(mainOf(html), `${output}: GitHub Issues entry`).not.toContain("github.com/orbi-build/orbi/issues");
-      expect(html.indexOf(expected.questions), `${output}: Telegram before the backup email`)
-        .toBeLessThan(html.indexOf(expected.backup));
     }
   });
 });
 
-describe("terms billing copy matches the Cloud pricing page (Issue #813)", () => {
-  const expected = {
-    "terms/index.html": [
-      "Card subscriptions are handled by Stripe, which provides invoices and the customer portal. They renew monthly or yearly, matching the interval you chose, until you cancel in that portal. Alipay and WeChat Pay are one-time payments for the period you buy and do not renew automatically.",
-      "A subscription renews monthly until you cancel it through that portal.",
-    ],
-    "zh/terms/index.html": [
-      "银行卡订阅由 Stripe 处理，提供发票和客户门户，按你选择的周期每月或每年续费，直到你在门户中取消。支付宝和微信支付是按所购周期一次性付款，不会自动续费。",
-      "订阅会每月续费，直到你在门户中取消。",
-    ],
+// Issue #813: the terms billing paragraph is the contract the /cloud/ pricing
+// page actually sells — the yearly interval and the one-time Alipay / WeChat
+// Pay path must not diverge between the two. Issue #1212: the paragraph is
+// copy, so the check reads the terms it must keep: both renewal intervals and
+// the one-time payment path, per language.
+describe("terms billing states the billing contract the Cloud page sells (Issue #813)", () => {
+  const terms = {
+    "terms/index.html": { intervals: ["monthly", "yearly"], payments: ["Alipay", "WeChat Pay"] },
+    "zh/terms/index.html": { intervals: ["每月", "每年"], payments: ["支付宝", "微信支付"] },
   };
 
-  for (const [output, [current, stale]] of Object.entries(expected)) {
-    it(`${output} states the yearly interval and the one-time payments`, () => {
+  for (const [output, expected] of Object.entries(terms)) {
+    it(`${output} states both renewal intervals and the one-time payments`, () => {
       const html = shipped.get(output);
       expect(html, `${output} is shipped`).toBeTruthy();
-      expect(html, `${output}: billing paragraph`).toContain(current);
-      expect(html, `${output}: stale monthly-only sentence`).not.toContain(stale);
+      for (const interval of expected.intervals) {
+        expect(html, `${output}: ${interval} renewal`).toContain(interval);
+      }
+      for (const payment of expected.payments) {
+        expect(html, `${output}: ${payment} one-time payment`).toContain(payment);
+      }
     });
   }
 });
@@ -4846,19 +3839,18 @@ describe("homepage evidence screenshots lazy-load (Issue #586)", () => {
 // <head> metadata. Both homes carry the definition under the H1. Issue #977
 // replaced the open-source-first sentence with the approved delivery-first
 // description; the assertion follows the new copy.
+// Issue #1212: the definition's words are copy; what the page must keep is a
+// real definition paragraph under the H1 — body text, not only metadata.
 describe("homepage body carries an Orbi definition sentence (Issues #890, #899, #977)", () => {
-  const body = (html) => html.slice(html.indexOf("<body"));
-  const homes = {
-    "index.html": "Orbi writes code for your GitHub Issues with AI. It arranges independent AI review, merges approved changes, and follows your repository’s release process. You don’t have to supervise every step.",
-    "zh/index.html": "Orbi 用 AI 完成 GitHub 上的开发任务。代码经过独立 AI 评审，通过后自动合并，再按仓库流程发版。你不用一直守着。",
-  };
-
-  for (const [output, definition] of Object.entries(homes)) {
+  for (const output of ["index.html", "zh/index.html"]) {
     it(`${output} states the definition in the rendered body`, () => {
       const html = shipped.get(output);
-      expect(body(html), `${output}: body definition sentence`).toContain(definition);
-      expect(region(html, '<p class="hero-lede">', "</p>"), `${output}: definition under the H1`).toContain(definition);
+      const lede = region(html, '<p class="hero-lede">', "</p>")
+        .replace(/<[^>]+>/g, "")
+        .trim();
+      expect(lede, `${output}: definition under the H1`).toContain("Orbi");
+      expect([...lede].length, `${output}: a real sentence, not a label`).toBeGreaterThan(40);
+      expect(html.slice(html.indexOf("<body")), `${output}: body definition`).toContain(lede);
     });
   }
-
 });

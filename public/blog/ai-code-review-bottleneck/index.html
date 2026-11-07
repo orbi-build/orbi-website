@@ -193,7 +193,7 @@
           </ol>
         </details>
 <p>The AI code review bottleneck isn&#39;t where Orbi&#39;s own pipeline loses time: from 14 September 00:00 to 22 October 00:00 2026 (+08), 847 pull requests the Orbi runner opened in Orbi Cloud&#39;s repository merged into <code class="post-code--single">beta</code> in a median 21 minutes (20.6), including CI and every agent review round. Counting every PR that the window&#39;s promotions carried into <code class="post-code--single">main</code>, the production branch, a PR waited a median 5.9 hours on beta after its merge; one in ten waited more than 62 hours, and the longest wait was 168 hours. The slow part was after merge, while finished work waited to be released and promoted. The PR clock starts when a PR opens, so the time an agent spends between taking an Issue and opening the PR isn&#39;t in any of these numbers.</p>
-<p>I&#39;m Larry 🍀 Orbi, the creator of Orbi. Orbi Cloud, the hosted product, is itself built by Orbi: an agent takes each GitHub Issue, opens a pull request into <code class="post-code--single">beta</code>, and a separate agent session reviews it. It merges when review and CI pass.</p><aside class="post-cta-inline"><span>Orbi takes your Issues all the way to a release.</span><a class="button button-signal" data-cta="post-inline-start" href="/cloud/login">Try __FREE_DELIVERIES__ deliveries free →</a></aside>
+<p>I&#39;m Larry 🍀 Orbi, the creator of Orbi. Orbi Cloud, the hosted product, is itself built by Orbi: an agent takes each GitHub Issue, opens a pull request into <code class="post-code--single">beta</code>, and a separate agent session reviews it. It merges when review and CI pass.</p><aside class="post-cta-inline"><span>Orbi takes your Issues all the way to a release.</span><a class="button button-signal" data-cta="post-inline-start" href="/cloud/login">Try Orbi Cloud free →</a></aside>
 <p>Work is grouped into milestones named after versions; when a milestone&#39;s tickets are done, a release ticket tags that version on beta. A promotion then merges the tag into <code class="post-code--single">main</code>, the production branch, and a production deploy follows after a one-click human approval. The orbi-cloud repository is private, so I show aggregate numbers without repository links.</p>
 <h2 id="measuring-the-ai-code-review-bottleneck">Measuring the AI code review bottleneck</h2>
 <p>I counted PRs and promotions merged during the window separately. A promotion is a merge on main&#39;s first-parent line whose second parent is on beta, identified by ancestry, regardless of title. The window had 110; two were version-only releases that brought in no PR, so the table uses the other 108. B looks only at PR merges on beta&#39;s first-parent line, the moment each PR landed there; release and chore commits don&#39;t count. B measures each promotion&#39;s oldest wait, so its denominator is promotions, not PRs. The per-PR row counts every PR that a promotion in the window carried (912): the runner&#39;s and anyone else&#39;s, including a few merged into beta before 14 September. Big batches weigh more there, which is why its median is higher than B&#39;s. The script further down reproduces B, not the per-PR row.</p>
@@ -371,7 +371,7 @@ git log --first-parent --merges --format=&#39;%ct %cI %s&#39; origin/main..origi
 <p>This is one agent-built product, one maintainer, and about five weeks. I use the time of each PR&#39;s merge commit on beta as &quot;landed on beta&quot;; tag clocks use the tagged commit&#39;s committer time. Main&#39;s merge time precedes deployment. The approval-ticket and drift-alert numbers depend on this team&#39;s process.</p>
 <aside class="post-cta">
   <h2>Orbi takes your Issues all the way to a release.</h2>
-  <a class="button button-signal" data-cta="post-start" href="/cloud/login">Try __FREE_DELIVERIES__ deliveries free →</a>
+  <a class="button button-signal" data-cta="post-start" href="/cloud/login">Try Orbi Cloud free →</a>
   <p class="post-cta-note">No credit card required · Orbi only sees the repos you pick</p>
   <a class="post-cta-link" data-cta="post-selfhost" href="https://github.com/orbi-build/orbi">Prefer to self-host? It's open source (AGPL) →</a>
 </aside><h2 id="related">Related</h2>
@@ -448,12 +448,14 @@ git log --first-parent --merges --format=&#39;%ct %cI %s&#39; origin/main..origi
           <img src="https://toolradar.com/api/badge/orbi?type=review&style=light&v=4" alt="Orbi on Toolradar" width="147" height="42" />
         </a>
         <a href="https://nicklaunches.com/products/orbi/" target="_blank" rel="noopener"><img src="https://nicklaunches.com/badges/featured.png" alt="Featured on Nick Launches" width="244" height="56" /></a>
-        <a href="https://yourhack.ai" target="_blank">yourhack.ai</a>
+        <a href="https://yourhack.ai" target="_blank" rel="noopener"><img src="https://yourhack.ai/badge/yourhack.svg" alt="Listed on yourhack.ai" width="131" height="20" /></a>
         <a href="https://showmebest.ai" target="_blank"><img src="https://showmebest.ai/badge/feature-badge-white.webp" alt="Featured on ShowMeBestAI" width="220" height="60"></a>
         <a href="https://goodaitools.com/ai/orbi" target="_blank"><img src="https://goodaitools.com/assets/images/badge.png" alt="Good AI Tools" height="54"></a>
         <a href="https://aixcollection.com/ai/orbi" target="_blank"><img src="https://aixcollection.com/assets/images/badge.png" alt="AI X Collection" height="54"></a>
         <a href="https://launchtory.com/projects/orbi-build">Orbi on Launchtory</a>
         <a href="https://dofollow.tools" target="_blank" rel="noopener noreferrer"><img alt="Featured on Dofollow.Tools" width="200" height="54" src="https://dofollow.tools/badge/badge_dark.svg"></a>
+        <a href="https://gets.tools" target="_blank" rel="noopener noreferrer"><img alt="Featured on Gets.Tools" width="200" height="54" src="https://gets.tools/badge/badge_dark.svg"></a>
+        <a href="https://siftfox.com/tool/orbi" target="_blank"><img src="https://siftfox.com/badges/live-light.svg" alt="Live on SiftFox" width="168" height="56" /></a>
         <a href="https://altern.ai/ai/orbi" target="_blank" rel="noopener">
           <img src="https://data.altern.ai/alternbadge.png" alt="Featured on Altern" width="150" />
         </a>
@@ -512,6 +514,11 @@ git log --first-parent --merges --format=&#39;%ct %cI %s&#39; origin/main..origi
         <a href="https://saasgrow.app?ref=orbi.build" target="_blank" rel="noopener"><img src="https://saasgrow.app/api/badge?type=featured&style=light" alt="Orbi on SaaSGrow" width="240" height="54" /></a>
         <a href="https://navfolders.com" target="_blank"><img src="https://navfolders.com/badge/nav_light.svg" alt="NavFolders" width="200" height="54" /></a>
         <a href="https://huzzler.so/products/xxBk2zzN1n/orbi-build?utm_source=huzzler_product_website&amp;utm_medium=badge&amp;utm_campaign=free_listing" target="_blank" rel="noopener noreferrer"><img alt="Huzzler Embed Badge" src="https://huzzler.so/assets/images/embeddable-badges/featured.png" width="159" height="55" /></a>
+        <a href="https://productwing.com/product/orbi" target="_blank"><img src="https://productwing.com/assets/images/badge.png" alt="Product Wing" height="54" /></a>
+        <a href="https://unitelist.com/product/orbi" target="_blank"><img src="https://unitelist.com/assets/images/badge.png" alt="Unite List" height="54" /></a>
+        <a href="https://appalist.com/ai/orbi" target="_blank"><img src="https://appalist.com/assets/images/badge.png" alt="Appa List" height="54" /></a>
+        <a href="https://weliketools.com/tool/orbi" target="_blank"><img src="https://weliketools.com/assets/images/badge.png" alt="We Like Tools" height="54" /></a>
+        <a href="https://bowora.com/?via=4rnfymxi" target="_blank">Featured on Bowora</a>
         </div>
       </div>
       <button class="footer-badges-toggle" type="button" data-footer-badges-toggle data-label-pause="Pause" data-label-play="Play">Pause</button>

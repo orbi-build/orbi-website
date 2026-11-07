@@ -185,7 +185,7 @@
           </ol>
         </details>
 <p>Pi coding agent worktree 能让一次交付在独立的工作目录里改代码。任务失败后，还得找回已经推到远端的工作。2026 年 10 月 10 日，Orbi 就卡在这里：GitHub 连接中断，远端留下了代码分支，PR 还没开出来。任务重新入队后，Orbi 一直拒绝继续，后面三张待执行的 Issue 也跟着等。修复于 10 月 11 日 00:42（UTC+8）<a href="https://github.com/orbi-build/orbi/pull/1596">合入</a>。</p>
-<p>我是 Larry 🍀 Orbi，Orbi 的创始人。<a href="https://github.com/orbi-build/orbi">Orbi</a> 从 GitHub Issue 开始，让 Pi 写代码，另起会话评审，通过后合并；发版由发版 Issue 驱动。这篇属于 <a href="/zh/guides/pi-coding-agent/?ref=blog-pi-worktree">Pi 架构系列</a>。这次出问题的是 Orbi 的调度程序 runner，任务还没重新交到 Pi 手里。</p><aside class="post-cta-inline"><span>Orbi 把你的 Issue 一路做到发版。</span><a class="button button-signal" data-cta="post-inline-start" href="/zh/cloud/login">免费试 __FREE_DELIVERIES__ 次 →</a></aside>
+<p>我是 Larry 🍀 Orbi，Orbi 的创始人。<a href="https://github.com/orbi-build/orbi">Orbi</a> 从 GitHub Issue 开始，让 Pi 写代码，另起会话评审，通过后合并；发版由发版 Issue 驱动。这篇属于 <a href="/zh/guides/pi-coding-agent/?ref=blog-pi-worktree">Pi 架构系列</a>。这次出问题的是 Orbi 的调度程序 runner，任务还没重新交到 Pi 手里。</p><aside class="post-cta-inline"><span>Orbi 把你的 Issue 一路做到发版。</span><a class="button button-signal" data-cta="post-inline-start" href="/zh/cloud/login">免费试用 Orbi Cloud →</a></aside>
 <h2 id="分支在-pr-不在">分支在，PR 不在</h2>
 <p><a href="https://github.com/orbi-build/orbi/issues/1594">故障记录</a>里，这次运行因为临时的 GitHub 连接失败而停止。远端交付分支上留着一个 commit，没有打开的 PR。有人把 Issue 放回待执行队列后，runner 应该沿用这个分支继续实现。</p>
 <p>每次尝试都会留下 <code class="post-code--single">claim_yield</code> 日志，原因是 <code class="post-code--single">stable_branch_appeared</code>。runner 认为，自己准备认领任务的这段时间里，另一次交付可能已经创建了分支，因此先让出执行。可这个分支在扫描任务之前就存在了。</p>
@@ -300,7 +300,7 @@
 <p>这次事故里，推到远端的 commit 已经保住了。出错的是 runner 决定是否沿用它的那一步。验证恢复流程时，要测到真正使用观察结果的动作，也要包含“代码已经在，PR 还没建”的状态。</p>
 <aside class="post-cta">
   <h2>Orbi 把你的 Issue 一路做到发版。</h2>
-  <a class="button button-signal" data-cta="post-start" href="/zh/cloud/login">免费试 __FREE_DELIVERIES__ 次 →</a>
+  <a class="button button-signal" data-cta="post-start" href="/zh/cloud/login">免费试用 Orbi Cloud →</a>
   <p class="post-cta-note">不用绑定信用卡 · 只授权你选的仓库</p>
   <a class="post-cta-link" data-cta="post-selfhost" href="https://github.com/orbi-build/orbi">想自己部署？开源免费（AGPL）→</a>
 </aside><h2 id="相关">相关</h2>
@@ -383,12 +383,14 @@
           <img src="https://toolradar.com/api/badge/orbi?type=review&style=light&v=4" alt="Orbi on Toolradar" width="147" height="42" />
         </a>
         <a href="https://nicklaunches.com/products/orbi/" target="_blank" rel="noopener"><img src="https://nicklaunches.com/badges/featured.png" alt="Featured on Nick Launches" width="244" height="56" /></a>
-        <a href="https://yourhack.ai" target="_blank">yourhack.ai</a>
+        <a href="https://yourhack.ai" target="_blank" rel="noopener"><img src="https://yourhack.ai/badge/yourhack.svg" alt="Listed on yourhack.ai" width="131" height="20" /></a>
         <a href="https://showmebest.ai" target="_blank"><img src="https://showmebest.ai/badge/feature-badge-white.webp" alt="Featured on ShowMeBestAI" width="220" height="60"></a>
         <a href="https://goodaitools.com/ai/orbi" target="_blank"><img src="https://goodaitools.com/assets/images/badge.png" alt="Good AI Tools" height="54"></a>
         <a href="https://aixcollection.com/ai/orbi" target="_blank"><img src="https://aixcollection.com/assets/images/badge.png" alt="AI X Collection" height="54"></a>
         <a href="https://launchtory.com/projects/orbi-build">Orbi on Launchtory</a>
         <a href="https://dofollow.tools" target="_blank" rel="noopener noreferrer"><img alt="Featured on Dofollow.Tools" width="200" height="54" src="https://dofollow.tools/badge/badge_dark.svg"></a>
+        <a href="https://gets.tools" target="_blank" rel="noopener noreferrer"><img alt="Featured on Gets.Tools" width="200" height="54" src="https://gets.tools/badge/badge_dark.svg"></a>
+        <a href="https://siftfox.com/tool/orbi" target="_blank"><img src="https://siftfox.com/badges/live-light.svg" alt="Live on SiftFox" width="168" height="56" /></a>
         <a href="https://altern.ai/ai/orbi" target="_blank" rel="noopener">
           <img src="https://data.altern.ai/alternbadge.png" alt="Featured on Altern" width="150" />
         </a>
@@ -447,6 +449,11 @@
         <a href="https://saasgrow.app?ref=orbi.build" target="_blank" rel="noopener"><img src="https://saasgrow.app/api/badge?type=featured&style=light" alt="Orbi on SaaSGrow" width="240" height="54" /></a>
         <a href="https://navfolders.com" target="_blank"><img src="https://navfolders.com/badge/nav_light.svg" alt="NavFolders" width="200" height="54" /></a>
         <a href="https://huzzler.so/products/xxBk2zzN1n/orbi-build?utm_source=huzzler_product_website&amp;utm_medium=badge&amp;utm_campaign=free_listing" target="_blank" rel="noopener noreferrer"><img alt="Huzzler Embed Badge" src="https://huzzler.so/assets/images/embeddable-badges/featured.png" width="159" height="55" /></a>
+        <a href="https://productwing.com/product/orbi" target="_blank"><img src="https://productwing.com/assets/images/badge.png" alt="Product Wing" height="54" /></a>
+        <a href="https://unitelist.com/product/orbi" target="_blank"><img src="https://unitelist.com/assets/images/badge.png" alt="Unite List" height="54" /></a>
+        <a href="https://appalist.com/ai/orbi" target="_blank"><img src="https://appalist.com/assets/images/badge.png" alt="Appa List" height="54" /></a>
+        <a href="https://weliketools.com/tool/orbi" target="_blank"><img src="https://weliketools.com/assets/images/badge.png" alt="We Like Tools" height="54" /></a>
+        <a href="https://bowora.com/?via=4rnfymxi" target="_blank">Featured on Bowora</a>
         </div>
       </div>
       <button class="footer-badges-toggle" type="button" data-footer-badges-toggle data-label-pause="暂停" data-label-play="播放">暂停</button>

@@ -187,7 +187,7 @@
           </ol>
         </details>
 <p><a href="https://github.com/xiaods/k8e">k8e</a> 是一个内嵌 etcd 的 Kubernetes 发行版，497 星，维护者是 Deshi (Tommy) Xiao。9 月 20 日他开了 <a href="https://github.com/xiaods/k8e/issues/612">#612</a>，要给内嵌的 etcd 做一套端到端的健壮性测试，分四期：先测崩溃后能不能安全恢复，再测多节点故障、备份能否还原、长时间运行是否稳定。</p>
-<p>10:28（北京时间，下同）他给票打上 <code class="post-code--single">ai-ready</code>，交给了 Orbi。下面的时间和数字来自这张票的标签历史、PR 和评审记录，只有 runner 崩溃的次数取自 runner 日志。</p><aside class="post-cta-inline"><span>Orbi 把你的 Issue 一路做到发版。</span><a class="button button-signal" data-cta="post-inline-start" href="/zh/cloud/login">免费试 __FREE_DELIVERIES__ 次 →</a></aside>
+<p>10:28（北京时间，下同）他给票打上 <code class="post-code--single">ai-ready</code>，交给了 Orbi。下面的时间和数字来自这张票的标签历史、PR 和评审记录，只有 runner 崩溃的次数取自 runner 日志。</p><aside class="post-cta-inline"><span>Orbi 把你的 Issue 一路做到发版。</span><a class="button button-signal" data-cta="post-inline-start" href="/zh/cloud/login">免费试用 Orbi Cloud →</a></aside>
 <h2 id="第一版被打回了">第一版被打回了</h2>
 <p>11:37，Orbi 开出 <a href="https://github.com/xiaods/k8e/pull/613">PR #613</a>，只做第一期：10 个新文件，2483 行。内容包括一个记录每次操作的历史记录器、一个判断恢复结果对不对的判定器（oracle），以及几组测试：写到一半 SIGKILL 子进程、故意损坏 WAL、写满 quota。</p>
 <p>11:46，维护者把 SonarCloud 和 DeepSource 扫出来的问题贴了上来，Orbi 11:57 开始推修复。</p>
@@ -239,7 +239,7 @@ oracle: OK   (should fail)
 <p>如果你的仓库里也排着一串写清楚了的 issue，可以让 <a href="https://orbi.build/zh/cloud/?ref=blog-k8e">Orbi Cloud</a> 在你的仓库里跑同样的流程。</p>
 <aside class="post-cta">
   <h2>Orbi 把你的 Issue 一路做到发版。</h2>
-  <a class="button button-signal" data-cta="post-start" href="/zh/cloud/login">免费试 __FREE_DELIVERIES__ 次 →</a>
+  <a class="button button-signal" data-cta="post-start" href="/zh/cloud/login">免费试用 Orbi Cloud →</a>
   <p class="post-cta-note">不用绑定信用卡 · 只授权你选的仓库</p>
   <a class="post-cta-link" data-cta="post-selfhost" href="https://github.com/orbi-build/orbi">想自己部署？开源免费（AGPL）→</a>
 </aside><h2 id="相关">相关</h2>
@@ -316,12 +316,14 @@ oracle: OK   (should fail)
           <img src="https://toolradar.com/api/badge/orbi?type=review&style=light&v=4" alt="Orbi on Toolradar" width="147" height="42" />
         </a>
         <a href="https://nicklaunches.com/products/orbi/" target="_blank" rel="noopener"><img src="https://nicklaunches.com/badges/featured.png" alt="Featured on Nick Launches" width="244" height="56" /></a>
-        <a href="https://yourhack.ai" target="_blank">yourhack.ai</a>
+        <a href="https://yourhack.ai" target="_blank" rel="noopener"><img src="https://yourhack.ai/badge/yourhack.svg" alt="Listed on yourhack.ai" width="131" height="20" /></a>
         <a href="https://showmebest.ai" target="_blank"><img src="https://showmebest.ai/badge/feature-badge-white.webp" alt="Featured on ShowMeBestAI" width="220" height="60"></a>
         <a href="https://goodaitools.com/ai/orbi" target="_blank"><img src="https://goodaitools.com/assets/images/badge.png" alt="Good AI Tools" height="54"></a>
         <a href="https://aixcollection.com/ai/orbi" target="_blank"><img src="https://aixcollection.com/assets/images/badge.png" alt="AI X Collection" height="54"></a>
         <a href="https://launchtory.com/projects/orbi-build">Orbi on Launchtory</a>
         <a href="https://dofollow.tools" target="_blank" rel="noopener noreferrer"><img alt="Featured on Dofollow.Tools" width="200" height="54" src="https://dofollow.tools/badge/badge_dark.svg"></a>
+        <a href="https://gets.tools" target="_blank" rel="noopener noreferrer"><img alt="Featured on Gets.Tools" width="200" height="54" src="https://gets.tools/badge/badge_dark.svg"></a>
+        <a href="https://siftfox.com/tool/orbi" target="_blank"><img src="https://siftfox.com/badges/live-light.svg" alt="Live on SiftFox" width="168" height="56" /></a>
         <a href="https://altern.ai/ai/orbi" target="_blank" rel="noopener">
           <img src="https://data.altern.ai/alternbadge.png" alt="Featured on Altern" width="150" />
         </a>
@@ -380,6 +382,11 @@ oracle: OK   (should fail)
         <a href="https://saasgrow.app?ref=orbi.build" target="_blank" rel="noopener"><img src="https://saasgrow.app/api/badge?type=featured&style=light" alt="Orbi on SaaSGrow" width="240" height="54" /></a>
         <a href="https://navfolders.com" target="_blank"><img src="https://navfolders.com/badge/nav_light.svg" alt="NavFolders" width="200" height="54" /></a>
         <a href="https://huzzler.so/products/xxBk2zzN1n/orbi-build?utm_source=huzzler_product_website&amp;utm_medium=badge&amp;utm_campaign=free_listing" target="_blank" rel="noopener noreferrer"><img alt="Huzzler Embed Badge" src="https://huzzler.so/assets/images/embeddable-badges/featured.png" width="159" height="55" /></a>
+        <a href="https://productwing.com/product/orbi" target="_blank"><img src="https://productwing.com/assets/images/badge.png" alt="Product Wing" height="54" /></a>
+        <a href="https://unitelist.com/product/orbi" target="_blank"><img src="https://unitelist.com/assets/images/badge.png" alt="Unite List" height="54" /></a>
+        <a href="https://appalist.com/ai/orbi" target="_blank"><img src="https://appalist.com/assets/images/badge.png" alt="Appa List" height="54" /></a>
+        <a href="https://weliketools.com/tool/orbi" target="_blank"><img src="https://weliketools.com/assets/images/badge.png" alt="We Like Tools" height="54" /></a>
+        <a href="https://bowora.com/?via=4rnfymxi" target="_blank">Featured on Bowora</a>
         </div>
       </div>
       <button class="footer-badges-toggle" type="button" data-footer-badges-toggle data-label-pause="暂停" data-label-play="播放">暂停</button>

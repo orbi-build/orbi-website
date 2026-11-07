@@ -195,7 +195,7 @@
           </ol>
         </details>
 <p>I tested Pi coding agent vs Claude Code with DeepSeek V4.1 Flash on the same two small coding tasks. With execution permissions open for the coding comparison, both passed every run. Default Claude Code sent 7–8× as many input tokens per run as Pi. Using <code class="post-code--spaced">claude -p --bare</code> brought its input-token use close to Pi&#39;s: below Pi in five of six paired runs, above it in one. Most of the extra input in default Claude Code came from its 21 tool definitions. For scripts using an API key, that one flag changed input-token use about as much as switching harnesses did.</p>
-<p>I&#39;m Larry 🍀 Orbi, the creator of Orbi. I measured this on my Linux machine on 1 November 2026, with Pi 1.2.0 and Claude Code 2.1.281. Orbi runs its implementer and reviewer sessions as <code class="post-code--spaced">pi --print</code>.</p><aside class="post-cta-inline"><span>Orbi takes your Issues all the way to a release.</span><a class="button button-signal" data-cta="post-inline-start" href="/cloud/login">Try __FREE_DELIVERIES__ deliveries free →</a></aside>
+<p>I&#39;m Larry 🍀 Orbi, the creator of Orbi. I measured this on my Linux machine on 1 November 2026, with Pi 1.2.0 and Claude Code 2.1.281. Orbi runs its implementer and reviewer sessions as <code class="post-code--spaced">pi --print</code>.</p><aside class="post-cta-inline"><span>Orbi takes your Issues all the way to a release.</span><a class="button button-signal" data-cta="post-inline-start" href="/cloud/login">Try Orbi Cloud free →</a></aside>
 <h2 id="setting-up-pi-coding-agent-vs-claude-code-on-one-model">Setting up Pi coding agent vs Claude Code on one model</h2>
 <p>Both used DeepSeek V4.1 Flash (<code class="post-code--single">deepseek-flash</code>). Pi used its built-in <code class="post-code--single">deepseek</code> provider, <code class="post-code--spaced">--provider deepseek --model deepseek-flash</code>, and <code class="post-code--single">DEEPSEEK_API_KEY</code>. Claude Code used <code class="post-code--single">ANTHROPIC_BASE_URL=https://api.deepseek.com/anthropic</code>, <code class="post-code--spaced">ANTHROPIC_AUTH_TOKEN=&lt;deepseek key&gt;</code> and <code class="post-code--single">ANTHROPIC_MODEL=deepseek-flash</code>, following <a href="https://api-docs.deepseek.com/guides/anthropic_api">DeepSeek&#39;s endpoint documentation</a>.</p>
 <p><a href="https://code.claude.com/docs/en/llm-gateway">Anthropic says</a> it &quot;doesn&#39;t support routing Claude Code to non-Claude models through any gateway&quot;. I used that route only for measurement and do not recommend it. Pi used DeepSeek&#39;s <a href="https://api-docs.deepseek.com/">OpenAI-compatible API</a>; Claude Code used DeepSeek&#39;s <a href="https://api-docs.deepseek.com/guides/anthropic_api">Anthropic-compatible API</a>. Both reached the same model through different wire formats.</p>
@@ -418,7 +418,7 @@ env -i HOME=&quot;$CLEAN&quot; PATH=&quot;$PATH&quot; ANTHROPIC_BASE_URL=https:/
 <p>I used two toy Python tasks, with 3 runs per DeepSeek setup per task, and tested bare on both. The Haiku runs (2 each) and the permission control (1 run) were extra checks. The controlled comparison used one model, one machine, one day and the versions above. These results do not tell us how either tool performs on hard tasks, in long sessions or during compaction. I have no Pi-on-Claude measurements.</p>
 <aside class="post-cta">
   <h2>Orbi takes your Issues all the way to a release.</h2>
-  <a class="button button-signal" data-cta="post-start" href="/cloud/login">Try __FREE_DELIVERIES__ deliveries free →</a>
+  <a class="button button-signal" data-cta="post-start" href="/cloud/login">Try Orbi Cloud free →</a>
   <p class="post-cta-note">No credit card required · Orbi only sees the repos you pick</p>
   <a class="post-cta-link" data-cta="post-selfhost" href="https://github.com/orbi-build/orbi">Prefer to self-host? It's open source (AGPL) →</a>
 </aside><h2 id="related">Related</h2>
@@ -495,12 +495,14 @@ env -i HOME=&quot;$CLEAN&quot; PATH=&quot;$PATH&quot; ANTHROPIC_BASE_URL=https:/
           <img src="https://toolradar.com/api/badge/orbi?type=review&style=light&v=4" alt="Orbi on Toolradar" width="147" height="42" />
         </a>
         <a href="https://nicklaunches.com/products/orbi/" target="_blank" rel="noopener"><img src="https://nicklaunches.com/badges/featured.png" alt="Featured on Nick Launches" width="244" height="56" /></a>
-        <a href="https://yourhack.ai" target="_blank">yourhack.ai</a>
+        <a href="https://yourhack.ai" target="_blank" rel="noopener"><img src="https://yourhack.ai/badge/yourhack.svg" alt="Listed on yourhack.ai" width="131" height="20" /></a>
         <a href="https://showmebest.ai" target="_blank"><img src="https://showmebest.ai/badge/feature-badge-white.webp" alt="Featured on ShowMeBestAI" width="220" height="60"></a>
         <a href="https://goodaitools.com/ai/orbi" target="_blank"><img src="https://goodaitools.com/assets/images/badge.png" alt="Good AI Tools" height="54"></a>
         <a href="https://aixcollection.com/ai/orbi" target="_blank"><img src="https://aixcollection.com/assets/images/badge.png" alt="AI X Collection" height="54"></a>
         <a href="https://launchtory.com/projects/orbi-build">Orbi on Launchtory</a>
         <a href="https://dofollow.tools" target="_blank" rel="noopener noreferrer"><img alt="Featured on Dofollow.Tools" width="200" height="54" src="https://dofollow.tools/badge/badge_dark.svg"></a>
+        <a href="https://gets.tools" target="_blank" rel="noopener noreferrer"><img alt="Featured on Gets.Tools" width="200" height="54" src="https://gets.tools/badge/badge_dark.svg"></a>
+        <a href="https://siftfox.com/tool/orbi" target="_blank"><img src="https://siftfox.com/badges/live-light.svg" alt="Live on SiftFox" width="168" height="56" /></a>
         <a href="https://altern.ai/ai/orbi" target="_blank" rel="noopener">
           <img src="https://data.altern.ai/alternbadge.png" alt="Featured on Altern" width="150" />
         </a>
@@ -559,6 +561,11 @@ env -i HOME=&quot;$CLEAN&quot; PATH=&quot;$PATH&quot; ANTHROPIC_BASE_URL=https:/
         <a href="https://saasgrow.app?ref=orbi.build" target="_blank" rel="noopener"><img src="https://saasgrow.app/api/badge?type=featured&style=light" alt="Orbi on SaaSGrow" width="240" height="54" /></a>
         <a href="https://navfolders.com" target="_blank"><img src="https://navfolders.com/badge/nav_light.svg" alt="NavFolders" width="200" height="54" /></a>
         <a href="https://huzzler.so/products/xxBk2zzN1n/orbi-build?utm_source=huzzler_product_website&amp;utm_medium=badge&amp;utm_campaign=free_listing" target="_blank" rel="noopener noreferrer"><img alt="Huzzler Embed Badge" src="https://huzzler.so/assets/images/embeddable-badges/featured.png" width="159" height="55" /></a>
+        <a href="https://productwing.com/product/orbi" target="_blank"><img src="https://productwing.com/assets/images/badge.png" alt="Product Wing" height="54" /></a>
+        <a href="https://unitelist.com/product/orbi" target="_blank"><img src="https://unitelist.com/assets/images/badge.png" alt="Unite List" height="54" /></a>
+        <a href="https://appalist.com/ai/orbi" target="_blank"><img src="https://appalist.com/assets/images/badge.png" alt="Appa List" height="54" /></a>
+        <a href="https://weliketools.com/tool/orbi" target="_blank"><img src="https://weliketools.com/assets/images/badge.png" alt="We Like Tools" height="54" /></a>
+        <a href="https://bowora.com/?via=4rnfymxi" target="_blank">Featured on Bowora</a>
         </div>
       </div>
       <button class="footer-badges-toggle" type="button" data-footer-badges-toggle data-label-pause="Pause" data-label-play="Play">Pause</button>

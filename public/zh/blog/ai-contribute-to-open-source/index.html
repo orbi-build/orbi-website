@@ -185,7 +185,7 @@
           </ol>
         </details>
 <p>我让一个 AI 编程 agent 去修三个开源项目里的 issue，这些项目都不归我们管，我把它写的修复提了上去，三个维护者都合并了。这篇把每条都链到它是怎么做出来的记录，你可以自己核，不用听我一面之词。这三条就是我们到目前为止用这种方式提给上游的全部，不是从一长串里挑出来的。其中一条里有个 bug 是 agent 的评审漏掉的，我发现后重写了修复，后面会讲到。</p>
-<p>我是 Larry 🍀 Orbi，Orbi 的创始人（<a href="https://orbi.build/?ref=blog-ai-oss">Orbi</a>）。在你自己的仓库里，Orbi 把 GitHub Issue 做成可合并的 PR：一个 agent（我们叫它 Pi）读 Issue、在沙箱里写改动，另一个 Pi 会话评审这次改动、而且拿不到写代码那次的上下文，CI 跑完，runner 在这几道都通过时合并。别人的仓库不一样，因为我不能让 agent 直接往里写。所以 Orbi 读的是上游已经报出来的 issue，在一个我们自己控制的 fork 里把改动做好，我复核之后才用我本人的账号向上游提 PR，正文里写明是 AI agent 写的。</p><aside class="post-cta-inline"><span>Orbi 把你的 Issue 一路做到发版。</span><a class="button button-signal" data-cta="post-inline-start" href="/zh/cloud/login">免费试 __FREE_DELIVERIES__ 次 →</a></aside>
+<p>我是 Larry 🍀 Orbi，Orbi 的创始人（<a href="https://orbi.build/?ref=blog-ai-oss">Orbi</a>）。在你自己的仓库里，Orbi 把 GitHub Issue 做成可合并的 PR：一个 agent（我们叫它 Pi）读 Issue、在沙箱里写改动，另一个 Pi 会话评审这次改动、而且拿不到写代码那次的上下文，CI 跑完，runner 在这几道都通过时合并。别人的仓库不一样，因为我不能让 agent 直接往里写。所以 Orbi 读的是上游已经报出来的 issue，在一个我们自己控制的 fork 里把改动做好，我复核之后才用我本人的账号向上游提 PR，正文里写明是 AI agent 写的。</p><aside class="post-cta-inline"><span>Orbi 把你的 Issue 一路做到发版。</span><a class="button button-signal" data-cta="post-inline-start" href="/zh/cloud/login">免费试用 Orbi Cloud →</a></aside>
 <h2 id="合了什么">合了什么</h2>
 <p class="post-table-hint" hidden>左右滑动查看所有列。</p><div class="post-table-scroll" tabindex="0" role="region" aria-label="左右滑动查看所有列。"><table class="table-comparison">
 <thead>
@@ -237,7 +237,7 @@
 <p>这道人工复核是这几次贡献特有的，因为仓库不是我的。在你自己的仓库里，Orbi 跑的是同一道 Pi 评审会话，默认是自动合并、不等你点头：评审、CI 和 PR 检查都过了，runner 就合。这一切都发生在你自己的 PR 上，评审发现一出来你就能看到；如果你想让某个改动必须由人签字才合，Orbi 有一道可以打开的 <a href="/zh/guides/auto-merge-ai-prs/?ref=blog-ai-oss">AI 人工复核闸门</a>。<a href="/zh/guides/issue-to-release/?ref=blog-ai-oss">Issue 到发版指南</a>把这条线从头走到尾，<a href="/zh/guides/pi-coding-agent/?ref=blog-ai-oss">Pi 架构指南</a>讲清楚这些闸门。</p>
 <aside class="post-cta">
   <h2>Orbi 把你的 Issue 一路做到发版。</h2>
-  <a class="button button-signal" data-cta="post-start" href="/zh/cloud/login">免费试 __FREE_DELIVERIES__ 次 →</a>
+  <a class="button button-signal" data-cta="post-start" href="/zh/cloud/login">免费试用 Orbi Cloud →</a>
   <p class="post-cta-note">不用绑定信用卡 · 只授权你选的仓库</p>
   <a class="post-cta-link" data-cta="post-selfhost" href="https://github.com/orbi-build/orbi">想自己部署？开源免费（AGPL）→</a>
 </aside><h2 id="相关">相关</h2>
@@ -317,12 +317,14 @@
           <img src="https://toolradar.com/api/badge/orbi?type=review&style=light&v=4" alt="Orbi on Toolradar" width="147" height="42" />
         </a>
         <a href="https://nicklaunches.com/products/orbi/" target="_blank" rel="noopener"><img src="https://nicklaunches.com/badges/featured.png" alt="Featured on Nick Launches" width="244" height="56" /></a>
-        <a href="https://yourhack.ai" target="_blank">yourhack.ai</a>
+        <a href="https://yourhack.ai" target="_blank" rel="noopener"><img src="https://yourhack.ai/badge/yourhack.svg" alt="Listed on yourhack.ai" width="131" height="20" /></a>
         <a href="https://showmebest.ai" target="_blank"><img src="https://showmebest.ai/badge/feature-badge-white.webp" alt="Featured on ShowMeBestAI" width="220" height="60"></a>
         <a href="https://goodaitools.com/ai/orbi" target="_blank"><img src="https://goodaitools.com/assets/images/badge.png" alt="Good AI Tools" height="54"></a>
         <a href="https://aixcollection.com/ai/orbi" target="_blank"><img src="https://aixcollection.com/assets/images/badge.png" alt="AI X Collection" height="54"></a>
         <a href="https://launchtory.com/projects/orbi-build">Orbi on Launchtory</a>
         <a href="https://dofollow.tools" target="_blank" rel="noopener noreferrer"><img alt="Featured on Dofollow.Tools" width="200" height="54" src="https://dofollow.tools/badge/badge_dark.svg"></a>
+        <a href="https://gets.tools" target="_blank" rel="noopener noreferrer"><img alt="Featured on Gets.Tools" width="200" height="54" src="https://gets.tools/badge/badge_dark.svg"></a>
+        <a href="https://siftfox.com/tool/orbi" target="_blank"><img src="https://siftfox.com/badges/live-light.svg" alt="Live on SiftFox" width="168" height="56" /></a>
         <a href="https://altern.ai/ai/orbi" target="_blank" rel="noopener">
           <img src="https://data.altern.ai/alternbadge.png" alt="Featured on Altern" width="150" />
         </a>
@@ -381,6 +383,11 @@
         <a href="https://saasgrow.app?ref=orbi.build" target="_blank" rel="noopener"><img src="https://saasgrow.app/api/badge?type=featured&style=light" alt="Orbi on SaaSGrow" width="240" height="54" /></a>
         <a href="https://navfolders.com" target="_blank"><img src="https://navfolders.com/badge/nav_light.svg" alt="NavFolders" width="200" height="54" /></a>
         <a href="https://huzzler.so/products/xxBk2zzN1n/orbi-build?utm_source=huzzler_product_website&amp;utm_medium=badge&amp;utm_campaign=free_listing" target="_blank" rel="noopener noreferrer"><img alt="Huzzler Embed Badge" src="https://huzzler.so/assets/images/embeddable-badges/featured.png" width="159" height="55" /></a>
+        <a href="https://productwing.com/product/orbi" target="_blank"><img src="https://productwing.com/assets/images/badge.png" alt="Product Wing" height="54" /></a>
+        <a href="https://unitelist.com/product/orbi" target="_blank"><img src="https://unitelist.com/assets/images/badge.png" alt="Unite List" height="54" /></a>
+        <a href="https://appalist.com/ai/orbi" target="_blank"><img src="https://appalist.com/assets/images/badge.png" alt="Appa List" height="54" /></a>
+        <a href="https://weliketools.com/tool/orbi" target="_blank"><img src="https://weliketools.com/assets/images/badge.png" alt="We Like Tools" height="54" /></a>
+        <a href="https://bowora.com/?via=4rnfymxi" target="_blank">Featured on Bowora</a>
         </div>
       </div>
       <button class="footer-badges-toggle" type="button" data-footer-badges-toggle data-label-pause="暂停" data-label-play="播放">暂停</button>

@@ -60,7 +60,7 @@
   "mainEntity": [
     {"@type":"Question","name":"Orbi 是开源的 Devin 替代方案吗？","acceptedAnswer":{"@type":"Answer","text":"是。Orbi 以 AGPL-3.0 发布，面向从 Issue 到经过审查的 pull request 与发版的自托管 GitHub 交付。"}},
     {"@type":"Question","name":"可以自托管 Orbi 吗？","acceptedAnswer":{"@type":"Answer","text":"可以。你可以在自己的机器上用自己的模型 key 自托管 Orbi。Orbi Cloud 是希望由 Orbi 为你运营交付产线时的托管选项。"}},
-    {"@type":"Question","name":"和 Devin 相比，Orbi 怎么收费？","acceptedAnswer":{"@type":"Answer","text":"自托管 Orbi 按 AGPL-3.0 免费，你承担自己的硬件和模型供应商成本。Orbi Cloud 有 Solo、Pro 两档付费套餐，各自先送 __FREE_DELIVERIES__ 次成功合并交付的试用；Devin 列出订阅套餐和按消息计价的用量。查看价格成本对比和带日期的价格表。"}},
+    {"@type":"Question","name":"和 Devin 相比，Orbi 怎么收费？","acceptedAnswer":{"@type":"Answer","text":"自托管 Orbi 按 AGPL-3.0 免费，你承担自己的硬件和模型供应商成本。Orbi Cloud 有 Solo、Pro 两档付费套餐；Devin 列出订阅套餐和按消息计价的用量。查看价格成本对比和带日期的价格表。"}},
     {"@type":"Question","name":"Orbi 会合并自己的 PR 吗？","acceptedAnswer":{"@type":"Answer","text":"只有经过独立评审、CI 通过并检查 reviewed head 完全一致后，Orbi 才能合并一次交付的 pull request。阅读Orbi 如何安全自动合并 AI pull request。"}}
   ]
 }
@@ -148,14 +148,14 @@
       <div class="shell">
         <p class="section-tag">价格模式</p>
         <h2 class="orbi-compare-section-h2" id="pricing-title">Orbi 与 Devin 的价格对比</h2>
-        <p class="section-lede">两者的套餐形状不同：Orbi 可按 AGPL-3.0 免费自托管，也可以用 Cloud 的 Solo 或 Pro 套餐，各自先送 __FREE_DELIVERIES__ 次合并交付的免费试用。Devin 列出订阅套餐，并按消息计价；下表是带日期的价格快照。</p>
+        <p class="section-lede">两者的套餐形状不同：Orbi 可按 AGPL-3.0 免费自托管，也可以用 Cloud 的 Solo 或 Pro 套餐。Devin 列出订阅套餐，并按消息计价；下表是带日期的价格快照。</p>
         <div class="compare-table-wrap">
           <table class="compare-table table-stack">
             <thead>
               <tr><th scope="col">套餐</th><th scope="col">Orbi</th><th scope="col">Devin</th></tr>
             </thead>
             <tbody>
-              <tr><th scope="row">免费</th><td data-label="Orbi">自托管：$0，AGPL-3.0，可选 SUL；使用你自己的模型 key。Cloud 试用：__FREE_DELIVERIES__ 次合并交付。</td><td data-label="Devin">$0，light quota。</td></tr>
+              <tr><th scope="row">免费</th><td data-label="Orbi">自托管：$0，AGPL-3.0，可选 SUL；使用你自己的模型 key。</td><td data-label="Devin">$0，light quota。</td></tr>
               <tr><th scope="row">个人</th><td data-label="Orbi">Cloud Solo：每月 US$__SOLO_MONTHLY_USD__，__SOLO_INCLUDED_TOKENS__ token，__SOLO_REPOSITORIES__ 个仓库。</td><td data-label="Devin">Pro：每月 $20。</td></tr>
               <tr><th scope="row">团队 / 规模</th><td data-label="Orbi">Cloud Pro：每月 US$__CLOUD_MONTHLY_USD__，__INCLUDED_TOKENS__ token，__PRO_REPOSITORIES__ 个仓库。</td><td data-label="Devin">Max：每月 $200；Teams：每月 $80，另加每个全席位每月 $40；Enterprise：联系销售。</td></tr>
               <tr><th scope="row">计量</th><td data-label="Orbi">自托管使用你的硬件和模型供应商。Cloud 的包含额度用完后会暂停交付；没有按 token 超额收费。</td><td data-label="Devin">「Cost per message varies based on the model used, the task size and complexity, and the reasoning required.」</td></tr>
@@ -250,7 +250,7 @@
         <div class="faq-list">
           <details class="faq-item" open><summary><span>01</span>Orbi 是开源的 Devin 替代方案吗？</summary><div class="faq-answer"><p class="orbi-faq-answer-p">是。Orbi 以 <a href="https://github.com/orbi-build/orbi/blob/main/LICENSE" rel="noopener">AGPL-3.0</a> 发布，面向从 Issue 到经过审查的 pull request 与发版的自托管 GitHub 交付。</p></div></details>
           <details class="faq-item"><summary><span>02</span>可以自托管 Orbi 吗？</summary><div class="faq-answer"><p class="orbi-faq-answer-p">可以。你可以在自己的机器上用自己的模型 key 自托管 Orbi。<a href="/zh/cloud/">Orbi Cloud</a> 是希望由 Orbi 为你运营交付产线时的托管选项。</p></div></details>
-          <details class="faq-item"><summary><span>03</span>和 Devin 相比，Orbi 怎么收费？</summary><div class="faq-answer"><p class="orbi-faq-answer-p">自托管 Orbi 按 AGPL-3.0 免费，你承担自己的硬件和模型供应商成本。Orbi Cloud 有 Solo、Pro 两档付费套餐，各自先送 __FREE_DELIVERIES__ 次成功合并交付的试用；Devin 列出订阅套餐和按消息计价的用量。查看<a href="/zh/cost/">价格成本对比</a>和带日期的<a href="#pricing-title">价格表</a>。</p></div></details>
+          <details class="faq-item"><summary><span>03</span>和 Devin 相比，Orbi 怎么收费？</summary><div class="faq-answer"><p class="orbi-faq-answer-p">自托管 Orbi 按 AGPL-3.0 免费，你承担自己的硬件和模型供应商成本。Orbi Cloud 有 Solo、Pro 两档付费套餐；Devin 列出订阅套餐和按消息计价的用量。查看<a href="/zh/cost/">价格成本对比</a>和带日期的<a href="#pricing-title">价格表</a>。</p></div></details>
           <details class="faq-item"><summary><span>04</span>Orbi 会合并自己的 PR 吗？</summary><div class="faq-answer"><p class="orbi-faq-answer-p">只有经过独立评审、CI 通过并检查 reviewed head 完全一致后，Orbi 才能合并一次交付的 pull request。阅读<a href="/zh/guides/auto-merge-ai-prs/">Orbi 如何安全自动合并 AI pull request</a>。</p></div></details>
         </div>
       </div>
@@ -372,12 +372,14 @@
           <img src="https://toolradar.com/api/badge/orbi?type=review&style=light&v=4" alt="Orbi on Toolradar" width="147" height="42" />
         </a>
         <a href="https://nicklaunches.com/products/orbi/" target="_blank" rel="noopener"><img src="https://nicklaunches.com/badges/featured.png" alt="Featured on Nick Launches" width="244" height="56" /></a>
-        <a href="https://yourhack.ai" target="_blank">yourhack.ai</a>
+        <a href="https://yourhack.ai" target="_blank" rel="noopener"><img src="https://yourhack.ai/badge/yourhack.svg" alt="Listed on yourhack.ai" width="131" height="20" /></a>
         <a href="https://showmebest.ai" target="_blank"><img src="https://showmebest.ai/badge/feature-badge-white.webp" alt="Featured on ShowMeBestAI" width="220" height="60"></a>
         <a href="https://goodaitools.com/ai/orbi" target="_blank"><img src="https://goodaitools.com/assets/images/badge.png" alt="Good AI Tools" height="54"></a>
         <a href="https://aixcollection.com/ai/orbi" target="_blank"><img src="https://aixcollection.com/assets/images/badge.png" alt="AI X Collection" height="54"></a>
         <a href="https://launchtory.com/projects/orbi-build">Orbi on Launchtory</a>
         <a href="https://dofollow.tools" target="_blank" rel="noopener noreferrer"><img alt="Featured on Dofollow.Tools" width="200" height="54" src="https://dofollow.tools/badge/badge_dark.svg"></a>
+        <a href="https://gets.tools" target="_blank" rel="noopener noreferrer"><img alt="Featured on Gets.Tools" width="200" height="54" src="https://gets.tools/badge/badge_dark.svg"></a>
+        <a href="https://siftfox.com/tool/orbi" target="_blank"><img src="https://siftfox.com/badges/live-light.svg" alt="Live on SiftFox" width="168" height="56" /></a>
         <a href="https://altern.ai/ai/orbi" target="_blank" rel="noopener">
           <img src="https://data.altern.ai/alternbadge.png" alt="Featured on Altern" width="150" />
         </a>
@@ -436,6 +438,11 @@
         <a href="https://saasgrow.app?ref=orbi.build" target="_blank" rel="noopener"><img src="https://saasgrow.app/api/badge?type=featured&style=light" alt="Orbi on SaaSGrow" width="240" height="54" /></a>
         <a href="https://navfolders.com" target="_blank"><img src="https://navfolders.com/badge/nav_light.svg" alt="NavFolders" width="200" height="54" /></a>
         <a href="https://huzzler.so/products/xxBk2zzN1n/orbi-build?utm_source=huzzler_product_website&amp;utm_medium=badge&amp;utm_campaign=free_listing" target="_blank" rel="noopener noreferrer"><img alt="Huzzler Embed Badge" src="https://huzzler.so/assets/images/embeddable-badges/featured.png" width="159" height="55" /></a>
+        <a href="https://productwing.com/product/orbi" target="_blank"><img src="https://productwing.com/assets/images/badge.png" alt="Product Wing" height="54" /></a>
+        <a href="https://unitelist.com/product/orbi" target="_blank"><img src="https://unitelist.com/assets/images/badge.png" alt="Unite List" height="54" /></a>
+        <a href="https://appalist.com/ai/orbi" target="_blank"><img src="https://appalist.com/assets/images/badge.png" alt="Appa List" height="54" /></a>
+        <a href="https://weliketools.com/tool/orbi" target="_blank"><img src="https://weliketools.com/assets/images/badge.png" alt="We Like Tools" height="54" /></a>
+        <a href="https://bowora.com/?via=4rnfymxi" target="_blank">Featured on Bowora</a>
         </div>
       </div>
       <button class="footer-badges-toggle" type="button" data-footer-badges-toggle data-label-pause="暂停" data-label-play="播放">暂停</button>
