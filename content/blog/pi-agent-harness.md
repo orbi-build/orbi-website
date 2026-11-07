@@ -10,9 +10,9 @@ mirror: pi-agent-harness
 series: pi
 ---
 
-The Pi harness, also called the Pi agent harness, is the loop inside [Pi](https://pi.dev), the open-source coding agent from Earendil: it sends your prompt to a model, runs the tool calls the model asks for, records the conversation, and repeats until the model stops asking for tools. This post is for developers who run coding agents unattended: I start the same task in three Pi setups, kill each one partway through, and show what survives and who has to restart it. You also get install commands, a supervisor script for `pi --print`, and runnable AI SDK and Cloudflare examples, all retested on 6 November 2026 on Pi 1.5.0 and Pi Durable 1.5.0. On 1 October 2026 Earendil shipped Pi 1.0 and, next to it, an experimental second harness called Pi Durable, which checkpoints every step so a run can outlive the process running it.
+The Pi harness is the loop inside [Pi](https://pi.dev), the open-source coding agent from Earendil: it sends your prompt to a model, runs the tool calls the model asks for, records the conversation, and repeats until the model stops asking for tools. On 1 October 2026 Earendil shipped Pi 1.0 and, next to it, an experimental second harness called Pi Durable, which checkpoints every step so a run can outlive the process running it. If you run coding agents unattended, this is what survives a kill in each of three Pi setups: I started the same task in each, killed it partway through, and recorded what was left and who has to restart it. Install commands, a supervisor script for `pi --print`, and runnable AI SDK and Cloudflare examples are included.
 
-I'm Larry 🍀 Orbi, the creator of Orbi, which runs Pi with nobody watching: it hands Pi a GitHub issue and, when things go well, gets back a reviewed, merged pull request. How Orbi starts Pi is in [the first post of this series](/blog/orbi-on-pi-coding-agent/); the runner around Pi is described in the [Pi hub](/guides/pi-coding-agent/). I first ran these tests on 6 October 2026 on Pi 1.0.0 and reran all of them on 6 November 2026 on Pi 1.5.0 and the current adapter and Durable Object packages; this version reports the November results.
+I'm Larry 🍀 Orbi, the creator of Orbi, which runs Pi with nobody watching: it hands Pi a GitHub issue and, when things go well, gets back a reviewed, merged pull request. How Orbi starts Pi is in [the first post of this series](/blog/orbi-on-pi-coding-agent/); the runner around Pi is described in the [Pi hub](/guides/pi-coding-agent/). I first ran these tests on 6 October 2026 on Pi 1.0.0 and reran all of them on 6 November 2026 on Pi 1.5.0, Pi Durable 1.5.0 and the current adapter and Durable Object packages; this version reports the November results.
 
 ## What is the Pi harness?
 
@@ -36,7 +36,7 @@ pi --version          # printed 1.5.0 on 6 November 2026
 pi --print --provider deepseek --model deepseek-flash "Reply with only the word READY." < /dev/null
 ```
 
-The print command returned `READY`. I tested the npm install and the `--print` line, not the curl installer or interactive `/login`. The next sections show what happens when such a run is killed.
+The print command returned `READY`. I tested the npm install and the `--print` line, not the curl installer or interactive `/login`.
 
 ## Killing three unattended Pi setups mid-task
 
@@ -50,7 +50,7 @@ In the table, a Durable Object is a Cloudflare Worker instance with its own stor
 | Kills and outcome | `SIGKILL` three times. Relaunched with `--continue`, it finished every time. | `SIGKILL` twice: the conversation could not be resumed either time, and nothing of it was left on disk (the temp directory was empty). `SIGTERM` six times, handled with `session.stop()`: resumed and finished each time. Among the three runs whose stop-time state I kept, one had a `sleep` cut short by `stop()`, and it was recorded as a success (`(exit 0)`). | `SIGKILL` three times. After I restarted the local runtime, the object came back without any request and finished all three times. |
 | Where the session lives | A JSONL file in `--session-dir`, one entry per line | In memory during a turn. `stop()`, `detach()` and `suspendTurn()` return a state containing the session entries; with the new `sessionStorage` option, the state keeps only the last entry's id and the entries go to your own append-only log. No session entries are written before one of those calls. | Tables named `pi_*` in the Durable Object's SQLite database |
 | Extensions and keys | Whatever the OS user, and a trusted repository, provide, unless you pass `--no-extensions` and `--no-skills`. Keys come from that user's environment or `auth.json`. | No extension discovery, only factories you pass in code. Keys come from an `auth` record, your own credential store or the host's environment, and stay on the host. | Extensions are objects your Worker installs in a registry. The key is a Worker secret. |
-| Who restarts a dead run | Your supervisor, which also has to clean up tool processes `pi` left behind: commands still running after a `SIGKILL`, and anything put in the background | Your code, from a state saved earlier by `stop()`, `detach()` or `suspendTurn()`; after a `SIGKILL` before any of those calls, there is nothing to resume from | Per Cloudflare's docs, the heartbeat alarm fires every 30 seconds while Pi has work (`HEARTBEAT_MS = 3e4` in `agents/harness/pi`). Locally, the object was constructed 0.9, 4.9 and 23.9 seconds after I issued the restart, all within one heartbeat. |
+| Who restarts a dead run | Your supervisor, which also has to clean up tool processes `pi` left behind: commands still running after a `SIGKILL`, and anything put in the background | Your code, from a state saved earlier by `stop()`, `detach()` or `suspendTurn()`; after a `SIGKILL` before any of those calls, there is nothing to resume from | Per Cloudflare's docs, the heartbeat alarm fires every 30 seconds while Pi has work (`HEARTBEAT_MS = 3e4` in `agents/harness/pi`). Locally, the object was constructed 4.9, 0.9 and 23.9 seconds after I issued the restart, all within one heartbeat. |
 | Who notices a hung run | Your supervisor | Your code: `stream()` takes an abort signal | Your code, through `abort()`; nothing is built in, and a tool that ignores its abort signal keeps the session busy |
 | What you run yourself | A machine and a supervisor | A Node service and a sandbox | No server; deploying needs a Cloudflare account, and coding tools need an execution environment you provide |
 
@@ -62,7 +62,7 @@ Create files step1.txt through step5.txt in the current directory, one at a time
 
 Uninterrupted, a run took about 50 seconds. The model was `deepseek-flash` through DeepSeek's API every time. Between 22 and 33 seconds in during the November hard-kill tests, I killed the process with `SIGKILL` (`kill -9`), which a process can't catch; the Linux out-of-memory killer sends the same signal. For the AI SDK I also tried `SIGTERM`, which a process can catch; `SIGTERM` was the only way the AI SDK run recovered. The results below are from the 6 November 2026 retest on my own machine.
 
-The table also shows that this isn't a like-for-like benchmark. The three run different code, and the Cloudflare test used my own two tools because a Worker has no shell and keeps no files between requests. I compared one thing: what is left after a hard kill, and who has to act.
+This isn't a like-for-like benchmark. The three run different code, and the Cloudflare test used my own two tools because a Worker has no shell and keeps no files between requests. I compared one thing: what is left after a hard kill, and who has to act.
 
 ## Running Pi headless with `pi --print`
 
@@ -75,11 +75,11 @@ pi --print --mode json \
    --session-dir ./sess "<task>" < /dev/null
 ```
 
-In print mode Pi can't ask whether to trust the project. With no `--approve` flag, no extension that answers the trust prompt and no saved decision for that directory, the default `defaultProjectTrust: "ask"` means it quietly skips a repository's own `.pi` settings, extensions and skills ([security docs](https://pi.dev/docs/latest/security)). Pass `--approve` or `--no-approve` to make that choice on the command line.
+In print mode Pi can't ask whether to trust the project. With no `--approve` flag, no extension that answers the trust prompt and no saved decision for that directory, the default `defaultProjectTrust: "ask"` means it skips a repository's own `.pi` settings, extensions and skills without a warning ([security docs](https://pi.dev/docs/latest/security)). Pass `--approve` or `--no-approve` to make that choice on the command line.
 
 On Pi 1.5.0 in November, I killed it three times, each during a `sleep 8`. The last line of the session file each time was the model's `bash` call with no result after it. All three files were still valid JSONL, and the interrupted `sleep 8` was still running a moment after each kill.
 
-`SIGKILL` doesn't stop everything, though. Pi starts each `bash` command detached, in its own process group (`detached: true` in Pi's `bash.js`). It stops tracking a command's process group once the command returns, and on `SIGTERM` or `SIGHUP` it kills the ones still running (`print-mode.js`). A `SIGKILL` gives it no chance to do even that. I asked Pi to run `sleep 97` and killed it with `timeout -s KILL 15s`: a second later `sleep 97` was still running. The same test with a plain `timeout 15s`, which sends `SIGTERM`, left nothing behind. A stuck test run left over from a `SIGKILL` keeps its port and keeps writing files while the next attempt starts. Anything a command put in the background, such as `npm run dev &`, outlives Pi however it exits, because Pi stopped tracking it when the command returned.
+That `sleep` survives because Pi starts each `bash` command detached, in its own process group (`detached: true` in Pi's `bash.js`). It stops tracking a command's process group once the command returns, and on `SIGTERM` or `SIGHUP` it kills the ones still running (`print-mode.js`). A `SIGKILL` gives it no chance to do even that. I asked Pi to run `sleep 97` and killed it with `timeout -s KILL 15s`: a second later `sleep 97` was still running. The same test with a plain `timeout 15s`, which sends `SIGTERM`, left nothing behind. A stuck test run left over from a `SIGKILL` keeps its port and keeps writing files while the next attempt starts. Anything a command put in the background, such as `npm run dev &`, outlives Pi however it exits, because Pi stopped tracking it when the command returned.
 
 Something outside Pi has to see that the process is gone and start it again. Resuming took one command:
 
@@ -134,7 +134,7 @@ echo "the secret word is BANANA" | pi --print "reply with only the secret word"
 # BANANA
 ```
 
-What they don't say is that Pi reads stdin until it closes (`readPipedStdin` in Pi's `main.js` waits for the stream's `end` event). If stdin is a pipe nobody closes, Pi waits, with no output and no error:
+Pi reads stdin until it closes, which the docs don't mention (`readPipedStdin` in Pi's `main.js` waits for the stream's `end` event). If stdin is a pipe nobody closes, Pi waits, with no output and no error:
 
 ```bash
 sleep 40 | timeout 20 pi --print "reply with only PONG"            # pi killed at 20 s (exit 124), nothing printed
@@ -210,7 +210,7 @@ Each time I started a new process with the same session id and the same prompt a
 
 With `SIGTERM` instead, it resumed and finished all six times I tried, because the handler ran. `session.stop()` aborted the turn and returned a resume state that included the unfinished turn. A new process passed it as `resumeFrom`, found `hasUnfinishedTurn()` true and called `continueStream()`. The state from `detach()` also goes to `createSession({ sessionId, resumeFrom })`; the one from `suspendTurn()` goes to `createSession({ sessionId, continueFrom })`.
 
-The state now carries the session itself. In three of those six runs, I kept a separate snapshot of the state at stop time, before the resumed run could overwrite it; those snapshots contained 16 to 22 entries. There is no separate session copy in the sandbox to check. The [AI SDK docs](https://ai-sdk.dev/providers/ai-sdk-harnesses/pi) say a state recorded in the old format restores as a fresh session, so a `state.json` saved by the October version would start over. With `sessionStorage`, `stop()` appends the new entries to your log and the state keeps only the last entry's id.
+The state now carries the session itself. In three of those six runs, I kept a separate snapshot of the state at stop time, before the resumed run could overwrite it; those snapshots contained 16 to 22 entries. The [AI SDK docs](https://ai-sdk.dev/providers/ai-sdk-harnesses/pi) say a state recorded in the old format restores as a fresh session, so a `state.json` saved by the October version would start over. With `sessionStorage`, `stop()` appends the new entries to your log and the state keeps only the last entry's id.
 
 In one of those three runs, `stop()` cut the third `sleep 8` short, 1.2 seconds in, and it was recorded as `(exit 0)`. Three sleeps should have remained, including the interrupted one, but on resume the model ran only two: it treated the cut `sleep` as done. The run still ended with all five files and reported success, one wait short. In the other two runs, the signal landed between steps and nothing was cut short. `just-bash`'s `sleep` reports success when aborted; I didn't check other sandboxes.
 
@@ -309,7 +309,7 @@ The Wrangler config I used, Cloudflare's minus the `ai` binding. The key goes in
 }
 ```
 
-`replay` is how a Pi Durable tool says whether it may run twice. `write_file` is `"safe"`, because it overwrites the row for that file name; `sleep` keeps the default, which means an interrupted call is not rerun. The `operationId` makes the submission idempotent: sending the same id again returns the same operation.
+`replay` is how a Pi Durable tool says whether it may run twice. `write_file` is `"safe"`, because it overwrites the row for that file name, and an overwrite is harmless to rerun, though none of my runs needed it. `sleep` keeps the default, which means an interrupted call is not rerun. The `operationId` makes the submission idempotent: sending the same id again returns the same operation.
 
 I ran it with `npx wrangler dev` (wrangler 4.158.0) on my machine, with no Cloudflare account involved. Uninterrupted, it finished in 49.6 seconds. For the November kill test, I killed `wrangler` and its `workerd` runtime with `SIGKILL` 22, 28 and 33 seconds in, every time during a `sleep`, and restarted `wrangler dev` on the same local state about 3 seconds later. Restarting `wrangler dev` stands in for Cloudflare bringing the runtime back; what the test shows is that the object then resumes on its own.
 
@@ -323,7 +323,7 @@ Each time, Pi Durable recorded the interrupted `sleep` as an error and the model
 </harness>
 ```
 
-The model called `sleep` again and went on. An overwrite is harmless to rerun, though none of my runs needed it. For a deploy or a payment, the default at least stops Pi Durable from rerunning the call silently: the model gets the error instead. It doesn't stop the model from calling the tool again, which is what it did with `sleep` all three times, so a tool that must not run twice still needs its own guard, such as an idempotency key. Compare the AI SDK runs above, where the aborted `sleep` came back as a success and the model moved on.
+For a deploy or a payment, the default at least stops Pi Durable from rerunning the call silently: the model gets the error instead. It doesn't stop the model from calling the tool again, which is what it did with `sleep` all three times, so a tool that must not run twice still needs its own guard, such as an idempotency key. Compare the AI SDK runs above, where the aborted `sleep` came back as a success and the model moved on.
 
 These were local runs. Cloudflare's docs describe the same recovery on its network, but I didn't deploy. The docs also list limits that matter for long unattended work:
 
@@ -339,7 +339,7 @@ If Pi is one feature inside a Node product, with a sandbox per user, the AI SDK 
 
 If runs have to survive crashes with no supervisor of your own, and your tools are API calls rather than shell commands, look at Pi Durable on Cloudflare. In my local runs, once I restarted the runtime, it picked the work back up without any request. On Cloudflare's network, the docs say the heartbeat alarm restarts the object; I didn't deploy to check. It is also the newest of the three, since `PiHarness` arrived on 2 October. Pi Durable is experimental, and `agents` supports one Pi minor at a time, so pin both together. Earendil's announcement also shows Pi Durable on plain Node, with SQLite storage and a Node execution environment for the coding tools; I didn't test that.
 
-### Running the Pi agent harness in Docker or a sandbox
+### Running Pi in Docker or a sandbox
 
 The three put the sandbox boundary in different places. With the AI SDK, only the files and the shell are inside it, and Pi and its API key stay on the host: the adapter runs the sandbox's shell commands without passing on the host's environment. In a Worker there is no shell; each tool can do only what its code does. With the CLI, nothing is isolated until you put the whole `pi` process in a container or sandbox yourself. Pi's [containerization guide](https://pi.dev/docs/latest/containerization) covers plain Docker, Docker Sandboxes and OpenShell, which run the whole Pi process isolated, extensions included, and the Gondolin extension, which moves only the built-in tools into a micro-VM while Pi stays on the host.
 
