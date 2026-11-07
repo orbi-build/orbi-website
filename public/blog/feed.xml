@@ -6,11 +6,11 @@
     <description>Notes from shipping Orbi in the open: delivery runs, failures, fixes, and measurements.</description>
     <language>en</language>
     <item>
-      <title>Cursor alternatives: which one merges the PR for you?</title>
+      <title>Cursor alternatives: editors, agents and who merges</title>
       <link>https://orbi.build/blog/cursor-alternatives/</link>
       <guid isPermaLink="true">https://orbi.build/blog/cursor-alternatives/</guid>
       <pubDate>Sat, 07 Nov 2026 00:00:00 GMT</pubDate>
-      <description>Cursor alternatives checked against their docs on 7 Nov 2026: editors (Copilot, Devin Desktop, Zed, Cline), agents, and who handles merges and releases.</description>
+      <description>Cursor alternatives checked against their docs on 7 Nov 2026, grouped by editor or background agent, and by who merges and releases.</description>
     </item>
     <item>
       <title>Best Pi extensions for unattended runs: 20 tested</title>
