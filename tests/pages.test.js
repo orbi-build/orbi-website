@@ -3854,3 +3854,56 @@ describe("homepage body carries an Orbi definition sentence (Issues #890, #899, 
     });
   }
 });
+
+// Issue #1217: the six pages a buyer reads before deciding (home, Cloud, cost,
+// evidence, terms, privacy) must speak to that visitor — no internal
+// vocabulary, no source field name, no database table name. This is the
+// machine-checkable half of the Issue's acceptance list; the wording itself is
+// copy (Issue #1212), so only these strings are pinned, not any sentence.
+describe("buyer-facing pages drop internal vocabulary (Issue #1217)", () => {
+  const BUYER_PAGES = [
+    "index.html", "zh/index.html",
+    "cloud/index.html", "zh/cloud/index.html",
+    "cost/index.html", "zh/cost/index.html",
+    "evidence/index.html", "zh/evidence/index.html",
+    "terms/index.html", "zh/terms/index.html",
+    "privacy/index.html", "zh/privacy/index.html",
+  ];
+  const INTERNAL = [
+    "reviewed merged,", // the proof heading was missing its comma
+    "second story",
+    // The footer's third-party badge host is r2.direasy-multi-tenant.focusapps.app,
+    // so the pinned word is the visible one: tenants, and the possessive.
+    "tenants",
+    "tenant’s",
+    "terminal outcome",
+    "runner injection",
+    "review_rounds", // the field name the evidence page used to print
+    // The Cloud backend's own name for itself. Both languages carried it, and
+    // the dictionary bans one spelling (控制平面) while the page used the
+    // other (控制面), so the test pins the idea, not the spelling.
+    "control plane",
+    "控制面",
+    "totalTokens",
+    "FREE_DELIVERY_ALLOWANCE",
+    "delivery_usage",
+    "visitor_events",
+    "底仓",
+    "出厂",
+    "事实源",
+    "控制平面",
+  ];
+
+  for (const output of BUYER_PAGES) {
+    it(`${output} carries no internal vocabulary`, () => {
+      const html = shipped.get(output);
+      expect(html, `${output} is shipped`).toBeTruthy();
+      for (const phrase of INTERNAL) expect(html, `${output}: ${phrase}`).not.toContain(phrase);
+      // "Only 5 of 6 places left" contradicts itself: the count is the
+      // contract, and the word "Only" was copy. In the build the numbers are
+      // still pricing.json tokens the Worker substitutes on the way out.
+      expect(html, `${output}: "Only" before the remaining places`)
+        .not.toContain("Only __FOUNDING_PARTNER_REMAINING__");
+    });
+  }
+});

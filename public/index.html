@@ -79,7 +79,7 @@
           "Epic and milestone scoping",
           "Native GitHub blockedBy dependency ordering",
           "Independent review that can repair the branch",
-          "Exact-head merge gating",
+          "Only the reviewed commit merges",
           "Release Issues that freeze a SHA into an immutable tag",
           "Recovery from an interrupted run"
         ],
@@ -100,7 +100,7 @@
             "name": "What does Orbi actually need to run?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "For self-hosted Orbi, you need Git, a POSIX shell, and API access to a model you already pay for. Orbi runs on Linux and macOS, on your own machine or your own server. No GPU is required — the model does the thinking, and it can be a hosted API. Your repository, keys, and test suite stay on your machine; nothing is uploaded to us. Cloud: the runner clones the repository you authorize onto machines we operate for the duration of a delivery — see “Can you see my code?” on the Cloud page."
+              "text": "For self-hosted Orbi you need a machine that stays on — Linux with systemd, or macOS with launchd — plus git, gh, curl, and API access to a model you already pay for. The installer adds uv, the Python runtime and the coding agent; if the coding agent is not installed yet, bring Node 22.19 or newer with npm. No GPU is required — the model does the thinking, and it can be a hosted API. Your repository, keys, and test suite stay on your machine; nothing is uploaded to us. Cloud: the hosted worker clones the repository you authorize onto machines we operate, for as long as a delivery runs — see “Can you see my code?” on the Cloud page."
             }
           },
           {
@@ -116,7 +116,7 @@
             "name": "How is Orbi different from GitHub Copilot or Cursor?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Copilot and Cursor are editors that make you faster while you type. Orbi works when nobody is typing: it takes an Issue from your backlog, works in an isolated worktree, and takes it through review and merge to a tagged release. A second session reviews the exact diff, repairs it, and reruns the suite, and only the reviewed commit merges."
+              "text": "Copilot and Cursor are editors that make you faster while you type. Orbi works when nobody is typing: it takes an Issue from your backlog, works in an isolated working copy, and takes it through review and merge to a tagged release. A second session reviews the exact diff, repairs it, and reruns the suite, and only the reviewed commit merges."
             }
           },
           {
@@ -132,7 +132,7 @@
             "name": "What happens when a run crashes halfway?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "The next tick returns to the same scene. The Issue, pull request, labels, and run ID live in GitHub rather than in a process, so restarts reconstruct the same run, branch, worktree, and PR."
+              "text": "Nothing has to be explained twice. The Issue, the pull request and the labels live in GitHub rather than in a process, so a restarted worker picks up the same branch and the same pull request."
             }
           },
           {
@@ -214,8 +214,8 @@
           <div class="production-map" role="group" aria-label="Current Orbi production system">
             <div class="map-row" data-capability="delivery">
               <div class="map-label"><span>01</span><strong>Label an Issue ai-ready</strong></div>
-              <div class="map-track"><span>Issue</span><i></i><span>ai-ready</span><i></i><span>Worktree</span></div>
-              <p >Orbi picks it up and writes the code in an isolated worktree.</p>
+              <div class="map-track"><span>Issue</span><i></i><span>ai-ready</span><i></i><span>Working copy</span></div>
+              <p >Orbi picks it up and writes the code in an isolated working copy.</p>
             </div>
             <div class="map-row map-row-signal" data-capability="review">
               <div class="map-label"><span>02</span><strong>A second session reviews it</strong></div>
@@ -244,7 +244,7 @@
         <div class="section-heading proof-heading">
           <div>
             <p class="section-tag">PRODUCTION EVIDENCE</p>
-            <h2 class="orbi-proof-heading-h2 orbi-section-heading-h2" id="proof-title">One Issue, reviewed
+            <h2 class="orbi-proof-heading-h2 orbi-section-heading-h2" id="proof-title">One Issue: reviewed,
               <br class="responsive-break">merged, and released</h2>
           </div>
           <p >Issue #48 entered the real Orbi repository. An isolated run implemented it, a separate session reviewed the exact diff, PR #193 merged, and the work shipped in Release v0.2.0 with every Issue in scope verified item by item. The record is still inspectable because the record is GitHub.</p>
@@ -268,7 +268,7 @@
         <ul class="proof-ledger">
           <li class="orbi-proof-ledger-li"><span>01</span><strong>Independent review that can fix</strong><p class="orbi-proof-ledger-p">The reviewer changes code, reruns the suite, and judges the repaired head.</p></li>
           <li class="orbi-proof-ledger-li"><span>02</span><strong>Merge evidence tied to one SHA</strong><p class="orbi-proof-ledger-p">A fresh base, a mergeable PR, and the exact commit that received the verdict.</p></li>
-          <li class="orbi-proof-ledger-li"><span>03</span><strong>Recovery without a second story</strong><p class="orbi-proof-ledger-p">Restarts reconstruct the delivery from the Issue, PR, labels, journal, and run ID.</p></li>
+          <li class="orbi-proof-ledger-li"><span>03</span><strong>Recovery that never starts over</strong><p class="orbi-proof-ledger-p">Every step is written back to the Issue and the pull request, so a restart continues where the last one stopped.</p></li>
         </ul>
         <figure class="proof-loop">
           <video
@@ -287,7 +287,7 @@
           <p class="orbi-midway-p">Run this on your own repository</p>
           <div class="install-block">
             <div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="Copied">Copy</button><pre><code data-copy-source>curl -fsSL https://aiready.sh | sh</code></pre></div>
-            <p class="install-needs orbi-midway-p">Needs Python 3.14, git, gh, systemd, and a model endpoint. <code>orbi doctor</code> names whatever is missing.</p>
+            <p class="install-needs orbi-midway-p">Needs a machine that stays on — Linux with systemd, or macOS with launchd — plus git, gh, curl and a model endpoint. The installer adds the Python runtime and the coding agent; <code>orbi doctor</code> names whatever is missing.</p>
             <details class="install-manual">
               <summary>Prefer to run the four steps by hand</summary>
               <div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="Copied">Copy</button><pre><code data-copy-source>git clone https://github.com/orbi-build/orbi.git &amp;&amp; cd orbi
@@ -332,7 +332,7 @@ orbi setup --config orbi.toml</code></pre></div>
             </div>
           </div>
           <div class="stat-group" data-repo-group="orbi-cloud">
-            <p class="stat-repo"><b>orbi-build/orbi-cloud</b><span class="stat-private">Private</span><span class="stat-purpose">Cloud control plane</span></p>
+            <p class="stat-repo"><b>orbi-build/orbi-cloud</b><span class="stat-private">Private</span><span class="stat-purpose">Cloud service</span></p>
             <div class="stat-grid">
               <div class="stat"><strong data-repo="orbi-cloud" data-stat="days" data-floor="30">0</strong><span>days running</span><small data-started></small></div>
               <div class="stat"><strong data-repo="orbi-cloud" data-stat="issues" data-floor="1000">0</strong><span>issues closed</span></div>
@@ -393,7 +393,7 @@ orbi setup --config orbi.toml</code></pre></div>
       <section class="pricing-summary" id="pricing-summary" data-status="shipping" aria-labelledby="pricing-summary-title">
         <div class="shell">
           <p class="section-tag">MANAGED CLOUD PRICING</p>
-          <h2 class="orbi-pricing-summary-h2" id="pricing-summary-title">Start with an AI delivery trial. Choose the plan that fits.</h2>
+          <h2 class="orbi-pricing-summary-h2" id="pricing-summary-title">Try a few merged pull requests free, then pick the plan that fits.</h2>
           <p class="pricing-summary-trial">__FREE_TRIAL__ · No credit card required</p>
           <div class="pricing-summary-cards">
             <article class="pricing-summary-card">
@@ -415,7 +415,7 @@ orbi setup --config orbi.toml</code></pre></div>
               </ul>
             </article>
           </div>
-          <p class="pricing-summary-founding">Founding partners: 50% off for life. Only __FOUNDING_PARTNER_REMAINING__ of __FOUNDING_PARTNER_LIMIT__ places left.</p>
+          <p class="pricing-summary-founding">Founding partners: 50% off for life. __FOUNDING_PARTNER_REMAINING__ of __FOUNDING_PARTNER_LIMIT__ places left.</p>
           <a class="text-link pricing-summary-link" data-cta="pricing-summary" href="/cloud/#pricing">See full pricing →</a>
         </div>
       </section>
@@ -430,8 +430,8 @@ orbi setup --config orbi.toml</code></pre></div>
             <details class="faq-item" open>
               <summary><span>01</span>What does Orbi actually need to run?</summary>
               <div class="faq-answer">
-                <p class="orbi-faq-answer-p">For self-hosted Orbi, you need Git, a POSIX shell, and API access to a model you already pay for. Orbi runs on Linux and macOS, on your own machine or your own server. No GPU is required — the model does the thinking, and it can be a hosted API.</p>
-                <p class="orbi-faq-answer-p">Self-hosted: your repository, keys, and test suite stay on your machine; nothing is uploaded to us. Cloud: the runner clones the repository you authorize onto machines we operate for the duration of a delivery — see <a href="/cloud/#faq">“Can you see my code?”</a> on the Cloud page.</p>
+                <p class="orbi-faq-answer-p">For self-hosted Orbi you need a machine that stays on — Linux with systemd, or macOS with launchd — plus git, gh, curl, and API access to a model you already pay for. The installer adds uv, the Python runtime and the coding agent; if the coding agent is not installed yet, bring Node 22.19 or newer with npm. No GPU is required — the model does the thinking, and it can be a hosted API. The <a href="https://docs.orbi.build/getting-started">setup guide</a> walks through the rest.</p>
+                <p class="orbi-faq-answer-p">Self-hosted: your repository, keys, and test suite stay on your machine; nothing is uploaded to us. Cloud: the hosted worker clones the repository you authorize onto machines we operate, for as long as a delivery runs — see <a href="/cloud/#faq">“Can you see my code?”</a> on the Cloud page.</p>
               </div>
             </details>
 
@@ -446,7 +446,7 @@ orbi setup --config orbi.toml</code></pre></div>
             <details class="faq-item">
               <summary><span>03</span>How is this different from Copilot or Cursor?</summary>
               <div class="faq-answer">
-                <p class="orbi-faq-answer-p">Those are editors — they make you faster while you are typing. Orbi is what happens when nobody is typing: it takes an Issue from your backlog, works in an isolated worktree, and takes it through review and merge to a tagged release.</p>
+                <p class="orbi-faq-answer-p">Those are editors — they make you faster while you are typing. Orbi is what happens when nobody is typing: it takes an Issue from your backlog, works in an isolated working copy, and takes it through review and merge to a tagged release.</p>
                 <p class="orbi-faq-answer-p">The difference that matters is what happens after the code is written. A second session reviews the exact diff, repairs it, and reruns the suite, and only the reviewed commit is allowed to merge. That review step is the product.</p>
               </div>
             </details>
@@ -462,8 +462,8 @@ orbi setup --config orbi.toml</code></pre></div>
             <details class="faq-item">
               <summary><span>05</span>What happens when a run crashes halfway?</summary>
               <div class="faq-answer">
-                <p class="orbi-faq-answer-p">The next tick returns to the same scene. Because the Issue, the pull request, the labels, and the run ID live in GitHub rather than in a process, a killed process or a failed test does not produce a second story about what happened.</p>
-                <p class="orbi-faq-answer-p">Restarts reconstruct state from that record — the same run, branch, worktree, and PR.</p>
+                <p class="orbi-faq-answer-p">Nothing has to be explained twice. Because the Issue, the pull request and the labels live in GitHub rather than in a process, a killed process or a failed test cannot leave two versions of what happened.</p>
+                <p class="orbi-faq-answer-p">A restart rebuilds its state from that record: the same branch, the same pull request, the same work in progress.</p>
               </div>
             </details>
 
