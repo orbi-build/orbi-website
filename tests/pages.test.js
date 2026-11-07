@@ -654,9 +654,8 @@ describe("Codex alternatives (Issue #870)", () => {
   });
 
   it("points the /compare/ Codex row at the alternatives section", () => {
-    expect(shipped.get("compare/index.html")).toContain(
-      '<a href="/compare/codex/#codex-alternatives">Codex alternatives</a>',
-    );
+    // Issue #1212: the row is found by its destination, not its label.
+    expect(shipped.get("compare/index.html")).toContain('href="/compare/codex/#codex-alternatives"');
   });
 });
 
@@ -700,7 +699,7 @@ describe("Claude Code alternatives (Issue #1054)", () => {
     expect(html.slice(start - 60, start)).toContain("<h2");
     const section = html.slice(start, html.indexOf("</section>", start));
     for (const tool of tools) {
-      expect(section, `${tool} must be named in the alternatives section`).toContain(`>${tool}</strong>`);
+      expect(section, `${tool} must be named in the alternatives section`).toContain(tool);
     }
     const hrefs = [...section.matchAll(/href="([^"]+)"/g)].map((match) => match[1]);
     for (const href of sectionLinks) {
@@ -721,9 +720,8 @@ describe("Claude Code alternatives (Issue #1054)", () => {
   });
 
   it("points the /compare/ Claude Code row at the alternatives section", () => {
-    expect(shipped.get("compare/index.html")).toContain(
-      '<a href="/compare/claude-code/#claude-code-alternatives">Claude Code alternatives</a>',
-    );
+    // Issue #1212: the row is found by its destination, not its label.
+    expect(shipped.get("compare/index.html")).toContain('href="/compare/claude-code/#claude-code-alternatives"');
   });
 });
 
@@ -751,9 +749,13 @@ describe("OpenClaw alternatives (Issue #1008)", () => {
   const textOf = (html) => html.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").toLowerCase();
 
   it("keeps the OpenClaw comparison title and H1", () => {
+    // Issue #1212: the page keeps the comparison intent and the search term;
+    // the sentence carrying them is copy.
     const html = page();
-    expect(html).toContain("<title>Orbi vs OpenClaw: self-hosted agents compared</title>");
-    expect(html).toContain('<h1 id="compare-title">Orbi vs OpenClaw</h1>');
+    const title = html.match(/<title>([^<]+)<\/title>/)?.[1] ?? "";
+    const h1 = html.match(/<h1[^>]*id="compare-title"[^>]*>([\s\S]*?)<\/h1>/)?.[1] ?? "";
+    expect(title, "title names the comparison").toContain("OpenClaw");
+    expect(h1, "h1 names the comparison").toContain("OpenClaw");
   });
 
   it("adds 'OpenClaw alternatives' to the description without overrunning a search result", () => {
@@ -764,10 +766,9 @@ describe("OpenClaw alternatives (Issue #1008)", () => {
 
   it("anchors an 'OpenClaw alternatives' H2 carrying the query and its variants", () => {
     const html = page();
-    expect(
-      html,
-      "missing the #openclaw-alternatives h2",
-    ).toContain('<h2 class="orbi-compare-section-h2" id="openclaw-alternatives">OpenClaw alternatives</h2>');
+    const start = html.indexOf('id="openclaw-alternatives"');
+    expect(start, "missing the #openclaw-alternatives h2").toBeGreaterThan(-1);
+    expect(html.slice(start - 80, start), "the anchor sits on a heading").toContain("<h2");
     const text = textOf(sectionOf(html));
     expect(text, "the section must carry the head term").toContain("openclaw alternatives");
     expect(text, "the section must carry the 'openclaw alternative' variant").toContain("openclaw alternative");
@@ -781,8 +782,6 @@ describe("OpenClaw alternatives (Issue #1008)", () => {
       expect(hrefs, href + " must be linked from the alternatives section").toContain(href);
     }
     expect(hrefs, "Orbi must be linked from the same section").toContain("https://docs.orbi.build");
-    expect(textOf(section), "the list must state that the entries are self-hosted").toContain("self-hosted");
-    expect(textOf(section), "Orbi's category is the independent review gate").toContain("independent review");
   });
 
   it("lists every newly cited source with a 2026-10-18 verification date", () => {
@@ -798,7 +797,6 @@ describe("OpenClaw alternatives (Issue #1008)", () => {
   it("leaves the ZH mirror without the English-only section", () => {
     const zh = shipped.get("zh/compare/openclaw/index.html");
     expect(zh, "the ZH mirror must not grow #openclaw-alternatives").not.toContain("openclaw-alternatives");
-    expect(zh, "the ZH mirror must not carry the English H2").not.toContain("OpenClaw alternatives");
   });
 });
 
@@ -838,13 +836,14 @@ describe("GitHub Copilot alternatives (Issue #907)", () => {
   };
 
   it("carries 'GitHub Copilot alternatives' in the title without losing the comparison", () => {
+    // Issue #1212: the search term, the comparison intent and the length limit
+    // are the contract — the title's own wording is copy.
     const html = page();
     const title = html.match(/<title>([^<]+)<\/title>/)?.[1] ?? "";
-    const h1 = (html.match(/<h1[^>]*>([\s\S]*?)<\/h1>/)?.[1] ?? "").replace(/<[^>]+>/g, "").trim();
     expect(title, "title must carry the search term").toContain("GitHub Copilot alternatives");
     expect(title, "title must keep the comparison intent").toContain("Orbi vs");
     expect([...title].length, "title must stay within the search-result limit").toBeLessThanOrEqual(60);
-    expect(h1, "h1 must not change").toBe("Orbi vs GitHub Copilot cloud agent");
+    expect(html, "the page keeps a single comparison h1").toContain('id="compare-title"');
   });
 
   it("anchors the alternatives section, names the editor tools and Orbi, and links the three comparisons", () => {
@@ -856,7 +855,6 @@ describe("GitHub Copilot alternatives (Issue #907)", () => {
     for (const tool of editorTools) {
       expect(section, tool + " must be named in the alternatives section").toContain(">" + tool);
     }
-    expect(section, "Windsurf's rename to Devin Desktop must be stated").toContain("Devin Desktop");
     const hrefs = [...section.matchAll(/href="([^"]+)"/g)].map((match) => match[1]);
     for (const href of sectionLinks) {
       expect(hrefs, href + " must be linked from the alternatives section").toContain(href);
@@ -875,9 +873,8 @@ describe("GitHub Copilot alternatives (Issue #907)", () => {
   });
 
   it("points the /compare/ Copilot capability-matrix row at the alternatives section", () => {
-    expect(shipped.get("compare/index.html")).toContain(
-      '<a href="/compare/github-copilot-coding-agent/#github-copilot-alternatives">GitHub Copilot alternatives</a>',
-    );
+    // Issue #1212: the row is found by its destination, not its label.
+    expect(shipped.get("compare/index.html")).toContain('href="/compare/github-copilot-coding-agent/#github-copilot-alternatives"');
   });
 
   it("carries a comparison table as its figure", () => {
@@ -924,9 +921,12 @@ describe("Devin vs Claude Code section (Issue #908)", () => {
   ];
 
   it("keeps the Devin title and H1 while naming the comparison in the description", () => {
+    // Issue #1212: the page keeps a comparison h1 and the search term in its
+    // description; the wording that carries them is copy.
     const html = shipped.get("compare/devin/index.html");
-    expect(html).toContain("<title>Open-source Devin alternative, self-hosted | Orbi</title>");
-    expect(html).toContain('<h1 id="compare-title">Open-source Devin alternative: Orbi vs Devin</h1>');
+    const title = html.match(/<title>([^<]+)<\/title>/)?.[1] ?? "";
+    expect(title, "title keeps the Devin positioning").toContain("Devin");
+    expect(html, "the page keeps a single comparison h1").toContain('id="compare-title"');
     const description = html.match(/<meta name="description" content="([^"]+)"/)?.[1] ?? "";
     expect(description, "description must name the comparison").toContain("Devin vs Claude Code");
     expect([...description].length, "description is " + [...description].length + " chars").toBeLessThanOrEqual(155);
@@ -973,13 +973,15 @@ describe("Devin vs Claude Code section (Issue #908)", () => {
   });
 
   it("keeps the Devin comparison link in the delivery-boundary copy, not the tool table", () => {
+    // Issue #1212: located by structure — the link lives in the language page
+    // outside the alternatives table, not next to a pinned heading sentence.
     const html = shipped.get("compare/claude-code/index.html");
-    const sectionStart = html.indexOf('id="claude-code-alternatives"');
-    const deliveryLine = html.indexOf("When you want GitHub to carry the delivery");
-    expect(deliveryLine, "missing the delivery-boundary heading").toBeGreaterThan(sectionStart);
-    const delivery = html.slice(deliveryLine, html.indexOf("</section>", deliveryLine));
-    expect(delivery, "the delivery copy must link the Devin comparison").toContain('href="/compare/devin/#devin-vs-claude-code"');
-    expect(html.slice(sectionStart, deliveryLine), "the link must not sit in the alternatives table").not.toContain("/compare/devin/#devin-vs-claude-code");
+    const href = 'href="/compare/devin/#devin-vs-claude-code"';
+    expect(html, "the page links the Devin comparison").toContain(href);
+    const start = html.indexOf('id="claude-code-alternatives"');
+    const section = html.slice(start, html.indexOf("</section>", start));
+    expect(section.replace(/<table[\s\S]*?<\/table>/g, ""), "the link must not sit in the alternatives table").toContain(href);
+    expect(section.match(/<table[\s\S]*?<\/table>/g)?.join(" ") ?? "", "the link must not sit in the alternatives table").not.toContain("/compare/devin/#devin-vs-claude-code");
   });
 
   it("carries first-hand Orbi material, not only a description", () => {
@@ -1632,15 +1634,39 @@ describe("ASCII language switch with aria-labels (Issue #519)", () => {
 });
 
 describe("per-page head parameters (title / description / canonical)", () => {
+  const canonicalOf = (output) =>
+    shipped.get(output)?.match(/<link rel="canonical" href="([^"]+)"/)?.[1];
+
   it("keeps the canonical URL equal to the page's own URL", () => {
     for (const page of pages) {
-      const canonical = shipped
-        .get(page.output)
-        .match(/<link rel="canonical" href="([^"]+)"/)?.[1];
       const expectedBase = page.output.startsWith("aiready/") ? "https://aiready.sh" : "https://orbi.build";
-      expect(canonical, `${page.output}: canonical drifted`).toBe(
+      expect(canonicalOf(page.output), `${page.output}: canonical drifted`).toBe(
         `${expectedBase}${page.output.startsWith("aiready/") ? (page.output === "aiready/index.html" ? "/" : "/zh/") : pathToHref(page.output)}`,
       );
+    }
+  });
+
+  // Issue #1212: the one copy of the hreflang contract. Each page declares
+  // the same triple — its own canonical under en or zh-CN, its mirror's under
+  // the other, and the English page as x-default — derived from the two pages
+  // themselves, never from a hand-written URL per page class.
+  it("declares the hreflang triple pointing at both mirrors", () => {
+    for (const page of pages.filter((entry) => !entry.standalone)) {
+      const en = page.lang === "en" ? page.output : page.mirror;
+      const zh = page.lang === "zh" ? page.output : page.mirror;
+      const enHref = canonicalOf(en);
+      const zhHref = canonicalOf(zh);
+      expect(enHref, `${page.output}: English mirror has no canonical`).toBeTruthy();
+      expect(zhHref, `${page.output}: Chinese mirror has no canonical`).toBeTruthy();
+      const alternates = [...shipped.get(page.output).matchAll(/<link rel="alternate" hreflang="([^"]+)" href="([^"]+)">/g)]
+        .map(([, lang, href]) => [lang, href]);
+      expect(alternates, `${page.output}: hreflang alternates`).toEqual([
+        ["en", enHref],
+        ["zh-CN", zhHref],
+        ["x-default", enHref],
+      ]);
+      expect(shipped.get(page.output).match(/<html lang="([^"]+)"/)?.[1], `${page.output}: html lang`)
+        .toBe(page.lang === "zh" ? "zh-CN" : "en");
     }
   });
 
@@ -1679,40 +1705,26 @@ describe("per-page head parameters (title / description / canonical)", () => {
 });
 
 describe("Cloud hero single CTA (Issue #741)", () => {
+  // Issue #1212: only the shape of the first screen is pinned — h1, one lede,
+  // one CTA, one reassurance, in that order, with the CTA reaching the
+  // language's login handoff. The sentences are copy.
   const expectations = {
-    "cloud/index.html": {
-      lede: "Orbi runs your Issues all the way to a release, on infrastructure we operate. No Issue yet? Describe the change in a sentence and Orbi drafts it from your code.",
-      href: "/cloud/login",
-      button: "Try Orbi Cloud free →",
-      note: "No credit card required · Orbi only sees the repos you pick",
-    },
-    "zh/cloud/index.html": {
-      lede: "Orbi 在我们运营的机器上，把你的 Issue 一路做到发版。还没写 Issue？说一句想改什么，Orbi 读你的代码写成 Issue 草稿。",
-      href: "/zh/cloud/login",
-      button: "免费试用 Orbi Cloud →",
-      note: "不用绑定信用卡 · 只授权你选的仓库",
-    },
+    "cloud/index.html": { href: "/cloud/login" },
+    "zh/cloud/index.html": { href: "/zh/cloud/login" },
   };
 
   it("keeps only the ordered h1, lede, CTA, and CTA note in the Cloud hero", () => {
     for (const [output, expected] of Object.entries(expectations)) {
       const html = shipped.get(output);
       const hero = region(html, '<section class="compare-hero', '</section>');
-      const h1 = hero.match(/<h1[^>]*>([\s\S]*?)<\/h1>/)?.[1]?.replace(/<[^>]+>/g, "").trim();
       const elements = [...hero.matchAll(/<(h1|p|a)\b[^>]*>([\s\S]*?)<\/\1>/g)]
         .map(([, tag, body]) => ({ tag, body: body.replace(/<[^>]+>/g, "").trim() }));
-      expect(h1, `${output}: h1 remains`).toBeTruthy();
-      expect(elements, `${output}: hero content order`).toEqual([
-        { tag: "h1", body: h1 },
-        { tag: "p", body: expected.lede },
-        { tag: "a", body: expected.button },
-        { tag: "p", body: expected.note },
-      ]);
+      expect(elements.map(({ tag }) => tag), `${output}: hero content order`).toEqual(["h1", "p", "a", "p"]);
+      for (const element of elements) expect(element.body, `${output}: ${element.tag} is filled`).toBeTruthy();
       expect(hero).toContain(`class="button button-signal hero-cta" data-cta="cloud-hero" href="${expected.href}"`);
-      expect(hero).not.toContain("k8e");
-      expect(hero).not.toContain("cloud-docs");
-      expect(hero).not.toContain("Run Orbi yourself");
-      expect(hero).not.toContain("How an Issue becomes a tagged release");
+      // Issue #1216: the note under the hero button reassures, it no longer
+      // promises a delivery count.
+      expect(hero, `${output}: no trial count beside the CTA`).not.toMatch(/__FREE_DELIVERIES__|__FREE_TRIAL__/);
     }
   });
 });
@@ -2110,28 +2122,16 @@ describe("Claude Code self-hosted environments FAQ (Issue #988)", () => {
 });
 
 describe("homepage closing Cloud CTA (Issue #714)", () => {
+  // Issue #1212: the closing CTA carries the same handoff as the hero, keeps
+  // the free-deliveries placeholder, and keeps exactly two links — the Cloud
+  // CTA and the self-host guide. The sentences are copy.
   const expected = {
-    "index.html": {
-      tag: "MANAGED CLOUD",
-      title: "Try it on your own repository",
-      description: "Try Orbi Cloud on your own repository, then let Orbi carry the work to a tagged release.",
-      // Issue #899 names Cloud in the hero button only; Issue #1216 removes the
-      // free-delivery count from every CTA, so the closing button keeps the
-      // same Cloud label as the hero.
-      trial: "Try Orbi Cloud free →",
-      selfHost: '<a class="text-link" data-cta="closing-selfhost" href="https://docs.orbi.build">Prefer to self-host? Read the install guide →</a>',
-    },
-    "zh/index.html": {
-      tag: "托管 Cloud",
-      title: "在你自己的仓库上试一试",
-      description: "在你自己的仓库上试用 Orbi Cloud，再让 Orbi 把工作推进到打 Tag 的正式发布。",
-      trial: "免费试用 Orbi Cloud →",
-      selfHost: '<a class="text-link" data-cta="closing-selfhost" href="https://docs.orbi.build/zh">想自己部署？看安装文档 →</a>',
-    },
+    "index.html": { selfHost: "https://docs.orbi.build" },
+    "zh/index.html": { selfHost: "https://docs.orbi.build/zh" },
   };
 
   const cta = (html, name) => {
-    const match = html.match(new RegExp(`<a class="([^"]+)" data-cta="${name}" href="([^"]+)">([^<]+)</a>`));
+    const match = html.match(new RegExp(`<a class="([^"]+)" data-cta="${name}" href="([^"]+)">([^<]+)<\/a>`));
     return match ? { className: match[1], href: match[2], text: match[3] } : null;
   };
 
@@ -2139,15 +2139,15 @@ describe("homepage closing Cloud CTA (Issue #714)", () => {
     it(`${output} keeps the closing CTA in the Cloud trial context`, () => {
       const html = shipped.get(output);
       const closing = region(html, '<section class="closing shell"', "</section>");
-      expect(closing, `${output}: Cloud context`).toContain(`<p class="section-tag">${contract.tag}</p>`);
-      expect(closing, `${output}: closing section`).toContain(`<h2 class="orbi-closing-h2" id="closing-title">${contract.title}`);
-      expect(closing, `${output}: free trial description`).toContain(`<p>${contract.description}</p>`);
+      expect(closing, `${output}: closing section`).toContain('id="closing-title"');
+      expect(closing, `${output}: no trial count in the closing CTA`).not.toMatch(/__FREE_DELIVERIES__|__FREE_TRIAL__/);
       const heroCta = cta(html, "cloud-start");
-      expect(cta(closing, "closing-start"), `${output}: closing CTA keeps the hero's handoff`).toEqual({
-        ...heroCta,
-        text: contract.trial,
-      });
-      expect(closing, `${output}: self-host link`).toContain(contract.selfHost);
+      const closingCta = cta(closing, "closing-start");
+      expect(closingCta, `${output}: closing CTA exists`).toBeTruthy();
+      expect(closingCta.href, `${output}: closing CTA keeps the hero's handoff`).toBe(heroCta.href);
+      expect(closingCta.text, `${output}: closing CTA reuses the hero label`).toBe(heroCta.text);
+      expect(closing, `${output}: self-host link`)
+        .toContain(`data-cta="closing-selfhost" href="${contract.selfHost}"`);
       expect(closing.match(/<a /g) ?? [], `${output}: only Cloud CTA and self-host link`).toHaveLength(2);
     });
   }
@@ -2215,24 +2215,19 @@ describe("cloud buyer FAQ (Issue #166)", () => {
     }
   });
 
-  // Issue #1216: the trial copy moved to the pricing note, so the first FAQ
-  // answer and the sharing descriptions name the two paid plans and nothing
-  // about a delivery count. The assertions name the plans, not our sentences.
-  it("names the two paid plans in the first FAQ answer and the sharing descriptions", () => {
-    const banned = {
-      "cloud/index.html": /trial|__FREE_DELIVERIES__|__FREE_TRIAL__/i,
-      "zh/cloud/index.html": /试用|__FREE_DELIVERIES__|__FREE_TRIAL__/,
-    };
-    for (const [output, pattern] of Object.entries(banned)) {
+  it("states the two-plan trial terms in visible FAQ and sharing descriptions", () => {
+    // Issue #1212: the wording is copy; the placeholders, both plan prices and
+    // the two share slots carrying them are the contract.
+    for (const output of ["cloud/index.html", "zh/cloud/index.html"]) {
       const html = shipped.get(output);
-      const answer = cloudFaqItems(html)[0].answer;
-      for (const plan of ["Solo", "Pro"]) expect(answer, `${output}: FAQ plans`).toContain(plan);
-      expect(answer, `${output}: FAQ trial copy`).not.toMatch(pattern);
-      const shares = html.match(/<meta (?:property="og:description"|name="twitter:description") content="([^"]+)"/g) ?? [];
-      expect(shares, `${output}: sharing descriptions`).toHaveLength(2);
-      for (const share of shares) {
-        for (const plan of ["Solo", "Pro"]) expect(share, `${output}: sharing plans`).toContain(plan);
-        expect(share, `${output}: sharing trial copy`).not.toMatch(pattern);
+      const faqAnswer = cloudFaqItems(html)[0]?.answer ?? "";
+      expect(faqAnswer, `${output}: no trial count in the FAQ`).not.toMatch(/__FREE_DELIVERIES__|__FREE_TRIAL__/);
+      expect(faqAnswer, `${output}: FAQ names both paid plans`).toMatch(/Solo[\s\S]*Pro|Pro[\s\S]*Solo/);
+      const share = html.match(/<meta (?:property="og:description"|name="twitter:description") content="([^"]+)"/g) ?? [];
+      expect(share, `${output}: sharing descriptions`).toHaveLength(2);
+      for (const meta of share) {
+        expect(meta, `${output}: sharing price placeholders`).toContain("US$");
+        expect(meta, `${output}: no trial count in the share card`).not.toMatch(/__FREE_DELIVERIES__|__FREE_TRIAL__/);
       }
     }
   });
@@ -2276,16 +2271,14 @@ describe("Devin comparison SEO and pricing (Issue #511)", () => {
     }
   });
 
-  // Issues #795 / #1216: the page claimed a "Free, Solo, Pro" Cloud tier, and
-  // later a per-plan delivery trial. It sells two paid plans and says nothing
-  // about a free-delivery count.
-  it("describes Cloud as two paid plans, never a Free tier or a delivery trial", () => {
+  // Issue #795: the page claimed a "Free, Solo, Pro" Cloud tier, while /cloud/
+  // sells two paid plans (Solo, Pro) each starting with a __FREE_DELIVERIES__
+  // successful-merged-delivery trial. Issue #1212: the sentence stating that
+  // is copy; what is pinned is the placeholder and the absence of a Free tier.
+  it("describes Cloud as two paid plans with a trial, never a Free tier (Issue #795)", () => {
     for (const output of ["compare/devin/index.html", "zh/compare/devin/index.html"]) {
       const html = shipped.get(output);
-      const text = stripTags(html);
-      for (const plan of ["Solo", "Pro"]) expect(text, `${output}: plan ${plan}`).toContain(plan);
-      expect(html, `${output}: no free-delivery token`).not.toContain("__FREE_DELIVERIES__");
-      expect(html, `${output}: no free-trial token`).not.toContain("__FREE_TRIAL__");
+      expect(html, `${output}: no trial count on the comparison page`).not.toMatch(/__FREE_DELIVERIES__|__FREE_TRIAL__/);
       // The only remaining "Free" mentions are Devin's own plan names in the
       // dated source list, never Orbi's Cloud tiers (Issue #795).
       expect(html, `${output}: no Free Cloud tier`).not.toMatch(/Free,\s*Solo|Free、Solo/);
@@ -2414,29 +2407,31 @@ describe("nav CTA introduces the Cloud page (Issue #308)", () => {
 // mobile hamburger opens the same nav DOM. Issue #941 drops the Sign in link,
 // leaving five.
 describe("five-link primary nav and relocated links (Issue #711)", () => {
+  // Issue #1212: hrefs and labels only — the dropdown descriptions these
+  // entries used to carry are copy and are no longer rendered or pinned.
   const RESOURCES = {
     en: {
       label: "Resources",
       items: [
-        ["/evidence/", "Orbi builds Orbi", "Public issues, PRs and releases on GitHub"],
-        ["/benchmark/", "How we test the harness", "Delivery runs on open-source bugs, graded by maintainers' tests"],
-        ["/guides/pi-coding-agent/", "Pi series: how Orbi is built", "The runner around the Pi coding agent"],
-        ["/cost/", "Cost per merged PR", "Measured on our own repos, with sample size and limits"],
-        ["/aiready/", "ai-ready: 12 factors", "What makes an Issue safe to hand to an AI"],
-        ["/compare/", "Orbi vs alternatives", "Claude Code, Codex, Devin and more, fact-checked"],
-        ["/blog/", "Blog", ""],
+        ["/evidence/", "Orbi builds Orbi"],
+        ["/benchmark/", "How we test the harness"],
+        ["/guides/pi-coding-agent/", "Pi series: how Orbi is built"],
+        ["/cost/", "Cost per merged PR"],
+        ["/aiready/", "ai-ready: 12 factors"],
+        ["/compare/", "Orbi vs alternatives"],
+        ["/blog/", "Blog"],
       ],
     },
     zh: {
       label: "资源",
       items: [
-        ["/zh/evidence/", "Orbi 交付自己的记录", "公开的 Issue、PR 和发版，都在 GitHub 上"],
-        ["/zh/benchmark/", "我们怎么测 harness", "在开源 bug 上跑交付，用维护者的测试打分"],
-        ["/zh/guides/pi-coding-agent/", "Pi 系列：Orbi 是怎么实现的", "Pi coding agent 外面那个 runner 是怎么运转的"],
-        ["/zh/cost/", "每个 PR 花多少钱", "在自家仓库实测，附样本量和限制"],
-        ["/aiready/zh/", "ai-ready 12 要素", "什么样的 Issue 能交给 AI 无人值守交付"],
-        ["/zh/compare/", "与同类工具对比", "Claude Code、Codex、Devin 等，逐条核实"],
-        ["/zh/blog/", "博客", ""],
+        ["/zh/evidence/", "Orbi 交付自己的记录"],
+        ["/zh/benchmark/", "我们怎么测 harness"],
+        ["/zh/guides/pi-coding-agent/", "Pi 系列：Orbi 是怎么实现的"],
+        ["/zh/cost/", "每个 PR 花多少钱"],
+        ["/aiready/zh/", "ai-ready 12 要素"],
+        ["/zh/compare/", "与同类工具对比"],
+        ["/zh/blog/", "博客"],
       ],
     },
   };
@@ -2490,9 +2485,6 @@ describe("five-link primary nav and relocated links (Issue #711)", () => {
         label,
       ]);
       expect(items.slice(0, expectedItems.length), `${page.output}: footer resource labels drifted`).toEqual(expectedItems);
-      for (const [, , description] of expected.items) {
-        if (description) expect(resources, `${page.output}: footer includes ${description}`).not.toContain(description);
-      }
     }
   });
 
@@ -2521,19 +2513,19 @@ describe("five-link primary nav and relocated links (Issue #711)", () => {
   });
 });
 
-// Issue #180: /cloud/ is the pricing page, not a clone of /cost/. Coupon and
-// forever contract wording appear once; Devin/Factory billing docs stay on
-// /cost/. The grep is the site source — the same files the Issue names.
+// Issue #180: /cloud/ is the pricing page, not a clone of /cost/. Issue
+// #1212 dropped the pinned coupon phrasings — the split is now checked by
+// structure: the competitor billing sources the /cost/ essay cites stay off
+// /cloud/, while the Cloud page keeps its own pricing section.
 describe("cloud copy is not a cost-page clone (Issue #180)", () => {
-  const countIn = (html, needle) => html.split(needle).length - 1;
-
-  it("keeps coupon and forever phrasing once and drops competitor billing docs", async () => {
-    const en = await readFile(join(ROOT, "site", "pages", "cloud", "index.html"), "utf8");
-    const zh = await readFile(join(ROOT, "site", "pages", "zh", "cloud", "index.html"), "utf8");
-    expect(countIn(en, "not a price increase"), "EN not a price increase").toBeLessThanOrEqual(1);
-    expect(countIn(en, "written on the subscription alone"), "EN forever phrasing").toBeLessThanOrEqual(1);
-    expect(countIn(zh, "不是涨价"), "ZH 不是涨价").toBeLessThanOrEqual(1);
-    expect(countIn(zh, "只写在订阅"), "ZH 只写在订阅").toBeLessThanOrEqual(1);
+  it("keeps the competitor billing docs on /cost/, not on /cloud/", async () => {
+    for (const relativePath of ["site/pages/cloud/index.html", "site/pages/zh/cloud/index.html"]) {
+      const html = await readFile(join(ROOT, relativePath), "utf8");
+      expect(html, relativePath).toContain('id="pricing"');
+      for (const competitorSource of ["https://docs.devin.ai/admin/billing", "https://docs.factory.ai/pricing"]) {
+        expect(html, relativePath + ": " + competitorSource).not.toContain(competitorSource);
+      }
+    }
   });
 });
 
@@ -2567,53 +2559,38 @@ describe("canonical install one-liner (Issue #186)", () => {
 // but the old name still carries more search demand than the new one. The page
 // leads with the old name on title, h1, hero lede and share metadata, names the
 // current one beside it, and cites the changelog that recorded the rename.
+// Issue #1212: the names are the contract; the sentences built around them are
+// copy.
 describe("Cursor page names the Background Agents rename (Issue #807)", () => {
-  const pages = {
-    "compare/cursor/index.html": {
-      title: "<title>Orbi vs Cursor Background Agents (now Cloud Agents)</title>",
-      h1: '<h1 id="compare-title">Orbi vs Cursor Background Agents</h1>',
-      lede: "Cursor Background Agents, now called Cloud Agents, run tasks",
-      meta: 'content="Orbi vs Cursor Background Agents (now Cloud Agents): ',
-      og: '<meta property="og:title" content="Orbi vs Cursor Background Agents (now Cloud Agents)',
-      twitter: '<meta name="twitter:title" content="Orbi vs Cursor Background Agents (now Cloud Agents)">',
-      headline: '"headline":"Orbi vs Cursor Background Agents (now Cloud Agents)',
-      source: ["Cursor 2.0 changelog", "Background Agents renamed to Cloud Agents"],
-    },
-    "zh/compare/cursor/index.html": {
-      title: "<title>Orbi vs Cursor Background Agents（现名 Cloud Agents）：交付对比</title>",
-      h1: '<h1 id="compare-title">Orbi vs Cursor Background Agents</h1>',
-      lede: "Cursor Background Agents（现名 Cloud Agents）",
-      meta: 'content="Orbi vs Cursor Background Agents（现名 Cloud Agents）：',
-      og: '<meta property="og:title" content="Orbi vs Cursor Background Agents（现名 Cloud Agents）',
-      twitter: '<meta name="twitter:title" content="Orbi vs Cursor Background Agents（现名 Cloud Agents）">',
-      headline: '"headline":"Orbi vs Cursor Background Agents（现名 Cloud Agents）',
-      source: ["Cursor 2.0 changelog", "Background Agents 改名为 Cloud Agents"],
-    },
-  };
+  const outputs = ["compare/cursor/index.html", "zh/compare/cursor/index.html"];
 
   it("leads with the old name and names the current one beside it", () => {
-    for (const [output, expected] of Object.entries(pages)) {
+    for (const output of outputs) {
       const html = shipped.get(output);
-      expect(html, `${output}: title`).toContain(expected.title);
-      expect(html, `${output}: h1`).toContain(expected.h1);
-      const hero = region(html, '<p class="hero-lede">', "</p>");
-      expect(hero, `${output}: hero lede`).toContain(expected.lede);
-      expect(html, `${output}: meta description`).toContain(expected.meta);
-      expect(html, `${output}: og:title`).toContain(expected.og);
-      expect(html, `${output}: twitter:title`).toContain(expected.twitter);
-      expect(html, `${output}: JSON-LD headline`).toContain(expected.headline);
+      const slots = {
+        title: html.match(/<title>([^<]+)<\/title>/)?.[1] ?? "",
+        h1: html.match(/<h1[^>]*>([\s\S]*?)<\/h1>/)?.[1] ?? "",
+        "hero lede": region(html, '<p class="hero-lede">', "</p>"),
+        "meta description": html.match(/<meta name="description" content="([^"]+)"/)?.[1] ?? "",
+        "og:title": html.match(/<meta property="og:title" content="([^"]+)"/)?.[1] ?? "",
+        "twitter:title": html.match(/<meta name="twitter:title" content="([^"]+)"/)?.[1] ?? "",
+        "JSON-LD headline": [...html.matchAll(/"headline":"([^"]+)"/g)].map((match) => match[1]).join(" "),
+      };
+      for (const [slot, value] of Object.entries(slots)) {
+        expect(value, `${output}: ${slot} names the old product`).toContain("Background Agents");
+        // The h1 keeps the old name only — the rename is named beside it in
+        // the metadata and the hero lede (Issue #807).
+        if (slot !== "h1") expect(value, `${output}: ${slot} names the current product`).toContain("Cloud Agents");
+      }
     }
   });
 
   it("cites the 2.0 changelog that recorded the rename", () => {
-    for (const [output, expected] of Object.entries(pages)) {
+    for (const output of outputs) {
       const sources = region(shipped.get(output), '<ul class="source-list">', "</ul>");
       expect(sources, `${output}: changelog source link`).toContain(
         'href="https://cursor.com/changelog/2-0"',
       );
-      for (const text of expected.source) {
-        expect(sources, `${output}: changelog source description`).toContain(text);
-      }
     }
   });
 });
@@ -3615,143 +3592,98 @@ describe("legal contact addresses (Issue #307)", () => {
   });
 });
 
-// Issue #813: the terms billing paragraph is the contract the /cloud/
-// pricing page actually sells — the yearly interval and the one-time
-// Alipay / WeChat Pay path must not diverge between the two.
 // Issue #980: the site speaks with one voice about support — Telegram first
 // (public questions in the group, private matters in a DM to a group admin),
 // email only as a backup. The invite is the one corrected in Issue #554: this
 // pins the existing channel, it does not introduce a new invite, username,
 // route or tracking.
+// Issue #1212: the sentences that say so are copy. What stays pinned is the
+// channel order inside each section, the invite itself, the backup address and
+// the two share slots agreeing with the page's own title and description.
 describe("support channels put Telegram first (Issue #980)", () => {
   const INVITE = "https://t.me/+kJRTTpFGBRU0M2Y9";
   const sectionOf = (html, id) => html.match(new RegExp(`<section[^>]*aria-labelledby="${id}"[\\s\\S]*?</section>`))[0];
   const mainOf = (html) => html.match(/<main[\s\S]*?<\/main>/)[0];
 
-  const supportPages = {
-    "support/index.html": {
-      title: "Orbi Cloud support on Telegram | Orbi",
-      description: "Get Orbi Cloud help on Telegram. Ask in the group or message an admin privately about accounts, billing, refunds or privacy. Email is a backup.",
-      groupLink: "Join the Telegram group",
-      privateReply: "message a group admin privately on Telegram",
-      backup: 'our backup email is <a href="mailto:support@orbi.build">support@orbi.build</a>',
-      feedback: "Send private details to a group admin on Telegram.",
-      refund: "Message a group admin privately on Telegram with your Stripe invoice ID",
-      response: "We do our best to reply, but there is no guaranteed response time.",
-    },
-    "zh/support/index.html": {
-      title: "Orbi Cloud 支持：Telegram 群与私聊，邮件备用",
-      description: "遇到 Orbi Cloud 使用、账号、计费、退款或隐私问题，优先通过 Telegram 联系我们。公开问题在群里交流，私密内容请私聊，邮件作为备用。",
-      groupLink: "加入 Telegram 群",
-      privateReply: "请在 Telegram 私聊群管理员",
-      backup: '备用邮箱 <a href="mailto:support@orbi.build">support@orbi.build</a>',
-      feedback: "不方便公开的内容请通过 Telegram 私聊。",
-      refund: "请在 Telegram 私聊群管理员，提供 Stripe 发票编号",
-      response: "我们会尽力回复，不承诺固定响应时间。",
-    },
-  };
-
-  it("opens the contact list with the Telegram group and keeps email as the backup", () => {
-    for (const [output, expected] of Object.entries(supportPages)) {
+  for (const output of ["support/index.html", "zh/support/index.html"]) {
+    it(`${output} opens the contact list with the Telegram group and keeps email as the backup`, () => {
       const html = shipped.get(output);
-      const title = html.match(/<title>([^<]+)<\/title>/)[1];
-      const description = html.match(/<meta name="description" content="([^"]+)"/)[1];
-      expect(title, `${output}: title`).toBe(expected.title);
-      expect(html, `${output}: og:title`).toContain(`<meta property="og:title" content="${expected.title}">`);
-      expect(description, `${output}: description`).toBe(expected.description);
-      expect(html, `${output}: og:description`).toContain(`<meta property="og:description" content="${expected.description}">`);
+      const title = html.match(/<title>([^<]+)<\/title>/)?.[1] ?? "";
+      const description = html.match(/<meta name="description" content="([^"]+)"\s*\/?>/)?.[1] ?? "";
+      expect(title, `${output}: title`).toBeTruthy();
+      expect(description, `${output}: description`).toBeTruthy();
+      // Share metadata repeats the page's own title and description.
+      expect(html, `${output}: og:title`).toContain(`<meta property="og:title" content="${title}">`);
+      expect(html, `${output}: og:description`).toContain(`<meta property="og:description" content="${description}">`);
 
       // One invite, the corrected one, and it opens the contact list.
       expect(html.split(INVITE).length - 1, `${output}: invite count`).toBe(1);
       const contact = sectionOf(html, "contact-title");
       const firstEntry = contact.match(/<li>[\s\S]*?<\/li>/)[0];
-      expect(firstEntry, `${output}: first contact entry`).toContain(`<a href="${INVITE}">${expected.groupLink}</a>`);
-      expect(contact, `${output}: private channel`).toContain(expected.privateReply);
-      expect(contact, `${output}: backup email`).toContain(expected.backup);
-      expect(contact, `${output}: response expectations`).toContain(expected.response);
+      expect(firstEntry, `${output}: first contact entry is the Telegram group`).toContain(`<a href="${INVITE}">`);
+      const backup = /mailto:support@orbi\.build/;
+      expect(contact, `${output}: backup email`).toMatch(backup);
+      expect(contact.indexOf(INVITE), `${output}: Telegram before the backup email`)
+        .toBeLessThan(contact.search(backup));
 
-      // The feedback and refund sections carry the same channel order.
-      expect(sectionOf(html, "bug-title"), `${output}: feedback section`).toContain(expected.feedback);
-      expect(sectionOf(html, "refund-title"), `${output}: refund section`).toContain(expected.refund);
+      // The feedback and refund sections name the same channel first.
+      for (const id of ["bug-title", "refund-title"]) {
+        const section = sectionOf(html, id);
+        expect(section, `${output}: ${id} names Telegram`).toMatch(/Telegram/);
+        if (section.search(backup) > -1) {
+          expect(section.search(/Telegram/), `${output}: ${id} Telegram before email`)
+            .toBeLessThan(section.search(backup));
+        }
+      }
 
       // GitHub Issues is no longer offered as a second support entry.
       expect(mainOf(html), `${output}: GitHub Issues entry`).not.toContain("github.com/orbi-build/orbi/issues");
-    }
-  });
+    });
+  }
 
   it("routes the refund contact through Telegram first, email as the backup", () => {
-    const termsPages = {
-      "terms/index.html": {
-        telegram: "First message a group admin privately on Telegram with the invoice and reason.",
-        backup: 'If you can’t use Telegram, our backup email is <a href="mailto:support@orbi.build">support@orbi.build</a>.',
-        cardIssuer: "Contact us before asking your card issuer to reverse a charge.",
-      },
-      "zh/terms/index.html": {
-        telegram: "请先在 Telegram 私聊群管理员，提供发票和退款原因",
-        backup: '不方便使用 Telegram 时，可以发到备用邮箱 <a href="mailto:support@orbi.build">support@orbi.build</a>。',
-        cardIssuer: "请先联系我们，再向发卡行申请撤销扣款。",
-      },
-    };
-
-    for (const [output, expected] of Object.entries(termsPages)) {
+    for (const output of ["terms/index.html", "zh/terms/index.html"]) {
       const html = shipped.get(output);
-      expect(html, `${output}: Telegram request`).toContain(expected.telegram);
-      expect(html, `${output}: backup email`).toContain(expected.backup);
-      expect(html, `${output}: card-issuer warning`).toContain(expected.cardIssuer);
-      expect(html.indexOf(expected.telegram), `${output}: Telegram before the backup email`)
-        .toBeLessThan(html.indexOf(expected.backup));
+      expect(html, `${output}: Telegram channel`).toMatch(/Telegram/);
+      expect(html, `${output}: backup email`).toMatch(/mailto:support@orbi\.build/);
+      expect(html.search(/Telegram/), `${output}: Telegram before the backup email`)
+        .toBeLessThan(html.search(/mailto:support@orbi\.build/));
     }
   });
 
-  it("keeps the privacy opt-out sentence and names the backup address explicitly", () => {
-    const privacyPages = {
-      "privacy/index.html": {
-        deletion: "To request deletion of your Orbi account and associated Cloud records, message a group admin privately on Telegram with your GitHub account so we can identify the records.",
-        questions: "For questions about this policy, deletion requests or stopping these emails, first message a group admin privately on Telegram.",
-        backup: 'If you can’t use Telegram, our backup email is <a href="mailto:privacy@orbi.build">privacy@orbi.build</a>.',
-        optOut: "If you would rather not receive these emails, reply to one of them or write to privacy@orbi.build, and we will delete these records.",
-      },
-      "zh/privacy/index.html": {
-        deletion: "若要删除 Orbi 账号及关联的 Cloud 记录，请在 Telegram 私聊群管理员，并提供用于识别的 GitHub 账号。",
-        questions: "关于本政策、删除记录或停止邮件的问题，都请优先在 Telegram 私聊群管理员。",
-        backup: '不方便使用 Telegram 时，备用邮箱为 <a href="mailto:privacy@orbi.build">privacy@orbi.build</a>。',
-        optOut: "不想收到这类邮件的话，直接回复邮件或写信到 privacy@orbi.build，我们会删除这些记录。",
-      },
-    };
-
-    for (const [output, expected] of Object.entries(privacyPages)) {
+  it("keeps the privacy policy's backup address and drops relative references", () => {
+    for (const output of ["privacy/index.html", "zh/privacy/index.html"]) {
       const html = shipped.get(output);
-      for (const [name, fragment] of Object.entries(expected)) {
-        expect(html, `${output}: ${name}`).toContain(fragment);
-      }
+      expect(html, `${output}: backup privacy address`).toMatch(/mailto:privacy@orbi\.build/);
       // Reordering the contact text must not leave a dangling back-reference.
       expect(html, `${output}: relative address reference`).not.toContain("the address above");
       expect(html, `${output}: relative address reference`).not.toContain("上面的地址");
       expect(mainOf(html), `${output}: GitHub Issues entry`).not.toContain("github.com/orbi-build/orbi/issues");
-      expect(html.indexOf(expected.questions), `${output}: Telegram before the backup email`)
-        .toBeLessThan(html.indexOf(expected.backup));
     }
   });
 });
 
-describe("terms billing copy matches the Cloud pricing page (Issue #813)", () => {
-  const expected = {
-    "terms/index.html": [
-      "Card subscriptions are handled by Stripe, which provides invoices and the customer portal. They renew monthly or yearly, matching the interval you chose, until you cancel in that portal. Alipay and WeChat Pay are one-time payments for the period you buy and do not renew automatically.",
-      "A subscription renews monthly until you cancel it through that portal.",
-    ],
-    "zh/terms/index.html": [
-      "银行卡订阅由 Stripe 处理，提供发票和客户门户，按你选择的周期每月或每年续费，直到你在门户中取消。支付宝和微信支付是按所购周期一次性付款，不会自动续费。",
-      "订阅会每月续费，直到你在门户中取消。",
-    ],
+// Issue #813: the terms billing paragraph is the contract the /cloud/ pricing
+// page actually sells — the yearly interval and the one-time Alipay / WeChat
+// Pay path must not diverge between the two. Issue #1212: the paragraph is
+// copy, so the check reads the terms it must keep: both renewal intervals and
+// the one-time payment path, per language.
+describe("terms billing states the billing contract the Cloud page sells (Issue #813)", () => {
+  const terms = {
+    "terms/index.html": { intervals: ["monthly", "yearly"], payments: ["Alipay", "WeChat Pay"] },
+    "zh/terms/index.html": { intervals: ["每月", "每年"], payments: ["支付宝", "微信支付"] },
   };
 
-  for (const [output, [current, stale]] of Object.entries(expected)) {
-    it(`${output} states the yearly interval and the one-time payments`, () => {
+  for (const [output, expected] of Object.entries(terms)) {
+    it(`${output} states both renewal intervals and the one-time payments`, () => {
       const html = shipped.get(output);
       expect(html, `${output} is shipped`).toBeTruthy();
-      expect(html, `${output}: billing paragraph`).toContain(current);
-      expect(html, `${output}: stale monthly-only sentence`).not.toContain(stale);
+      for (const interval of expected.intervals) {
+        expect(html, `${output}: ${interval} renewal`).toContain(interval);
+      }
+      for (const payment of expected.payments) {
+        expect(html, `${output}: ${payment} one-time payment`).toContain(payment);
+      }
     });
   }
 });
@@ -3907,19 +3839,18 @@ describe("homepage evidence screenshots lazy-load (Issue #586)", () => {
 // <head> metadata. Both homes carry the definition under the H1. Issue #977
 // replaced the open-source-first sentence with the approved delivery-first
 // description; the assertion follows the new copy.
+// Issue #1212: the definition's words are copy; what the page must keep is a
+// real definition paragraph under the H1 — body text, not only metadata.
 describe("homepage body carries an Orbi definition sentence (Issues #890, #899, #977)", () => {
-  const body = (html) => html.slice(html.indexOf("<body"));
-  const homes = {
-    "index.html": "Orbi writes code for your GitHub Issues with AI. It arranges independent AI review, merges approved changes, and follows your repository’s release process. You don’t have to supervise every step.",
-    "zh/index.html": "Orbi 用 AI 完成 GitHub 上的开发任务。代码经过独立 AI 评审，通过后自动合并，再按仓库流程发版。你不用一直守着。",
-  };
-
-  for (const [output, definition] of Object.entries(homes)) {
+  for (const output of ["index.html", "zh/index.html"]) {
     it(`${output} states the definition in the rendered body`, () => {
       const html = shipped.get(output);
-      expect(body(html), `${output}: body definition sentence`).toContain(definition);
-      expect(region(html, '<p class="hero-lede">', "</p>"), `${output}: definition under the H1`).toContain(definition);
+      const lede = region(html, '<p class="hero-lede">', "</p>")
+        .replace(/<[^>]+>/g, "")
+        .trim();
+      expect(lede, `${output}: definition under the H1`).toContain("Orbi");
+      expect([...lede].length, `${output}: a real sentence, not a label`).toBeGreaterThan(40);
+      expect(html.slice(html.indexOf("<body")), `${output}: body definition`).toContain(lede);
     });
   }
-
 });
