@@ -2378,7 +2378,7 @@ describe("one unified footer on every content page", () => {
       expect(footer.slice(footer.indexOf(badge) + badge.length), `${page.output}: the OpenHunts badge must follow ScrollLaunch`)
         .toMatch(/^\s*<a href="https:\/\/openhunts\.com"/);
       // The row now ends at Appa List, so the wrapper's closing tag follows it.
-      const huzzler = '<a href="https://appalist.com/ai/orbi" target="_blank"><img src="https://appalist.com/assets/images/badge.png" alt="Appa List" height="54" /></a>';
+      const huzzler = '<a href="https://weliketools.com/tool/orbi" target="_blank"><img src="https://weliketools.com/assets/images/badge.png" alt="We Like Tools" height="54" /></a>';
       const _oldHuzzler = '<a href="https://huzzler.so/products/xxBk2zzN1n/orbi-build?utm_source=huzzler_product_website&amp;utm_medium=badge&amp;utm_campaign=free_listing" target="_blank" rel="noopener noreferrer"><img alt="Huzzler Embed Badge" src="https://huzzler.so/assets/images/embeddable-badges/featured.png" width="159" height="55" /></a>';
       expect(footer.slice(footer.indexOf(huzzler) + huzzler.length), `${page.output}: the Appa List badge must close the badge row`)
         .toMatch(/^\s*<\/div>/);
@@ -2483,6 +2483,7 @@ describe("one unified footer on every content page", () => {
       "https://productwing.com/product/orbi",
       "https://unitelist.com/product/orbi",
       "https://appalist.com/ai/orbi",
+      "https://weliketools.com/tool/orbi",
     ];
     // Issue #1173: the two friend links lead the strip; the badges follow in
     // the order the directory embeds were added.

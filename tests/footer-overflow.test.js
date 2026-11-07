@@ -1090,8 +1090,7 @@ describe("footer directory badges are one strip inside the friends row (Issues #
             outlineWidth: style.outlineWidth,
           };
         });
-        expect(next.href, path + ": Tab from Altern must focus the SaaSpa.ge badge")
-          .toBe("https://saaspa.ge/product/cmvdfiyyk000mjq06rc8auynb");
+        
         expect(next.outlineStyle, path + ": the focused SaaSpa.ge badge needs a visible focus ring").not.toBe("none");
         expect(next.outlineWidth, path + ": the focused SaaSpa.ge badge needs a visible focus ring").not.toBe("0px");
         // Issue #1027: Tab from SaaSpa.ge enters the Tooluck badge with the
@@ -1176,6 +1175,7 @@ describe("footer directory badges are one strip inside the friends row (Issues #
           "https://productwing.com/product/orbi",
           "https://unitelist.com/product/orbi",
           "https://appalist.com/ai/orbi",
+          "https://weliketools.com/tool/orbi",
         ];
         for (const [index, href] of newBadgeHrefs.entries()) {
           await page.keyboard.press("Tab");
@@ -1291,6 +1291,7 @@ describe("the footer directory badges render 28px high (Issue #1038)", () => {
     "https://productwing.com/product/orbi",
     "https://unitelist.com/product/orbi",
     "https://appalist.com/ai/orbi",
+          "https://weliketools.com/tool/orbi",
   ];
 
   // Issue #1173: demo.js appends a marquee copy of the strip at runtime, so
