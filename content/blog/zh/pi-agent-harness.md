@@ -13,7 +13,7 @@ series: pi
 
 2026 年 10 月 1 日，Earendil 发布 Pi 1.0，同时推出了实验性的第二套 harness：Pi Durable。它在每一步保存检查点，让任务能在原进程退出后继续。
 
-我是 Larry 🍀 Orbi，Orbi 的创始人。Orbi 在没人盯着的情况下跑 Pi：给它一张 GitHub issue，顺利的话拿回一个评审过、已合并的 PR。Orbi 怎么启动 Pi，写在[本系列第一篇](/zh/blog/orbi-on-pi-coding-agent/)里；Pi 外面那层 runner 写在 [Pi 专题页](/zh/guides/pi-coding-agent/)里。我最初在 2026 年 10 月 6 日用 Pi 1.0.0 做了这些测试，11 月 6 日又用 Pi 1.5.0 和当时的适配器、Durable Object 相关包全部重跑。本文以 11 月的结果为准，有变化的地方会和 10 月对照。
+我是 Larry 🍀 Orbi，Orbi 的创始人。Orbi 在没人盯着的情况下跑 Pi：给它一张 GitHub issue，顺利的话拿回一个评审过、已合并的 PR。Orbi 怎么启动 Pi，写在[本系列第一篇](/zh/blog/orbi-on-pi-coding-agent/)里；Pi 外面那层 runner 写在 [Pi 专题页](/zh/guides/pi-coding-agent/)里。我最初在 2026 年 10 月 6 日用 Pi 1.0.0 做了这些测试，11 月 6 日又用 Pi 1.5.0 和当时的适配器、Durable Object 相关包全部重跑。本文报告的是 11 月的结果。
 
 ## Pi agent harness 是什么
 
@@ -48,7 +48,7 @@ print 命令返回了 `READY`。我测试了 npm 安装和这条 `--print` 命�
 | 跑的是什么 | Pi 1.5.0（10 月为 1.0.0），作为子进程 | Pi 编程 agent 1.5.0，通过 `@ai-sdk/harness-pi` 1.0.177 跑在你的 Node 进程里（10 月为 1.0.141，依赖 Pi `^0.85.1`） | Pi Durable 1.5.0，通过 Cloudflare Agents SDK（npm 包 `agents`）0.33.0 跑在 Durable Object 里；`agents` 每次只支持 Pi 的一个次版本，这里是 `~1.5.0` |
 | 状态 | 稳定版 | 实验性（AI SDK 文档注明 harness 包属于实验性） | Pi Durable 属于实验性 |
 | 测试用的工具 | Pi 自带的 `bash` 和 `write` | Pi 自带的 `bash` 和 `write`，在沙箱里执行 | 我写的两个工具：`sleep`，以及往 SQLite 存一行的 `write_file` |
-| kill 次数与结果 | 11 月 `SIGKILL` 三次（10 月两次），用 `--continue` 重新启动，每次都完成了任务 | `SIGKILL` 两次，对话都恢复不了，磁盘上也没留下会话记录（临时目录为空）。`SIGTERM` 六次，处理函数调用 `session.stop()`，每次都恢复并完成了任务。其中三次另存了停止时的状态快照；这三份中，一次 `sleep` 被 `stop()` 提前打断，却记成成功（`(exit 0)`） | `SIGKILL` 三次，我重启本地运行时后，对象没收到任何请求就自行恢复，三次都完成了任务 |
+| kill 次数与结果 | `SIGKILL` 三次，用 `--continue` 重新启动，每次都完成了任务 | `SIGKILL` 两次，对话都恢复不了，磁盘上也没留下会话记录（临时目录为空）。`SIGTERM` 六次，处理函数调用 `session.stop()`，每次都恢复并完成了任务。其中三次另存了停止时的状态快照；这三份中，一次 `sleep` 被 `stop()` 提前打断，却记成成功（`(exit 0)`） | `SIGKILL` 三次，我重启本地运行时后，对象没收到任何请求就自行恢复，三次都完成了任务 |
 | 会话记录在哪 | `--session-dir` 下的 JSONL 文件，一行一条记录 | 一轮运行期间放在内存里。`stop()`、`detach()` 和 `suspendTurn()` 返回的状态包含会话记录；使用新增的 `sessionStorage` 选项时，状态只留最后一条记录的 id，记录写入你自己的只追加日志。调用这三个方法之一前，不会写出任何会话记录 | Durable Object 的 SQLite 数据库中，以 `pi_` 开头的表 |
 | 扩展和 key | OS 用户和受信任仓库提供的扩展、skill，除非传 `--no-extensions`、`--no-skills`。key 来自该用户的环境变量或 `auth.json` | 不自动发现扩展，只用代码里传入的工厂函数。key 来自 `auth` 记录、你自己的凭据存储或宿主机环境变量，留在宿主机 | 扩展是 Worker 安装进 registry 的对象，key 是 Worker secret |
 | 进程死了谁重启 | 你的监督程序，还得清理 `pi` 留下的工具进程：`SIGKILL` 后仍在运行的命令，以及命令放到后台的进程 | 你的代码，用之前 `stop()`、`detach()` 或 `suspendTurn()` 保存的状态恢复；如果这三个方法都没调用就被 `SIGKILL`，就没有状态可恢复 | 按 Cloudflare 文档，只要 Pi 还有工作，心跳 alarm 每 30 秒触发一次（`agents/harness/pi` 中的 `HEARTBEAT_MS = 3e4`）。本地实测，对象在发出重启命令后 0.9、4.9、23.9 秒构造，都在一个心跳周期内 |
@@ -61,7 +61,7 @@ print 命令返回了 `READY`。我测试了 npm 安装和这条 `--print` 命�
 Create files step1.txt through step5.txt in the current directory, one at a time, in order. Before creating each file, run `sleep 8` in bash as a separate tool call. Each file contains its step number. When all five exist, reply ALL DONE.
 ```
 
-不打断时，一次约 50 秒。每次用的都是 DeepSeek API 上的 `deepseek-flash`。11 月的硬杀测试中，我在运行 22 到 33 秒时发送 `SIGKILL`（`kill -9`）。进程无法捕获这个信号，Linux 的 OOM killer 在内存不足时发的也是它。AI SDK 那条路径还测了能被进程捕获的 `SIGTERM`，它只有在这种情况下才恢复成功。除非明确标为 10 月观察，下文都是 2026 年 11 月 6 日在我自己机器上的重测结果。
+不打断时，一次约 50 秒。每次用的都是 DeepSeek API 上的 `deepseek-flash`。11 月的硬杀测试中，我在运行 22 到 33 秒时发送 `SIGKILL`（`kill -9`）。进程无法捕获这个信号，Linux 的 OOM killer 在内存不足时发的也是它。AI SDK 那条路径还测了能被进程捕获的 `SIGTERM`，它只有在这种情况下才恢复成功。下文都是 2026 年 11 月 6 日在我自己机器上的重测结果。
 
 这张表不适合拿来比较性能：三边跑的代码不同，Cloudflare 测试用的是我写的两个工具，因为 Worker 没有 shell，也不能跨请求保留文件。我只比较硬杀之后留下什么，以及谁得介入。
 
@@ -91,7 +91,7 @@ pi --print --continue --session-dir ./sess \
    "You were interrupted. Continue the original task from where you left off." < /dev/null
 ```
 
-`--continue` 会打开 `--session-dir` 下、从同一工作目录启动的最近一个会话，所以每个任务要用单独的会话目录。目录为空时，它会新建会话。11 月三次恢复都建齐了五个文件，回复 `ALL DONE`，三次恢复后的运行分别用了约 33、32、22 秒。保留了会话文件的两次里，模型都先用 `ls` 和 `cat` 检查 step 文件，再继续。10 月有一次 kill 落在 `step3.txt` 写完之后、两次工具调用之间，那次模型直接从第 4 步继续，没有检查。
+`--continue` 会打开 `--session-dir` 下、从同一工作目录启动的最近一个会话，所以每个任务要用单独的会话目录。目录为空时，它会新建会话。11 月三次恢复都建齐了五个文件，回复 `ALL DONE`，三次恢复后的运行分别用了约 33、32、22 秒。保留了会话文件的两次里，模型都先用 `ls` 和 `cat` 检查 step 文件，再继续。
 
 这两份会话文件里，被打断的 `bash` 调用在恢复前后都没有补上结果。聊天 API 要求每次工具调用都有结果，Pi 的模型层因此会在构造请求时补一条：`pi-ai` 为孤立调用插入 `No result provided`，并标为错误（`@earendil-works/pi-ai` 1.5.0 中的 `transform-messages.js`）。模型能看到这条失败结果，会话文件里却没有。回放、审计会话文件时，要考虑这种缺结果的调用。
 
@@ -207,7 +207,7 @@ if (!stopping) { saveState(await session.detach()); process.exit(failed ? 1 : 0)
 
 不打断时，约 50 秒完成，文件在 `./box/work/pi-demo/` 下。我在约 30 秒和 33 秒时分别用 `SIGKILL` 杀了一次。两次都是已写好的文件留在沙箱里，对话丢失。适配器把 Pi 会话放在内存中（源码中的 `SessionManager.inMemory`），只有调用 `stop()`、`detach()` 或 `suspendTurn()` 时才把会话放进返回的状态。进程被杀后，三个方法都没有执行，临时目录 `$TMPDIR/ai-sdk-harness/pi/<session id>/` 里也没有文件。
 
-每次我都用相同的 session id 起新进程，发出和上文手动 `--continue` 一样的提示词：「You were interrupted. Continue the original task from where you left off.」。这里故意不带原任务，用来检查对话是否保住了；上面的 JS 脚本会发送完整任务。没有历史，模型两次都没新建文件，只问剩下的步骤是什么。10 月同样重启后，模型根据文件名猜出下一步，写了一个文件就停了。
+每次我都用相同的 session id 起新进程，发出和上文手动 `--continue` 一样的提示词：「You were interrupted. Continue the original task from where you left off.」。这里故意不带原任务，用来检查对话是否保住了；上面的 JS 脚本会发送完整任务。没有历史，模型两次都没新建文件，只问剩下的步骤是什么。
 
 换成 `SIGTERM` 后，六次都恢复并完成了任务，因为信号处理函数执行了。`session.stop()` 中止当前轮次，返回包含未完成轮次的恢复状态。新进程将它作为 `resumeFrom` 传入，发现 `hasUnfinishedTurn()` 为真，再调用 `continueStream()`。`detach()` 返回的状态同样传给 `createSession({ sessionId, resumeFrom })`；`suspendTurn()` 返回的状态则传给 `createSession({ sessionId, continueFrom })`。
 
@@ -312,7 +312,7 @@ Wrangler 配置用的是 Cloudflare 示例去掉 `ai` 绑定后的版本。把 k
 
 `replay` 用来声明 Pi Durable 的工具能否重复执行。`write_file` 标为 `"safe"`，因为它按文件名覆盖同一行；`sleep` 保持默认，被打断的调用不会自动重跑。`operationId` 让提交具有幂等性，同一个 id 再次提交，返回的还是原来的操作。
 
-我在自己机器上用 `npx wrangler dev`（wrangler 4.158.0）运行，没有使用 Cloudflare 账号。启动后访问 `/submit` 提交任务，访问 `/wait` 等待结果。不打断时耗时 49.6 秒，10 月为 48 秒。11 月三次 kill 分别在第 22、28、33 秒，用 `SIGKILL` 杀掉 `wrangler` 及其 `workerd` 运行时，每次都在 `sleep` 期间；约 3 秒后，用同一份本地状态重新启动 `wrangler dev`。这里手动重启运行时，模拟 Cloudflare 恢复运行时；测试证明的是运行时回来之后，对象会自行接着跑。
+我在自己机器上用 `npx wrangler dev`（wrangler 4.158.0）运行，没有使用 Cloudflare 账号。启动后访问 `/submit` 提交任务，访问 `/wait` 等待结果。不打断时耗时 49.6 秒。11 月三次 kill 分别在第 22、28、33 秒，用 `SIGKILL` 杀掉 `wrangler` 及其 `workerd` 运行时，每次都在 `sleep` 期间；约 3 秒后，用同一份本地状态重新启动 `wrangler dev`。这里手动重启运行时，模拟 Cloudflare 恢复运行时；测试证明的是运行时回来之后，对象会自行接着跑。
 
 我在对象构造函数中加了一行日志。三次分别在发出重启命令后 4.9、0.9、23.9 秒构造对象，都在一个心跳周期内。恢复前没有请求到达对象。在我查询最终结果前，每次重启后只记录了四个发往 `/` 的请求，而且都在对象恢复之后；Worker 对这些请求直接返回 404，不会调用对象。三次都完成了五步。
 
