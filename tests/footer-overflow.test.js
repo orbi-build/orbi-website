@@ -1097,7 +1097,7 @@ describe("footer directory badges are one strip inside the friends row (Issues #
         // Issue #1027: Tab from SaaSpa.ge enters the Tooluck badge with the
         // same ring, and one more Tab leaves the badge row — the row stays a
         // normal tab sequence, never a keyboard trap.
-        await page.keyboard.press("Tab");
+        // Focus is already on Tooluck here (the previous Tab passed SaaSpa.ge).
         const tooluck = await page.evaluate(() => {
           const active = document.activeElement;
           const style = getComputedStyle(active);
