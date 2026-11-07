@@ -1,5 +1,13 @@
 [
   {
+    "slug": "cursor-alternatives",
+    "title": "Cursor alternatives: which one merges the PR for you?",
+    "summary": "Cursor alternatives checked against their docs on 7 Nov 2026: editors (Copilot, Devin Desktop, Zed, Cline), agents, and who handles merges and releases.",
+    "zhSlug": "cursor-alternatives",
+    "zhTitle": "Cursor 替代品怎么选：谁替你合并 PR？",
+    "related": []
+  },
+  {
     "slug": "best-pi-extensions",
     "title": "Best Pi extensions for unattended runs: 20 tested",
     "summary": "20 Pi coding agent extensions tested without a terminal or desktop bus: which to use for MCP, web search and subagents, and which change config.",
