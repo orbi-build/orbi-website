@@ -197,7 +197,7 @@
           </ol>
         </details>
 <p>OpenCode vs Claude Code 这次实测在 2026 年 11 月 2 日完成，用的是我的 Linux 机器、OpenCode 2.2.5 和 Claude Code 2.1.281，模型同为 DeepSeek V4.1 Flash（<code class="post-code--single">deepseek-flash</code>）。OpenCode 用默认权限、Claude Code 加 <code class="post-code--single">--dangerously-skip-permissions</code>，27 次受控编程运行全部通过了给定的测试。默认 Claude Code 每次运行的输入 token 是 OpenCode 的 1.9–3.0 倍；加上 <code class="post-code--single">--bare</code> 后，为 0.21–0.36 倍。</p>
-<p>我是 Larry 🍀 Orbi，Orbi 的创始人。Orbi 用开源的编程 agent 命令行工具 Pi，把 GitHub Issue 做成合并进仓库的改动，每次改动再由另一个 Pi 会话评审。</p><aside class="post-cta-inline"><span>Orbi 把你的 Issue 一路做到发版。</span><a class="button button-signal" data-cta="post-inline-start" href="/zh/cloud/login">免费试 __FREE_DELIVERIES__ 次 →</a></aside>
+<p>我是 Larry 🍀 Orbi，Orbi 的创始人。Orbi 用开源的编程 agent 命令行工具 Pi，把 GitHub Issue 做成合并进仓库的改动，每次改动再由另一个 Pi 会话评审。</p><aside class="post-cta-inline"><span>Orbi 把你的 Issue 一路做到发版。</span><a class="button button-signal" data-cta="post-inline-start" href="/zh/cloud/login">免费试用 Orbi Cloud →</a></aside>
 <h2 id="opencode-vs-claude-code-的测试配置">OpenCode vs Claude Code 的测试配置</h2>
 <p>OpenCode 2.2.5 对应的 npm 包是 <code class="post-code--single">@opencode/cli</code>。旧包 <code class="post-code--single">opencode-ai</code> 属于 V1，我检查时的版本是 1.19.5。</p>
 <p>OpenCode 用内置的 <code class="post-code--single">deepseek</code> provider，参数是 <code class="post-code--spaced">-m deepseek/deepseek-flash</code>。Claude Code 用 <code class="post-code--single">ANTHROPIC_BASE_URL=https://api.deepseek.com/anthropic</code>、<code class="post-code--spaced">ANTHROPIC_AUTH_TOKEN=&lt;DeepSeek key&gt;</code> 和 <code class="post-code--single">ANTHROPIC_MODEL=deepseek-flash</code>。测 <code class="post-code--single">--bare</code> 时，密钥放在 <code class="post-code--single">ANTHROPIC_API_KEY</code>。下文的 bare 都指加上 <code class="post-code--single">--bare</code> 的 Claude Code。按<a href="https://code.claude.com/docs/en/headless">官方文档</a>，<code class="post-code--single">--bare</code> 不再自动加载 hooks、skills、插件、MCP 服务器、自动记忆和 CLAUDE.md；我的测试里它只给模型 Bash、Edit 和 Read，没有 Write。它是能力更少的轻量配置，不是同一配置变便宜了。</p>
@@ -416,7 +416,7 @@ env -i HOME=&quot;$(mktemp -d)&quot; PATH=&quot;$PATH&quot; \
 <p>受控对比只覆盖一台机器、一天、通过 DeepSeek 调用的一个模型，以及每种配置各跑 3 次的小任务。没有测试 Claude 模型。上面的命令能复现空操作，编程任务的样例文件未在这里公开。计数只适用于这些版本，不能用来预测难任务的正确性或长会话表现。</p>
 <aside class="post-cta">
   <h2>Orbi 把你的 Issue 一路做到发版。</h2>
-  <a class="button button-signal" data-cta="post-start" href="/zh/cloud/login">免费试 __FREE_DELIVERIES__ 次 →</a>
+  <a class="button button-signal" data-cta="post-start" href="/zh/cloud/login">免费试用 Orbi Cloud →</a>
   <p class="post-cta-note">不用绑定信用卡 · 只授权你选的仓库</p>
   <a class="post-cta-link" data-cta="post-selfhost" href="https://github.com/orbi-build/orbi">想自己部署？开源免费（AGPL）→</a>
 </aside><h2 id="相关">相关</h2>

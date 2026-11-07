@@ -189,7 +189,7 @@
           </ol>
         </details>
 <p>搜「Claude Code YOLO mode」，你要找的是一个参数：<code class="post-code--single">--dangerously-skip-permissions</code>，它让每一次工具调用都不再问你、直接执行。想用它的理由很实在：长任务里权限弹窗越积越多，问到第十次「允许这条命令吗」，你已经不看就点同意了。但这个参数的名字本身就在警告你，官方文档也只建议在「隔离环境里，比如没有联网的容器、虚拟机或开发容器」里打开它。</p>
-<p>我是 Larry 🍀 Orbi，Orbi 的创始人。Orbi 整天在无人值守地跑编码 agent，所以「怎么让它别一直问、又不至于把钥匙全交出去」是我必须真刀真枪回答的问题。这篇写的是我把 YOLO 模式和另外四种权限模式放在一起实测的结果，其中包括较新的 <strong>auto 模式</strong>，它不问你，而是用第二个模型逐个审查动作。你想开 YOLO 多半是为了不被弹窗烦，而 auto 模式已经做到了这点，多数人其实不必开 YOLO；至于我测试里那次数据外传，真正挡住它的是模型本身，不是任何一种权限模式。</p><aside class="post-cta-inline"><span>Orbi 把你的 Issue 一路做到发版。</span><a class="button button-signal" data-cta="post-inline-start" href="/zh/cloud/login">免费试 __FREE_DELIVERIES__ 次 →</a></aside>
+<p>我是 Larry 🍀 Orbi，Orbi 的创始人。Orbi 整天在无人值守地跑编码 agent，所以「怎么让它别一直问、又不至于把钥匙全交出去」是我必须真刀真枪回答的问题。这篇写的是我把 YOLO 模式和另外四种权限模式放在一起实测的结果，其中包括较新的 <strong>auto 模式</strong>，它不问你，而是用第二个模型逐个审查动作。你想开 YOLO 多半是为了不被弹窗烦，而 auto 模式已经做到了这点，多数人其实不必开 YOLO；至于我测试里那次数据外传，真正挡住它的是模型本身，不是任何一种权限模式。</p><aside class="post-cta-inline"><span>Orbi 把你的 Issue 一路做到发版。</span><a class="button button-signal" data-cta="post-inline-start" href="/zh/cloud/login">免费试用 Orbi Cloud →</a></aside>
 <p>下面所有数字来自 Claude Code 2.1.287（2026-10-13 的 stable 版），跑任务的主模型是 <code class="post-code--single">claude-sonnet-5-5</code>，用 <code class="post-code--spaced">claude -p</code> 无头运行（auto 模式的分类器是另一个模型，默认 Sonnet 5）。下面每个数字都来自这些运行，按动作逐条记录。</p>
 <h2 id="claude-code-的-yolo-模式到底是什么">Claude Code 的 YOLO 模式到底是什么</h2>
 <p><code class="post-code--single">--dangerously-skip-permissions</code> 打开的是 <code class="post-code--single">bypassPermissions</code> 模式。文档里这几种写法等价：</p>
@@ -301,7 +301,7 @@ claude --permission-mode bypassPermissions
 <p>如果这个 agent 能合并到你的主分支，关键是它和那个不可逆的动作之间隔着什么。<a href="/zh/compare/claude-code/">Orbi 和 Claude Code 怎么比</a>把各自停在哪条线讲清楚了。如果你希望 Issue 直接变成经过评审、已合并的发版，而不想自己从头搭这条流水线，就<a href="https://orbi.build/cloud/?ref=blog-yolo">把仓库连到 Orbi Cloud</a>，或者自托管<a href="https://github.com/orbi-build/orbi">开源 runner</a>。</p>
 <aside class="post-cta">
   <h2>Orbi 把你的 Issue 一路做到发版。</h2>
-  <a class="button button-signal" data-cta="post-start" href="/zh/cloud/login">免费试 __FREE_DELIVERIES__ 次 →</a>
+  <a class="button button-signal" data-cta="post-start" href="/zh/cloud/login">免费试用 Orbi Cloud →</a>
   <p class="post-cta-note">不用绑定信用卡 · 只授权你选的仓库</p>
   <a class="post-cta-link" data-cta="post-selfhost" href="https://github.com/orbi-build/orbi">想自己部署？开源免费（AGPL）→</a>
 </aside><h2 id="相关">相关</h2>

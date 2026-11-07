@@ -49,7 +49,9 @@ describe("watch-the-six-steps article (Issue #329)", () => {
       expect(article).toContain("__INCLUDED_TOKENS__");
       expect(article).toContain("__SOLO_MONTHLY_USD__");
       expect(article).toContain("__CLOUD_MONTHLY_USD__");
-      expect(article).toContain("__FREE_DELIVERIES__");
+      // Issue #1216 retired the per-article delivery count from the post CTA;
+      // the price placeholders above are what this article still carries.
+      expect(article).toContain('data-cta="post-start"');
     }
   });
 });
@@ -78,7 +80,7 @@ describe("llms-full.txt content asset (Issue #438)", () => {
     expect(lines[3]).toBe("");
     expect(lines[4].startsWith("Key numbers: "), "key-numbers line").toBe(true);
     for (const token of [
-      pricing.freeDeliveriesToken, pricing.soloMonthlyUsdToken, pricing.soloAnnualUsdToken,
+      pricing.freeTrialCopyToken, pricing.soloMonthlyUsdToken, pricing.soloAnnualUsdToken,
       pricing.monthlyUsdToken, pricing.proAnnualUsdToken, pricing.soloIncludedTokensToken,
       pricing.includedTokensToken, pricing.soloRepositoriesToken, pricing.proRepositoriesToken,
       pricing.foundingPartnerLimitToken, pricing.foundingPartnerRemainingToken,
@@ -152,11 +154,12 @@ describe("llms.txt Connect a repository to Cloud (Issue #154 acceptance 1)", () 
     expect(section.indexOf("`ai-ready`"), "dispatch before subscribe").toBeLessThan(section.indexOf("/api/checkout"));
   });
 
-  it("leads with the free trial, not a subscription (Issue #874)", () => {
-    // Issue #1212: the trial-before-checkout order is the contract; the
-    // sentence that states it is copy.
-    expect(section).toContain("__FREE_DELIVERIES__");
-    expect(section.indexOf("__FREE_DELIVERIES__"), "trial before checkout").toBeLessThan(section.indexOf("/api/checkout"));
+  it("leads with the free allowance, not a subscription (Issues #874, #1216)", () => {
+    // Issues #1212 / #1216: the allowance-before-checkout order is the
+    // contract; the sentence that states it is the one shared token.
+    expect(section).toContain(pricing.freeTrialCopyToken);
+    expect(section, "no per-section delivery count").not.toContain(pricing.freeDeliveriesToken);
+    expect(section.indexOf(pricing.freeTrialCopyToken), "allowance before checkout").toBeLessThan(section.indexOf("/api/checkout"));
   });
 
   it("gives every step an explicit done-check (the issue's per-step completion bar)", () => {
@@ -260,7 +263,7 @@ describe("llms pricing tokens (Issue #874)", () => {
     for (const token of [
       pricing.soloMonthlyUsdToken, pricing.soloAnnualUsdToken, pricing.monthlyUsdToken, pricing.proAnnualUsdToken,
       pricing.soloIncludedTokensToken, pricing.includedTokensToken, pricing.soloRepositoriesToken, pricing.proRepositoriesToken,
-      pricing.freeDeliveriesToken, pricing.foundingPartnerRemainingToken, pricing.foundingPartnerLimitToken,
+      pricing.freeTrialCopyToken, pricing.foundingPartnerRemainingToken, pricing.foundingPartnerLimitToken,
     ]) expect(section, token).toContain(token);
   });
 
@@ -268,7 +271,7 @@ describe("llms pricing tokens (Issue #874)", () => {
     const line = llmsFull.split("\n")[4];
     for (const token of [
       pricing.soloMonthlyUsdToken, pricing.soloAnnualUsdToken, pricing.monthlyUsdToken, pricing.proAnnualUsdToken,
-      pricing.soloIncludedTokensToken, pricing.includedTokensToken, pricing.freeDeliveriesToken,
+      pricing.soloIncludedTokensToken, pricing.includedTokensToken, pricing.freeTrialCopyToken,
       pricing.foundingPartnerRemainingToken, pricing.foundingPartnerLimitToken,
     ]) expect(line, token).toContain(token);
   });
