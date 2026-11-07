@@ -760,13 +760,15 @@ async function assertHomepage(browser, path, comparisonPath, size, screenshot) {
     throw new Error(`${path}: hero lede is ${JSON.stringify(lede)}, expected a definition sentence`);
   }
   // Issue #899: the button says where the click goes, and the one small line
-  // under it shows the numeric trial (the Worker substitutes
-  // __FREE_DELIVERIES__ before the bytes leave) plus its self-host text link.
+  // under it reassures plus its self-host text link. Issue #1216 retired the
+  // numeric trial from that line: the allowance is stated once, in the pricing
+  // note, so a delivery count beside the hero button is the regression.
   const heroButtonText = (await hero.locator('[data-cta="cloud-start"]').textContent()).trim();
   if (!heroButtonText) throw new Error(`${path}: hero CTA has no label`);
   const heroNote = (await hero.locator(".hero-cta-note").textContent()).replace(/\s+/g, " ").trim();
-  if (!heroNote.includes(String(pricing.freeDeliveries))) {
-    throw new Error(`${path}: hero CTA note is ${JSON.stringify(heroNote)}, expected the ${pricing.freeDeliveries}-delivery trial`);
+  if (!heroNote) throw new Error(`${path}: hero CTA note is empty`);
+  if (heroNote.includes(String(pricing.freeDeliveries))) {
+    throw new Error(`${path}: hero CTA note is ${JSON.stringify(heroNote)}, expected no delivery count beside the button`);
   }
   const heroGithub = hero.locator('[data-cta="hero-github"]');
   if (await heroGithub.count() !== 1
@@ -1182,14 +1184,13 @@ async function assertProofLoop(browser, path, size, screenshot) {
   }
   const midwayCta = page.locator('[data-cta="midway-cloud"]');
   const midwayText = (await midwayCta.textContent()).trim();
-  // Issue #899: the hero button names Orbi Cloud for the first screen; the
-  // midway CTA under the proof keeps the numeric trial promise. Both land on
-  // the same handoff, which is what the two share now.
-  const expectedMidwayText = path.startsWith("/zh/")
-    ? `免费试 ${pricing.freeDeliveries} 次 →`
-    : `Try ${pricing.freeDeliveries} deliveries free →`;
-  if (midwayText !== expectedMidwayText) {
-    throw new Error(`${view}: midway CTA text is ${JSON.stringify(midwayText)}, expected ${JSON.stringify(expectedMidwayText)}`);
+  // Issue #899: the hero button names Orbi Cloud for the first screen, and the
+  // midway CTA under the proof keeps that promise. Issue #1216 removed the
+  // delivery count from both labels, so the two share the hero's label and the
+  // same handoff — the relationship is the contract, the wording is copy.
+  const heroCtaText = (await page.locator('[data-cta="cloud-start"]').textContent()).trim();
+  if (midwayText !== heroCtaText) {
+    throw new Error(`${view}: midway CTA text is ${JSON.stringify(midwayText)}, expected the hero CTA's ${JSON.stringify(heroCtaText)}`);
   }
   const midwayHref = await midwayCta.getAttribute("href");
   const expectedHref = path.startsWith("/zh/") ? "/zh/cloud/login" : "/cloud/login";
@@ -1447,8 +1448,9 @@ async function assertCloudPage(browser, path, size, screenshot) {
   // Issue #741: the Cloud hero has one action and one concise reassurance,
   // matching the homepage's first-screen conversion path.
   // Issue #741/#1212: the hero carries one h1, one lede, one CTA and one
-  // reassurance, in that order; the CTA reaches this language's login handoff
-  // and its label names the trial from pricing.json.
+  // reassurance, in that order; the CTA reaches this language's login handoff.
+  // Issue #1216: the label names no delivery count — the allowance is stated
+  // once, in the pricing note further down.
   const hero = page.locator(".compare-hero");
   const heroSequence = await hero.locator(":scope > *").evaluateAll((elements) =>
     elements.map((element) => ({ tag: element.tagName, text: element.textContent.trim() })));
@@ -1464,8 +1466,8 @@ async function assertCloudPage(browser, path, size, screenshot) {
     || await heroButton.getAttribute("data-cta") !== "cloud-hero") {
     throw new Error(`${path}: Cloud hero CTA contract is incorrect`);
   }
-  if (!(await heroButton.textContent()).includes(String(pricing.freeDeliveries))) {
-    throw new Error(`${path}: Cloud hero CTA must name the ${pricing.freeDeliveries}-delivery trial`);
+  if ((await heroButton.textContent()).includes(String(pricing.freeDeliveries))) {
+    throw new Error(`${path}: Cloud hero CTA must not name a delivery count`);
   }
   // Issue #128: the "needs GitHub Actions" sentence links the CI-gates
   // guide — the explanation of what that requirement actually buys.
