@@ -250,6 +250,10 @@ Shipping notes from the root domain: what each delivery run hit, what fixed
 it, and the numbers behind both, traced to the issues they came from. RSS
 feed of the English posts: https://orbi.build/blog/feed.xml
 
+- Cursor alternatives: which one merges the PR for you? (English):
+  https://orbi.build/blog/cursor-alternatives/
+- Cursor 替代品怎么选：谁替你合并 PR？ (Chinese):
+  https://orbi.build/zh/blog/cursor-alternatives/
 - Best Pi extensions for unattended runs: 20 tested (English):
   https://orbi.build/blog/best-pi-extensions/
 - Pi 扩展推荐：20 个扩展的无人值守实测 (Chinese):
