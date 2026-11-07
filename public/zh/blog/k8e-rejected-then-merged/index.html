@@ -187,7 +187,7 @@
           </ol>
         </details>
 <p><a href="https://github.com/xiaods/k8e">k8e</a> 是一个内嵌 etcd 的 Kubernetes 发行版，497 星，维护者是 Deshi (Tommy) Xiao。9 月 20 日他开了 <a href="https://github.com/xiaods/k8e/issues/612">#612</a>，要给内嵌的 etcd 做一套端到端的健壮性测试，分四期：先测崩溃后能不能安全恢复，再测多节点故障、备份能否还原、长时间运行是否稳定。</p>
-<p>10:28（北京时间，下同）他给票打上 <code class="post-code--single">ai-ready</code>，交给了 Orbi。下面的时间和数字来自这张票的标签历史、PR 和评审记录，只有 runner 崩溃的次数取自 runner 日志。</p><aside class="post-cta-inline"><span>Orbi 把你的 Issue 一路做到发版。</span><a class="button button-signal" data-cta="post-inline-start" href="/zh/cloud/login">免费试 __FREE_DELIVERIES__ 次 →</a></aside>
+<p>10:28（北京时间，下同）他给票打上 <code class="post-code--single">ai-ready</code>，交给了 Orbi。下面的时间和数字来自这张票的标签历史、PR 和评审记录，只有 runner 崩溃的次数取自 runner 日志。</p><aside class="post-cta-inline"><span>Orbi 把你的 Issue 一路做到发版。</span><a class="button button-signal" data-cta="post-inline-start" href="/zh/cloud/login">免费试用 Orbi Cloud →</a></aside>
 <h2 id="第一版被打回了">第一版被打回了</h2>
 <p>11:37，Orbi 开出 <a href="https://github.com/xiaods/k8e/pull/613">PR #613</a>，只做第一期：10 个新文件，2483 行。内容包括一个记录每次操作的历史记录器、一个判断恢复结果对不对的判定器（oracle），以及几组测试：写到一半 SIGKILL 子进程、故意损坏 WAL、写满 quota。</p>
 <p>11:46，维护者把 SonarCloud 和 DeepSource 扫出来的问题贴了上来，Orbi 11:57 开始推修复。</p>
@@ -239,7 +239,7 @@ oracle: OK   (should fail)
 <p>如果你的仓库里也排着一串写清楚了的 issue，可以让 <a href="https://orbi.build/zh/cloud/?ref=blog-k8e">Orbi Cloud</a> 在你的仓库里跑同样的流程。</p>
 <aside class="post-cta">
   <h2>Orbi 把你的 Issue 一路做到发版。</h2>
-  <a class="button button-signal" data-cta="post-start" href="/zh/cloud/login">免费试 __FREE_DELIVERIES__ 次 →</a>
+  <a class="button button-signal" data-cta="post-start" href="/zh/cloud/login">免费试用 Orbi Cloud →</a>
   <p class="post-cta-note">不用绑定信用卡 · 只授权你选的仓库</p>
   <a class="post-cta-link" data-cta="post-selfhost" href="https://github.com/orbi-build/orbi">想自己部署？开源免费（AGPL）→</a>
 </aside><h2 id="相关">相关</h2>

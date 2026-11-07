@@ -219,7 +219,7 @@
           </ol>
         </details>
 <p>Orbi takes a GitHub issue and hands back a reviewed, merged pull request. One agent writes the fix, another reviews it, and the loop runs until the review passes. Around the models sits the harness: the prompts each role gets, the skills loaded next to them, the tools on the runner&#39;s <code class="post-code--single">PATH</code>, and the rules for when a review may pass.</p>
-<p>When a delivery goes wrong, one run can&#39;t tell you whether the model or the harness is to blame. So we stopped guessing and spent a night and the following morning running Orbi&#39;s full loop over and over: first on three open-source issues where Orbi had shipped a regression, then on nine ordinary bugs it had never seen, then on three whose first real-world fix had broken something. We swapped prompts, skills, tools, implementation models and review models, and graded every merged result with a hidden grader Orbi never saw.</p><aside class="post-cta-inline"><span>Orbi takes your Issues all the way to a release.</span><a class="button button-signal" data-cta="post-inline-start" href="/cloud/login">Try __FREE_DELIVERIES__ deliveries free →</a></aside>
+<p>When a delivery goes wrong, one run can&#39;t tell you whether the model or the harness is to blame. So we stopped guessing and spent a night and the following morning running Orbi&#39;s full loop over and over: first on three open-source issues where Orbi had shipped a regression, then on nine ordinary bugs it had never seen, then on three whose first real-world fix had broken something. We swapped prompts, skills, tools, implementation models and review models, and graded every merged result with a hidden grader Orbi never saw.</p><aside class="post-cta-inline"><span>Orbi takes your Issues all the way to a release.</span><a class="button button-signal" data-cta="post-inline-start" href="/cloud/login">Try Orbi Cloud free →</a></aside>
 <p>This is part 1: how we found the failures and built a harness that fixes them. <a href="/blog/is-the-regression-guard-worth-its-tokens/">Part 2</a> asks whether that harness is worth what it costs. The results and scripts are on the <a href="/benchmark/">benchmark page</a> and in <a href="https://github.com/orbi-build/orbi-bench">orbi-build/orbi-bench</a>. Here&#39;s the short version.</p>
 <h2 id="ten-takeaways">Ten takeaways</h2>
 <ol>
@@ -365,7 +365,7 @@ output: pa[REDACTED][REDACTED]word: [REDACTED]
 <p><a href="https://orbi.build/cloud/?ref=blog-harness">Orbi Cloud</a> runs the loop described here on your own issues. The benchmark is at <a href="https://github.com/orbi-build/orbi-bench">orbi-build/orbi-bench</a> if you want to run it against your own agent.</p>
 <aside class="post-cta">
   <h2>Orbi takes your Issues all the way to a release.</h2>
-  <a class="button button-signal" data-cta="post-start" href="/cloud/login">Try __FREE_DELIVERIES__ deliveries free →</a>
+  <a class="button button-signal" data-cta="post-start" href="/cloud/login">Try Orbi Cloud free →</a>
   <p class="post-cta-note">No credit card required · Orbi only sees the repos you pick</p>
   <a class="post-cta-link" data-cta="post-selfhost" href="https://github.com/orbi-build/orbi">Prefer to self-host? It's open source (AGPL) →</a>
 </aside><h2 id="related">Related</h2>

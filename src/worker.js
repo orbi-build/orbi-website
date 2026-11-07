@@ -24,6 +24,13 @@ const FOUNDING_PROMO_CODE = pricing.foundingPromoCode;
 const INCLUDED_TOKENS = String(pricing.includedTokensLabel);
 const FOUNDING_TOKENS = String(pricing.foundingTokensLabel);
 const FREE_DELIVERIES = String(pricing.freeDeliveries);
+// Issue #1216: the free allowance has one wording site-wide. Pages carry the
+// sentence token, never their own phrasing, and the nested numeric token is
+// filled by the freeDeliveriesToken rule below.
+const FREE_TRIAL_COPY = {
+  en: pricing.freeTrialCopy,
+  zh: pricing.freeTrialCopyZh,
+};
 const MEASURED_SMALL_REPOSITORY_DELIVERY_RANGE = pricing.measuredSmallRepositoryDeliveryRange;
 const MEASURED_SOLO_REPOSITORY_DELIVERY_RANGE = pricing.measuredSoloRepositoryDeliveryRange;
 const MEASURED_LARGE_CODEBASE_DELIVERIES = String(pricing.measuredLargeCodebaseDeliveries);
@@ -823,6 +830,7 @@ async function assetResponse(asset, cloudLoginConfigured, founding = { logins: [
     .replaceAll(pricing.foundingPromoCodeToken, FOUNDING_PROMO_CODE)
     .replaceAll(pricing.includedTokensToken, INCLUDED_TOKENS)
     .replaceAll(pricing.foundingTokensToken, FOUNDING_TOKENS)
+    .replaceAll(pricing.freeTrialCopyToken, zh ? FREE_TRIAL_COPY.zh : FREE_TRIAL_COPY.en)
     .replaceAll(pricing.freeDeliveriesToken, FREE_DELIVERIES)
     .replaceAll(
       pricing.measuredSmallRepositoryDeliveryRangeToken,

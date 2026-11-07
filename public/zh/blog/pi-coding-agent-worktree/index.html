@@ -185,7 +185,7 @@
           </ol>
         </details>
 <p>Pi coding agent worktree 能让一次交付在独立的工作目录里改代码。任务失败后，还得找回已经推到远端的工作。2026 年 10 月 10 日，Orbi 就卡在这里：GitHub 连接中断，远端留下了代码分支，PR 还没开出来。任务重新入队后，Orbi 一直拒绝继续，后面三张待执行的 Issue 也跟着等。修复于 10 月 11 日 00:42（UTC+8）<a href="https://github.com/orbi-build/orbi/pull/1596">合入</a>。</p>
-<p>我是 Larry 🍀 Orbi，Orbi 的创始人。<a href="https://github.com/orbi-build/orbi">Orbi</a> 从 GitHub Issue 开始，让 Pi 写代码，另起会话评审，通过后合并；发版由发版 Issue 驱动。这篇属于 <a href="/zh/guides/pi-coding-agent/?ref=blog-pi-worktree">Pi 架构系列</a>。这次出问题的是 Orbi 的调度程序 runner，任务还没重新交到 Pi 手里。</p><aside class="post-cta-inline"><span>Orbi 把你的 Issue 一路做到发版。</span><a class="button button-signal" data-cta="post-inline-start" href="/zh/cloud/login">免费试 __FREE_DELIVERIES__ 次 →</a></aside>
+<p>我是 Larry 🍀 Orbi，Orbi 的创始人。<a href="https://github.com/orbi-build/orbi">Orbi</a> 从 GitHub Issue 开始，让 Pi 写代码，另起会话评审，通过后合并；发版由发版 Issue 驱动。这篇属于 <a href="/zh/guides/pi-coding-agent/?ref=blog-pi-worktree">Pi 架构系列</a>。这次出问题的是 Orbi 的调度程序 runner，任务还没重新交到 Pi 手里。</p><aside class="post-cta-inline"><span>Orbi 把你的 Issue 一路做到发版。</span><a class="button button-signal" data-cta="post-inline-start" href="/zh/cloud/login">免费试用 Orbi Cloud →</a></aside>
 <h2 id="分支在-pr-不在">分支在，PR 不在</h2>
 <p><a href="https://github.com/orbi-build/orbi/issues/1594">故障记录</a>里，这次运行因为临时的 GitHub 连接失败而停止。远端交付分支上留着一个 commit，没有打开的 PR。有人把 Issue 放回待执行队列后，runner 应该沿用这个分支继续实现。</p>
 <p>每次尝试都会留下 <code class="post-code--single">claim_yield</code> 日志，原因是 <code class="post-code--single">stable_branch_appeared</code>。runner 认为，自己准备认领任务的这段时间里，另一次交付可能已经创建了分支，因此先让出执行。可这个分支在扫描任务之前就存在了。</p>
@@ -300,7 +300,7 @@
 <p>这次事故里，推到远端的 commit 已经保住了。出错的是 runner 决定是否沿用它的那一步。验证恢复流程时，要测到真正使用观察结果的动作，也要包含“代码已经在，PR 还没建”的状态。</p>
 <aside class="post-cta">
   <h2>Orbi 把你的 Issue 一路做到发版。</h2>
-  <a class="button button-signal" data-cta="post-start" href="/zh/cloud/login">免费试 __FREE_DELIVERIES__ 次 →</a>
+  <a class="button button-signal" data-cta="post-start" href="/zh/cloud/login">免费试用 Orbi Cloud →</a>
   <p class="post-cta-note">不用绑定信用卡 · 只授权你选的仓库</p>
   <a class="post-cta-link" data-cta="post-selfhost" href="https://github.com/orbi-build/orbi">想自己部署？开源免费（AGPL）→</a>
 </aside><h2 id="相关">相关</h2>

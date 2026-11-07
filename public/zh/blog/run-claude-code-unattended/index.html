@@ -221,7 +221,7 @@
           </ol>
         </details>
 <p>Claude Code 的 headless 模式，就是加了 <code class="post-code--single">-p</code>（全称 <code class="post-code--single">--print</code>）的非交互模式：不开界面，跑完一个提示词，把结果打到终端就退出。想把 Claude Code 放进 cron 或 CI，用的就是它。官方中文文档管这一页叫<a href="https://code.claude.com/docs/zh-CN/headless">「以编程方式运行 Claude Code」</a>，headless 这个词只剩在网址里。</p>
-<p>headless 运行没人回答授权提示，要授权的操作会被直接拒掉，而且被拒不算出错，退出码还是 0。得事先定好哪些操作能放行。最省事的是 <code class="post-code--single">auto</code> 权限模式：</p><aside class="post-cta-inline"><span>Orbi 把你的 Issue 一路做到发版。</span><a class="button button-signal" data-cta="post-inline-start" href="/zh/cloud/login">免费试 __FREE_DELIVERIES__ 次 →</a></aside>
+<p>headless 运行没人回答授权提示，要授权的操作会被直接拒掉，而且被拒不算出错，退出码还是 0。得事先定好哪些操作能放行。最省事的是 <code class="post-code--single">auto</code> 权限模式：</p><aside class="post-cta-inline"><span>Orbi 把你的 Issue 一路做到发版。</span><a class="button button-signal" data-cta="post-inline-start" href="/zh/cloud/login">免费试用 Orbi Cloud →</a></aside>
 <div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="已复制">复制</button><pre><code class="language-bash" data-copy-source>claude -p &quot;修复 tests/test_auth.py 里失败的测试&quot; \
   --permission-mode auto --permission-prompts none
 </code></pre></div>
@@ -391,7 +391,7 @@ gh pr merge &quot;$PR&quot; --squash --match-head-commit &quot;$REVIEWED_SHA&quo
 <p>不想维护机器，可以<a href="https://orbi.build/zh/cloud/?ref=blog-headless">把仓库接入 Orbi Cloud</a>。</p>
 <aside class="post-cta">
   <h2>Orbi 把你的 Issue 一路做到发版。</h2>
-  <a class="button button-signal" data-cta="post-start" href="/zh/cloud/login">免费试 __FREE_DELIVERIES__ 次 →</a>
+  <a class="button button-signal" data-cta="post-start" href="/zh/cloud/login">免费试用 Orbi Cloud →</a>
   <p class="post-cta-note">不用绑定信用卡 · 只授权你选的仓库</p>
   <a class="post-cta-link" data-cta="post-selfhost" href="https://github.com/orbi-build/orbi">想自己部署？开源免费（AGPL）→</a>
 </aside><h2 id="相关">相关</h2>

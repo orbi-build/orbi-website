@@ -193,7 +193,7 @@
           </ol>
         </details>
 <p>Codex YOLO mode is <code class="post-code--single">--yolo</code>, an alias for <code class="post-code--single">--dangerously-bypass-approvals-and-sandbox</code>. It skips approval prompts and removes Codex&#39;s local sandbox. Use it inside an environment that supplies its own isolation, such as a disposable VM or a restricted CI runner. For unattended repository edits that should keep a sandbox, start with <code class="post-code--spaced">codex -a never exec --sandbox workspace-write &quot;&lt;task&gt;&quot;</code>. Codex auto mode is a different preset that still stops for approval prompts; it is <a href="#codex-auto-mode-and-what-happened-to-full-auto">explained below</a>.</p>
-<p>I&#39;m Larry 🍀 Orbi, the creator of <a href="https://github.com/orbi-build/orbi">Orbi</a>. I tested these choices on Linux with Codex CLI 0.159.3 on 16 October 2026. Orbi runs the Pi coding agent, and its Codex integration uses Pi&#39;s <code class="post-code--single">openai-codex</code> provider rather than Codex CLI. The commands below are for people running the CLI themselves.</p><aside class="post-cta-inline"><span>Orbi takes your Issues all the way to a release.</span><a class="button button-signal" data-cta="post-inline-start" href="/cloud/login">Try __FREE_DELIVERIES__ deliveries free →</a></aside>
+<p>I&#39;m Larry 🍀 Orbi, the creator of <a href="https://github.com/orbi-build/orbi">Orbi</a>. I tested these choices on Linux with Codex CLI 0.159.3 on 16 October 2026. Orbi runs the Pi coding agent, and its Codex integration uses Pi&#39;s <code class="post-code--single">openai-codex</code> provider rather than Codex CLI. The commands below are for people running the CLI themselves.</p><aside class="post-cta-inline"><span>Orbi takes your Issues all the way to a release.</span><a class="button button-signal" data-cta="post-inline-start" href="/cloud/login">Try Orbi Cloud free →</a></aside>
 <h2 id="how-to-start-codex-yolo-mode">How to start Codex YOLO mode</h2>
 <p>Inside your disposable, externally isolated runner:</p>
 <div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="Copied">Copy</button><pre><code class="language-bash" data-copy-source>codex exec --yolo &quot;Run the tests and fix the failures.&quot;
@@ -328,7 +328,7 @@ error: unexpected argument &#39;--full-auto&#39; found
 <p>Self-hosted Orbi supports Codex OAuth through Pi&#39;s <code class="post-code--single">openai-codex</code> provider; follow the <a href="/guides/codex-github-issues/?ref=blog-codex-yolo">Codex integration guide</a>. For managed delivery, <a href="/cloud/?ref=blog-codex-yolo">connect your repository to Orbi Cloud</a>. Cloud uses its own model configuration, not your local Codex login or Codex YOLO mode permissions. The CLI flags above are not Orbi settings.</p>
 <aside class="post-cta">
   <h2>Orbi takes your Issues all the way to a release.</h2>
-  <a class="button button-signal" data-cta="post-start" href="/cloud/login">Try __FREE_DELIVERIES__ deliveries free →</a>
+  <a class="button button-signal" data-cta="post-start" href="/cloud/login">Try Orbi Cloud free →</a>
   <p class="post-cta-note">No credit card required · Orbi only sees the repos you pick</p>
   <a class="post-cta-link" data-cta="post-selfhost" href="https://github.com/orbi-build/orbi">Prefer to self-host? It's open source (AGPL) →</a>
 </aside><h2 id="related">Related</h2>

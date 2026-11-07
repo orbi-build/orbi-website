@@ -165,7 +165,7 @@
       <article class="post-body">
 
 <p>On September 1, Manifold Security disclosed <a href="https://www.manifold.security/blog/ai-coding-agents-git-hijack">GitSpawn</a>, eight findings across seven coding agents: Claude Code, Codex, Cursor, Goose, Hermes Agent, Qwen Code and Grok Build. The short version is that a repository&#39;s git configuration could make a program run before the agent&#39;s approval prompt ever appeared. Manifold&#39;s post has the details, and several vendors have already shipped fixes.</p>
-<p>I <a href="https://x.com/xqliu/status/2103343487668154834">posted about it on X</a>. The replies mostly said the same thing: an agent&#39;s workspace has to be trusted before the agent loop starts, and approving shell commands afterwards is too late.</p><aside class="post-cta-inline"><span>Orbi takes your Issues all the way to a release.</span><a class="button button-signal" data-cta="post-inline-start" href="/cloud/login">Try __FREE_DELIVERIES__ deliveries free →</a></aside>
+<p>I <a href="https://x.com/xqliu/status/2103343487668154834">posted about it on X</a>. The replies mostly said the same thing: an agent&#39;s workspace has to be trusted before the agent loop starts, and approving shell commands afterwards is too late.</p><aside class="post-cta-inline"><span>Orbi takes your Issues all the way to a release.</span><a class="button button-signal" data-cta="post-inline-start" href="/cloud/login">Try Orbi Cloud free →</a></aside>
 <p>That raised the question we actually had to answer. Does this affect Orbi? We merged a fix the next morning and reverted it that afternoon.</p>
 <h2 id="the-fix">The fix</h2>
 <p>On September 25 I filed <a href="https://github.com/orbi-build/orbi/issues/1366">issue #1366</a>. Orbi delivered it the same day as <a href="https://github.com/orbi-build/orbi/pull/1368">PR #1368</a>. It routed every git call the runner makes through one helper that switches off the git settings named in the disclosure, and it added a check that fails the build if any code calls git directly. The PR touched 26 files and added 1,164 lines.</p>
@@ -184,7 +184,7 @@
 <p>We got that order wrong once, and all of it is public in Orbi&#39;s own repository. Orbi turns a GitHub Issue into a reviewed, merged and tagged release. You can <a href="https://orbi.build/cloud/?ref=blog-gitspawn">run it on your own repository</a>.</p>
 <aside class="post-cta">
   <h2>Orbi takes your Issues all the way to a release.</h2>
-  <a class="button button-signal" data-cta="post-start" href="/cloud/login">Try __FREE_DELIVERIES__ deliveries free →</a>
+  <a class="button button-signal" data-cta="post-start" href="/cloud/login">Try Orbi Cloud free →</a>
   <p class="post-cta-note">No credit card required · Orbi only sees the repos you pick</p>
   <a class="post-cta-link" data-cta="post-selfhost" href="https://github.com/orbi-build/orbi">Prefer to self-host? It's open source (AGPL) →</a>
 </aside><h2 id="related">Related</h2>

@@ -189,7 +189,7 @@
 <p>Ralph loop（也叫 Ralph Wiggum 循环、Ralph 循环）是一种让编程 agent 无人值守干活的办法：同一段提示词反复喂给 agent，一轮接一轮。最原始的写法自己不会停，常见的做法是加一个出口，让 agent 自己宣布活干完了。这个名字是 Geoffrey Huntley 在 <a href="https://ghuntley.com/ralph/">2025 年 7 月的文章</a>里起的，最小写法只有一行 bash（原文写的是 <code class="post-code--single">claude-code</code>，换成现在的 Claude Code 命令行就是 <code class="post-code--spaced">claude -p</code>）：</p>
 <div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="已复制">复制</button><pre><code class="language-bash" data-copy-source>while :; do cat PROMPT.md | claude-code ; done
 </code></pre></div>
-<p>每一轮都是新会话，agent 只能靠上一轮留在仓库里的文件知道做到了哪。它往前做一步就退出，循环再把它拉起来。Thoughtworks 在 2026 年 4 月把 <a href="https://www.thoughtworks.com/en-us/radar/techniques/ralph-loop">Ralph loop 收进了技术雷达</a>，放在「评估」环，意思是值得了解它会带来什么影响，还没到建议在项目里试用的程度。</p><aside class="post-cta-inline"><span>Orbi 把你的 Issue 一路做到发版。</span><a class="button button-signal" data-cta="post-inline-start" href="/zh/cloud/login">免费试 __FREE_DELIVERIES__ 次 →</a></aside>
+<p>每一轮都是新会话，agent 只能靠上一轮留在仓库里的文件知道做到了哪。它往前做一步就退出，循环再把它拉起来。Thoughtworks 在 2026 年 4 月把 <a href="https://www.thoughtworks.com/en-us/radar/techniques/ralph-loop">Ralph loop 收进了技术雷达</a>，放在「评估」环，意思是值得了解它会带来什么影响，还没到建议在项目里试用的程度。</p><aside class="post-cta-inline"><span>Orbi 把你的 Issue 一路做到发版。</span><a class="button button-signal" data-cta="post-inline-start" href="/zh/cloud/login">免费试用 Orbi Cloud →</a></aside>
 <p>Huntley 说这适合从零起的新项目，「预期做到九成」。他说自己绝不会用在现有代码库上，还提醒你「时不时醒来会发现代码库编译不过」。写提示词的建议是每轮只让它做一件事。</p>
 <p>我是 Larry 🍀 Orbi，Orbi 的创始人。Orbi 是一座软件黑灯工厂：一张 GitHub Issue 进去，编程 agent 写代码，另一个会话评审，然后合并，多数时候不用人守着。调度这一切的程序叫 runner，runner 本身也是一个循环。我一直想知道，最朴素的 Ralph loop 会在哪出问题、最后由谁收尾。10 月 10 日我用 Claude Code 跑了一次，对象是一个很小的 Python 库。第 4 轮测试全绿，agent 写下了 DONE。之后我另开一个会话评审，花了 0.11 美元，它找出一处不符合规格的地方，结论是不能合并。</p>
 <h2 id="官方-ralph-loop-插件默认不设轮数上限">官方 ralph-loop 插件默认不设轮数上限</h2>
@@ -322,7 +322,7 @@ slugify(&quot;a€b&quot;)      -&gt; &#39;ab&#39;       （规格：&#39;a-b&#3
 <p>Orbi 的 runner 把写代码、评审、合并分开：评审在独立会话里对照 Issue 和 diff 审，能修的当场修（它改的部分靠 CI 和合并前检查把关，没有另一个会话再审），合并由 runner 来做、不归 agent；发版走一张单独的发版 Issue，只有人能给它打上 <code class="post-code--single">ai-release</code> 标签，所以一个里程碑什么时候发版由人决定。Pi 本身是开源的（<a href="https://github.com/earendil-works/pi">GitHub</a>）。<a href="https://github.com/orbi-build/orbi">runner 也是开源的</a>，也可以<a href="https://orbi.build/zh/cloud/?ref=blog-ralph">把仓库接入 Orbi Cloud</a>，拿自己的 Issue 试一试。</p>
 <aside class="post-cta">
   <h2>Orbi 把你的 Issue 一路做到发版。</h2>
-  <a class="button button-signal" data-cta="post-start" href="/zh/cloud/login">免费试 __FREE_DELIVERIES__ 次 →</a>
+  <a class="button button-signal" data-cta="post-start" href="/zh/cloud/login">免费试用 Orbi Cloud →</a>
   <p class="post-cta-note">不用绑定信用卡 · 只授权你选的仓库</p>
   <a class="post-cta-link" data-cta="post-selfhost" href="https://github.com/orbi-build/orbi">想自己部署？开源免费（AGPL）→</a>
 </aside><h2 id="相关">相关</h2>

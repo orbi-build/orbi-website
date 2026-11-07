@@ -59,8 +59,8 @@ describe("Issue #409 engagement build contract", () => {
       expect(ctas.length, file).toBeGreaterThan(0);
     }
     const cloudCtas = {
-      "public/cloud/index.html": 'class="button button-signal hero-cta" data-cta="cloud-hero" href="/cloud/login">Try __FREE_DELIVERIES__ deliveries free →',
-      "public/zh/cloud/index.html": 'class="button button-signal hero-cta" data-cta="cloud-hero" href="/zh/cloud/login">免费试 __FREE_DELIVERIES__ 次 →',
+      "public/cloud/index.html": 'class="button button-signal hero-cta" data-cta="cloud-hero" href="/cloud/login">Try Orbi Cloud free →',
+      "public/zh/cloud/index.html": 'class="button button-signal hero-cta" data-cta="cloud-hero" href="/zh/cloud/login">免费试用 Orbi Cloud →',
     };
     for (const [file, cta] of Object.entries(cloudCtas)) {
       const html = await read(file);

@@ -165,7 +165,7 @@
       <article class="post-body">
 
 <p>9 月 1 日，Manifold Security 披露了 <a href="https://www.manifold.security/blog/ai-coding-agents-git-hijack">GitSpawn</a>，涉及七个编程 agent 的八个问题：Claude Code、Codex、Cursor、Goose、Hermes Agent、Qwen Code 和 Grok Build。简单说，仓库里的 git 配置能让一个程序在 agent 弹出审批之前就跑起来。细节看 Manifold 的原文，好几家已经发了修复。</p>
-<p>我在 X 上<a href="https://x.com/xqliu/status/2103343487668154834">发了一条</a>。回复里大家的意见差不多：agent 的工作区得在循环开始前就确认可信，等到审批 shell 命令时再管，已经晚了。</p><aside class="post-cta-inline"><span>Orbi 把你的 Issue 一路做到发版。</span><a class="button button-signal" data-cta="post-inline-start" href="/zh/cloud/login">免费试 __FREE_DELIVERIES__ 次 →</a></aside>
+<p>我在 X 上<a href="https://x.com/xqliu/status/2103343487668154834">发了一条</a>。回复里大家的意见差不多：agent 的工作区得在循环开始前就确认可信，等到审批 shell 命令时再管，已经晚了。</p><aside class="post-cta-inline"><span>Orbi 把你的 Issue 一路做到发版。</span><a class="button button-signal" data-cta="post-inline-start" href="/zh/cloud/login">免费试用 Orbi Cloud →</a></aside>
 <p>对我们来说，真正要回答的是：Orbi 受不受影响？我们第二天上午合了一个修复，当天下午又撤了。</p>
 <h2 id="修复">修复</h2>
 <p>9 月 25 日我开了 <a href="https://github.com/orbi-build/orbi/issues/1366">#1366</a>，Orbi 当天就交付了 <a href="https://github.com/orbi-build/orbi/pull/1368">PR #1368</a>。它让 runner 调用的所有 git 命令都经过同一个函数，把披露里点名的那几项 git 设置关掉，再加一条检查：哪段代码绕开这个函数直接调 git，构建就失败。改了 26 个文件，加了 1164 行。</p>
@@ -184,7 +184,7 @@
 <p>这个顺序我们搞反过一次，整个过程都公开在 Orbi 自己的仓库里。Orbi 把一张 GitHub Issue 做成经过评审、已合并、打好 tag 的 Release，可以<a href="https://orbi.build/cloud/?ref=blog-gitspawn">在你自己的仓库上试试</a>。</p>
 <aside class="post-cta">
   <h2>Orbi 把你的 Issue 一路做到发版。</h2>
-  <a class="button button-signal" data-cta="post-start" href="/zh/cloud/login">免费试 __FREE_DELIVERIES__ 次 →</a>
+  <a class="button button-signal" data-cta="post-start" href="/zh/cloud/login">免费试用 Orbi Cloud →</a>
   <p class="post-cta-note">不用绑定信用卡 · 只授权你选的仓库</p>
   <a class="post-cta-link" data-cta="post-selfhost" href="https://github.com/orbi-build/orbi">想自己部署？开源免费（AGPL）→</a>
 </aside><h2 id="相关">相关</h2>

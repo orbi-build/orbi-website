@@ -209,7 +209,7 @@
           </ol>
         </details>
 <p>Codex 用量限制，指 ChatGPT 套餐里包含的 Codex 额度。大多数套餐用 5 小时窗口、每周窗口或两者同时计量。剩余额度和重置时间在 <a href="https://chatgpt.com/codex/settings/usage">Codex 用量页面</a>（Settings → Usage）里看，CLI 会话里输入 <code class="post-code--single">/status</code> 也能看到剩余额度。如果一轮任务进行到一半撞上限额，Codex 会让 agent 继续这一轮的工作，但要受公平使用限制约束。之后有几条路：等重置；账户有可用的重置或 credits 就用掉；或者把 CLI 换成 API 按量计费。</p>
-<p>下文每条 OpenAI 的说法都附了官方页面链接，抓取日期都是 2026 年 10 月 17 日。OpenAI 经常调整这些规则，和你自己的 Usage 页面对不上时，以 Usage 页面为准。</p><aside class="post-cta-inline"><span>Orbi 把你的 Issue 一路做到发版。</span><a class="button button-signal" data-cta="post-inline-start" href="/zh/cloud/login">免费试 __FREE_DELIVERIES__ 次 →</a></aside>
+<p>下文每条 OpenAI 的说法都附了官方页面链接，抓取日期都是 2026 年 10 月 17 日。OpenAI 经常调整这些规则，和你自己的 Usage 页面对不上时，以 Usage 页面为准。</p><aside class="post-cta-inline"><span>Orbi 把你的 Issue 一路做到发版。</span><a class="button button-signal" data-cta="post-inline-start" href="/zh/cloud/login">免费试用 Orbi Cloud →</a></aside>
 <h2 id="codex-用量限制怎么算">Codex 用量限制怎么算</h2>
 <p>如果你也用 ChatGPT Work（ChatGPT 里一个独立功能，不是普通聊天），它和 Codex 花的是同一份额度，价格、credits 和用量限制都一样。一条消息花掉多少额度，取决于模型、携带的上下文、推理量、工具调用，以及任务在本地还是云端运行；云端任务可能比本地消息耗得多。<a href="https://learn.chatgpt.com/docs/pricing#what-are-the-usage-limits-for-my-plan">Codex 定价 FAQ</a></p>
 <p>适用哪些窗口，看套餐：</p>
@@ -314,7 +314,7 @@ codex exec --skip-git-repo-check -m gpt-6-luna &quot;Reply with the single word 
 <p>Orbi 是一个开源 runner，把 GitHub Issue 一路做到审查、合并、打 tag 发版，中间不需要人盯着。它的 agent 是开源编程 agent Pi，不是 Codex CLI，所以上面的 Codex 登录步骤不会配置到 Orbi。自托管 Orbi 可以用任何 OpenAI 兼容 API 和你自己的 key，花费记在那个服务商账上，不占 Codex 套餐额度。如果你让 Pi 用 ChatGPT/Codex 订阅登录，它花的就是上面说的同一份额度。API key 的配置见<a href="/zh/guides/self-hosted-coding-agent/?ref=blog-codex-usage">自托管指南</a>，让 Pi 用 ChatGPT/Codex 订阅登录的步骤见 <a href="/zh/guides/codex-github-issues/?ref=blog-codex-usage">Codex 指南</a>。<a href="/zh/cost/?ref=blog-codex-usage">成本页</a>列出了 169 次 Orbi 交付（每次把一个 Issue 做到 PR 合并）在 DeepSeek 上的花费，也写明了这份样本的局限。那是 DeepSeek 的价格，不能拿来估 OpenAI API 的花费。</p>
 <aside class="post-cta">
   <h2>Orbi 把你的 Issue 一路做到发版。</h2>
-  <a class="button button-signal" data-cta="post-start" href="/zh/cloud/login">免费试 __FREE_DELIVERIES__ 次 →</a>
+  <a class="button button-signal" data-cta="post-start" href="/zh/cloud/login">免费试用 Orbi Cloud →</a>
   <p class="post-cta-note">不用绑定信用卡 · 只授权你选的仓库</p>
   <a class="post-cta-link" data-cta="post-selfhost" href="https://github.com/orbi-build/orbi">想自己部署？开源免费（AGPL）→</a>
 </aside><h2 id="相关">相关</h2>

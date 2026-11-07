@@ -741,16 +741,25 @@ describe("per-repo GitHub stats (Issue #101)", () => {
     }
   });
 
-  it("replaces the homepage offer token with the configured free-delivery count", async () => {
-    const response = await assetResponse(
-      new Response('<a href="/cloud/login">Try __FREE_DELIVERIES__ deliveries free →</a>', {
-        headers: { "Content-Type": "text/html; charset=utf-8" },
-      }),
-      true,
-    );
-    const body = await response.text();
-    expect(body).toContain(`Try ${pricing.freeDeliveries} deliveries free →`);
-    expect(body).not.toContain(pricing.freeDeliveriesToken);
+  it("fills the shared free-trial sentence in the page language", async () => {
+    const html = '<p class="pricing-trial-note">__FREE_TRIAL__ · No credit card required</p>';
+    const env = {
+      ASSETS: {
+        fetch: () => Promise.resolve(
+          new Response(html, { headers: { "Content-Type": "text/html; charset=utf-8" } }),
+        ),
+      },
+      CLOUD_LOGIN_URL: "https://beta.orbi.build/api/login",
+    };
+    for (const [path, expected] of [
+      ["/", "First 3 merged pull requests free"],
+      ["/zh/", "前 3 个合并的 PR 免费"],
+    ]) {
+      const body = await (await handleFetch(new Request(`https://orbi.build${path}`), env)).text();
+      expect(body, path).toContain(expected);
+      expect(body, path).not.toContain(pricing.freeTrialCopyToken);
+      expect(body, path).not.toContain(pricing.freeDeliveriesToken);
+    }
   });
 
   it("injects server-rendered avatars and makes the wall visible when data exists", async () => {
