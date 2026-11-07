@@ -91,7 +91,7 @@ Origin 是 Cursor 自家的代码托管，定价页写作「Code hosting via Ori
 
 给 GitHub Issue 打上 `ai-ready` 标签，Orbi 就会运行开源编码 agent [Pi](/zh/guides/pi-coding-agent/) 来实现改动。另开一个没写过这段代码的 Pi 会话做评审。评审和仓库 CI 通过后，Orbi runner（自部署时跑在你的机器上，用 Orbi Cloud 时是托管的 runner）合并评审过的那一版提交。默认没有人在合并前签字；如果分支保护要求人工批准，Orbi 会停在 `ai-awaiting-merge`，并在 Issue 评论里写明需要谁做什么。发版由人在 Issue 评论里输入 `/orbi milestone <version>` 发起，随后 Orbi 创建发版 Issue、打 tag 并发布。
 
-[Orbi](https://github.com/orbi-build/orbi) 在 AGPL-3.0 下开源，自部署软件免费，模型 key 自备。[Orbi Cloud](/zh/cloud/?ref=blog-cursor-alt) 是托管版，月付和年付套餐以那一页为准；前 3 次合并交付（一个 Issue 的 PR 被 Orbi 合并算一次）免费，不需要信用卡。
+[Orbi](https://github.com/orbi-build/orbi) 在 AGPL-3.0 下开源，自部署软件免费，模型 key 自备。[Orbi Cloud](/zh/cloud/?ref=blog-cursor-alt) 是托管版，月付和年付套餐以那一页为准。
 
 如果你想把 Issue 交出去，让 runner 在评审和 CI 通过后合并，发版时机由自己定，可以用 Orbi。要的是编辑器里的行内补全，Orbi 接不了 Cursor 的这部分工作。
 
@@ -105,7 +105,7 @@ Origin 是 Cursor 自家的代码托管，定价页写作「Code hosting via Ori
 | [Cline](https://github.com/cline/cline) | Apache-2.0 源码，支持自带 key | 自己 key 的模型用量，或 Cline 的计费选项 |
 | [GitHub Copilot Free](https://github.com/features/copilot/plans) | 每月 2,000 次代码补全 | 分派任务创建 PR 需要 Pro 或更高套餐 |
 | [Devin Free](https://devin.ai/pricing) | 0 美元套餐，少量 agent 额度，不限次数的 Tab 补全 | Devin Cloud 从每月 20 美元的 Pro 起 |
-| [Orbi](https://github.com/orbi-build/orbi) | AGPL-3.0 开源，自部署软件免费，自备模型 key | 模型用量；[Orbi Cloud](/zh/cloud/?ref=blog-cursor-alt) 可免费试 3 次合并交付，不需要信用卡 |
+| [Orbi](https://github.com/orbi-build/orbi) | AGPL-3.0 开源，自部署软件免费，自备模型 key | 模型用量，或 [Orbi Cloud](/zh/cloud/?ref=blog-cursor-alt) 套餐 |
 
 ## 怎么选
 
