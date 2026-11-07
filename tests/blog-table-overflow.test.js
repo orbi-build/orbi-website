@@ -787,3 +787,220 @@ describe("article comparison matrix on phones (Issue #975)", () => {
   }, 30_000);
 });
 
+// Issue #1235: the Chinese label column is sized from the row title, so the
+// title reads on one line instead of stacking one character per line; the
+// English table keeps the wrapping it had. "The title fits on one line" is
+// measured as the cell being at least as wide as the same title laid out
+// nowrap — a probe built from the cell's own markup and fonts — never a
+// hardcoded pixel width, so the assertion does not depend on this machine's
+// fonts. An inline code that still breaks inside a cell (a `post-code--spaced`
+// code, 8607a4a8, may break at its space) is painted with
+// `box-decoration-break: clone`, so each fragment carries a complete border
+// rather than losing half its frame.
+async function labelColumnAt(route, width) {
+  const page = await guardedPage(browser, origin, { viewport: { width, height: 900 } });
+  try {
+    await page.goto(`${origin}${route}`, { waitUntil: "load", timeout: 25_000 });
+    return await page.evaluate(() => {
+      const region = document.querySelector(":is(.post-body, .guide-body) .post-table-scroll");
+      const table = region.querySelector("table.table-comparison");
+      const padding = (cell) => Number.parseFloat(getComputedStyle(cell).paddingLeft)
+        + Number.parseFloat(getComputedStyle(cell).paddingRight);
+      // The width this cell's title needs on one line: the cell's own content,
+      // laid out nowrap inside the cell so it keeps the cell's font and code
+      // styling.
+      const oneLineWidth = (cell) => {
+        const probe = document.createElement("span");
+        probe.style.cssText = "display: block; white-space: nowrap; width: max-content;";
+        probe.innerHTML = cell.innerHTML;
+        cell.append(probe);
+        const width = probe.getBoundingClientRect().width;
+        probe.remove();
+        return width;
+      };
+      const headers = [...table.querySelectorAll("tbody th")];
+      const first = headers[0];
+      const firstStyle = getComputedStyle(first);
+      return {
+        lang: document.documentElement.lang,
+        overflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
+        regionWidth: region.clientWidth,
+        regionScrolls: region.scrollWidth > region.clientWidth,
+        labelWhiteSpace: firstStyle.whiteSpace,
+        labelMaxWidth: firstStyle.maxWidth,
+        rootFontSize: Number.parseFloat(getComputedStyle(document.documentElement).fontSize),
+        headers: headers.map((cell) => {
+          const box = cell.getBoundingClientRect();
+          const painted = document.createRange();
+          painted.selectNodeContents(cell);
+          return {
+            text: cell.textContent.trim(),
+            width: box.width,
+            right: box.right,
+            textRight: painted.getBoundingClientRect().right,
+            oneLineWidth: oneLineWidth(cell) + padding(cell),
+          };
+        }),
+        codes: [...table.querySelectorAll("code")].map((code) => ({
+          text: code.textContent,
+          fragments: code.getClientRects().length,
+          decoration: [getComputedStyle(code).boxDecorationBreak, getComputedStyle(code).webkitBoxDecorationBreak],
+        })),
+      };
+    });
+  } finally {
+    await page.close();
+  }
+}
+
+describe("Chinese article tables keep their row titles on one line (Issue #1235)", () => {
+  it("sizes the label column from the row title in Chinese at 390 and 1440, without page overflow", async () => {
+    for (const width of widths) {
+      const result = await labelColumnAt("/zh/blog/pi-agent-harness/", width);
+      const label = `/zh/blog/pi-agent-harness/ at ${width}px`;
+      expect(result.lang, `${label} language`).toBe("zh-CN");
+      expect(result.overflow, `${label} document overflow`).toBe(0);
+      // The measured table: 「跑的是什么」「状态」「测试用的工具」and the rest of the
+      // rows — before this Issue each was folded to ~52px, five to seven lines
+      // tall.
+      expect(result.headers.map((header) => header.text), `${label} row titles`).toEqual([
+        "跑的是什么",
+        "状态",
+        "测试用的工具",
+        "kill 次数与结果",
+        "会话记录在哪",
+        "扩展和 key",
+        "进程死了谁重启",
+        "卡住了谁发现",
+        "要自己运维什么",
+      ]);
+      for (const header of result.headers) {
+        expect(header.width, `${label}: 「${header.text}」 on one line`).toBeGreaterThanOrEqual(header.oneLineWidth - 1);
+        // The title is painted inside its own cell: widening the column must
+        // never let the nowrap title run over the next column's text.
+        expect(header.textRight, `${label}: 「${header.text}」 inside its cell`).toBeLessThanOrEqual(header.right + 1);
+      }
+      // The table is wider than the article on a phone, so it scrolls inside
+      // its own region; the page itself never grows a horizontal scrollbar.
+      expect(result.regionScrolls, `${label} table scrolls in its own region`).toBe(width === 390);
+      expect(result.regionWidth, `${label} region within the article`).toBeLessThan(width);
+    }
+  }, 30_000);
+
+  it("closes the border of a Chinese inline code that breaks inside a cell", async () => {
+    for (const width of widths) {
+      const result = await labelColumnAt("/zh/blog/pi-agent-harness/", width);
+      const label = `/zh/blog/pi-agent-harness/ at ${width}px`;
+      expect(result.codes.length, `${label} inline codes in the table`).toBeGreaterThan(10);
+      for (const code of result.codes) {
+        expect(code.decoration, `${label}: "${code.text}" box-decoration-break`).toContain("clone");
+      }
+    }
+  }, 30_000);
+
+  // The border of a wrapped code is paint, not layout: no computed style or
+  // client rect shows a missing edge. Read it from the pixels, the same way the
+  // #993-#995 paint tests above do. Without `clone` a fragmented inline box is
+  // painted `slice`: the first fragment has no right border and the second no
+  // left one, which is the half-frame the Issue reports.
+  it("paints a complete frame on both fragments of a Chinese code that wraps", async () => {
+    const dpr = 2;
+    const page = await guardedPage(browser, origin, { viewport: { width: 390, height: 900 }, deviceScaleFactor: dpr });
+    try {
+      await page.goto(`${origin}/zh/blog/pi-agent-harness/`, { waitUntil: "load", timeout: 25_000 });
+      const geometry = await page.evaluate(() => {
+        const codes = [...document.querySelectorAll(".post-body table code")];
+        const code = codes.find((candidate) => candidate.getClientRects().length > 1);
+        if (!code) return null;
+        code.scrollIntoView({ block: "center", inline: "nearest", behavior: "instant" });
+        const cell = code.closest("td");
+        const box = cell.getBoundingClientRect();
+        const style = getComputedStyle(code);
+        return {
+          text: code.textContent,
+          clip: { x: Math.round(box.left), y: Math.round(box.top), width: Math.round(box.width), height: Math.round(box.height) },
+          fragments: [...code.getClientRects()].map((rect) => ({
+            left: rect.left - box.left,
+            right: rect.right - box.left,
+            middle: rect.top - box.top + rect.height / 2,
+          })),
+          border: style.borderTopColor.match(/\d+/g).map(Number),
+        };
+      });
+      expect(geometry, "a Chinese table code that wraps inside its cell").not.toBeNull();
+      const shot = (await page.screenshot({ clip: geometry.clip })).toString("base64");
+      const edges = await page.evaluate(async ([base64, { fragments, border }, scale]) => {
+        const response = await fetch("data:image/png;base64," + base64);
+        const bitmap = await createImageBitmap(await response.blob());
+        const canvas = new OffscreenCanvas(bitmap.width, bitmap.height);
+        const context = canvas.getContext("2d");
+        context.drawImage(bitmap, 0, 0);
+        const { data, width } = context.getImageData(0, 0, bitmap.width, bitmap.height);
+        const pixelAt = (x, y) => { const i = (y * width + x) * 4; return [data[i], data[i + 1], data[i + 2]]; };
+        const distance = (a, b) => Math.abs(a[0] - b[0]) + Math.abs(a[1] - b[1]) + Math.abs(a[2] - b[2]);
+        // The nearest pixel to a fragment's edge that carries the border colour:
+        // a 1px border lands within one device pixel of the CSS edge.
+        return fragments.map((fragment) => {
+          const y = Math.round(fragment.middle * scale);
+          const edge = (cssX) => {
+            const centre = Math.round(cssX * scale);
+            let best = Number.POSITIVE_INFINITY;
+            for (let x = centre - 3; x <= centre + 2; x += 1) {
+              if (x < 0 || x >= width) continue;
+              best = Math.min(best, distance(pixelAt(x, y), border));
+            }
+            return best;
+          };
+          return { left: edge(fragment.left), right: edge(fragment.right) };
+        });
+      }, [shot, geometry, dpr]);
+      expect(edges.length, `"${geometry.text}" breaks into fragments`).toBe(geometry.fragments.length);
+      edges.forEach((fragment, index) => {
+        expect(fragment.left, `"${geometry.text}" fragment ${index + 1} left border`).toBeLessThan(30);
+        expect(fragment.right, `"${geometry.text}" fragment ${index + 1} right border`).toBeLessThan(30);
+      });
+    } finally {
+      await page.close();
+    }
+  }, 30_000);
+
+  it("applies the label and code rules to every Chinese article table, not to one page", async () => {
+    const desktop = await labelColumnAt("/zh/guides/pi-coding-agent/", 1440);
+    expect(desktop.labelWhiteSpace, "/zh/guides/pi-coding-agent/ at 1440px label column").toBe("nowrap");
+    const mobile = await labelColumnAt("/zh/guides/pi-coding-agent/", 390);
+    // On a phone the column keeps #975's cap and wraps past it, so the pinned
+    // column cannot eat the article; the cap is 10rem, not the tighter 8.5rem
+    // that cut an ordinary Chinese row title in two.
+    expect(mobile.labelWhiteSpace, "/zh/guides/pi-coding-agent/ at 390px label column").toBe("normal");
+    expect(Number.parseFloat(mobile.labelMaxWidth), "/zh/guides/pi-coding-agent/ at 390px label cap")
+      .toBeCloseTo(10 * mobile.rootFontSize, 1);
+    expect(mobile.overflow, "/zh/guides/pi-coding-agent/ at 390px document overflow").toBe(0);
+  }, 30_000);
+
+  it("leaves the English table exactly as it was", async () => {
+    for (const width of widths) {
+      const result = await labelColumnAt("/blog/pi-agent-harness/", width);
+      const label = `/blog/pi-agent-harness/ at ${width}px`;
+      expect(result.lang, `${label} language`).toBe("en");
+      expect(result.overflow, `${label} document overflow`).toBe(0);
+      // English keeps the default wrapping: no nowrap rule reaches it, its
+      // label column keeps the 8.5rem phone cap, and a long English title still
+      // folds inside that column — the reading the English page shipped with.
+      expect(result.labelWhiteSpace, `${label} label column`).toBe("normal");
+      if (width === 390) {
+        expect(Number.parseFloat(result.labelMaxWidth), `${label} label cap`)
+          .toBeCloseTo(8.5 * result.rootFontSize, 1);
+      } else {
+        expect(result.labelMaxWidth, `${label} label cap`).toBe("none");
+      }
+      expect(
+        result.headers.some((header) => header.width < header.oneLineWidth - 1),
+        `${label} long English titles still fold into the column`,
+      ).toBe(true);
+      for (const code of result.codes) {
+        expect(code.decoration, `${label}: "${code.text}" keeps the default fragment decoration`)
+          .not.toContain("clone");
+      }
+    }
+  }, 30_000);
+});

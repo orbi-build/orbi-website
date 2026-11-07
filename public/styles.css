@@ -2478,6 +2478,31 @@ h2 {
   letter-spacing: 0.02em;
 }
 
+/* Issue #1235: a Chinese row title must not be squeezed to one character per
+   line. Chinese may break between any two characters, so the label cell's
+   narrowest form is a single character — #526's break-word keeps a Latin word
+   whole and cannot stop that — and with the other columns holding long code and
+   prose the auto layout hands the label column what is left over: 52px of an
+   800px table, 「跑的是什么」 stacked five rows deep. A row title is one line of
+   text, so the Chinese article table sizes its label column from the title.
+   English keeps the default: a Latin title's narrowest form is its longest
+   word, which never collapses to one character, and the English table is
+   unchanged by this Issue. */
+:lang(zh) :is(.post-body, .guide-body) .table-comparison tbody th {
+  white-space: nowrap;
+}
+
+/* Issue #1235: an inline code that wraps inside a cell keeps a complete box on
+   every line. `post-code--spaced` (a code containing a space, 8607a4a8) wraps
+   at that space; a fragmented inline box is painted with the default
+   `box-decoration-break: slice`, which draws the left border on the first
+   fragment and the right one on the last, so a two-line `(exit 0)` loses half
+   its frame. `clone` repeats the border, padding and radius on each fragment. */
+:lang(zh) :is(.post-body, .guide-body) .table-comparison code {
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+}
+
 /* ≤760px (Issue #522, #526, #975): the CSS default is the table form — no fixed
    column widths, the browser distributes them, cells tighten and wrap with
    break-word, which leaves min-content alone so words are never split
@@ -2594,6 +2619,19 @@ h2 {
   :is(.post-body, .guide-body) .table-comparison thead th:first-child {
     background: linear-gradient(var(--paper-2), var(--paper-2)) 0 1px / 100% calc(100% - 2px) no-repeat;
   }
+  /* Issue #1235: on a phone the label column keeps #975's guarantee — it may
+     not eat the visible area, so it stays capped and wraps past the cap — but
+     the cap is 10rem, not the 8.5rem that cut ordinary Chinese row titles in
+     two. 10rem holds a seven-character title plus the cell padding (a title
+     that fits it sits on one line) and stays under the 60% of the article that
+     #975 leaves to the result columns, measured at the narrowest phone the
+     suites cover; the table scrolls in its own region as before. */
+  :lang(zh) :is(.post-body, .guide-body) .table-comparison thead th:first-child,
+  :lang(zh) :is(.post-body, .guide-body) .table-comparison tbody th {
+    white-space: normal;
+    max-width: 10rem;
+  }
+
   /* Its left border would stay behind with the table when the columns scroll,
      leaving a 1px gap where the scrolled text shows through. The first column
      has no left border; the region, which never scrolls away, draws that edge. */
