@@ -202,6 +202,10 @@ inspect output without touching `public/`.
   each mirror pair.
 - `tests/pricing.test.js` — `src/pricing.json` `includedTokens` is pinned
   absolutely, so a wrong quota cannot ship silently.
+- `tests/internal-links.test.js` — every site-internal `<a href>` on every page
+  built into `public/` lands on a shipped file or a known Worker route, so a
+  link to a page that does not exist fails CI instead of reaching a visitor's
+  404 (Issue #1210).
 - `tests/worker.test.js`, `tests/llms.test.js`, `tests/homepage.smoke.test.js` —
   Worker routing, `llms.txt`, and the homepage contract.
 
