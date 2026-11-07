@@ -9,9 +9,9 @@ mirror: pi-agent-harness
 series: pi
 ---
 
-The Pi harness, also called the Pi agent harness, is the loop inside [Pi](https://pi.dev), the open-source coding agent from Earendil: it sends your prompt to a model, runs the tool calls the model asks for, records the conversation, and repeats until the model stops asking for tools. On 1 October 2026 Earendil shipped Pi 1.0 and, next to it, an experimental second harness called Pi Durable, which checkpoints every step so a run can outlive the process running it.
+The Pi harness, also called the Pi agent harness, is the loop inside [Pi](https://pi.dev), the open-source coding agent from Earendil: it sends your prompt to a model, runs the tool calls the model asks for, records the conversation, and repeats until the model stops asking for tools. This post is for developers who run coding agents unattended: I start the same task in three Pi setups, kill each one partway through, and show what survives and who has to restart it. You also get install commands, a supervisor script for `pi --print`, and runnable AI SDK and Cloudflare examples, all retested on Pi 1.5.0 on 6 November 2026. On 1 October 2026 Earendil shipped Pi 1.0 and, next to it, an experimental second harness called Pi Durable, which checkpoints every step so a run can outlive the process running it.
 
-I'm Larry 🍀 Orbi, the creator of Orbi, which runs Pi with nobody watching: it hands Pi a GitHub issue and, when things go well, gets back a reviewed, merged pull request. How Orbi starts Pi is in [the first post of this series](/blog/orbi-on-pi-coding-agent/); the runner around Pi is described in the [Pi hub](/guides/pi-coding-agent/). I first ran these tests on 6 October 2026 on Pi 1.0.0 and reran all of them on 6 November 2026 on Pi 1.5.0 and the current adapter and Durable Object packages; this version reports the November results and says where they differ. This post compares three ways to run Pi without a person at the keyboard by doing the same thing to each: start a task, kill the process partway through, and see what comes back.
+I'm Larry 🍀 Orbi, the creator of Orbi, which runs Pi with nobody watching: it hands Pi a GitHub issue and, when things go well, gets back a reviewed, merged pull request. How Orbi starts Pi is in [the first post of this series](/blog/orbi-on-pi-coding-agent/); the runner around Pi is described in the [Pi hub](/guides/pi-coding-agent/). I first ran these tests on 6 October 2026 on Pi 1.0.0 and reran all of them on 6 November 2026 on Pi 1.5.0 and the current adapter and Durable Object packages; this version reports the November results and says where they differ.
 
 ## What is the Pi harness?
 
@@ -23,7 +23,7 @@ Pi has four CLI modes: the interactive terminal, print, JSON, and RPC over stdin
 
 Since 1 October, "pi harness" can mean two things from the same team. The first is the Pi coding harness: the Pi coding agent (`@earendil-works/pi-coding-agent`, the `pi` command), which Earendil describes as a harness built for one person at a terminal. Earendil's [Pi Durable announcement](https://earendil.com/posts/pi-durable/) describes what happens when the `pi` process dies: "you look at what happened and tell it to continue." Pi Durable (`@earendil-works/pi-durable`) is a separate library for agents that keep running on their own.
 
-In it every model call and tool call is a task that stores a checkpoint before moving on, so a new process can open the same storage and carry on. It shares Pi's model layer, `pi-ai`, but it isn't the `pi` command. It ships the same four coding tools, but they only work once you give them an execution environment, meaning somewhere to read files and run commands; Pi Durable includes one for Node, which doesn't run inside a Cloudflare Worker.
+In it every model call and tool call is a task that stores a checkpoint before moving on, so a new process can open the same storage and carry on. It shares Pi's model layer, `pi-ai`, but it isn't the `pi` command. It ships the same four coding tools, but they only work once you give them an execution environment, meaning somewhere to read files and run commands; Pi Durable includes one for Node; a Cloudflare Worker has no shell or filesystem, so there the tools are whatever you write.
 
 ## How to install and run the Pi harness
 
@@ -43,10 +43,10 @@ In the table, a Durable Object is a Cloudflare Worker instance with its own stor
 
 | | `pi --print` | AI SDK `HarnessAgent` | Cloudflare `PiHarness` |
 |---|---|---|---|
-| What runs | Pi 1.5.0 (1.0.0 in October), as a child process | Pi coding agent 1.5.0 inside your Node process, via `@ai-sdk/harness-pi` 1.0.177 (in October 1.0.141, which pinned Pi 0.85.1) | Pi Durable 1.5.0 in a Durable Object, via the Cloudflare Agents SDK (npm package `agents`) 0.33.0, which supports one Pi minor at a time (`~1.5.0`) |
+| What runs | Pi 1.5.0 (1.0.0 in October), as a child process | Pi coding agent 1.5.0 inside your Node process, via `@ai-sdk/harness-pi` 1.0.177 (in October 1.0.141, which depended on Pi `^0.85.1`) | Pi Durable 1.5.0 in a Durable Object, via the Cloudflare Agents SDK (npm package `agents`) 0.33.0, which supports one Pi minor at a time (`~1.5.0`) |
 | Status | Stable | Experimental (AI SDK docs: "Harness packages are experimental") | Pi Durable is experimental |
 | Tools in my test | Pi's own `bash` and `write` | Pi's own `bash` and `write`, in a sandbox | Two tools I wrote: `sleep`, and `write_file`, which saves a row in SQLite |
-| Kills and outcome | `SIGKILL` three times in November (twice in October). Relaunched with `--continue`, it finished every time. | `SIGKILL` twice: the conversation could not be resumed either time, and nothing of it was left on disk (the temp directory was empty). `SIGTERM` six times, handled with `session.stop()`: resumed and finished each time. In the one run where `stop()` cut a command short, the cut `sleep` was recorded as a success (`(exit 0)`). | `SIGKILL` three times. After I restarted the local runtime, the object came back without any request and finished all three times. |
+| Kills and outcome | `SIGKILL` three times in November (twice in October). Relaunched with `--continue`, it finished every time. | `SIGKILL` twice: the conversation could not be resumed either time, and nothing of it was left on disk (the temp directory was empty). `SIGTERM` six times, handled with `session.stop()`: resumed and finished each time. Among the three runs whose stop-time state I kept, one had a `sleep` cut short by `stop()`, and it was recorded as a success (`(exit 0)`). | `SIGKILL` three times. After I restarted the local runtime, the object came back without any request and finished all three times. |
 | Where the session lives | A JSONL file in `--session-dir`, one entry per line | In memory during a turn. `stop()`, `detach()` and `suspendTurn()` return a state containing the session entries; with the new `sessionStorage` option, the state keeps only the last entry's id and the entries go to your own append-only log. No session entries are written before one of those calls. | Tables named `pi_*` in the Durable Object's SQLite database |
 | Extensions and keys | Whatever the OS user, and a trusted repository, provide, unless you pass `--no-extensions` and `--no-skills`. Keys come from that user's environment or `auth.json`. | No extension discovery, only factories you pass in code. Keys come from an `auth` record, your own credential store or the host's environment, and stay on the host. | Extensions are objects your Worker installs in a registry. The key is a Worker secret. |
 | Who restarts a dead run | Your supervisor, which also has to clean up tool processes `pi` left behind: commands still running after a `SIGKILL`, and anything put in the background | Your code, from a state saved earlier by `stop()`, `detach()` or `suspendTurn()` | Per Cloudflare's docs, the heartbeat alarm fires every 30 seconds while Pi has work (`HEARTBEAT_MS = 3e4` in `agents/harness/pi`). Locally, the object was constructed 0.9, 4.9 and 23.9 seconds after I issued the restart, all within one heartbeat. |
@@ -93,7 +93,7 @@ pi --print --continue --session-dir ./sess \
 
 The interrupted `bash` call never got a result in the session file, before or after the resume. Chat APIs expect every tool call to have a result, so Pi's model layer fills the gap each time it builds a request: `pi-ai` inserts a result for the orphaned call with the text `No result provided`, marked as an error (`transform-messages.js` in `@earendil-works/pi-ai` 1.5.0). The model sees a failed call that the file never records. If you replay or audit session files, expect tool calls without results.
 
-A supervisor can be this short. Each attempt gets a time limit; when it runs out, `timeout` sends `SIGTERM` so Pi can kill the tool commands still running, and `SIGKILL` 30 seconds later only if Pi hangs. When `pi` exits non-zero, it resumes the same session, up to three attempts in all. Save it as `pi-task.sh` and run it with bash:
+A supervisor can be this short. Each attempt gets a time limit; when it runs out, `timeout` sends `SIGTERM` so Pi can kill the tool commands still running, and `SIGKILL` 30 seconds later only if Pi hangs. When `pi` exits non-zero, it resumes the same session, up to three attempts in all. The script uses GNU `timeout`, so it is written for Linux; macOS doesn't ship `timeout` (Homebrew's coreutils installs it as `gtimeout`), and I didn't test it there. Save it as `pi-task.sh` and run it with bash:
 
 ```bash
 #!/usr/bin/env bash
@@ -137,12 +137,12 @@ What they don't say is that Pi reads stdin until it closes (`readPipedStdin` in 
 
 ```bash
 sleep 40 | timeout 20 pi --print "reply with only PONG"            # pi killed at 20 s (exit 124), nothing printed
-sleep 40 | timeout 20 pi --print "reply with only PONG" < /dev/null # PONG printed after about 1 s
+sleep 40 | timeout 20 pi --print "reply with only PONG" < /dev/null # PONG printed
 ```
 
 Both lines return only when `sleep 40` ends, because the shell waits for the whole pipeline. Run them in bash; zsh feeds both the pipe and the file to a command that has both (its MULTIOS option), so the second line hangs there too. A `< /dev/null` on a command with no pipe in front of it works in either shell.
 
-Typing `pi --print "..."` in a terminal with no pipe is fine, because Pi skips stdin when it's a TTY. systemd and launchd give services `/dev/null` as stdin, so a timer-driven process is safe unless it hands `pi` a pipe itself. A program that starts `pi` and lets it inherit an open pipe is not. If you spawn `pi` yourself, pass `stdin=subprocess.DEVNULL` (Python), `stdio: ['ignore', ...]` (Node) or `< /dev/null` (shell).
+Typing `pi --print "..."` in a terminal with no pipe is fine, because Pi skips stdin when it's a TTY. systemd gives services `/dev/null` as stdin by default (`StandardInput=null`), so a timer-driven process is safe unless it hands `pi` a pipe itself. A program that starts `pi` and lets it inherit an open pipe is not. If you spawn `pi` yourself, pass `stdin=subprocess.DEVNULL` (Python), `stdio: ['ignore', ...]` (Node) or `< /dev/null` (shell).
 
 Orbi's runner had this gap when I first wrote this post: it started Pi with `subprocess.Popen` without setting `stdin`. It was fixed the same day ([orbi-build/orbi#1562](https://github.com/orbi-build/orbi/issues/1562)): the runner now passes `stdin=subprocess.DEVNULL`.
 
@@ -224,7 +224,8 @@ The adapter's `reattachInProcess` option, on by default, sounds like it should h
 Install the packages:
 
 ```bash
-npm install agents @earendil-works/pi-durable @earendil-works/pi-ai @earendil-works/pi-schema @earendil-works/chord
+npm install agents@0.33.0 @earendil-works/pi-durable@1.5.0 @earendil-works/pi-ai@1.5.0 @earendil-works/pi-schema@1.5.0 @earendil-works/chord@1.5.0
+npm install -D wrangler@4.158.0
 ```
 
 I used `agents` 0.33.0 and Pi Durable 1.5.0; `agents` supports one Pi minor at a time, here `~1.5.0`, so pin them together. The October example fails to build with the current packages because `Type` is no longer exported from `@earendil-works/pi-ai`. This version compiled and ran under wrangler 4.158.0, with DeepSeek through `pi-ai` instead of the Workers AI binding in Cloudflare's examples:
@@ -293,7 +294,7 @@ Changes from October:
 - Tools return `output` instead of `content`.
 - The factory passes `onWake` to `Harness.open`; per Cloudflare's docs, without it Pi's timer keeps the object in memory, and billed, while a task sleeps, and the harness logs a warning.
 
-The Wrangler config I used, Cloudflare's minus the `ai` binding. The key goes in `.dev.vars` as `DEEPSEEK_API_KEY`, and `wrangler types` generates the `Env` type:
+The Wrangler config I used, Cloudflare's minus the `ai` binding. The key goes in `.dev.vars` as `DEEPSEEK_API_KEY`, and `npx wrangler types` generates the `Env` type:
 
 ```jsonc
 // wrangler.jsonc
