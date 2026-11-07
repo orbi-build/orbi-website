@@ -23,9 +23,11 @@ const SITE_HOSTS = new Set(["orbi.build", "www.orbi.build"]);
 const canon = (path) => path.replace(/\/index\.html$/, "/").replace(/\/+$/, "");
 
 // Routes this Worker answers itself (src/worker.js), so public/ holds no file
-// for them. Only entries a visitor can navigate to with a GET are listed:
-// POST-only endpoints (/subscribe, /cloud/e) and the retired /cloud/apply
-// (410 Gone) are left out on purpose — linking those is still a dead end.
+// for them. Only entries a browser navigation reaches are listed: POST-only
+// endpoints (/subscribe, /cloud/e), the retired /cloud/apply (410 Gone) and
+// /status (plaintext for non-HTML Accept only — a browser's text/html Accept
+// falls through to the assets and 404s, measured on orbi.build 2026-11-07) are
+// left out on purpose: linking those is still a dead end.
 const WORKER_ROUTES = new Set([
   "/cloud/login", // CLOUD_LOGIN_ROUTE — 302 to CLOUD_LOGIN_URL
   "/zh/cloud/login", // ZH_CLOUD_LOGIN_ROUTE
@@ -34,7 +36,6 @@ const WORKER_ROUTES = new Set([
   "/apply", // 301 to /cloud/
   "/x", // 302 to /?ref=x-bio
   "/stats", // statsResponse JSON
-  "/status", // statusResponse plaintext (non-HTML Accept)
   // PATH_REDIRECTS: retired slugs that still answer 301 to their new page.
   "/issue-to-release",
   "/autonomous-coding-agent",
