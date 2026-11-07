@@ -1177,6 +1177,7 @@ describe("footer directory badges are one strip inside the friends row (Issues #
           "https://unitelist.com/product/orbi",
           "https://appalist.com/ai/orbi",
           "https://weliketools.com/tool/orbi",
+          "https://bowora.com/?via=4rnfymxi",
         ];
         for (const [index, href] of newBadgeHrefs.entries()) {
           await page.keyboard.press("Tab");
@@ -1294,6 +1295,7 @@ describe("the footer directory badges render 28px high (Issue #1038)", () => {
     "https://unitelist.com/product/orbi",
     "https://appalist.com/ai/orbi",
           "https://weliketools.com/tool/orbi",
+          "https://bowora.com/?via=4rnfymxi",
   ];
 
   // Issue #1173: demo.js appends a marquee copy of the strip at runtime, so
