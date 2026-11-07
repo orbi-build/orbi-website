@@ -33,7 +33,7 @@ Pi 需要 Node.js 22.19 或更新版本。官方安装脚本是 `curl -fsSL http
 
 ```bash
 npm install -g --ignore-scripts @earendil-works/pi-coding-agent
-pi --version          # 1.5.0 on 6 November 2026
+pi --version          # printed 1.5.0 on 6 November 2026
 pi --print --provider deepseek --model deepseek-flash "Reply with only the word READY." < /dev/null
 ```
 
@@ -51,7 +51,7 @@ print 命令返回了 `READY`。我测试了 npm 安装和这条 `--print` 命�
 | kill 次数与结果 | 11 月 `SIGKILL` 三次（10 月两次），用 `--continue` 重新启动，每次都完成了任务 | `SIGKILL` 两次，对话都恢复不了，磁盘上也没留下会话记录（临时目录为空）。`SIGTERM` 六次，处理函数调用 `session.stop()`，每次都恢复并完成了任务。其中三次另存了停止时的状态快照；这三份中，一次 `sleep` 被 `stop()` 提前打断，却记成成功（`(exit 0)`） | `SIGKILL` 三次，我重启本地运行时后，对象没收到任何请求就自行恢复，三次都完成了任务 |
 | 会话记录在哪 | `--session-dir` 下的 JSONL 文件，一行一条记录 | 一轮运行期间放在内存里。`stop()`、`detach()` 和 `suspendTurn()` 返回的状态包含会话记录；使用新增的 `sessionStorage` 选项时，状态只留最后一条记录的 id，记录写入你自己的只追加日志。调用这三个方法之一前，不会写出任何会话记录 | Durable Object 的 SQLite 数据库中，以 `pi_` 开头的表 |
 | 扩展和 key | OS 用户和受信任仓库提供的扩展、skill，除非传 `--no-extensions`、`--no-skills`。key 来自该用户的环境变量或 `auth.json` | 不自动发现扩展，只用代码里传入的工厂函数。key 来自 `auth` 记录、你自己的凭据存储或宿主机环境变量，留在宿主机 | 扩展是 Worker 安装进 registry 的对象，key 是 Worker secret |
-| 进程死了谁重启 | 你的监督程序，还得清理 `pi` 留下的工具进程：`SIGKILL` 后仍在运行的命令，以及命令放到后台的进程 | 你的代码，用之前 `stop()`、`detach()` 或 `suspendTurn()` 保存的状态恢复 | 按 Cloudflare 文档，只要 Pi 还有工作，心跳 alarm 每 30 秒触发一次（`agents/harness/pi` 中的 `HEARTBEAT_MS = 3e4`）。本地实测，对象在发出重启命令后 0.9、4.9、23.9 秒构造，都在一个心跳周期内 |
+| 进程死了谁重启 | 你的监督程序，还得清理 `pi` 留下的工具进程：`SIGKILL` 后仍在运行的命令，以及命令放到后台的进程 | 你的代码，用之前 `stop()`、`detach()` 或 `suspendTurn()` 保存的状态恢复；如果这三个方法都没调用就被 `SIGKILL`，就没有状态可恢复 | 按 Cloudflare 文档，只要 Pi 还有工作，心跳 alarm 每 30 秒触发一次（`agents/harness/pi` 中的 `HEARTBEAT_MS = 3e4`）。本地实测，对象在发出重启命令后 0.9、4.9、23.9 秒构造，都在一个心跳周期内 |
 | 卡住了谁发现 | 你的监督程序 | 你的代码：`stream()` 接受 abort signal | 你的代码，通过 `abort()`；没有内置机制，忽略 abort signal 的工具会一直占着会话 |
 | 要自己运维什么 | 一台机器和一个监督程序 | 一个 Node 服务和一个沙箱 | 不需要自己的服务器；部署需要 Cloudflare 账号，编程工具需要你提供执行环境 |
 
@@ -91,7 +91,7 @@ pi --print --continue --session-dir ./sess \
    "You were interrupted. Continue the original task from where you left off." < /dev/null
 ```
 
-`--continue` 会打开 `--session-dir` 下、从同一工作目录启动的最近一个会话，所以每个任务要用单独的会话目录。目录为空时，它会新建会话。11 月三次恢复都建齐了五个文件，回复 `ALL DONE`，耗时分别约 33、32、22 秒。每次模型都先用 `ls` 和 `cat` 检查 step 文件，再继续。10 月有一次 kill 落在 `step3.txt` 写完之后、两次工具调用之间，那次模型直接从第 4 步继续，没有检查。
+`--continue` 会打开 `--session-dir` 下、从同一工作目录启动的最近一个会话，所以每个任务要用单独的会话目录。目录为空时，它会新建会话。11 月三次恢复都建齐了五个文件，回复 `ALL DONE`，三次恢复后的运行分别用了约 33、32、22 秒。每次模型都先用 `ls` 和 `cat` 检查 step 文件，再继续。10 月有一次 kill 落在 `step3.txt` 写完之后、两次工具调用之间，那次模型直接从第 4 步继续，没有检查。
 
 被打断的 `bash` 调用，恢复前后都没有在会话文件里补上结果。聊天 API 要求每次工具调用都有结果，Pi 的模型层因此会在构造请求时补一条：`pi-ai` 为孤立调用插入 `No result provided`，并标为错误（`@earendil-works/pi-ai` 1.5.0 中的 `transform-messages.js`）。模型能看到这条失败结果，会话文件里却没有。回放、审计会话文件时，要考虑这种缺结果的调用。
 
@@ -207,13 +207,13 @@ if (!stopping) { saveState(await session.detach()); process.exit(failed ? 1 : 0)
 
 不打断时，约 50 秒完成，文件在 `./box/work/pi-demo/` 下。我在约 30 秒和 33 秒时分别用 `SIGKILL` 杀了一次。两次都是已写好的文件留在沙箱里，对话丢失。适配器把 Pi 会话放在内存中（源码中的 `SessionManager.inMemory`），只有调用 `stop()`、`detach()` 或 `suspendTurn()` 时才把会话放进返回的状态。进程被杀后，三个方法都没有执行，临时目录 `$TMPDIR/ai-sdk-harness/pi/<session id>/` 里也没有文件。
 
-每次我都用相同的 session id 起新进程，发出和上文手动 `--continue` 一样的提示词：「You were interrupted. Continue the original task from where you left off.」。这里故意不带原任务，用来检查对话是否保住了；上面的 JS 脚本会发送完整任务。没有历史，模型两次都没新建文件，只问剩下的步骤是什么。10 月的测试中，它还会多写一个文件才停。
+每次我都用相同的 session id 起新进程，发出和上文手动 `--continue` 一样的提示词：「You were interrupted. Continue the original task from where you left off.」。这里故意不带原任务，用来检查对话是否保住了；上面的 JS 脚本会发送完整任务。没有历史，模型两次都没新建文件，只问剩下的步骤是什么。10 月同样重启后，模型根据文件名猜出下一步，写了一个文件就停了。
 
 换成 `SIGTERM` 后，六次都恢复并完成了任务，因为信号处理函数执行了。`session.stop()` 中止当前轮次，返回包含未完成轮次的恢复状态。新进程将它作为 `resumeFrom` 传入，发现 `hasUnfinishedTurn()` 为真，再调用 `continueStream()`。`detach()` 返回的状态同样传给 `createSession({ sessionId, resumeFrom })`；`suspendTurn()` 返回的状态则传给 `createSession({ sessionId, continueFrom })`。
 
 现在，返回的状态本身就包含会话。六次测试中，我有三次在停止时另存了状态快照，避免被恢复后的运行覆盖；这些快照包含 16 到 22 条记录。沙箱里没有另一份会话副本可供检查。[AI SDK 文档](https://ai-sdk.dev/providers/ai-sdk-harnesses/pi)说明，旧格式状态恢复时会新建会话，所以 10 月版本保存的 `state.json` 会从头开始。使用 `sessionStorage` 时，`stop()` 把新记录追加到你的日志，状态中只保留最后一条记录的 id。
 
-三份快照中有一次，`stop()` 在第 3 次 `sleep 8` 运行到 1.2 秒时将它打断，结果却记为 `(exit 0)`。算上被打断的这次，本该还剩三次 sleep，恢复后模型只跑了两次。另外两次信号落在步骤之间，没有打断任何调用。`just-bash` 的 `sleep` 在中止时会报告成功，其他沙箱我没检查。
+三份快照中有一次，`stop()` 在第 3 次 `sleep 8` 运行到 1.2 秒时将它打断，结果却记为 `(exit 0)`。算上被打断的这次，本该还剩三次 sleep，恢复后模型只跑了两次，因为它把被打断的那次当成了已完成。这次运行最后五个文件都在，也报告了完成，只是少等了一次。另外两次信号落在步骤之间，没有打断任何调用。`just-bash` 的 `sleep` 在中止时会报告成功，其他沙箱我没检查。
 
 Linux 上的 `docker stop` 和 `systemctl stop` 都先发送 `SIGTERM`，默认分别等待 10 秒和 90 秒后才发 `SIGKILL`。只要 `stop()` 能在这段时间内完成，这样的处理函数就能应对计划内停机；进程崩溃或 OOM killer 杀进程时，它起不了作用。
 
@@ -334,9 +334,9 @@ Wrangler 配置用的是 Cloudflare 示例去掉 `ai` 绑定后的版本。把 k
 
 ## 无人值守跑 Pi，该选哪一种
 
-agent 要在 git 检出目录里使用真实 shell，你又有机器和调度程序时，用 `pi --print`。它运行 Pi 1.5.0，11 月三次硬杀都保住了会话文件，一条命令就能恢复。监督程序要自己写，可以用上面的脚本，加定时器或 cron 启动。如果用其他方式启动 `pi`，记得关闭 stdin，停止时优先发 `SIGTERM`，让仍在运行的工具命令一起退出。`SIGKILL` 没有这个清理机会；后台命令无论哪种信号都会留下，要用 systemd scope 或容器清理。
+如果 agent 要在真实的 git 仓库里跑 shell，而你有自己的机器和调度程序，用 `pi --print`。它运行 Pi 1.5.0，11 月三次硬杀都保住了会话文件，一条命令就能恢复。监督程序要自己写，可以用上面的脚本，加定时器或 cron 启动。如果用其他方式启动 `pi`，记得关闭 stdin，停止时优先发 `SIGTERM`，让仍在运行的工具命令一起退出。`SIGKILL` 没有这个清理机会；后台命令无论哪种信号都会留下，要用 systemd scope 或容器清理。
 
-Pi 是 Node 产品中的一项功能、每个用户各有沙箱时，AI SDK harness 更合适。把 `SIGTERM` 接到 `session.stop()`，把恢复状态存到持久存储，这条路径现在运行 Pi 1.5.0，API 仍属实验性。崩溃仍会丢掉上次保存状态之后的全部进度；我用一条提示词跑的测试在硬杀前还没保存过，丢失的就是整段对话。被 `stop()` 打断的命令可能记成成功，而 `continueStream()` 不接受新提示词，所以恢复后要自己核对结果，或者让任务的每一步先检查上一步。上面的脚本在没有保存状态时会重发完整任务，别换成一句不带任务内容的「继续」。
+如果 Pi 只是你 Node 服务里的一个组件，每个用户各有一个沙箱，AI SDK harness 更合适。把 `SIGTERM` 接到 `session.stop()`，把恢复状态存到持久存储，这条路径现在运行 Pi 1.5.0，API 仍属实验性。崩溃仍会丢掉上次保存状态之后的全部进度；我用一条提示词跑的测试在硬杀前还没保存过，丢失的就是整段对话。被 `stop()` 打断的命令可能记成成功，而 `continueStream()` 不接受新提示词，所以恢复后要自己核对结果，或者让任务的每一步先检查上一步。上面的脚本在没有保存状态时会重发完整任务，别换成一句不带任务内容的「继续」。
 
 任务需要在崩溃后恢复、你又不想自写监督程序，工具也主要调用 API 时，可以考虑 Cloudflare 上的 Pi Durable。本地测试中，我重启运行时后，对象没有收到请求就继续了任务。在线上，Cloudflare 文档说心跳 alarm 会重新启动对象，这一点我没部署验证。它也是三者中最新的一条路径，`PiHarness` 在 10 月 2 日才加入。Pi Durable 属于实验性，`agents` 每次只支持 Pi 的一个次版本，要一起固定版本。Earendil 的发布文也展示了普通 Node 上的 Pi Durable：使用 SQLite 存储，再给编程工具接 Node 执行环境。这个组合我没测。
 
