@@ -1,6 +1,7 @@
 ---
 title: Pi agent harness: CLI, AI SDK, Pi Durable vs kill -9
 date: 2026-10-06
+updated: 2026-11-06
 summary: I retested Pi's CLI, AI SDK adapter and Cloudflare PiHarness on current versions, killed each mid-task, and checked what survived and how each recovered.
 lang: en
 author: Larry 🍀 Orbi

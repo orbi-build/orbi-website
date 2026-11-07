@@ -20,9 +20,10 @@ en 与 zh 镜像各一份），然后 `npm run build` 重新生成 `public/`。
 `tests/pages.test.js` 是门禁：构建产物与 `public/` 逐字节比对，中英镜像的
 nav/footer 项数、CTA 数量、语言切换目标、锚点前缀不一致会直接红。
 
-`sitemap.xml` 只写可索引 URL 与 `en` / `zh-CN` / `x-default` 语言链接，不写
-`lastmod`、`changefreq`、`priority`（三者都是 sitemap 协议里的可选项，Issue #1065）：
-产物只取决于 URL 集合，不读 Git 也不读构建时刻。加页面后照常 `npm run build`，
+`sitemap.xml` 只写可索引 URL 与 `en` / `zh-CN` / `x-default` 语言链接（Issue #1065）；
+博文 front matter 写了 `updated` 时，该 URL 再加一条 `<lastmod>`，日期直接取自内容
+文件（Issue #1226）。不写 `changefreq`、`priority`：两者都是 sitemap 协议里的可选项，
+写了只是猜。产物不读 Git 也不读构建时刻。加页面后照常 `npm run build`，
 把重新生成的 `public/sitemap.xml` 与页面一起提交。
 
 关于「要不要重构为 Next.js / Hono 等框架」：评估结论是不重构，痛点对照、规模数据与
