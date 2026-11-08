@@ -83,7 +83,7 @@ Before switching products, compare [Cursor's cloud agents](https://cursor.com/do
 
 ### Orbi
 
-Label a GitHub Issue `ai-ready` and Orbi runs [Pi](/guides/pi-coding-agent/), an open-source coding agent, to implement it. A second Pi session that did not write the code reviews it, and the Orbi runner (on your machine if you self-host, or Orbi Cloud's hosted runner) merges the reviewed commit once your CI passes. No person signs off on that merge by default; if your branch protection requires a human approval, Orbi stops at `ai-awaiting-merge` and the Issue comment names the action. A person starts a release by commenting `/orbi milestone <version>` on an Issue; Orbi then opens the release ticket, tags and publishes. Self-hosted [Orbi](https://github.com/orbi-build/orbi) is free under AGPL-3.0 with your own model key. [Orbi Cloud](/cloud/?ref=blog-cursor-alt) is the hosted version; its monthly and yearly plans are listed on that page, and the first 3 merged deliveries (an Issue whose PR Orbi merged) are free with no card required. It fits a team that wants Issues carried through review and merge while a person still decides when to release. If you want inline completions, Orbi does not replace Cursor.
+Label a GitHub Issue `ai-ready` and Orbi runs [Pi](/guides/pi-coding-agent/), an open-source coding agent, to implement it. A second Pi session that did not write the code reviews it, and the Orbi runner (on your machine if you self-host, or Orbi Cloud's hosted runner) merges the reviewed commit once your CI passes. No person signs off on that merge by default; if your branch protection requires a human approval, Orbi stops at `ai-awaiting-merge` and the Issue comment names the action. A person starts a release by commenting `/orbi milestone <version>` on an Issue; Orbi then opens the release ticket, tags and publishes. Self-hosted [Orbi](https://github.com/orbi-build/orbi) is free under AGPL-3.0 with your own model key. [Orbi Cloud](/cloud/?ref=blog-cursor-alt) is the hosted version; its monthly and yearly plans are listed on that page. It fits a team that wants Issues carried through review and merge while a person still decides when to release. If you want inline completions, Orbi does not replace Cursor.
 
 ## One Issue to a release, timed
 
@@ -142,7 +142,7 @@ Free plans and open-source licenses answer different budget questions:
 | [Cline](https://github.com/cline/cline) | Apache-2.0 source; BYOK is supported | Model usage through your key or Cline's billing options |
 | [GitHub Copilot Free](https://github.com/features/copilot/plans) | 2,000 completions per month | PR assignment requires Pro or above |
 | [Devin Free](https://devin.ai/pricing) | $0 tier with a light agent quota and unlimited Tab completions | Devin Cloud starts with Pro at $20/month |
-| [Orbi](https://github.com/orbi-build/orbi) | Self-hosted software is free under AGPL-3.0 with your own model key | Your model usage; [Orbi Cloud](/cloud/?ref=blog-cursor-alt) offers 3 free merged deliveries, no card |
+| [Orbi](https://github.com/orbi-build/orbi) | Self-hosted software is free under AGPL-3.0 with your own model key | Your model usage, or an [Orbi Cloud](/cloud/?ref=blog-cursor-alt) plan |
 
 ## How to choose
 

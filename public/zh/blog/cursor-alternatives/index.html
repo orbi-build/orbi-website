@@ -314,7 +314,7 @@
 <p><a href="https://devin.ai/pricing">Devin Cloud 从 Pro 起可用，每月 20 美元</a>。<a href="https://devin.ai/desktop">Desktop 文档</a>介绍了本机和云端之间保留上下文、切换会话的用法。Devin 文档写明了哪些、没写哪些，见 <a href="/zh/compare/devin/">Orbi 对比 Devin</a>。</p>
 <h3 id="orbi">Orbi</h3>
 <p>给 GitHub Issue 打上 <code class="post-code--single">ai-ready</code> 标签，Orbi 就会运行开源编码 agent <a href="/zh/guides/pi-coding-agent/">Pi</a> 来实现改动。另开一个没写过这段代码的 Pi 会话做评审。评审和仓库 CI 通过后，Orbi runner（自部署时跑在你的机器上，用 Orbi Cloud 时是托管的 runner）合并评审过的那一版提交。默认没有人在合并前签字；如果分支保护要求人工批准，Orbi 会停在 <code class="post-code--single">ai-awaiting-merge</code>，并在 Issue 评论里写明需要谁做什么。发版由人在 Issue 评论里输入 <code class="post-code--spaced">/orbi milestone &lt;version&gt;</code> 发起，随后 Orbi 创建发版 Issue、打 tag 并发布。</p>
-<p><a href="https://github.com/orbi-build/orbi">Orbi</a> 在 AGPL-3.0 下开源，自部署软件免费，模型 key 自备。<a href="/zh/cloud/?ref=blog-cursor-alt">Orbi Cloud</a> 是托管版，月付和年付套餐以那一页为准；前 3 次合并交付（一个 Issue 的 PR 被 Orbi 合并算一次）免费，不需要信用卡。</p>
+<p><a href="https://github.com/orbi-build/orbi">Orbi</a> 在 AGPL-3.0 下开源，自部署软件免费，模型 key 自备。<a href="/zh/cloud/?ref=blog-cursor-alt">Orbi Cloud</a> 是托管版，月付和年付套餐以那一页为准。</p>
 <p>如果你想把 Issue 交出去，让 runner 在评审和 CI 通过后合并，发版时机由自己定，可以用 Orbi。要的是编辑器里的行内补全，Orbi 接不了 Cursor 的这部分工作。</p>
 <h2 id="找免费或开源的-cursor-平替-费用怎么算">找免费或开源的 Cursor 平替，费用怎么算</h2>
 <p>想找免费的 Cursor 平替，要先看免费套餐包含什么，以及开源软件之外还要付哪些费用。</p>
@@ -349,7 +349,7 @@
 <tr>
 <th scope="row"><a href="https://github.com/orbi-build/orbi">Orbi</a></th>
 <td>AGPL-3.0 开源，自部署软件免费，自备模型 key</td>
-<td>模型用量；<a href="/zh/cloud/?ref=blog-cursor-alt">Orbi Cloud</a> 可免费试 3 次合并交付，不需要信用卡</td>
+<td>模型用量，或 <a href="/zh/cloud/?ref=blog-cursor-alt">Orbi Cloud</a> 套餐</td>
 </tr>
 </tbody></table></div>
 <h2 id="怎么选">怎么选</h2>
