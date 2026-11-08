@@ -1466,6 +1466,77 @@ h2 {
 #pricing .button-ghost:hover { background: rgba(16, 41, 44, 0.06); }
 .pricing-subscribe { font-size: .82rem; }
 .once-pay-note { margin: 8px 0 0; color: var(--ink-soft); }
+/* Issue #1238: the evidence line and the signed quote sit between the price
+   cards and the payment notes — the decision point, not the footer. The two
+   facts are their own items so a phone stacks them instead of leaving one word
+   alone above the quote; the quote keeps the run-colored spine the site's
+   verbatim-quote blocks use (.claim-quotes). */
+.pricing-evidence { display: grid; gap: 18px; margin: 24px 0 0; }
+.pricing-evidence-line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  column-gap: 10px;
+  row-gap: 4px;
+  margin: 0;
+  color: var(--ink);
+}
+.pricing-evidence-item + .pricing-evidence-item::before {
+  content: "·";
+  margin-right: 10px;
+  color: var(--ink-soft);
+}
+.pricing-evidence-count { font-family: var(--mono); font-weight: 500; white-space: nowrap; }
+.pricing-evidence-record {
+  color: var(--run-on-light);
+  font-weight: 600;
+  white-space: nowrap;
+  text-underline-offset: 3px;
+}
+.pricing-quote {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  border-left: 2px solid var(--run);
+  padding-left: 16px;
+}
+.pricing-quote-text {
+  margin: 0;
+  color: var(--ink);
+  font-family: var(--display);
+  font-size: 1.15rem;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  line-height: 1.4;
+}
+.pricing-quote-person {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  column-gap: 8px;
+  row-gap: 2px;
+  color: var(--ink-soft);
+  font-size: 0.9rem;
+}
+.pricing-quote-name { color: var(--ink); font-weight: 600; }
+.pricing-quote-role { font-family: var(--mono); font-size: 0.72rem; }
+.pricing-quote-handle {
+  color: var(--run-on-light);
+  font-family: var(--mono);
+  font-size: 0.78rem;
+  text-underline-offset: 3px;
+  white-space: nowrap;
+}
+
+@media (max-width: 767px) {
+  /* One clause per line: the separators only exist while the facts share a line. */
+  .pricing-evidence-line { display: block; }
+  .pricing-evidence-item { display: block; }
+  .pricing-evidence-item + .pricing-evidence-item { margin-top: 4px; }
+  .pricing-evidence-item + .pricing-evidence-item::before { content: none; }
+  .pricing-evidence-record { display: inline-block; margin-top: 6px; }
+}
+
 .self-hosted-note { color: var(--ink-soft); }
 .founder-talk-note { margin: 12px 0 0; color: var(--ink-soft); }
 

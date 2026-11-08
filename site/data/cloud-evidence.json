@@ -1,0 +1,20 @@
+{
+  "quotePerson": "Tommy Xiao",
+  "releasesShippedByOrbi": 140,
+  "mergedPullRequestsLast30Days": 452,
+  "measuredAt": "2026-11-08",
+  "sources": [
+    {
+      "url": "https://api.github.com/repos/orbi-build/orbi/releases",
+      "counted": 140
+    },
+    {
+      "url": "https://api.github.com/search/issues?q=repo%3Aorbi-build%2Forbi+is%3Apr+is%3Amerged+merged%3A2026-10-09..2026-11-08",
+      "counted": 222
+    },
+    {
+      "url": "https://api.github.com/search/issues?q=repo%3Aorbi-build%2Forbi-website+is%3Apr+is%3Amerged+merged%3A2026-10-09..2026-11-08",
+      "counted": 230
+    }
+  ]
+}
