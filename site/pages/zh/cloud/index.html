@@ -40,7 +40,7 @@
   <meta property="og:locale:alternate" content="en_US">
   <meta property="og:url" content="https://orbi.build/zh/cloud/">
   <meta property="og:title" content="Orbi Cloud — 提个 Issue，收个版本">
-  <meta property="og:description" content="托管运行环境：提个 Issue，收个版本——独立审查、只合并审过的提交、关闭 milestone。Solo 每月含 __SOLO_INCLUDED_TOKENS__ token 模型用量，Pro 每月含 __INCLUDED_TOKENS__。Cloud 有 Solo 和 Pro 两个付费套餐，每月分别为 US$__SOLO_MONTHLY_USD__ 和 US$__CLOUD_MONTHLY_USD__。创始会员永久 5 折，限 __FOUNDING_PARTNER_LIMIT__ 位。">
+  <meta property="og:description" content="托管运行环境：提个 Issue，收个版本——独立审查、只合并审过的提交、关闭 milestone。Solo 每月含 __SOLO_INCLUDED_TOKENS__ token 模型用量，Pro 每月含 __INCLUDED_TOKENS__。Cloud 有 Solo 和 Pro 两个付费套餐，每月分别为 US$__SOLO_PAID_MONTHLY_USD__ 和 US$__PRO_PAID_MONTHLY_USD__。创始会员永久 5 折，限 __FOUNDING_PARTNER_LIMIT__ 位。">
   <meta property="og:image" content="https://orbi.build/img/og-cloud-zh.png">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
@@ -49,7 +49,7 @@
   <meta name="twitter:site" content="@xqliu">
   <meta name="twitter:creator" content="@xqliu">
   <meta name="twitter:title" content="Orbi Cloud — 提个 Issue，收个版本">
-  <meta name="twitter:description" content="托管运行环境：提个 Issue，收个版本。Cloud 有 Solo 和 Pro 两个付费套餐，每月分别为 US$__SOLO_MONTHLY_USD__ 和 US$__CLOUD_MONTHLY_USD__。创始会员永久 5 折，限 __FOUNDING_PARTNER_LIMIT__ 位。">
+  <meta name="twitter:description" content="托管运行环境：提个 Issue，收个版本。Cloud 有 Solo 和 Pro 两个付费套餐，每月分别为 US$__SOLO_PAID_MONTHLY_USD__ 和 US$__PRO_PAID_MONTHLY_USD__。创始会员永久 5 折，限 __FOUNDING_PARTNER_LIMIT__ 位。">
   <meta name="twitter:image" content="https://orbi.build/img/og-cloud-zh.png">
   <link rel="stylesheet" href="/fonts/fonts.css">
   <link rel="stylesheet" href="/styles.css">
@@ -74,15 +74,15 @@
         "@type": "AggregateOffer",
         "@id": "https://orbi.build/zh/cloud/#offer",
         "name": "Orbi Cloud 套餐",
-        "lowPrice": "__SOLO_MONTHLY_USD__",
-        "highPrice": "__CLOUD_MONTHLY_USD__",
+        "lowPrice": "__SOLO_PAID_MONTHLY_USD__",
+        "highPrice": "__PRO_PAID_MONTHLY_USD__",
         "offerCount": "2",
         "priceCurrency": "USD",
         "offers": [
-          { "@type": "Offer", "name": "Orbi Cloud Solo", "price": "__SOLO_MONTHLY_USD__", "priceCurrency": "USD" },
-          { "@type": "Offer", "name": "Orbi Cloud Pro", "price": "__CLOUD_MONTHLY_USD__", "priceCurrency": "USD" }
+          { "@type": "Offer", "name": "Orbi Cloud Solo", "price": "__SOLO_PAID_MONTHLY_USD__", "priceCurrency": "USD" },
+          { "@type": "Offer", "name": "Orbi Cloud Pro", "price": "__PRO_PAID_MONTHLY_USD__", "priceCurrency": "USD" }
         ],
-        "description": "Solo 每月 US$__SOLO_MONTHLY_USD__，含 __SOLO_INCLUDED_TOKENS__ token；Pro 每月 US$__CLOUD_MONTHLY_USD__，含 __INCLUDED_TOKENS__ token。额度用完后，新交付暂停。创始会员永久 5 折，限 __FOUNDING_PARTNER_LIMIT__ 位。",
+        "description": "Solo 每月 US$__SOLO_PAID_MONTHLY_USD__，含 __SOLO_INCLUDED_TOKENS__ token；Pro 每月 US$__PRO_PAID_MONTHLY_USD__，含 __INCLUDED_TOKENS__ token。额度用完后，新交付暂停。创始会员永久 5 折，限 __FOUNDING_PARTNER_LIMIT__ 位。",
         "url": "https://orbi.build/zh/cloud/"
       },
       {
@@ -236,12 +236,12 @@
         </div>
         <p class="pricing-trial-note">__FREE_TRIAL__ · 不用绑卡</p>
         <p class="founding-offer">创始合作伙伴终身五折，__FOUNDING_PARTNER_LIMIT__ 个名额只剩 __FOUNDING_PARTNER_REMAINING__ 个。结账时使用优惠码 __FOUNDING_PROMO_CODE__。</p>
-        <div class="pricing-cards">
+        <div class="pricing-cards" __FOUNDING_PRICE_STATE__>
           <article class="pricing-card pricing-card-featured">
             <p class="pricing-card-kicker">SOLO</p>
             <h3>Solo</h3>
-            <p class="pricing-card-price"><span data-pricing-price="solo" data-year-price="US$__SOLO_ANNUAL_MONTHLY_USD__" data-month-price="US$__SOLO_MONTHLY_USD__">US$__SOLO_ANNUAL_MONTHLY_USD__</span> <span class="pricing-card-price-unit">/ 月</span></p>
-            <p data-pricing-detail="solo" data-year-detail="按年付 US$__SOLO_ANNUAL_USD__，比按月省 __SOLO_ANNUAL_SAVINGS_PERCENT__%" data-month-detail="按月付，随时取消">按年付 US$__SOLO_ANNUAL_USD__，比按月省 __SOLO_ANNUAL_SAVINGS_PERCENT__%</p>
+            <p class="pricing-card-price"><span data-pricing-price="solo" data-year-price="US$__SOLO_PAID_ANNUAL_MONTHLY_USD__" data-month-price="US$__SOLO_PAID_MONTHLY_USD__">US$__SOLO_PAID_ANNUAL_MONTHLY_USD__</span> <s data-pricing-list-price="solo" data-year-price="US$__SOLO_ANNUAL_MONTHLY_USD__" data-month-price="US$__SOLO_MONTHLY_USD__">US$__SOLO_ANNUAL_MONTHLY_USD__</s> <span class="pricing-card-price-unit">/ 月</span></p>
+            <p data-pricing-detail="solo" data-year-detail="按年付 US$__SOLO_PAID_ANNUAL_USD__ <s>US$__SOLO_ANNUAL_USD__</s>，比按月省 __SOLO_ANNUAL_SAVINGS_PERCENT__%" data-month-detail="按月付，随时取消">按年付 US$__SOLO_PAID_ANNUAL_USD__ <s>US$__SOLO_ANNUAL_USD__</s>，比按月省 __SOLO_ANNUAL_SAVINGS_PERCENT__%</p>
             <p class="pricing-card-capacity">每月约 __MEASURED_SOLO_REPOSITORY_DELIVERY_RANGE__ 次合并交付</p>
             <p class="pricing-card-measurement"><small><a href="/zh/cost/">怎么测的 →</a></small></p>
             <ul><li>每月 __SOLO_INCLUDED_TOKENS__ token</li><li>__SOLO_REPOSITORIES__ 个仓库</li></ul>
@@ -253,8 +253,8 @@
           <article class="pricing-card">
             <p class="pricing-card-kicker">PRO</p>
             <h3>Pro</h3>
-            <p class="pricing-card-price"><span data-pricing-price="pro" data-year-price="US$__PRO_ANNUAL_MONTHLY_USD__" data-month-price="US$__CLOUD_MONTHLY_USD__">US$__PRO_ANNUAL_MONTHLY_USD__</span> <span class="pricing-card-price-unit">/ 月</span></p>
-            <p data-pricing-detail="pro" data-year-detail="按年付 US$__PRO_ANNUAL_USD__，比按月省 __PRO_ANNUAL_SAVINGS_PERCENT__%" data-month-detail="按月付，随时取消">按年付 US$__PRO_ANNUAL_USD__，比按月省 __PRO_ANNUAL_SAVINGS_PERCENT__%</p>
+            <p class="pricing-card-price"><span data-pricing-price="pro" data-year-price="US$__PRO_PAID_ANNUAL_MONTHLY_USD__" data-month-price="US$__PRO_PAID_MONTHLY_USD__">US$__PRO_PAID_ANNUAL_MONTHLY_USD__</span> <s data-pricing-list-price="pro" data-year-price="US$__PRO_ANNUAL_MONTHLY_USD__" data-month-price="US$__CLOUD_MONTHLY_USD__">US$__PRO_ANNUAL_MONTHLY_USD__</s> <span class="pricing-card-price-unit">/ 月</span></p>
+            <p data-pricing-detail="pro" data-year-detail="按年付 US$__PRO_PAID_ANNUAL_USD__ <s>US$__PRO_ANNUAL_USD__</s>，比按月省 __PRO_ANNUAL_SAVINGS_PERCENT__%" data-month-detail="按月付，随时取消">按年付 US$__PRO_PAID_ANNUAL_USD__ <s>US$__PRO_ANNUAL_USD__</s>，比按月省 __PRO_ANNUAL_SAVINGS_PERCENT__%</p>
             <p class="pricing-card-capacity">每月约 __MEASURED_SMALL_REPOSITORY_DELIVERY_RANGE__ 次合并交付</p>
             <p class="pricing-card-measurement"><small><a href="/zh/cost/">怎么测的 →</a></small></p>
             <ul><li>每月 __INCLUDED_TOKENS__ token</li><li>__PRO_REPOSITORIES__ 个仓库</li></ul>

@@ -13,8 +13,11 @@ import { extname, join, normalize } from "node:path";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { assertNoExternalRequests, guardedPage } from "./browser-network.mjs";
 import pricing from "../src/pricing.json";
+import { paidPriceReplacements } from "../src/pricing-tokens.js";
 
 const pricingReplacements = {
+  // Issue #1237: the founding price and the struck-through list price state.
+  ...paidPriceReplacements(pricing),
   [pricing.freeDeliveriesToken]: pricing.freeDeliveries,
   [pricing.monthlyUsdToken]: pricing.cloudMonthlyUsd,
   [pricing.soloMonthlyUsdToken]: pricing.soloMonthlyUsd,

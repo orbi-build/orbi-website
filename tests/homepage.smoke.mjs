@@ -4,6 +4,7 @@ import { mkdir, readFile } from "node:fs/promises";
 import { extname, join, normalize } from "node:path";
 import { pathToFileURL } from "node:url";
 import { placeholderSvg } from "./browser-network.mjs";
+import { paidPriceReplacements } from "../src/pricing-tokens.js";
 
 const port = 4173;
 const baseURL = `http://127.0.0.1:${port}`;
@@ -83,6 +84,10 @@ const deepDives = [
 // for that Worker, so it applies the same substitutions from the same single
 // source before a page reaches the browser.
 const pricing = JSON.parse(await readFile(new URL("../src/pricing.json", import.meta.url), "utf8"));
+// Issue #1237: the pages write the price the visitor pays first (the founding
+// 50% while places remain), so this stand-in resolves it the way the Worker
+// does instead of restating the numbers.
+const paid = paidPriceReplacements(pricing);
 // Issue #827: the local stand-in renders the same shape the Worker does —
 // the newest 18 faces plus one "+K" chip for the teams past the cap — so the
 // browser assertions exercise the layout that has to hold on a phone.
@@ -159,7 +164,8 @@ function startServer() {
       const type = CONTENT_TYPES[extname(file.path).toLowerCase()] ?? "application/octet-stream";
       const body = type.startsWith("text/html")
         ? Buffer.from(
-            file.body.toString("utf8")
+            Object.entries(paid)
+              .reduce((html, [token, value]) => html.replaceAll(token, value), file.body.toString("utf8"))
               .replaceAll(pricing.monthlyUsdToken, String(pricing.cloudMonthlyUsd))
               .replaceAll(pricing.soloMonthlyUsdToken, String(pricing.soloMonthlyUsd))
               .replaceAll(pricing.soloAnnualUsdToken, String(pricing.soloAnnualUsd))
@@ -1367,8 +1373,9 @@ async function assertCloudPage(browser, path, size, screenshot) {
     'meta[property="og:description"]',
     'meta[name="twitter:description"]',
   ].map((selector) => page.locator(selector).getAttribute("content")));
+  // Issue #1237: the description carries the price the visitor pays.
   for (const content of socialDescriptions) {
-    for (const amount of [pricing.soloMonthlyUsd, pricing.cloudMonthlyUsd]) {
+    for (const amount of [paid[pricing.soloPaidMonthlyUsdToken], paid[pricing.proPaidMonthlyUsdToken]]) {
       if (!content.includes("US$" + amount)) {
         throw new Error(`${path}: social description ${JSON.stringify(content)} is missing US$${amount}`);
       }
@@ -1434,7 +1441,7 @@ async function assertCloudPage(browser, path, size, screenshot) {
   )).flatMap((data) => data["@graph"] ?? [data]).filter((node) => node["@type"] === "AggregateOffer");
   if (offers.length !== 1
     || JSON.stringify(offers[0].offers?.map(({ price }) => price))
-      !== JSON.stringify([String(pricing.soloMonthlyUsd), String(pricing.cloudMonthlyUsd)])
+      !== JSON.stringify([paid[pricing.soloPaidMonthlyUsdToken], paid[pricing.proPaidMonthlyUsdToken]])
     || !String(offers[0].description).includes(String(pricing.foundingPartnerLimit))) {
     throw new Error(`${path}: JSON-LD AggregateOffer must price Solo and Pro with the founding partner terms, got ${JSON.stringify(offers)}`);
   }
