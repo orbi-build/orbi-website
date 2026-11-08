@@ -61,7 +61,10 @@
 // www.scrolllaunch.com 220x48 (SVG — its own width/height and its viewBox
 // 0 0 220 48, the same box the vendor's embed declares, Issue #1169); and on
 // 2026-11-06 yourhack.ai 131x20 (SVG — its own width/height, measured on the
-// live file, Issue #1198).
+// live file, Issue #1198); and on 2026-11-08 launchsoar.com 512x512 (PNG — its
+// own pixel box, 12317 bytes on the live URL, Issue #1248) and
+// ailaunch.space 225x61 (SVG — its own width/height and viewBox 0 0 225 61,
+// Issue #1248).
 // Since Issue #1038
 // the shared footer rule renders every badge at 28px high, so the
 // placeholder's natural size decides only the width the source ratio implies
@@ -105,6 +108,10 @@ export const BADGE_PLACEHOLDER_SIZES = [
   // the file measures 131x20 on the live URL (200, image/svg+xml), the same box
   // the vendor's embed snippet declares through its 20px-tall SVG.
   { host: "yourhack.ai", width: 131, height: 20 },
+  // Issue #1248: both files measured on the live URLs (200 image/png 12317
+  // bytes, and 200 image/svg+xml whose own box is 225x61).
+  { host: "launchsoar.com", width: 512, height: 512 },
+  { host: "ailaunch.space", width: 225, height: 61 },
 ];
 const FALLBACK_PLACEHOLDER_SIZE = { width: 1, height: 1 };
 
