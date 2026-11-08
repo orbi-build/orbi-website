@@ -3993,3 +3993,63 @@ describe("buyer-facing pages drop internal vocabulary (Issue #1217)", () => {
     });
   }
 });
+
+// Issue #1244: /evidence/ leads with the most recent deliveries. Each row is one
+// delivery with three data-evidence links (Issue -> PR -> Release); the newest
+// three are October 2026 or later and sit above the three September records the
+// page already carried, and the two languages list the same objects.
+describe("evidence page delivery records (Issue #1244)", () => {
+  const OUTPUTS = ["evidence/index.html", "zh/evidence/index.html"];
+  const ROW = /<li class="orbi-event-list-li">[\s\S]*?<\/li>/g;
+  const NEWER = [
+    { version: "v0.7.38", issue: 2123, pr: 2124 },
+    { version: "v0.7.37", issue: 2119, pr: 2122 },
+    { version: "v0.7.29", issue: 2022, pr: 2023 },
+  ];
+  const SEPTEMBER = ["v0.5.5", "v0.5.4", "v0.5.3"];
+
+  const rowsOf = (output) => {
+    const list = region(shipped.get(output), '<ul class="event-list">', "</ul>");
+    expect(list, `${output}: no event-list`).not.toBe("");
+    return list.match(ROW) ?? [];
+  };
+
+  // The three links of one row, in document order, as {kind, href}.
+  const linksOf = (row) =>
+    [...row.matchAll(/<a\b[^>]*data-evidence="([a-z]+)"[^>]*href="([^"]+)"/g)].map(([, kind, href]) => ({ kind, href }));
+
+  for (const output of OUTPUTS) {
+    it(`${output} lists six deliveries with a full Issue -> PR -> Release row each`, () => {
+      const rows = rowsOf(output);
+      expect(rows.length, `${output}: delivery rows`).toBe(6);
+      for (const row of rows) {
+        const links = linksOf(row);
+        expect(links.map((link) => link.kind), `${output}: row link kinds`).toEqual(["issue", "pr", "release"]);
+        expect(links[0].href, `${output}: Issue link`).toMatch(/^https:\/\/github\.com\/orbi-build\/orbi\/issues\/\d+$/);
+        expect(links[1].href, `${output}: PR link`).toMatch(/^https:\/\/github\.com\/orbi-build\/orbi\/pull\/\d+$/);
+        expect(links[2].href, `${output}: Release link`).toMatch(/^https:\/\/github\.com\/orbi-build\/orbi\/releases\/tag\/v\d+\.\d+\.\d+$/);
+      }
+    });
+
+    it(`${output} leads with the October 2026 deliveries above the September ones`, () => {
+      const rows = rowsOf(output);
+      NEWER.forEach((record, index) => {
+        const links = linksOf(rows[index] ?? "");
+        expect(links[0]?.href, `${output}: row ${index + 1} Issue`).toContain(`/issues/${record.issue}`);
+        expect(links[1]?.href, `${output}: row ${index + 1} PR`).toContain(`/pull/${record.pr}`);
+        expect(links[2]?.href, `${output}: row ${index + 1} Release`).toContain(`/releases/tag/${record.version}`);
+      });
+      SEPTEMBER.forEach((version, index) => {
+        expect(linksOf(rows[index + NEWER.length] ?? "")[2]?.href, `${output}: September row ${version}`).toContain(
+          `/releases/tag/${version}`,
+        );
+      });
+    });
+  }
+
+  it("both languages link the same six deliveries", () => {
+    const hrefsOf = (output) => rowsOf(output).flatMap((row) => linksOf(row).map((link) => link.href));
+    expect(hrefsOf("zh/evidence/index.html").length).toBe(18);
+    expect(hrefsOf("zh/evidence/index.html")).toEqual(hrefsOf("evidence/index.html"));
+  });
+});

@@ -1918,7 +1918,18 @@ const ciGatesPages = {
 // least three public GitHub records as real <a href>, never the private repo.
 // Issue #1212 removed the pinned sentences; the records, the kinds, the
 // verification date and the cross links are what the page owes a visitor.
+// Issue #1244: the newest three deliveries (October and November 2026) lead
+// the list; the three September records stay below them.
 const evidenceRecords = [
+  "https://github.com/orbi-build/orbi/issues/2123",
+  "https://github.com/orbi-build/orbi/pull/2124",
+  "https://github.com/orbi-build/orbi/releases/tag/v0.7.38",
+  "https://github.com/orbi-build/orbi/issues/2119",
+  "https://github.com/orbi-build/orbi/pull/2122",
+  "https://github.com/orbi-build/orbi/releases/tag/v0.7.37",
+  "https://github.com/orbi-build/orbi/issues/2022",
+  "https://github.com/orbi-build/orbi/pull/2023",
+  "https://github.com/orbi-build/orbi/releases/tag/v0.7.29",
   "https://github.com/orbi-build/orbi/issues/852",
   "https://github.com/orbi-build/orbi/pull/854",
   "https://github.com/orbi-build/orbi/releases/tag/v0.5.5",
@@ -1938,7 +1949,7 @@ const evidencePages = {
       "https://github.com/orbi-build/orbi-cloud",
     ],
     localHrefs: ["/cloud/"],
-    verified: "verified 2026-09-14",
+    verified: "verified 2026-11-08",
     homeEntry: "/",
     homeLink: "/evidence/",
   },
@@ -1949,7 +1960,7 @@ const evidencePages = {
       "https://github.com/orbi-build/orbi-cloud",
     ],
     localHrefs: ["/zh/cloud/"],
-    verified: "核实于 2026-09-14",
+    verified: "核实于 2026-11-08",
     homeEntry: "/zh/",
     homeLink: "/zh/evidence/",
   },
@@ -1990,8 +2001,11 @@ async function assertEvidencePage(browser, path, size, screenshot) {
   const evidenceLinks = await page.locator("main a[data-evidence]").evaluateAll((nodes) =>
     nodes.map((node) => ({ href: node.getAttribute("href"), kind: node.getAttribute("data-evidence") })),
   );
-  if (evidenceLinks.length < 3) {
-    throw new Error(`${path}: expected at least 3 data-evidence links, got ${evidenceLinks.length}`);
+  // Issue #1244: six delivery rows, each carrying its own Issue, PR and
+  // Release link (the releases ledger adds one more release-kind link).
+  for (const [kind, expected] of [["issue", 6], ["pr", 6]]) {
+    const got = evidenceLinks.filter((link) => link.kind === kind).length;
+    if (got !== expected) throw new Error(`${path}: expected ${expected} ${kind} evidence links, got ${got}`);
   }
   const kinds = new Set(evidenceLinks.map((link) => link.kind));
   for (const kind of ["issue", "pr", "release"]) {
