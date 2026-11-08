@@ -146,7 +146,11 @@ describe("homepage social-proof section (Issue #226)", () => {
   it("links every homepage delivery card to its public PR record", () => {
     for (const output of ["index.html", "zh/index.html"]) {
       const section = sectionOf(built.get(output), "social-proof");
-      const hrefs = [...section.matchAll(/<h3 class="proof-card-title"><a class="orbi-proof-card-title-a" href="([^"]+)"/g)].map((m) => m[1]);
+      // Issue #1243: a quoted third-party PR title is a reference, not a
+      // heading of this page — it must stay out of the h1–h6 outline the
+      // homepage SEO heading gate counts.
+      expect(section, `${output}: a quoted PR title is a heading`).not.toMatch(/<h[1-6][^>]*class="proof-card-title"/);
+      const hrefs = [...section.matchAll(/<p class="proof-card-title"><a class="orbi-proof-card-title-a" href="([^"]+)"/g)].map((m) => m[1]);
       expect(hrefs).toEqual([
         "https://github.com/xiaods/k8e/pull/630",
         "https://github.com/minuda2009/Soncle-music/pull/22",
