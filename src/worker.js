@@ -1,5 +1,6 @@
 import { visitSignals } from "./bot-detection.js";
 import pricing from "./pricing.json";
+import { paidPriceReplacements } from "./pricing-tokens.js";
 
 // Single source of truth for the Cloud monthly price and the included token
 // quota (Issues #102, #138). The shipped HTML carries monthlyUsdToken and
@@ -811,6 +812,11 @@ async function assetResponse(asset, cloudLoginConfigured, founding = { logins: [
       console.error("related_posts_failed:", error && error.message ? error.message : error);
       body = body.replaceAll("<!--orbi:related-posts-->", "");
     }
+  }
+  // Issue #1237: the founding price depends on how many places are left, so
+  // it is resolved before the fixed values below (src/pricing-tokens.js).
+  for (const [token, value] of Object.entries(paidPriceReplacements(pricing))) {
+    body = body.replaceAll(token, value);
   }
   body = body
     .replaceAll(pricing.monthlyUsdToken, MONTHLY_USD)

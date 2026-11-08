@@ -15,6 +15,7 @@ import { extname, join, normalize } from "node:path";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { assertNoExternalRequests, guardedPage } from "./browser-network.mjs";
 import pricing from "../src/pricing.json";
+import { paidPriceReplacements } from "../src/pricing-tokens.js";
 
 const WIDTHS = [1440, 390];
 const SITE_ORIGIN = "https://orbi.build";
@@ -23,6 +24,8 @@ const SITE_ORIGIN = "https://orbi.build";
 // per request, so the test server does the same substitution the deployed site
 // gets. Otherwise the tokens would decide the measured widths.
 const pricingReplacements = {
+  // Issue #1237: the founding price and the struck-through list price state.
+  ...paidPriceReplacements(pricing),
   [pricing.monthlyUsdToken]: pricing.cloudMonthlyUsd,
   [pricing.soloMonthlyUsdToken]: pricing.soloMonthlyUsd,
   [pricing.soloAnnualUsdToken]: pricing.soloAnnualUsd,

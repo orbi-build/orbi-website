@@ -1450,8 +1450,14 @@ h2 {
 .pricing-card-featured { border-color: var(--signal); }
 .pricing-card-kicker { margin: 0; color: var(--signal); font: 500 .75rem/1 var(--mono); letter-spacing: .08em; }
 .pricing-card > h3 { margin: 0; font: 700 clamp(1.7rem, 3vw, 2.5rem)/1 var(--display); }
-.pricing-card-price { margin: 0; font: 600 1.45rem/1.2 var(--display); }
+.pricing-card-price { margin: 0; font: 600 1.45rem/1.2 var(--display); white-space: nowrap; }
 .pricing-card-price .pricing-card-price-unit { color: var(--ink-soft); font: 400 .9rem/1 var(--body); }
+/* Issue #1237: the price the visitor actually pays comes first, the list price
+   sits struck through beside it on the same line, and it disappears once the
+   founding places are gone. */
+.pricing-cards s { color: var(--ink-soft); font-size: .95rem; font-weight: 500; text-decoration: line-through; }
+.pricing-card-price s { margin-left: 4px; }
+.pricing-cards[data-founding-price="off"] s { display: none; }
 .pricing-card > p:not(.pricing-card-kicker):not(.pricing-card-price) { margin: 0; color: var(--ink-soft); }
 .pricing-card > ul { margin: 0; padding-left: 1.2rem; color: var(--ink-soft); }
 .pricing-card-actions { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; margin-top: auto; }

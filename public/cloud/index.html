@@ -18,7 +18,7 @@
   <meta property="og:locale:alternate" content="zh_CN">
   <meta property="og:url" content="https://orbi.build/cloud/">
   <meta property="og:title" content="Orbi Cloud — file an Issue, get a release">
-  <meta property="og:description" content="A hosted worker that takes GitHub Issues to tagged GitHub Releases — independent review, the reviewed commit merging, the milestone closed. Solo includes __SOLO_INCLUDED_TOKENS__ tokens of model usage per month; Pro includes __INCLUDED_TOKENS__. Solo and Pro are the two paid plans, at US$__SOLO_MONTHLY_USD__/month and US$__CLOUD_MONTHLY_USD__/month. Founding partners receive 50% off forever, __FOUNDING_PARTNER_LIMIT__ places.">
+  <meta property="og:description" content="A hosted worker that takes GitHub Issues to tagged GitHub Releases — independent review, the reviewed commit merging, the milestone closed. Solo includes __SOLO_INCLUDED_TOKENS__ tokens of model usage per month; Pro includes __INCLUDED_TOKENS__. Solo and Pro are the two paid plans, at US$__SOLO_PAID_MONTHLY_USD__/month and US$__PRO_PAID_MONTHLY_USD__/month. Founding partners receive 50% off forever, __FOUNDING_PARTNER_LIMIT__ places.">
   <meta property="og:image" content="https://orbi.build/img/og-cloud-free-trial.png">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
@@ -27,7 +27,7 @@
   <meta name="twitter:site" content="@xqliu">
   <meta name="twitter:creator" content="@xqliu">
   <meta name="twitter:title" content="Orbi Cloud — file an Issue, get a release">
-  <meta name="twitter:description" content="A hosted worker: file an Issue, get a release. Solo and Pro are the two paid plans, at US$__SOLO_MONTHLY_USD__/month and US$__CLOUD_MONTHLY_USD__/month. Founding partners receive 50% off forever, __FOUNDING_PARTNER_LIMIT__ places.">
+  <meta name="twitter:description" content="A hosted worker: file an Issue, get a release. Solo and Pro are the two paid plans, at US$__SOLO_PAID_MONTHLY_USD__/month and US$__PRO_PAID_MONTHLY_USD__/month. Founding partners receive 50% off forever, __FOUNDING_PARTNER_LIMIT__ places.">
   <meta name="twitter:image" content="https://orbi.build/img/og-cloud-free-trial.png">
   <link rel="stylesheet" href="/fonts/fonts.css">
   <link rel="stylesheet" href="/styles.css">
@@ -52,13 +52,13 @@
         "@type": "AggregateOffer",
         "@id": "https://orbi.build/cloud/#offer",
         "name": "Orbi Cloud plans",
-        "lowPrice": "__SOLO_MONTHLY_USD__",
-        "highPrice": "__CLOUD_MONTHLY_USD__",
+        "lowPrice": "__SOLO_PAID_MONTHLY_USD__",
+        "highPrice": "__PRO_PAID_MONTHLY_USD__",
         "offerCount": "2",
         "priceCurrency": "USD",
         "offers": [
-          { "@type": "Offer", "name": "Orbi Cloud Solo", "price": "__SOLO_MONTHLY_USD__", "priceCurrency": "USD" },
-          { "@type": "Offer", "name": "Orbi Cloud Pro", "price": "__CLOUD_MONTHLY_USD__", "priceCurrency": "USD" }
+          { "@type": "Offer", "name": "Orbi Cloud Solo", "price": "__SOLO_PAID_MONTHLY_USD__", "priceCurrency": "USD" },
+          { "@type": "Offer", "name": "Orbi Cloud Pro", "price": "__PRO_PAID_MONTHLY_USD__", "priceCurrency": "USD" }
         ],
         "description": "Solo includes __SOLO_INCLUDED_TOKENS__ tokens per month; Pro includes __INCLUDED_TOKENS__ tokens per month. When the allowance runs out, deliveries pause — no overage bills. Founding partners get 50% off forever, __FOUNDING_PARTNER_LIMIT__ places.",
         "url": "https://orbi.build/cloud/"
@@ -226,36 +226,36 @@
         <h2 class="orbi-compare-section-h2" id="pricing-title">Fixed monthly price. No overage bills.</h2>
         <div class="pricing-interval-toggle" data-pricing-toggle>
           <span>Pay</span>
-          <button type="button" data-pricing-interval="month" aria-pressed="false" data-cta="pricing-month">Monthly</button>
-          <button type="button" class="is-selected" data-pricing-interval="year" aria-pressed="true" data-cta="pricing-year">Yearly <span class="pricing-savings">Save __ANNUAL_SAVINGS_PERCENT__%</span></button>
+          <button type="button" class="is-selected" data-pricing-interval="month" aria-pressed="true" data-cta="pricing-month">Monthly</button>
+          <button type="button" data-pricing-interval="year" aria-pressed="false" data-cta="pricing-year">Yearly <span class="pricing-savings">Save __ANNUAL_SAVINGS_PERCENT__%</span></button>
         </div>
         <p class="pricing-trial-note">__FREE_TRIAL__ · No credit card required</p>
         <p class="founding-offer">Founding partners: 50% off for life. __FOUNDING_PARTNER_REMAINING__ of __FOUNDING_PARTNER_LIMIT__ places left. Code __FOUNDING_PROMO_CODE__ at checkout.</p>
-        <div class="pricing-cards">
+        <div class="pricing-cards" __FOUNDING_PRICE_STATE__>
           <article class="pricing-card pricing-card-featured">
             <p class="pricing-card-kicker">SOLO</p>
             <h3>Solo</h3>
-            <p class="pricing-card-price"><span data-pricing-price="solo" data-year-price="US$__SOLO_ANNUAL_MONTHLY_USD__" data-month-price="US$__SOLO_MONTHLY_USD__">US$__SOLO_ANNUAL_MONTHLY_USD__</span> <span class="pricing-card-price-unit">/ month</span></p>
-            <p data-pricing-detail="solo" data-year-detail="Billed yearly: US$__SOLO_ANNUAL_USD__; save __SOLO_ANNUAL_SAVINGS_PERCENT__%" data-month-detail="Billed monthly; cancel anytime">Billed yearly: US$__SOLO_ANNUAL_USD__; save __SOLO_ANNUAL_SAVINGS_PERCENT__%</p>
+            <p class="pricing-card-price"><span data-pricing-price="solo" data-year-price="US$__SOLO_PAID_ANNUAL_MONTHLY_USD__" data-month-price="US$__SOLO_PAID_MONTHLY_USD__">US$__SOLO_PAID_MONTHLY_USD__</span> <s data-pricing-list-price="solo" data-year-price="US$__SOLO_ANNUAL_MONTHLY_USD__" data-month-price="US$__SOLO_MONTHLY_USD__">US$__SOLO_MONTHLY_USD__</s> <span class="pricing-card-price-unit">/ month</span></p>
+            <p data-pricing-detail="solo" data-year-detail="Billed yearly: US$__SOLO_PAID_ANNUAL_USD__<s> US$__SOLO_ANNUAL_USD__</s>; save __SOLO_ANNUAL_SAVINGS_PERCENT__%" data-month-detail="Billed monthly; cancel anytime. Yearly US$__SOLO_PAID_ANNUAL_USD__<s> US$__SOLO_ANNUAL_USD__</s>, save __SOLO_ANNUAL_SAVINGS_PERCENT__%">Billed monthly; cancel anytime. Yearly US$__SOLO_PAID_ANNUAL_USD__<s> US$__SOLO_ANNUAL_USD__</s>, save __SOLO_ANNUAL_SAVINGS_PERCENT__%</p>
             <p class="pricing-card-capacity">About __MEASURED_SOLO_REPOSITORY_DELIVERY_RANGE__ merged deliveries a month</p>
             <p class="pricing-card-measurement"><small><a href="/cost/">How we measured →</a></small></p>
             <ul><li>__SOLO_INCLUDED_TOKENS__ tokens / month</li><li>__SOLO_REPOSITORIES__ repository</li></ul>
             <div class="pricing-card-actions">
               <a class="button button-signal" data-cta="pricing-solo-trial" href="/cloud/login">Try Orbi Cloud free →</a>
-              <a class="pricing-subscribe" data-pricing-subscribe="solo" data-cta="pricing-solo-year" href="/api/checkout?plan=solo&amp;interval=year">or subscribe now →</a>
+              <a class="pricing-subscribe" data-pricing-subscribe="solo" data-cta="pricing-solo-month" href="/api/checkout?plan=solo">or subscribe now →</a>
             </div>
           </article>
           <article class="pricing-card">
             <p class="pricing-card-kicker">PRO</p>
             <h3>Pro</h3>
-            <p class="pricing-card-price"><span data-pricing-price="pro" data-year-price="US$__PRO_ANNUAL_MONTHLY_USD__" data-month-price="US$__CLOUD_MONTHLY_USD__">US$__PRO_ANNUAL_MONTHLY_USD__</span> <span class="pricing-card-price-unit">/ month</span></p>
-            <p data-pricing-detail="pro" data-year-detail="Billed yearly: US$__PRO_ANNUAL_USD__; save __PRO_ANNUAL_SAVINGS_PERCENT__%" data-month-detail="Billed monthly; cancel anytime">Billed yearly: US$__PRO_ANNUAL_USD__; save __PRO_ANNUAL_SAVINGS_PERCENT__%</p>
+            <p class="pricing-card-price"><span data-pricing-price="pro" data-year-price="US$__PRO_PAID_ANNUAL_MONTHLY_USD__" data-month-price="US$__PRO_PAID_MONTHLY_USD__">US$__PRO_PAID_MONTHLY_USD__</span> <s data-pricing-list-price="pro" data-year-price="US$__PRO_ANNUAL_MONTHLY_USD__" data-month-price="US$__CLOUD_MONTHLY_USD__">US$__CLOUD_MONTHLY_USD__</s> <span class="pricing-card-price-unit">/ month</span></p>
+            <p data-pricing-detail="pro" data-year-detail="Billed yearly: US$__PRO_PAID_ANNUAL_USD__<s> US$__PRO_ANNUAL_USD__</s>; save __PRO_ANNUAL_SAVINGS_PERCENT__%" data-month-detail="Billed monthly; cancel anytime. Yearly US$__PRO_PAID_ANNUAL_USD__<s> US$__PRO_ANNUAL_USD__</s>, save __PRO_ANNUAL_SAVINGS_PERCENT__%">Billed monthly; cancel anytime. Yearly US$__PRO_PAID_ANNUAL_USD__<s> US$__PRO_ANNUAL_USD__</s>, save __PRO_ANNUAL_SAVINGS_PERCENT__%</p>
             <p class="pricing-card-capacity">About __MEASURED_SMALL_REPOSITORY_DELIVERY_RANGE__ merged deliveries a month</p>
             <p class="pricing-card-measurement"><small><a href="/cost/">How we measured →</a></small></p>
             <ul><li>__INCLUDED_TOKENS__ tokens / month</li><li>__PRO_REPOSITORIES__ repositories</li></ul>
             <div class="pricing-card-actions">
               <a class="button button-ghost" data-cta="pricing-pro-trial" href="/cloud/login">Try Orbi Cloud free →</a>
-              <a class="pricing-subscribe" data-pricing-subscribe="pro" data-cta="pricing-pro-year" href="/api/checkout?plan=pro&amp;interval=year">or subscribe now →</a>
+              <a class="pricing-subscribe" data-pricing-subscribe="pro" data-cta="pricing-pro-month" href="/api/checkout?plan=pro">or subscribe now →</a>
             </div>
           </article>
         </div>

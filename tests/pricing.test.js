@@ -3,6 +3,7 @@ import { readdir, readFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import pricing from "../src/pricing.json";
 import { handleFetch } from "../src/worker.js";
+import { paidPriceReplacements } from "../src/pricing-tokens.js";
 
 const PUBLIC_DIR = fileURLToPath(new URL("../public/", import.meta.url));
 const SITE_PAGES_DIR = fileURLToPath(new URL("../site/pages/", import.meta.url));
@@ -169,10 +170,15 @@ describe("Cloud monthly price constant (Issue #102)", () => {
         const data = JSON.parse(script); // throws if the substitution broke the structure
         return (data["@graph"] ?? [data]).filter((node) => node["@type"] === "AggregateOffer");
       });
+      // Issue #1237: the offers publish the price the visitor pays (founding
+      // 50% while places remain), never a list price the card contradicts.
+      const paid = paidPriceReplacements(pricing);
+      const paidSolo = paid[pricing.soloPaidMonthlyUsdToken];
+      const paidPro = paid[pricing.proPaidMonthlyUsdToken];
       expect(offers, relativePath).toHaveLength(1);
-      expect(offers[0].lowPrice, relativePath).toBe(SOLO_USD);
-      expect(offers[0].highPrice, relativePath).toBe(USD);
-      expect(offers[0].offers.map(({ price }) => price), relativePath).toEqual([SOLO_USD, USD]);
+      expect(offers[0].lowPrice, relativePath).toBe(paidSolo);
+      expect(offers[0].highPrice, relativePath).toBe(paidPro);
+      expect(offers[0].offers.map(({ price }) => price), relativePath).toEqual([paidSolo, paidPro]);
       expect(offers[0].description, relativePath).toContain(relativePath.startsWith("zh/") ? "永久 5 折" : "50% off forever");
       // website#145: the aggregate description is what search engines and LLMs
       // scrape — it must carry the rendered quota label, never the token or
@@ -297,8 +303,10 @@ describe("Cloud pricing trial integration (Issue #742)", () => {
       expect(cards[1], relativePath).toContain("<h3>Pro</h3>");
       expect(cards[0], relativePath).toContain(`data-cta="pricing-solo-trial" href="${expected.login}"`);
       expect(cards[1], relativePath).toContain(`data-cta="pricing-pro-trial" href="${expected.login}"`);
-      expect(pricing, relativePath).toContain('data-pricing-subscribe="solo" data-cta="pricing-solo-year" href="/api/checkout?plan=solo&amp;interval=year"');
-      expect(pricing, relativePath).toContain('data-pricing-subscribe="pro" data-cta="pricing-pro-year" href="/api/checkout?plan=pro&amp;interval=year"');
+      // Issue #1237: the default interval is the one whose price the card
+      // leads with — monthly, the founding price the visitor actually pays.
+      expect(pricing, relativePath).toContain('data-pricing-subscribe="solo" data-cta="pricing-solo-month" href="/api/checkout?plan=solo"');
+      expect(pricing, relativePath).toContain('data-pricing-subscribe="pro" data-cta="pricing-pro-month" href="/api/checkout?plan=pro"');
     }
   });
 });
@@ -524,12 +532,19 @@ describe("Cloud paid-tier pricing (Issue #441)", () => {
   });
 
   it("publishes Solo and Pro as two structured offers", async () => {
+    // Issue #1237: the offers publish what the visitor pays while founding
+    // places remain, so the structured data cannot state a price the card
+    // beside it contradicts.
+    const paid = paidPriceReplacements(pricing);
     for (const relativePath of CLOUD_PAGES) {
       const body = await (await serve(await rawPage(relativePath), `/${relativePath.replace(/index\.html$/, "")}`)).text();
       const data = JSON.parse(body.match(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/)?.[1]);
       const offer = data["@graph"].find((entry) => entry["@id"]?.endsWith("#offer"));
       expect(offer["@type"], relativePath).toBe("AggregateOffer");
-      expect(offer.offers.map(({ price }) => price), relativePath).toEqual([SOLO_USD, USD]);
+      expect(offer.offers.map(({ price }) => price), relativePath)
+        .toEqual([paid[pricing.soloPaidMonthlyUsdToken], paid[pricing.proPaidMonthlyUsdToken]]);
+      expect([offer.lowPrice, offer.highPrice], relativePath)
+        .toEqual([paid[pricing.soloPaidMonthlyUsdToken], paid[pricing.proPaidMonthlyUsdToken]]);
     }
   });
 
@@ -584,11 +599,13 @@ describe("Cloud paid-tier pricing (Issue #441)", () => {
         expect(body, relativePath + ": savings " + percent + "%").toContain(`${percent}%`);
       }
       expect(body, relativePath).toContain(relativePath.startsWith("zh/") ? 'href="/zh/cloud/login"' : 'href="/cloud/login"');
-      expect(body, relativePath).toContain('href="/api/checkout?plan=solo&amp;interval=year"');
-      expect(body, relativePath).toContain('href="/api/checkout?plan=pro&amp;interval=year"');
+      // Issue #1237: the subscription link starts on the interval the card
+      // leads with, so the price the visitor read is the price they land on.
+      expect(body, relativePath).toContain('href="/api/checkout?plan=solo"');
+      expect(body, relativePath).toContain('href="/api/checkout?plan=pro"');
       expect(body.match(/href="\/api\/checkout[^"]*"/g), relativePath).toEqual([
-        'href="/api/checkout?plan=solo&amp;interval=year"',
-        'href="/api/checkout?plan=pro&amp;interval=year"',
+        'href="/api/checkout?plan=solo"',
+        'href="/api/checkout?plan=pro"',
         // Chinese buyers pay once with Alipay / WeChat Pay (Stripe offers no
         // subscriptions for either); orbi-cloud#1611 serves payment=once.
         'href="/api/checkout?plan=solo&amp;interval=month&amp;payment=once"',
@@ -598,8 +615,8 @@ describe("Cloud paid-tier pricing (Issue #441)", () => {
       ]);
       expect(body.match(/data-pricing-subscribe="solo"/g), relativePath).toHaveLength(1);
       expect(body.match(/data-pricing-subscribe="pro"/g), relativePath).toHaveLength(1);
-      expect(body, relativePath).toContain('data-cta="pricing-solo-year"');
-      expect(body, relativePath).toContain('data-cta="pricing-pro-year"');
+      expect(body, relativePath).toContain('data-cta="pricing-solo-month"');
+      expect(body, relativePath).toContain('data-cta="pricing-pro-month"');
     }
   });
 
@@ -648,3 +665,117 @@ describe("Cloud paid-tier pricing (Issue #441)", () => {
     }
   });
 });
+
+// Issue #1237: while founding places remain the Cloud pages write the price
+// the visitor actually pays first (the founding 50%) and strike the list
+// price through beside it; once the places are gone the same tokens fall back
+// to the list price and the struck element stays hidden.
+describe("Cloud founding price (Issue #1237)", () => {
+  const paid = paidPriceReplacements(pricing);
+  const gone = paidPriceReplacements(pricing, 0);
+  const PLANS = [
+    {
+      plan: "solo",
+      paidMonthly: "soloPaidMonthlyUsdToken",
+      paidYearly: "soloPaidAnnualMonthlyUsdToken",
+      paidAnnual: "soloPaidAnnualUsdToken",
+      listMonthly: SOLO_USD,
+      listYearly: SOLO_ANNUAL_MONTHLY_USD,
+      listAnnual: SOLO_ANNUAL_USD,
+    },
+    {
+      plan: "pro",
+      paidMonthly: "proPaidMonthlyUsdToken",
+      paidYearly: "proPaidAnnualMonthlyUsdToken",
+      paidAnnual: "proPaidAnnualUsdToken",
+      listMonthly: USD,
+      listYearly: PRO_ANNUAL_MONTHLY_USD,
+      listAnnual: PRO_ANNUAL_USD,
+    },
+  ];
+
+  it("derives the founding half price and its annual monthly equivalent", () => {
+    expect(paid[pricing.soloPaidMonthlyUsdToken]).toBe("14.5");
+    expect(paid[pricing.proPaidMonthlyUsdToken]).toBe("39.5");
+    expect(paid[pricing.soloPaidAnnualUsdToken]).toBe("145");
+    expect(paid[pricing.proPaidAnnualUsdToken]).toBe("395");
+    expect(paid[pricing.soloPaidAnnualMonthlyUsdToken]).toBe("12");
+    expect(paid[pricing.proPaidAnnualMonthlyUsdToken]).toBe("33");
+    expect(paid[pricing.foundingPriceStateToken]).toBe('data-founding-price="on"');
+  });
+
+  it("falls back to the list price once the places are gone", () => {
+    expect(gone[pricing.soloPaidMonthlyUsdToken]).toBe(SOLO_USD);
+    expect(gone[pricing.proPaidMonthlyUsdToken]).toBe(USD);
+    expect(gone[pricing.soloPaidAnnualUsdToken]).toBe(SOLO_ANNUAL_USD);
+    expect(gone[pricing.proPaidAnnualUsdToken]).toBe(PRO_ANNUAL_USD);
+    // The fallback must reproduce the pinned list prices, not a drifting copy.
+    expect(gone[pricing.soloPaidAnnualMonthlyUsdToken]).toBe(SOLO_ANNUAL_MONTHLY_USD);
+    expect(gone[pricing.proPaidAnnualMonthlyUsdToken]).toBe(PRO_ANNUAL_MONTHLY_USD);
+    expect(gone[pricing.foundingPriceStateToken]).toBe('data-founding-price="off"');
+  });
+
+  it("writes the founding price first and the list price struck through on both Cloud pages", async () => {
+    for (const relativePath of CLOUD_PAGES) {
+      const body = await (await serve(await rawPage(relativePath), `/${relativePath.replace(/index\.html$/, "")}`)).text();
+      expect(body, relativePath + ": founding price state").toContain('data-founding-price="on"');
+      for (const plan of PLANS) {
+        // The first number the card carries is the founding price of the
+        // default (monthly) interval, with the list price struck beside it.
+        const price = body.match(new RegExp(`<span data-pricing-price="${plan.plan}"[^>]*>([^<]+)</span>`));
+        expect(price?.[1], `${relativePath}: ${plan.plan} founding price`).toBe(`US$${paid[pricing[plan.paidMonthly]]}`);
+        expect(price?.[0], `${relativePath}: ${plan.plan} monthly founding price`)
+          .toContain(`data-month-price="US$${paid[pricing[plan.paidMonthly]]}"`);
+        expect(price?.[0], `${relativePath}: ${plan.plan} yearly founding price`)
+          .toContain(`data-year-price="US$${paid[pricing[plan.paidYearly]]}"`);
+        const list = body.match(new RegExp(`<s data-pricing-list-price="${plan.plan}"[^>]*>([^<]+)</s>`));
+        expect(list?.[1], `${relativePath}: ${plan.plan} struck list price`).toBe(`US$${plan.listMonthly}`);
+        expect(list?.[0], `${relativePath}: ${plan.plan} monthly list price`)
+          .toContain(`data-month-price="US$${plan.listMonthly}"`);
+        expect(list?.[0], `${relativePath}: ${plan.plan} yearly list price`)
+          .toContain(`data-year-price="US$${plan.listYearly}"`);
+        const detail = body.match(new RegExp(`data-pricing-detail="${plan.plan}"[^>]*data-year-detail="([^"]*)"`));
+        expect(detail?.[1], `${relativePath}: ${plan.plan} yearly detail`).toContain(`US$${paid[pricing[plan.paidAnnual]]}`);
+        // The space belongs to the struck element: once the places are gone
+        // the line must not keep a gap in front of the separator.
+        expect(detail?.[1], `${relativePath}: ${plan.plan} yearly list price struck`)
+          .toContain(`<s> US$${plan.listAnnual}</s>`);
+      }
+      const share = [...body.matchAll(/<meta (?:name|property)="(?:description|og:description|twitter:description)" content="([^"]*)"/g)]
+        .map((match) => match[1])
+        .filter((description) => description.includes("US$"));
+      expect(share.length, relativePath + ": share descriptions carrying a price").toBe(2);
+      for (const description of share) {
+        expect(description, relativePath + ": share description founding Solo price")
+          .toContain(`US$${paid[pricing.soloPaidMonthlyUsdToken]}`);
+        expect(description, relativePath + ": share description founding Pro price")
+          .toContain(`US$${paid[pricing.proPaidMonthlyUsdToken]}`);
+      }
+    }
+  });
+
+  it("writes only the list price once the founding places are gone", async () => {
+    for (const relativePath of CLOUD_PAGES) {
+      let html = await readFile(`${SITE_PAGES_DIR}${relativePath}`, "utf8");
+      for (const [token, value] of Object.entries(gone)) html = html.replaceAll(token, value);
+      expect(html, relativePath + ": founding price state").toContain('data-founding-price="off"');
+      // No founding price survives on the card: the first number is the list
+      // price alone, and the struck element carries the same amount.
+      for (const plan of PLANS) {
+        const price = html.match(new RegExp(`<span data-pricing-price="${plan.plan}"[^>]*>([^<]*)</span>`));
+        expect(price?.[1], `${relativePath}: ${plan.plan} list price alone`).toBe(`US$${plan.listMonthly}`);
+      }
+    }
+  });
+
+  it("keeps the founding prices tokenized in the source pages", async () => {
+    for (const relativePath of CLOUD_PAGES) {
+      const html = await readFile(`${SITE_PAGES_DIR}${relativePath}`, "utf8");
+      for (const name of ["soloPaidMonthlyUsdToken", "soloPaidAnnualUsdToken", "soloPaidAnnualMonthlyUsdToken", "proPaidMonthlyUsdToken", "proPaidAnnualUsdToken", "proPaidAnnualMonthlyUsdToken", "foundingPriceStateToken"]) {
+        expect(html, relativePath + ": " + name).toContain(pricing[name]);
+      }
+      expect(html, relativePath + ": literal founding price").not.toMatch(/US\$(?:14\.5|39\.5|145|395)(?![\d.])/);
+    }
+  });
+});
+

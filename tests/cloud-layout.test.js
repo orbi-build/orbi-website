@@ -5,8 +5,13 @@ import { extname, join, normalize } from "node:path";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { assertNoExternalRequests, guardedPage } from "./browser-network.mjs";
 import pricing from "../src/pricing.json";
+import { paidPriceReplacements } from "../src/pricing-tokens.js";
 
+const paidPrices = paidPriceReplacements(pricing);
 const pricingReplacements = {
+  // Issue #1237: the founding price and the struck-through list price state
+  // resolve the same way the Worker resolves them.
+  ...paidPrices,
   [pricing.freeDeliveriesToken]: String(pricing.freeDeliveries),
   [pricing.monthlyUsdToken]: String(pricing.cloudMonthlyUsd),
   [pricing.soloMonthlyUsdToken]: String(pricing.soloMonthlyUsd),
@@ -173,18 +178,22 @@ describe("Cloud pricing hierarchy (Issue #667)", () => {
         });
         expect(styles).toEqual([paid, paid]);
 
-        for (const plan of ["solo", "pro"]) {
-          const subscribe = page.locator(`[data-pricing-subscribe="${plan}"]`);
-          expect(await subscribe.getAttribute("href")).toBe(`/api/checkout?plan=${plan}&interval=year`);
-          expect(await subscribe.getAttribute("data-cta")).toBe(`pricing-${plan}-year`);
-        }
-        await page.locator('[data-pricing-interval="month"]').click();
-        expect(await page.locator('[data-pricing-price="solo"]').textContent()).toBe(`US$${pricing.soloMonthlyUsd}`);
-        expect(await page.locator('[data-pricing-price="solo"]').evaluate((price) => getComputedStyle(price).fontSize)).toBe(paid.fontSize);
+        // Issue #1237 moved the default interval to monthly: the founding
+        // price the visitor pays is the monthly one, so the card and the
+        // subscription link start there.
         for (const plan of ["solo", "pro"]) {
           const subscribe = page.locator(`[data-pricing-subscribe="${plan}"]`);
           expect(await subscribe.getAttribute("href")).toBe(`/api/checkout?plan=${plan}`);
           expect(await subscribe.getAttribute("data-cta")).toBe(`pricing-${plan}-month`);
+        }
+        await page.locator('[data-pricing-interval="year"]').click();
+        expect(await page.locator('[data-pricing-price="solo"]').textContent())
+          .toBe(`US$${paidPrices[pricing.soloPaidAnnualMonthlyUsdToken]}`);
+        expect(await page.locator('[data-pricing-price="solo"]').evaluate((price) => getComputedStyle(price).fontSize)).toBe(paid.fontSize);
+        for (const plan of ["solo", "pro"]) {
+          const subscribe = page.locator(`[data-pricing-subscribe="${plan}"]`);
+          expect(await subscribe.getAttribute("href")).toBe(`/api/checkout?plan=${plan}&interval=year`);
+          expect(await subscribe.getAttribute("data-cta")).toBe(`pricing-${plan}-year`);
         }
       } finally {
         await page.close();
@@ -196,3 +205,97 @@ describe("Cloud pricing hierarchy (Issue #667)", () => {
 // Issue #534 first-screen copy/geometry tests were removed (Issue #540):
 // they pinned the lede and proof-line wording and the above-the-fold
 // coordinates verbatim.
+
+// Issue #1237: the Cloud pricing card writes the price the visitor actually
+// pays first (the founding 50% while places remain) and strikes the list price
+// through beside it, on one line, at phone and desktop widths. Once the places
+// are gone the struck price is not shown at all.
+describe("Cloud founding price (Issue #1237)", () => {
+  for (const [name, path] of pages) {
+    it(`${name} writes the founding price first with the list price struck through`, async () => {
+      const page = await guardedPage(browser, baseUrl);
+      try {
+        await page.goto(`${baseUrl}${path}`, { waitUntil: "load", timeout: 25_000 });
+        await page.evaluate((replacements) => {
+          const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+          while (walker.nextNode()) walker.currentNode.nodeValue = walker.currentNode.nodeValue.replace(/__[A-Z_]+__/g, (value) => replacements[value] ?? value);
+        }, pricingReplacements);
+        const readCards = () => page.locator(".pricing-card-price").evaluateAll((rows) => rows.map((row) => {
+          const paidPrice = row.querySelector("[data-pricing-price]");
+          const listPrice = row.querySelector("s[data-pricing-list-price]");
+          const unit = row.querySelector(".pricing-card-price-unit");
+          const paidBox = paidPrice.getBoundingClientRect();
+          // An inline box set in a smaller font shares the paid price's
+          // baseline, so containment inside its box is the one-line test.
+          const sharesPaidLine = (node) => {
+            const box = node.getBoundingClientRect();
+            return box.top >= paidBox.top - 2 && box.bottom <= paidBox.bottom + 2;
+          };
+          return {
+            paid: paidPrice.textContent.trim(),
+            list: listPrice.textContent.trim(),
+            lineThrough: getComputedStyle(listPrice).textDecorationLine,
+            sameLine: sharesPaidLine(listPrice) && sharesPaidLine(unit),
+            height: row.getBoundingClientRect().height,
+            lineHeight: parseFloat(getComputedStyle(row).lineHeight),
+            overflowing: row.scrollWidth - row.clientWidth,
+          };
+        }));
+        for (const width of [390, 1440]) {
+          await page.setViewportSize({ width, height: 900 });
+          const cards = await readCards();
+          // Issue #1237 acceptance: the first number on the card is the
+          // founding price the visitor pays, on the default (monthly) interval.
+          expect(cards.map(({ paid: amount }) => amount), `${path} at ${width}px`).toEqual([
+            `US$${paidPrices[pricing.soloPaidMonthlyUsdToken]}`,
+            `US$${paidPrices[pricing.proPaidMonthlyUsdToken]}`,
+          ]);
+          expect(cards.map(({ list }) => list), `${path} at ${width}px`).toEqual([
+            `US$${pricing.soloMonthlyUsd}`,
+            `US$${pricing.cloudMonthlyUsd}`,
+          ]);
+          for (const [index, card] of cards.entries()) {
+            const label = `${path} at ${width}px card ${index + 1}`;
+            expect(card.lineThrough, `${label}: struck list price`).toBe("line-through");
+            expect(card.sameLine, `${label}: price, list price and unit on one line`).toBe(true);
+            expect(card.height, `${label}: price row wraps`).toBeLessThanOrEqual(card.lineHeight * 1.5);
+            expect(card.overflowing, `${label}: price row overflow`).toBeLessThanOrEqual(0);
+          }
+        }
+        // The annual amounts the visitor pays stay on the same card while the
+        // monthly interval leads, so the ticket's "monthly price (yearly
+        // price)" pair is readable without touching the toggle.
+        const monthDetail = await page.locator('[data-pricing-detail="solo"]').innerText();
+        expect(monthDetail, `${path}: monthly detail keeps the yearly amounts`)
+          .toContain(`US$${paidPrices[pricing.soloPaidAnnualUsdToken]} US$${pricing.soloAnnualUsd}`);
+        // The yearly interval keeps the same shape: the founding half of the
+        // yearly equivalent first, the list equivalent struck beside it, and
+        // the yearly line carries the annual amounts the same way.
+        await page.locator('[data-pricing-interval="year"]').click();
+        const yearly = await readCards();
+        expect(yearly.map(({ paid: amount }) => amount)).toEqual([
+          `US$${paidPrices[pricing.soloPaidAnnualMonthlyUsdToken]}`,
+          `US$${paidPrices[pricing.proPaidAnnualMonthlyUsdToken]}`,
+        ]);
+        expect(yearly.map(({ list }) => list)).toEqual([
+          `US$${pricing.soloAnnualMonthlyUsd}`,
+          `US$${pricing.proAnnualMonthlyUsd}`,
+        ]);
+        const detail = await page.locator('[data-pricing-detail="solo"]').innerText();
+        expect(detail, `${path}: yearly detail writes the paid annual first`)
+          .toContain(`US$${paidPrices[pricing.soloPaidAnnualUsdToken]} US$${pricing.soloAnnualUsd}`);
+        // Once the founding places are gone the page carries the list price
+        // alone: the struck element disappears, the paid price stays, and no
+        // stray space is left behind where it was.
+        await page.locator(".pricing-cards").evaluate((node) => node.setAttribute("data-founding-price", "off"));
+        expect(await page.locator(".pricing-card-price s").first().isVisible()).toBe(false);
+        expect(await page.locator("[data-pricing-detail] s").first().isVisible()).toBe(false);
+        expect(await page.locator('[data-pricing-price="solo"]').isVisible()).toBe(true);
+        expect(await page.locator('[data-pricing-detail="solo"]').innerText(), `${path}: no gap left by the hidden list price`)
+          .not.toMatch(/US$\d+(?:\.\d+)?\s+[;，,]/);
+      } finally {
+        await page.close();
+      }
+    }, 30_000);
+  }
+});
