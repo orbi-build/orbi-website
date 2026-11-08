@@ -178,19 +178,22 @@ describe("Cloud pricing hierarchy (Issue #667)", () => {
         });
         expect(styles).toEqual([paid, paid]);
 
-        for (const plan of ["solo", "pro"]) {
-          const subscribe = page.locator(`[data-pricing-subscribe="${plan}"]`);
-          expect(await subscribe.getAttribute("href")).toBe(`/api/checkout?plan=${plan}&interval=year`);
-          expect(await subscribe.getAttribute("data-cta")).toBe(`pricing-${plan}-year`);
-        }
-        await page.locator('[data-pricing-interval="month"]').click();
-        expect(await page.locator('[data-pricing-price="solo"]').textContent())
-          .toBe(`US$${paidPrices[pricing.soloPaidMonthlyUsdToken]}`);
-        expect(await page.locator('[data-pricing-price="solo"]').evaluate((price) => getComputedStyle(price).fontSize)).toBe(paid.fontSize);
+        // Issue #1237 moved the default interval to monthly: the founding
+        // price the visitor pays is the monthly one, so the card and the
+        // subscription link start there.
         for (const plan of ["solo", "pro"]) {
           const subscribe = page.locator(`[data-pricing-subscribe="${plan}"]`);
           expect(await subscribe.getAttribute("href")).toBe(`/api/checkout?plan=${plan}`);
           expect(await subscribe.getAttribute("data-cta")).toBe(`pricing-${plan}-month`);
+        }
+        await page.locator('[data-pricing-interval="year"]').click();
+        expect(await page.locator('[data-pricing-price="solo"]').textContent())
+          .toBe(`US$${paidPrices[pricing.soloPaidAnnualMonthlyUsdToken]}`);
+        expect(await page.locator('[data-pricing-price="solo"]').evaluate((price) => getComputedStyle(price).fontSize)).toBe(paid.fontSize);
+        for (const plan of ["solo", "pro"]) {
+          const subscribe = page.locator(`[data-pricing-subscribe="${plan}"]`);
+          expect(await subscribe.getAttribute("href")).toBe(`/api/checkout?plan=${plan}&interval=year`);
+          expect(await subscribe.getAttribute("data-cta")).toBe(`pricing-${plan}-year`);
         }
       } finally {
         await page.close();
@@ -241,13 +244,15 @@ describe("Cloud founding price (Issue #1237)", () => {
         for (const width of [390, 1440]) {
           await page.setViewportSize({ width, height: 900 });
           const cards = await readCards();
+          // Issue #1237 acceptance: the first number on the card is the
+          // founding price the visitor pays, on the default (monthly) interval.
           expect(cards.map(({ paid: amount }) => amount), `${path} at ${width}px`).toEqual([
-            `US$${paidPrices[pricing.soloPaidAnnualMonthlyUsdToken]}`,
-            `US$${paidPrices[pricing.proPaidAnnualMonthlyUsdToken]}`,
+            `US$${paidPrices[pricing.soloPaidMonthlyUsdToken]}`,
+            `US$${paidPrices[pricing.proPaidMonthlyUsdToken]}`,
           ]);
           expect(cards.map(({ list }) => list), `${path} at ${width}px`).toEqual([
-            `US$${pricing.soloAnnualMonthlyUsd}`,
-            `US$${pricing.proAnnualMonthlyUsd}`,
+            `US$${pricing.soloMonthlyUsd}`,
+            `US$${pricing.cloudMonthlyUsd}`,
           ]);
           for (const [index, card] of cards.entries()) {
             const label = `${path} at ${width}px card ${index + 1}`;
@@ -257,22 +262,37 @@ describe("Cloud founding price (Issue #1237)", () => {
             expect(card.overflowing, `${label}: price row overflow`).toBeLessThanOrEqual(0);
           }
         }
-        await page.locator('[data-pricing-interval="month"]').click();
-        const monthly = await readCards();
-        expect(monthly.map(({ paid: amount }) => amount)).toEqual([
-          `US$${paidPrices[pricing.soloPaidMonthlyUsdToken]}`,
-          `US$${paidPrices[pricing.proPaidMonthlyUsdToken]}`,
+        // The annual amounts the visitor pays stay on the same card while the
+        // monthly interval leads, so the ticket's "monthly price (yearly
+        // price)" pair is readable without touching the toggle.
+        const monthDetail = await page.locator('[data-pricing-detail="solo"]').innerText();
+        expect(monthDetail, `${path}: monthly detail keeps the yearly amounts`)
+          .toContain(`US$${paidPrices[pricing.soloPaidAnnualUsdToken]} US$${pricing.soloAnnualUsd}`);
+        // The yearly interval keeps the same shape: the founding half of the
+        // yearly equivalent first, the list equivalent struck beside it, and
+        // the yearly line carries the annual amounts the same way.
+        await page.locator('[data-pricing-interval="year"]').click();
+        const yearly = await readCards();
+        expect(yearly.map(({ paid: amount }) => amount)).toEqual([
+          `US$${paidPrices[pricing.soloPaidAnnualMonthlyUsdToken]}`,
+          `US$${paidPrices[pricing.proPaidAnnualMonthlyUsdToken]}`,
         ]);
-        expect(monthly.map(({ list }) => list)).toEqual([
-          `US$${pricing.soloMonthlyUsd}`,
-          `US$${pricing.cloudMonthlyUsd}`,
+        expect(yearly.map(({ list }) => list)).toEqual([
+          `US$${pricing.soloAnnualMonthlyUsd}`,
+          `US$${pricing.proAnnualMonthlyUsd}`,
         ]);
+        const detail = await page.locator('[data-pricing-detail="solo"]').innerText();
+        expect(detail, `${path}: yearly detail writes the paid annual first`)
+          .toContain(`US$${paidPrices[pricing.soloPaidAnnualUsdToken]} US$${pricing.soloAnnualUsd}`);
         // Once the founding places are gone the page carries the list price
-        // alone: the struck element disappears, the paid price stays.
+        // alone: the struck element disappears, the paid price stays, and no
+        // stray space is left behind where it was.
         await page.locator(".pricing-cards").evaluate((node) => node.setAttribute("data-founding-price", "off"));
         expect(await page.locator(".pricing-card-price s").first().isVisible()).toBe(false);
         expect(await page.locator("[data-pricing-detail] s").first().isVisible()).toBe(false);
         expect(await page.locator('[data-pricing-price="solo"]').isVisible()).toBe(true);
+        expect(await page.locator('[data-pricing-detail="solo"]').innerText(), `${path}: no gap left by the hidden list price`)
+          .not.toMatch(/US$\d+(?:\.\d+)?\s+[;，,]/);
       } finally {
         await page.close();
       }

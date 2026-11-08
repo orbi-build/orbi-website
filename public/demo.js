@@ -440,7 +440,9 @@
         setInterval(button.getAttribute("data-pricing-interval"));
       });
     });
-    setInterval("year");
+    // Issue #1237: the founding price the visitor pays is written first, and
+    // the founding 50% is the monthly list price halved, so monthly leads.
+    setInterval("month");
   }
 
   /* One-click copy for the install commands.

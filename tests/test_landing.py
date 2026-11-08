@@ -1091,6 +1091,11 @@ class CloudLandingPageTests(unittest.TestCase):
 
         Issue #1212: the values are read from pricing.json, not restated here,
         and the sentences that carry them are copy.
+
+        Issue #1237: the card leads with the founding price of the default
+        (monthly) interval and strikes the list price beside it; the annual
+        amounts stay stated on the same card, so the page text still carries
+        every approved price.
         """
         for page in (self.en, self.zh):
             for value in (
@@ -1098,6 +1103,9 @@ class CloudLandingPageTests(unittest.TestCase):
                 PRICING["soloAnnualUsd"],
                 PRICING["cloudMonthlyUsd"],
                 PRICING["proAnnualUsd"],
+                # Issue #1237: the price the visitor pays, written first.
+                paid_amount(PRICING["soloMonthlyUsd"]),
+                paid_amount(PRICING["cloudMonthlyUsd"]),
             ):
                 self.assertIn("US$" + str(value), page.text)
             self.assertIn(str(PRICING["soloIncludedTokensLabel"]), page.text)

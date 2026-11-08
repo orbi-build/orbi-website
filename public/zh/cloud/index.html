@@ -226,8 +226,8 @@
         <h2 class="orbi-compare-section-h2" id="pricing-title">固定月费，不会超额扣费。</h2>
         <div class="pricing-interval-toggle" data-pricing-toggle>
           <span>付费</span>
-          <button type="button" data-pricing-interval="month" aria-pressed="false" data-cta="pricing-month">按月</button>
-          <button type="button" class="is-selected" data-pricing-interval="year" aria-pressed="true" data-cta="pricing-year">按年 <span class="pricing-savings">省 __ANNUAL_SAVINGS_PERCENT__%</span></button>
+          <button type="button" class="is-selected" data-pricing-interval="month" aria-pressed="true" data-cta="pricing-month">按月</button>
+          <button type="button" data-pricing-interval="year" aria-pressed="false" data-cta="pricing-year">按年 <span class="pricing-savings">省 __ANNUAL_SAVINGS_PERCENT__%</span></button>
         </div>
         <p class="pricing-trial-note">__FREE_TRIAL__ · 不用绑卡</p>
         <p class="founding-offer">创始合作伙伴终身五折，__FOUNDING_PARTNER_LIMIT__ 个名额只剩 __FOUNDING_PARTNER_REMAINING__ 个。结账时使用优惠码 __FOUNDING_PROMO_CODE__。</p>
@@ -235,27 +235,27 @@
           <article class="pricing-card pricing-card-featured">
             <p class="pricing-card-kicker">SOLO</p>
             <h3>Solo</h3>
-            <p class="pricing-card-price"><span data-pricing-price="solo" data-year-price="US$__SOLO_PAID_ANNUAL_MONTHLY_USD__" data-month-price="US$__SOLO_PAID_MONTHLY_USD__">US$__SOLO_PAID_ANNUAL_MONTHLY_USD__</span> <s data-pricing-list-price="solo" data-year-price="US$__SOLO_ANNUAL_MONTHLY_USD__" data-month-price="US$__SOLO_MONTHLY_USD__">US$__SOLO_ANNUAL_MONTHLY_USD__</s> <span class="pricing-card-price-unit">/ 月</span></p>
-            <p data-pricing-detail="solo" data-year-detail="按年付 US$__SOLO_PAID_ANNUAL_USD__ <s>US$__SOLO_ANNUAL_USD__</s>，比按月省 __SOLO_ANNUAL_SAVINGS_PERCENT__%" data-month-detail="按月付，随时取消">按年付 US$__SOLO_PAID_ANNUAL_USD__ <s>US$__SOLO_ANNUAL_USD__</s>，比按月省 __SOLO_ANNUAL_SAVINGS_PERCENT__%</p>
+            <p class="pricing-card-price"><span data-pricing-price="solo" data-year-price="US$__SOLO_PAID_ANNUAL_MONTHLY_USD__" data-month-price="US$__SOLO_PAID_MONTHLY_USD__">US$__SOLO_PAID_MONTHLY_USD__</span> <s data-pricing-list-price="solo" data-year-price="US$__SOLO_ANNUAL_MONTHLY_USD__" data-month-price="US$__SOLO_MONTHLY_USD__">US$__SOLO_MONTHLY_USD__</s> <span class="pricing-card-price-unit">/ 月</span></p>
+            <p data-pricing-detail="solo" data-year-detail="按年付 US$__SOLO_PAID_ANNUAL_USD__<s> US$__SOLO_ANNUAL_USD__</s>，比按月省 __SOLO_ANNUAL_SAVINGS_PERCENT__%" data-month-detail="按月付，随时取消。按年 US$__SOLO_PAID_ANNUAL_USD__<s> US$__SOLO_ANNUAL_USD__</s>，比按月省 __SOLO_ANNUAL_SAVINGS_PERCENT__%">按月付，随时取消。按年 US$__SOLO_PAID_ANNUAL_USD__<s> US$__SOLO_ANNUAL_USD__</s>，比按月省 __SOLO_ANNUAL_SAVINGS_PERCENT__%</p>
             <p class="pricing-card-capacity">每月约 __MEASURED_SOLO_REPOSITORY_DELIVERY_RANGE__ 次合并交付</p>
             <p class="pricing-card-measurement"><small><a href="/zh/cost/">怎么测的 →</a></small></p>
             <ul><li>每月 __SOLO_INCLUDED_TOKENS__ token</li><li>__SOLO_REPOSITORIES__ 个仓库</li></ul>
             <div class="pricing-card-actions">
               <a class="button button-signal" data-cta="pricing-solo-trial" href="/zh/cloud/login">免费试用 Orbi Cloud →</a>
-              <a class="pricing-subscribe" data-pricing-subscribe="solo" data-cta="pricing-solo-year" href="/api/checkout?plan=solo&amp;interval=year">或直接订阅 →</a>
+              <a class="pricing-subscribe" data-pricing-subscribe="solo" data-cta="pricing-solo-month" href="/api/checkout?plan=solo">或直接订阅 →</a>
             </div>
           </article>
           <article class="pricing-card">
             <p class="pricing-card-kicker">PRO</p>
             <h3>Pro</h3>
-            <p class="pricing-card-price"><span data-pricing-price="pro" data-year-price="US$__PRO_PAID_ANNUAL_MONTHLY_USD__" data-month-price="US$__PRO_PAID_MONTHLY_USD__">US$__PRO_PAID_ANNUAL_MONTHLY_USD__</span> <s data-pricing-list-price="pro" data-year-price="US$__PRO_ANNUAL_MONTHLY_USD__" data-month-price="US$__CLOUD_MONTHLY_USD__">US$__PRO_ANNUAL_MONTHLY_USD__</s> <span class="pricing-card-price-unit">/ 月</span></p>
-            <p data-pricing-detail="pro" data-year-detail="按年付 US$__PRO_PAID_ANNUAL_USD__ <s>US$__PRO_ANNUAL_USD__</s>，比按月省 __PRO_ANNUAL_SAVINGS_PERCENT__%" data-month-detail="按月付，随时取消">按年付 US$__PRO_PAID_ANNUAL_USD__ <s>US$__PRO_ANNUAL_USD__</s>，比按月省 __PRO_ANNUAL_SAVINGS_PERCENT__%</p>
+            <p class="pricing-card-price"><span data-pricing-price="pro" data-year-price="US$__PRO_PAID_ANNUAL_MONTHLY_USD__" data-month-price="US$__PRO_PAID_MONTHLY_USD__">US$__PRO_PAID_MONTHLY_USD__</span> <s data-pricing-list-price="pro" data-year-price="US$__PRO_ANNUAL_MONTHLY_USD__" data-month-price="US$__CLOUD_MONTHLY_USD__">US$__CLOUD_MONTHLY_USD__</s> <span class="pricing-card-price-unit">/ 月</span></p>
+            <p data-pricing-detail="pro" data-year-detail="按年付 US$__PRO_PAID_ANNUAL_USD__<s> US$__PRO_ANNUAL_USD__</s>，比按月省 __PRO_ANNUAL_SAVINGS_PERCENT__%" data-month-detail="按月付，随时取消。按年 US$__PRO_PAID_ANNUAL_USD__<s> US$__PRO_ANNUAL_USD__</s>，比按月省 __PRO_ANNUAL_SAVINGS_PERCENT__%">按月付，随时取消。按年 US$__PRO_PAID_ANNUAL_USD__<s> US$__PRO_ANNUAL_USD__</s>，比按月省 __PRO_ANNUAL_SAVINGS_PERCENT__%</p>
             <p class="pricing-card-capacity">每月约 __MEASURED_SMALL_REPOSITORY_DELIVERY_RANGE__ 次合并交付</p>
             <p class="pricing-card-measurement"><small><a href="/zh/cost/">怎么测的 →</a></small></p>
             <ul><li>每月 __INCLUDED_TOKENS__ token</li><li>__PRO_REPOSITORIES__ 个仓库</li></ul>
             <div class="pricing-card-actions">
               <a class="button button-ghost" data-cta="pricing-pro-trial" href="/zh/cloud/login">免费试用 Orbi Cloud →</a>
-              <a class="pricing-subscribe" data-pricing-subscribe="pro" data-cta="pricing-pro-year" href="/api/checkout?plan=pro&amp;interval=year">或直接订阅 →</a>
+              <a class="pricing-subscribe" data-pricing-subscribe="pro" data-cta="pricing-pro-month" href="/api/checkout?plan=pro">或直接订阅 →</a>
             </div>
           </article>
         </div>

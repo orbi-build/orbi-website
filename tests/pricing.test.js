@@ -303,8 +303,10 @@ describe("Cloud pricing trial integration (Issue #742)", () => {
       expect(cards[1], relativePath).toContain("<h3>Pro</h3>");
       expect(cards[0], relativePath).toContain(`data-cta="pricing-solo-trial" href="${expected.login}"`);
       expect(cards[1], relativePath).toContain(`data-cta="pricing-pro-trial" href="${expected.login}"`);
-      expect(pricing, relativePath).toContain('data-pricing-subscribe="solo" data-cta="pricing-solo-year" href="/api/checkout?plan=solo&amp;interval=year"');
-      expect(pricing, relativePath).toContain('data-pricing-subscribe="pro" data-cta="pricing-pro-year" href="/api/checkout?plan=pro&amp;interval=year"');
+      // Issue #1237: the default interval is the one whose price the card
+      // leads with — monthly, the founding price the visitor actually pays.
+      expect(pricing, relativePath).toContain('data-pricing-subscribe="solo" data-cta="pricing-solo-month" href="/api/checkout?plan=solo"');
+      expect(pricing, relativePath).toContain('data-pricing-subscribe="pro" data-cta="pricing-pro-month" href="/api/checkout?plan=pro"');
     }
   });
 });
@@ -597,11 +599,13 @@ describe("Cloud paid-tier pricing (Issue #441)", () => {
         expect(body, relativePath + ": savings " + percent + "%").toContain(`${percent}%`);
       }
       expect(body, relativePath).toContain(relativePath.startsWith("zh/") ? 'href="/zh/cloud/login"' : 'href="/cloud/login"');
-      expect(body, relativePath).toContain('href="/api/checkout?plan=solo&amp;interval=year"');
-      expect(body, relativePath).toContain('href="/api/checkout?plan=pro&amp;interval=year"');
+      // Issue #1237: the subscription link starts on the interval the card
+      // leads with, so the price the visitor read is the price they land on.
+      expect(body, relativePath).toContain('href="/api/checkout?plan=solo"');
+      expect(body, relativePath).toContain('href="/api/checkout?plan=pro"');
       expect(body.match(/href="\/api\/checkout[^"]*"/g), relativePath).toEqual([
-        'href="/api/checkout?plan=solo&amp;interval=year"',
-        'href="/api/checkout?plan=pro&amp;interval=year"',
+        'href="/api/checkout?plan=solo"',
+        'href="/api/checkout?plan=pro"',
         // Chinese buyers pay once with Alipay / WeChat Pay (Stripe offers no
         // subscriptions for either); orbi-cloud#1611 serves payment=once.
         'href="/api/checkout?plan=solo&amp;interval=month&amp;payment=once"',
@@ -611,8 +615,8 @@ describe("Cloud paid-tier pricing (Issue #441)", () => {
       ]);
       expect(body.match(/data-pricing-subscribe="solo"/g), relativePath).toHaveLength(1);
       expect(body.match(/data-pricing-subscribe="pro"/g), relativePath).toHaveLength(1);
-      expect(body, relativePath).toContain('data-cta="pricing-solo-year"');
-      expect(body, relativePath).toContain('data-cta="pricing-pro-year"');
+      expect(body, relativePath).toContain('data-cta="pricing-solo-month"');
+      expect(body, relativePath).toContain('data-cta="pricing-pro-month"');
     }
   });
 
@@ -716,18 +720,26 @@ describe("Cloud founding price (Issue #1237)", () => {
       const body = await (await serve(await rawPage(relativePath), `/${relativePath.replace(/index\.html$/, "")}`)).text();
       expect(body, relativePath + ": founding price state").toContain('data-founding-price="on"');
       for (const plan of PLANS) {
+        // The first number the card carries is the founding price of the
+        // default (monthly) interval, with the list price struck beside it.
         const price = body.match(new RegExp(`<span data-pricing-price="${plan.plan}"[^>]*>([^<]+)</span>`));
-        expect(price?.[1], `${relativePath}: ${plan.plan} founding price`).toBe(`US$${paid[pricing[plan.paidYearly]]}`);
+        expect(price?.[1], `${relativePath}: ${plan.plan} founding price`).toBe(`US$${paid[pricing[plan.paidMonthly]]}`);
         expect(price?.[0], `${relativePath}: ${plan.plan} monthly founding price`)
           .toContain(`data-month-price="US$${paid[pricing[plan.paidMonthly]]}"`);
+        expect(price?.[0], `${relativePath}: ${plan.plan} yearly founding price`)
+          .toContain(`data-year-price="US$${paid[pricing[plan.paidYearly]]}"`);
         const list = body.match(new RegExp(`<s data-pricing-list-price="${plan.plan}"[^>]*>([^<]+)</s>`));
-        expect(list?.[1], `${relativePath}: ${plan.plan} struck list price`).toBe(`US$${plan.listYearly}`);
+        expect(list?.[1], `${relativePath}: ${plan.plan} struck list price`).toBe(`US$${plan.listMonthly}`);
         expect(list?.[0], `${relativePath}: ${plan.plan} monthly list price`)
           .toContain(`data-month-price="US$${plan.listMonthly}"`);
+        expect(list?.[0], `${relativePath}: ${plan.plan} yearly list price`)
+          .toContain(`data-year-price="US$${plan.listYearly}"`);
         const detail = body.match(new RegExp(`data-pricing-detail="${plan.plan}"[^>]*data-year-detail="([^"]*)"`));
         expect(detail?.[1], `${relativePath}: ${plan.plan} yearly detail`).toContain(`US$${paid[pricing[plan.paidAnnual]]}`);
+        // The space belongs to the struck element: once the places are gone
+        // the line must not keep a gap in front of the separator.
         expect(detail?.[1], `${relativePath}: ${plan.plan} yearly list price struck`)
-          .toContain(`>US$${plan.listAnnual}</s>`);
+          .toContain(`<s> US$${plan.listAnnual}</s>`);
       }
       const share = [...body.matchAll(/<meta (?:name|property)="(?:description|og:description|twitter:description)" content="([^"]*)"/g)]
         .map((match) => match[1])
@@ -738,6 +750,20 @@ describe("Cloud founding price (Issue #1237)", () => {
           .toContain(`US$${paid[pricing.soloPaidMonthlyUsdToken]}`);
         expect(description, relativePath + ": share description founding Pro price")
           .toContain(`US$${paid[pricing.proPaidMonthlyUsdToken]}`);
+      }
+    }
+  });
+
+  it("writes only the list price once the founding places are gone", async () => {
+    for (const relativePath of CLOUD_PAGES) {
+      let html = await readFile(`${SITE_PAGES_DIR}${relativePath}`, "utf8");
+      for (const [token, value] of Object.entries(gone)) html = html.replaceAll(token, value);
+      expect(html, relativePath + ": founding price state").toContain('data-founding-price="off"');
+      // No founding price survives on the card: the first number is the list
+      // price alone, and the struck element carries the same amount.
+      for (const plan of PLANS) {
+        const price = html.match(new RegExp(`<span data-pricing-price="${plan.plan}"[^>]*>([^<]*)</span>`));
+        expect(price?.[1], `${relativePath}: ${plan.plan} list price alone`).toBe(`US$${plan.listMonthly}`);
       }
     }
   });
