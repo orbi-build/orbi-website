@@ -193,6 +193,79 @@ describe("Cloud pricing hierarchy (Issue #667)", () => {
   }
 });
 
+
+// Issue #1238: beside the pricing cards, the visitor sees the two measured
+// numbers and one signed quote. Desktop keeps the two facts on one line; a
+// phone stacks one clause per line, and the last rendered line is never a lone
+// word (a widow) in either language.
+describe("Cloud pricing evidence beside the cards (Issue #1238)", () => {
+  const measureLine = (element) => {
+    const range = document.createRange();
+    range.selectNodeContents(element);
+    const rects = [...range.getClientRects()].filter((rect) => rect.width > 0 && rect.height > 0);
+    const lines = new Map();
+    for (const rect of rects) {
+      const key = Math.round(rect.top);
+      const line = lines.get(key) ?? { left: Infinity, right: -Infinity };
+      line.left = Math.min(line.left, rect.left);
+      line.right = Math.max(line.right, rect.right);
+      lines.set(key, line);
+    }
+    // Baseline-aligned flex items sit 1-3px apart on the same line, so rects are
+    // clustered by a tolerance well under one line height.
+    const rows = [];
+    for (const top of [...lines.keys()].sort((a, b) => a - b)) {
+      const row = rows.find((candidate) => Math.abs(candidate.top - top) <= 10);
+      if (row) {
+        row.left = Math.min(row.left, lines.get(top).left);
+        row.right = Math.max(row.right, lines.get(top).right);
+      } else {
+        rows.push({ top, ...lines.get(top) });
+      }
+    }
+    const widths = rows.map((row) => row.right - row.left);
+    const box = element.getBoundingClientRect();
+    return {
+      lines: widths.length,
+      boxWidth: box.width,
+      endRatio: widths.length ? widths[widths.length - 1] / box.width : 0,
+      overflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
+    };
+  };
+
+  for (const [name, path] of pages) {
+    it(`${name} keeps the numbers and the quote readable at 1440 and 390`, async () => {
+      const page = await guardedPage(browser, baseUrl);
+      try {
+        await page.goto(`${baseUrl}${path}`, { waitUntil: "load", timeout: 25_000 });
+        await page.evaluate((replacements) => {
+          const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+          while (walker.nextNode()) walker.currentNode.nodeValue = walker.currentNode.nodeValue.replace(/__[A-Z_]+__/g, (value) => replacements[value] ?? value);
+        }, pricingReplacements);
+        const evidence = page.locator("#pricing .pricing-evidence");
+        expect(await evidence.count(), `${path}: no evidence block beside the price`).toBe(1);
+        const record = page.locator("#pricing .pricing-evidence-line .pricing-evidence-record");
+        expect(await record.getAttribute("href")).toBe(name === "cloud-zh" ? "/zh/evidence/" : "/evidence/");
+        const handle = page.locator("#pricing .pricing-quote .pricing-quote-handle");
+        expect(await handle.getAttribute("href")).toBe("https://x.com/xds2000");
+        for (const width of [1440, 390]) {
+          await page.setViewportSize({ width, height: 900 });
+          const line = await page.locator("#pricing .pricing-evidence-line").evaluate(measureLine);
+          expect(line.overflow, `${path} at ${width}px page overflow`).toBe(0);
+          // A lone word lands around 0.1 of the width ("days" was 35px of 358);
+          // a whole phrase or the record link stays above 0.2.
+          expect(line.endRatio, `${path} at ${width}px: a lone word sits on the last line`).toBeGreaterThan(0.2);
+          if (width === 1440) expect(line.lines, `${path} at 1440px: the evidence line wrapped`).toBe(1);
+          if (width === 390) expect(line.lines, `${path} at 390px: the evidence line did not stack`).toBeGreaterThanOrEqual(3);
+          const quote = await page.locator("#pricing .pricing-quote").evaluate((node) => node.getBoundingClientRect().width);
+          expect(Math.round(quote), `${path} at ${width}px: the quote and the line disagree on width`).toBe(Math.round(line.boxWidth));
+        }
+      } finally {
+        await page.close();
+      }
+    });
+  }
+});
 // Issue #534 first-screen copy/geometry tests were removed (Issue #540):
 // they pinned the lede and proof-line wording and the above-the-fold
 // coordinates verbatim.
