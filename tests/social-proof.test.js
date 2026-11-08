@@ -320,10 +320,17 @@ describe("caps: 6 cards, 2 quotes, 2 per repository (Issue #226 acceptance 3)", 
   beforeAll(async () => {
     const dir = await mkdtemp(join(tmpdir(), "orbi-social-caps-"));
     const path = join(dir, "social-proof.json");
+    // The Cloud pricing section quotes a person by name (Issue #1238), so a
+    // build against this fixture dataset needs its own Cloud evidence file.
+    const cloudEvidencePath = join(dir, "cloud-evidence.json");
     const capsOut = join(dir, "out");
     await writeFile(path, JSON.stringify(fixture, null, 2));
+    await writeFile(
+      cloudEvidencePath,
+      JSON.stringify({ quotePerson: "Quote One", releasesShippedByOrbi: 1, mergedPullRequestsLast30Days: 2 }),
+    );
     try {
-      await buildPages(capsOut, { socialProofPath: path });
+      await buildPages(capsOut, { socialProofPath: path, cloudEvidencePath });
       home = await readFile(join(capsOut, "index.html"), "utf8");
       evidence = await readFile(join(capsOut, "evidence/index.html"), "utf8");
     } finally {

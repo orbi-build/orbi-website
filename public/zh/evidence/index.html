@@ -74,9 +74,9 @@
   <main id="main-content">
     <div class="night">
       <section class="compare-hero shell" aria-labelledby="evidence-title">
-        <p class="eyebrow">证据 · 公开的 GitHub 记录 · 核实于 2026-09-14</p>
+        <p class="eyebrow">证据 · 公开的 GitHub 记录 · 核实于 2026-11-08</p>
         <h1 id="evidence-title">Orbi 在造 Orbi。记录在 GitHub</h1>
-        <p class="hero-lede"><strong>Orbi 是把 Orbi 自己交付出去的那条产线。</strong>下面三条是公开仓库 orbi-build/orbi 里的真实交付。点开 Issue，看 Orbi 自己留下的评论；点开 PR，看没有人类评审就合并了的记录。每条样本会告诉你该看什么。请点开。</p>
+        <p class="hero-lede"><strong>Orbi 是把 Orbi 自己交付出去的那条产线。</strong>下面是公开仓库 orbi-build/orbi 里的六条真实交付——最上面三条发布于 2026 年 10 月和 11 月。点开 Issue，看 Orbi 自己留下的评论；点开 PR，看没有人类评审就合并了的记录。每条样本会告诉你该看什么。请点开。</p>
         <div class="cta-row">
           <a class="button button-ghost" href="#records">打开公开记录</a>
           <a class="text-link" href="/zh/cloud/">发版是怎么跑完的 →</a>
@@ -86,9 +86,48 @@
 
     <section class="compare-section shell" id="records" aria-labelledby="records-title">
       <p class="section-tag">公开记录</p>
-      <h2 class="orbi-compare-section-h2" id="records-title">三条可以打开的交付</h2>
+      <h2 class="orbi-compare-section-h2" id="records-title">六条可以打开的交付</h2>
       <p class="section-lede">每一行都是公开仓库 <a href="https://github.com/orbi-build/orbi" rel="noopener">orbi-build/orbi</a> 里的真实对象。更多打 Tag 的 Release 在 <a href="https://github.com/orbi-build/orbi/releases" rel="noopener" data-evidence="release">Releases 列表</a>。</p>
       <ul class="event-list">
+        <li class="orbi-event-list-li">
+          <span class="event-era">v0.7.38</span>
+          <div>
+            <strong >Issue #2123、已合并 PR #2124、Release v0.7.38</strong>
+            <p class="orbi-event-list-p">Orbi 把自己用的 ORBI_ACTIVE_MILESTONE Actions 变量写进它交付的每个仓库——这个变量只有 Orbi 自己的 CI 读，却是它的 GitHub App 申请 Actions variables 写权限的原因。问题记成公开仓库里的 Issue #2123。Orbi 不再写入这个变量，PR #2124 合并，改动随 Release v0.7.38 于 2026-11-06 发布。</p>
+            <p class="orbi-event-list-p"><strong >在时间线上看什么。</strong>Issue 时间线依次是：开始、计划就绪、已打开 PR、已合并；「已合并」那条会写明评审跑了几轮、结论是什么。PR #2124 没有人类评审也合并了——评审发生在另一场 Orbi 会话里，独立于写代码那一场，结果写在 Issue 评论里。Issue 本身的作者是 xqliu；这一次运行留下的评论是以 Orbi 的 GitHub App 发的，所以作者显示为 orbi-build。</p>
+            <p class="src-note orbi-event-list-p">
+              <a class="orbi-src-note-a" data-evidence="issue" href="https://github.com/orbi-build/orbi/issues/2123" rel="noopener">Issue #2123 时间线</a>
+              · <a class="orbi-src-note-a" data-evidence="pr" href="https://github.com/orbi-build/orbi/pull/2124" rel="noopener">PR #2124</a>
+              · <a class="orbi-src-note-a" data-evidence="release" href="https://github.com/orbi-build/orbi/releases/tag/v0.7.38" rel="noopener">Release v0.7.38</a>
+            </p>
+          </div>
+        </li>
+        <li class="orbi-event-list-li">
+          <span class="event-era">v0.7.37</span>
+          <div>
+            <strong >Issue #2119、已合并 PR #2122、Release v0.7.37</strong>
+            <p class="orbi-event-list-p">orbi suggest 用 Orbi 自己的输入文件名来解释一条建议：仓库主人读到「context.json 中开放 Issue 与 PR 均为空」，而那个文件他们永远看不到。问题记成公开仓库里的 Issue #2119。Orbi 现在在提示里写明 title、why、body 是给仓库主人看的，含 context.json 的 why 会被拒绝，PR #2122 合并，修复随 Release v0.7.37 于 2026-11-05 发布。</p>
+            <p class="orbi-event-list-p"><strong >在时间线上看什么。</strong>Issue 时间线依次是：开始、计划就绪、已打开 PR、已合并；「已合并」那条会写明评审跑了几轮、结论是什么。PR #2122 没有人类评审也合并了——评审发生在另一场 Orbi 会话里，独立于写代码那一场，结果写在 Issue 评论里。Issue 本身的作者是 xqliu；这一次运行留下的评论是以 Orbi 的 GitHub App 发的，所以作者显示为 orbi-build。</p>
+            <p class="src-note orbi-event-list-p">
+              <a class="orbi-src-note-a" data-evidence="issue" href="https://github.com/orbi-build/orbi/issues/2119" rel="noopener">Issue #2119 时间线</a>
+              · <a class="orbi-src-note-a" data-evidence="pr" href="https://github.com/orbi-build/orbi/pull/2122" rel="noopener">PR #2122</a>
+              · <a class="orbi-src-note-a" data-evidence="release" href="https://github.com/orbi-build/orbi/releases/tag/v0.7.37" rel="noopener">Release v0.7.37</a>
+            </p>
+          </div>
+        </li>
+        <li class="orbi-event-list-li">
+          <span class="event-era">v0.7.29</span>
+          <div>
+            <strong >Issue #2022、已合并 PR #2023、Release v0.7.29</strong>
+            <p class="orbi-event-list-p">一次交付续跑失败：Pi 把该次运行的 auth.json 符号链接换成了普通文件，之后每一轮都报 FileExistsError，直到这次运行放弃。问题记成公开仓库里的 Issue #2022。Orbi 现在像处理 settings.json 一样清掉残留的 auth.json，PR #2023 合并，修复随 Release v0.7.29 于 2026-10-31 发布。</p>
+            <p class="orbi-event-list-p"><strong >在时间线上看什么。</strong>Issue 时间线依次是：开始、计划就绪、已打开 PR、已合并；「已合并」那条会写明评审跑了几轮、结论是什么。PR #2023 没有人类评审也合并了——评审发生在另一场 Orbi 会话里，独立于写代码那一场，结果写在 Issue 评论里。Issue 本身的作者是 xqliu；这一次运行留下的评论是以 Orbi 的 GitHub App 发的，所以作者显示为 orbi-build。</p>
+            <p class="src-note orbi-event-list-p">
+              <a class="orbi-src-note-a" data-evidence="issue" href="https://github.com/orbi-build/orbi/issues/2022" rel="noopener">Issue #2022 时间线</a>
+              · <a class="orbi-src-note-a" data-evidence="pr" href="https://github.com/orbi-build/orbi/pull/2023" rel="noopener">PR #2023</a>
+              · <a class="orbi-src-note-a" data-evidence="release" href="https://github.com/orbi-build/orbi/releases/tag/v0.7.29" rel="noopener">Release v0.7.29</a>
+            </p>
+          </div>
+        </li>
         <li class="orbi-event-list-li">
           <span class="event-era">v0.5.5</span>
           <div>
@@ -386,6 +425,17 @@
 <a href="https://submitmysaas.com" target="_blank"><img src="https://submitmysaas.com/featured-badge.png" alt="Featured on SubmitMySaas" height="54" /></a>
 <a href="https://launchitx.com/projects/orbi" target="_blank" title="Launched on LaunchitX"><img src="https://launchitx.com/images/badges/launched-on-launchitx.svg" alt="Launched on LaunchitX" width="200" height="44" /></a>
         <a href="https://whatisnew.today/p/orbi?ref=badge"><img src="https://whatisnew.today/badge/orbi.svg?theme=dark" alt="Orbi on What’s New Today" width="172" height="40"></a>
+
+        <a href="https://ufind.best/products/orbi" target="_blank" rel="noopener"><img src="https://ufind.best/badges/ufind-best-badge-light.svg" alt="Featured on ufind.best" width="150" /></a>
+
+        <a href="https://aitoolsdirectory.vip" target="_blank" rel="noopener noreferrer">AI Tools Directory</a>
+        <a href="https://launchsoar.com" target="_blank" rel="noopener noreferrer" data-launch-badge="true" style="display:inline-flex;align-items:center;gap:10px;padding:10px 14px;border:1px solid #e5e7eb;border-radius:9999px;background:#ffffff;color:#111827;text-decoration:none;font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Helvetica Neue,Arial;line-height:1;"><img src="https://launchsoar.com/logo.png" alt="Launch" style="height:18px;width:auto;" /><span style="display:flex;flex-direction:column;gap:2px;line-height:1.1;"><span style="font-size:12px;opacity:0.8;">Listed on</span><span style="font-size:14px;font-weight:700;">Launch</span></span></a>
+        <a href="https://ailaunch.space/" target="_blank" rel="noopener noreferrer" style="text-decoration: none; display: inline-block;">
+          <img src="https://ailaunch.space/assets/badges/featured.svg" alt="Featured on AILaunchSpace" width="225" height="61" style="display: block;" />
+        </a>
+        <a href="https://saasfame.com/" target="_blank" rel="noopener noreferrer"><img src="https://saasfame.com/badge-light.svg" alt="Featured on saasfame.com" height="54" /></a>
+        <a href="https://www.pavelaunch.com/p/a42aed25-69c4-48e1-b37c-c75977668f41" target="_blank" rel="noopener noreferrer"><img src="https://www.pavelaunch.com/api/embed?type=launching-soon&amp;theme=light" alt="On PaveLaunch" width="250" height="54" /></a>
+
         </div>
       </div>
       <button class="footer-badges-toggle" type="button" data-footer-badges-toggle data-label-pause="暂停" data-label-play="播放">暂停</button>
