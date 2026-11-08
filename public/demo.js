@@ -398,6 +398,8 @@
   function bootPricingToggle(root) {
     const intervalButtons = Array.from(root.querySelectorAll("[data-pricing-interval]"));
     const prices = Array.from(document.querySelectorAll("[data-pricing-price]"));
+    // Issue #1237: the struck-through list price follows the same interval.
+    const listPrices = Array.from(document.querySelectorAll("[data-pricing-list-price]"));
     const details = Array.from(document.querySelectorAll("[data-pricing-detail]"));
     const ctas = Array.from(document.querySelectorAll("[data-pricing-cta]"));
     const subscriptions = Array.from(document.querySelectorAll("[data-pricing-subscribe]"));
@@ -414,8 +416,13 @@
       prices.forEach(function (price) {
         price.textContent = price.getAttribute(`data-${interval}-price`);
       });
+      listPrices.forEach(function (price) {
+        price.textContent = price.getAttribute(`data-${interval}-price`);
+      });
       details.forEach(function (detail) {
-        detail.textContent = detail.getAttribute(`data-${interval}-detail`);
+        // The yearly line strikes the list price through (Issue #1237), so it
+        // carries markup and cannot be set with textContent.
+        detail.innerHTML = detail.getAttribute(`data-${interval}-detail`);
       });
       ctas.forEach(function (cta) {
         const plan = cta.getAttribute("data-pricing-cta");
@@ -433,7 +440,9 @@
         setInterval(button.getAttribute("data-pricing-interval"));
       });
     });
-    setInterval("year");
+    // Issue #1237: the founding price the visitor pays is written first, and
+    // the founding 50% is the monthly list price halved, so monthly leads.
+    setInterval("month");
   }
 
   /* One-click copy for the install commands.

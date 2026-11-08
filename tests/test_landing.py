@@ -19,6 +19,13 @@ WORKER_PATH = ROOT / "src" / "worker.js"
 # resolves that token too.
 PRICING = json.loads((ROOT / "src" / "pricing.json").read_text(encoding="utf-8"))
 
+
+def paid_amount(value: float) -> str:
+    """The price the visitor actually pays: the founding 50% while the places
+    remain, the list price once they are gone (Issue #1237)."""
+    amount = value * 0.5 if PRICING["foundingPartnerRemaining"] > 0 else value
+    return str(int(amount)) if float(amount).is_integer() else str(amount)
+
 GITHUB = "https://github.com/orbi-build/orbi"
 DOCS_EN = "https://docs.orbi.build"
 DOCS_ZH = "https://docs.orbi.build/zh"
@@ -124,6 +131,20 @@ def parse(path: Path) -> tuple[str, PageParser]:
         ("foundingPromoCodeToken", "foundingPromoCode"),
     ):
         html = html.replace(PRICING[token_key], str(PRICING[value_key]))
+    # Issue #1237: the pages write the price the visitor actually pays first
+    # (the founding 50% while places remain) with the list price struck
+    # through. This stand-in resolves it the way src/worker.js does.
+    remaining = PRICING["foundingPartnerRemaining"]
+    for token_key, amount in (
+        ("soloPaidMonthlyUsdToken", paid_amount(PRICING["soloMonthlyUsd"])),
+        ("soloPaidAnnualUsdToken", paid_amount(PRICING["soloAnnualUsd"])),
+        ("soloPaidAnnualMonthlyUsdToken", str(round(float(paid_amount(PRICING["soloAnnualUsd"])) / 12))),
+        ("proPaidMonthlyUsdToken", paid_amount(PRICING["cloudMonthlyUsd"])),
+        ("proPaidAnnualUsdToken", paid_amount(PRICING["proAnnualUsd"])),
+        ("proPaidAnnualMonthlyUsdToken", str(round(float(paid_amount(PRICING["proAnnualUsd"])) / 12))),
+        ("foundingPriceStateToken", 'data-founding-price="on"' if remaining > 0 else 'data-founding-price="off"'),
+    ):
+        html = html.replace(PRICING[token_key], amount)
     html = html.replace(PRICING["includedTokensToken"], str(PRICING["includedTokensLabel"]))
     html = html.replace(PRICING["foundingTokensToken"], str(PRICING["foundingTokensLabel"]))
     html = html.replace(
@@ -1070,6 +1091,11 @@ class CloudLandingPageTests(unittest.TestCase):
 
         Issue #1212: the values are read from pricing.json, not restated here,
         and the sentences that carry them are copy.
+
+        Issue #1237: the card leads with the founding price of the default
+        (monthly) interval and strikes the list price beside it; the annual
+        amounts stay stated on the same card, so the page text still carries
+        every approved price.
         """
         for page in (self.en, self.zh):
             for value in (
@@ -1077,6 +1103,9 @@ class CloudLandingPageTests(unittest.TestCase):
                 PRICING["soloAnnualUsd"],
                 PRICING["cloudMonthlyUsd"],
                 PRICING["proAnnualUsd"],
+                # Issue #1237: the price the visitor pays, written first.
+                paid_amount(PRICING["soloMonthlyUsd"]),
+                paid_amount(PRICING["cloudMonthlyUsd"]),
             ):
                 self.assertIn("US$" + str(value), page.text)
             self.assertIn(str(PRICING["soloIncludedTokensLabel"]), page.text)
@@ -1104,9 +1133,13 @@ class CloudLandingPageTests(unittest.TestCase):
             self.assertIn(cost_href, hrefs, cost_href)
 
     def test_offer_jsonld_prices_solo_and_pro_and_states_founding_terms(self) -> None:
-        """Issue #1212: the JSON-LD amounts and terms come from pricing.json."""
-        solo = str(PRICING["soloMonthlyUsd"])
-        pro = str(PRICING["cloudMonthlyUsd"])
+        """Issue #1212: the JSON-LD amounts and terms come from pricing.json.
+
+        Issue #1237: the offers publish the price the visitor pays, so the
+        structured data cannot contradict the card beside it.
+        """
+        solo = paid_amount(PRICING["soloMonthlyUsd"])
+        pro = paid_amount(PRICING["cloudMonthlyUsd"])
         for html in (self.en_html, self.zh_html):
             scripts = re.findall(
                 r'<script type="application/ld\+json">(.*?)</script>', html, re.DOTALL
