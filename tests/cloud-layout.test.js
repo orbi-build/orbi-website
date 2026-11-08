@@ -202,6 +202,94 @@ describe("Cloud pricing hierarchy (Issue #667)", () => {
   }
 });
 
+
+// Issue #1238: beside the pricing cards, the visitor sees the two measured
+// numbers and one signed quote. Desktop keeps the two facts on one line; a
+// phone stacks one clause per line, and no clause ends on a lone word (a widow)
+// in either language.
+describe("Cloud pricing evidence beside the cards (Issue #1238)", () => {
+  // The rendered rows of the evidence line and of each of its clauses: one row
+  // per visual line, spanning the leftmost to the rightmost rect on it.
+  // Baseline-aligned flex items sit 1-3px apart on the same line, so rects
+  // closer than 10px belong to one row.
+  const readLayout = (element) => {
+    const measure = (node) => {
+      const box = node.getBoundingClientRect();
+      const range = document.createRange();
+      range.selectNodeContents(node);
+      const rects = [...range.getClientRects()].filter((rect) => rect.width > 0 && rect.height > 0);
+      const lines = new Map();
+      for (const rect of rects) {
+        const key = Math.round(rect.top);
+        const line = lines.get(key) ?? { left: Infinity, right: -Infinity };
+        line.left = Math.min(line.left, rect.left);
+        line.right = Math.max(line.right, rect.right);
+        lines.set(key, line);
+      }
+      const rows = [];
+      for (const top of [...lines.keys()].sort((a, b) => a - b)) {
+        const row = rows.find((candidate) => Math.abs(candidate.top - top) <= 10);
+        if (row) {
+          row.left = Math.min(row.left, lines.get(top).left);
+          row.right = Math.max(row.right, lines.get(top).right);
+        } else {
+          rows.push({ top, ...lines.get(top) });
+        }
+      }
+      const widths = rows.map((row) => row.right - row.left);
+      return {
+        rows: widths.length,
+        width: box.width,
+        // How much of the measured element's own width the last line covers.
+        endRatio: widths.length ? widths[widths.length - 1] / box.width : 0,
+      };
+    };
+    return {
+      line: measure(element),
+      clauses: [...element.querySelectorAll(".pricing-evidence-item")].map(measure),
+      overflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
+    };
+  };
+
+  for (const [name, path] of pages) {
+    it(`${name} keeps the numbers and the quote readable at 1440 and 390`, async () => {
+      const page = await guardedPage(browser, baseUrl);
+      try {
+        await page.goto(`${baseUrl}${path}`, { waitUntil: "load", timeout: 25_000 });
+        await page.evaluate((replacements) => {
+          const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+          while (walker.nextNode()) walker.currentNode.nodeValue = walker.currentNode.nodeValue.replace(/__[A-Z_]+__/g, (value) => replacements[value] ?? value);
+        }, pricingReplacements);
+        const evidence = page.locator("#pricing .pricing-evidence");
+        expect(await evidence.count(), `${path}: no evidence block beside the price`).toBe(1);
+        const record = page.locator("#pricing .pricing-evidence-line .pricing-evidence-record");
+        expect(await record.getAttribute("href")).toBe(name === "cloud-zh" ? "/zh/evidence/" : "/evidence/");
+        const handle = page.locator("#pricing .pricing-quote .pricing-quote-handle");
+        expect(await handle.getAttribute("href")).toBe("https://x.com/xds2000");
+        for (const width of [1440, 390]) {
+          await page.setViewportSize({ width, height: 900 });
+          const layout = await page.locator("#pricing .pricing-evidence-line").evaluate(readLayout);
+          expect(layout.overflow, `${path} at ${width}px page overflow`).toBe(0);
+          expect(layout.clauses.length, `${path}: the line is missing one of the two facts`).toBe(2);
+          // No clause may end on a lone word: a single word covers about 0.1 of
+          // the width ("days" was 35px of 358; a two-character Chinese word 32px),
+          // while a wrapped phrase or a whole clause covers 0.15 or more. The
+          // record link is its own row on a phone by design and belongs to no
+          // clause, so its length is not measured here.
+          for (const [index, clause] of layout.clauses.entries()) {
+            expect(clause.endRatio, `${path} at ${width}px: clause ${index + 1} ends on a lone word`).toBeGreaterThan(0.15);
+          }
+          if (width === 1440) expect(layout.line.rows, `${path} at 1440px: the evidence line wrapped`).toBe(1);
+          if (width === 390) expect(layout.line.rows, `${path} at 390px: the evidence line did not stack`).toBeGreaterThanOrEqual(3);
+          const quote = await page.locator("#pricing .pricing-quote").evaluate((node) => node.getBoundingClientRect().width);
+          expect(Math.round(quote), `${path} at ${width}px: the quote and the line disagree on width`).toBe(Math.round(layout.line.width));
+        }
+      } finally {
+        await page.close();
+      }
+    });
+  }
+});
 // Issue #534 first-screen copy/geometry tests were removed (Issue #540):
 // they pinned the lede and proof-line wording and the above-the-fold
 // coordinates verbatim.

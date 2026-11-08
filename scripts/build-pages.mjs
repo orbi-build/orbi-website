@@ -24,6 +24,7 @@ import { join, resolve, dirname, relative } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { marked } from "marked";
 import { renderSocialProof, validateSocialProof } from "./social-proof.mjs";
+import { renderCloudEvidence, validateCloudEvidence } from "./cloud-evidence.mjs";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const PAGES_DIR = join(ROOT, "site", "pages");
@@ -31,6 +32,7 @@ const PARTIALS_DIR = join(ROOT, "site", "partials");
 const CONTENT_DIR = join(ROOT, "content", "blog");
 const GUIDES_DIR = join(ROOT, "content", "guides");
 const SOCIAL_PROOF_PATH = join(ROOT, "site", "data", "social-proof.json");
+const CLOUD_EVIDENCE_PATH = join(ROOT, "site", "data", "cloud-evidence.json");
 const GUIDES_DATA_PATH = join(ROOT, "site", "data", "guides.json");
 // Issue #887: the author record every byline, Article author and homepage
 // founder points at. One record: the site publishes one author page per
@@ -1602,7 +1604,7 @@ function renderLlmsFull(template, renderedPages, matrixCsv) {
   return output.replace("<!--@comparison-matrix-->", matrixCsv.trim()).trimEnd() + "\n";
 }
 
-export async function buildPages(outDir, { contentDir = CONTENT_DIR, guidesDir = GUIDES_DIR, socialProofPath = SOCIAL_PROOF_PATH } = {}) {
+export async function buildPages(outDir, { contentDir = CONTENT_DIR, guidesDir = GUIDES_DIR, socialProofPath = SOCIAL_PROOF_PATH, cloudEvidencePath = CLOUD_EVIDENCE_PATH } = {}) {
   NAV_PARTIAL = await readFile(join(PARTIALS_DIR, "nav.html"), "utf8");
   FOOTER_PARTIAL = await readFile(join(PARTIALS_DIR, "footer.html"), "utf8");
   SUBSCRIBE_PARTIAL = await readFile(join(PARTIALS_DIR, "subscribe.html"), "utf8");
@@ -1637,6 +1639,13 @@ export async function buildPages(outDir, { contentDir = CONTENT_DIR, guidesDir =
   const socialProof = validateSocialProof(
     JSON.parse(await readFile(socialProofPath, "utf8")),
     relative(ROOT, socialProofPath).split("\\").join("/"),
+  );
+  // Issue #1238: the numbers beside the Cloud price. A number the weekly
+  // refresh could not measure is null in that file, and the evidence line is
+  // then not rendered — the quote still is.
+  const cloudEvidence = validateCloudEvidence(
+    JSON.parse(await readFile(cloudEvidencePath, "utf8")),
+    relative(ROOT, cloudEvidencePath).split("\\").join("/"),
   );
   const postsFor = (indexSource) =>
     posts.filter((post) => post.lang === (indexSource.startsWith("zh/") ? "zh" : "en"));
@@ -1696,6 +1705,15 @@ export async function buildPages(outDir, { contentDir = CONTENT_DIR, guidesDir =
     // for it, so the list never becomes a second hand-maintained copy.
     if (html.includes("<!--@posts-->")) {
       html = html.replace("<!--@posts-->", () => renderPostList(postsFor(page.source)));
+    }
+    // Issue #1238: the Cloud pages carry the pricing evidence block — the two
+    // measured numbers and the signed quote — from site/data/cloud-evidence.json,
+    // so the page source never hard-codes a number that goes stale.
+    if (html.includes("<!--@cloud-evidence-->")) {
+      html = html.replace(
+        "<!--@cloud-evidence-->",
+        () => renderCloudEvidence({ evidence: cloudEvidence, socialProof, lang: page.lang }),
+      );
     }
     const socialVariant = SOCIAL_PROOF_VARIANTS[page.source];
     if (socialVariant) {
