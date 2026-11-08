@@ -122,6 +122,10 @@ describe("homepage social-proof section (Issue #226)", () => {
     }
   });
 
+  // Issue #1243: the five deliveries the homepage shows are the newest
+  // external merges, each one in a different public repository, all merged
+  // between 2026-10-02 and 2026-10-12 (the newest records in
+  // site/data/social-proof.json as of 2026-11-08).
   it("renders one quote card and the five seeded deliveries, quotes first, newest first", () => {
     const html = built.get("index.html");
     const section = sectionOf(html, "social-proof");
@@ -129,26 +133,52 @@ describe("homepage social-proof section (Issue #226)", () => {
     expect(section.match(/class="proof-card proof-card-quote"/g)).toHaveLength(1);
     const order = [
       section.indexOf("Tommy Xiao"),
-      section.indexOf("k8e/pull/615"),
-      section.indexOf("k8e/pull/613"),
-      section.indexOf("mat-site/pull/16"),
-      section.indexOf("mat-site/pull/14"),
-      section.indexOf("Tianshu-harness/pull/3"),
+      section.indexOf("k8e/pull/630"),
+      section.indexOf("Soncle-music/pull/22"),
+      section.indexOf("safehearts/pull/2"),
+      section.indexOf("Tianshu-harness/pull/6"),
+      section.indexOf("my-ai-team-docs/pull/464"),
     ];
     expect(order).toEqual([...order].sort((a, b) => a - b));
     expect(order.every((at) => at > -1)).toBe(true);
   });
 
+  it("links every homepage delivery card to its public PR record", () => {
+    for (const output of ["index.html", "zh/index.html"]) {
+      const section = sectionOf(built.get(output), "social-proof");
+      // Issue #1243: a quoted third-party PR title is a reference, not a
+      // heading of this page — it must stay out of the h1–h6 outline the
+      // homepage SEO heading gate counts.
+      expect(section, `${output}: a quoted PR title is a heading`).not.toMatch(/<h[1-6][^>]*class="proof-card-title"/);
+      const hrefs = [...section.matchAll(/<p class="proof-card-title"><a class="orbi-proof-card-title-a" href="([^"]+)"/g)].map((m) => m[1]);
+      expect(hrefs).toEqual([
+        "https://github.com/xiaods/k8e/pull/630",
+        "https://github.com/minuda2009/Soncle-music/pull/22",
+        "https://github.com/toondji-ix/safehearts/pull/2",
+        "https://github.com/zzuu080603/Tianshu-harness/pull/6",
+        "https://github.com/SHUKE-LABS/my-ai-team-docs/pull/464",
+      ]);
+    }
+  });
+
+  it("keeps the Tommy Xiao quote and its link to his X account", () => {
+    const section = sectionOf(built.get("index.html"), "social-proof");
+    expect(section).toContain("orbi 全自动控制流程还是很棒的，继续保持");
+    expect(section).toContain('class="proof-card-handle" href="https://x.com/xds2000"');
+  });
+
   it("shows the merge date and preserves the no-human-review lines", () => {
     const section = sectionOf(built.get("index.html"), "social-proof");
-    expect(section.match(/class="proof-card-review">no human review<\/p>/g)).toHaveLength(3);
-    expect(section).toContain('<time datetime="2026-09-19T00:41:18Z">2026-09-19</time>');
+    // None of the five seeded merges carries a human review: five markers.
+    expect(section.match(/class="proof-card-review">no human review<\/p>/g)).toHaveLength(5);
+    expect(section).toContain('<time datetime="2026-10-12T08:39:25Z">2026-10-12</time>');
+    expect(section).toContain('<time datetime="2026-10-02T04:21:18Z">2026-10-02</time>');
   });
 
   it("carries the computed count line linking /evidence/#third-party", () => {
     const section = sectionOf(built.get("index.html"), "social-proof");
     expect(section).toContain('href="/evidence/#third-party"');
-    expect(section).toContain("5 deliveries in other people's repositories");
+    expect(section).toContain("10 deliveries in other people's repositories");
   });
 
   it("mirrors the same structure on the zh homepage with zh copy", () => {
@@ -156,7 +186,7 @@ describe("homepage social-proof section (Issue #226)", () => {
     expect(cardsOf(section)).toHaveLength(6);
     expect(section.match(/class="proof-card proof-card-quote"/g)).toHaveLength(1);
     expect(section).toContain('href="/zh/evidence/#third-party"');
-    expect(section).toContain("他人仓库中已有 5 次交付");
+    expect(section).toContain("他人仓库中已有 10 次交付");
     expect(section).toContain("无人类 review");
     // Same data, same markup: the EN and ZH sections carry the same links.
     const count = (html) => sectionOf(html, "social-proof").match(/<a /g).length;
@@ -169,10 +199,17 @@ describe("homepage social-proof section (Issue #226)", () => {
     expect(card).not.toContain("github.com");
   });
 
-  it("includes both k8e PR links in the generated homepages", () => {
+  it("keeps the older records off the homepage but on /evidence/", () => {
     for (const output of ["index.html", "zh/index.html"]) {
+      const section = sectionOf(built.get(output), "social-proof");
+      expect(section).not.toContain("k8e/pull/613");
+      expect(section).not.toContain("k8e/pull/615");
+      expect(section).not.toContain("mat-site/pull/16");
+    }
+    for (const output of ["evidence/index.html", "zh/evidence/index.html"]) {
       expect(built.get(output)).toContain("https://github.com/xiaods/k8e/pull/613");
       expect(built.get(output)).toContain("https://github.com/xiaods/k8e/pull/615");
+      expect(built.get(output)).toContain("https://github.com/SHUKE-LABS/mat-site/pull/16");
     }
   });
 });
@@ -185,20 +222,30 @@ describe("/evidence/ #third-party section (Issue #226)", () => {
       const third = html.indexOf('<section class="social-proof shell" id="third-party"');
       expect(third, `${output}: #third-party missing`).toBeGreaterThan(records);
       const section = sectionOf(html, "third-party");
-      expect(cardsOf(section)).toHaveLength(6);
+      expect(cardsOf(section)).toHaveLength(11);
       expect(section).toContain("https://github.com/xiaods/k8e/pull/613");
       expect(section).toContain("https://github.com/xiaods/k8e/pull/615");
+      expect(section).toContain("https://github.com/minuda2009/Soncle-music/pull/22");
     }
   });
 
-  it("groups the two mat-site deliveries under one repository heading", () => {
+  it("groups the deliveries by repository, newest repository first", () => {
     const section = sectionOf(built.get("evidence/index.html"), "third-party");
     const groups = [...section.matchAll(/<h3 class="social-proof-group-title">([\s\S]*?)<\/h3>/g)].map((m) => m[1]);
-    expect(groups).toHaveLength(4); // three repositories + the quotes group
-    expect(groups[0]).toContain("xiaods/k8e");
-    expect(groups[1]).toContain("SHUKE-LABS/mat-site");
-    const matGroup = section.slice(section.indexOf(groups[1]), section.indexOf("zzuu080603/Tianshu-harness", section.indexOf(groups[1])));
+    // Six repositories, ordered by each repository's newest merge, then quotes.
+    expect(groups).toEqual([
+      "xiaods/k8e",
+      "minuda2009/Soncle-music",
+      "toondji-ix/safehearts",
+      "zzuu080603/Tianshu-harness",
+      "SHUKE-LABS/my-ai-team-docs",
+      "SHUKE-LABS/mat-site",
+      "Quotes",
+    ]);
+    const matGroup = section.slice(section.indexOf(groups[5]), section.indexOf("Quotes</h3>", section.indexOf(groups[5])));
     expect(cardsOf(matGroup)).toHaveLength(2);
+    const k8eGroup = section.slice(section.indexOf(groups[0]), section.indexOf(groups[1]));
+    expect(cardsOf(k8eGroup)).toHaveLength(3); // 630 (new), 615, 613
   });
 
   it("keeps the quotes group last with the quote card", () => {
@@ -233,11 +280,14 @@ describe("third-party repository name is plain text (Issue #232)", () => {
       expect(section, `${output}: a repository homepage is still linked`).not.toMatch(
         /href="https:\/\/github\.com\/[^/"]+\/[^/"]+"/,
       );
-      expect(section, `${output}: the repository name vanished from the cards`).toContain(
-        '<p class="proof-card-repo">SHUKE-LABS/mat-site</p>',
-      );
       expect(section, `${output}: the k8e repository name vanished from the cards`).toContain(
         '<p class="proof-card-repo">xiaods/k8e</p>',
+      );
+      // The homepage shows the newest records only; the full list, mat-site
+      // included, lives on /evidence/.
+      const otherRepo = id === "third-party" ? "SHUKE-LABS/mat-site" : "minuda2009/Soncle-music";
+      expect(section, `${output}: the ${otherRepo} repository name vanished from the cards`).toContain(
+        `<p class="proof-card-repo">${otherRepo}</p>`,
       );
       if (id === "third-party") {
         expect(section, `${output}: the repository name vanished from the group title`).toContain(

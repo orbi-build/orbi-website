@@ -132,11 +132,15 @@ const githubPrUrl = (repo, pr) => `https://github.com/${repo}/pull/${pr}`;
 // other project's storefront. We have no reason to route traffic there, and
 // nobody agreed to that form of exposure. The name itself stays visible: it
 // is evidence of whose repository the delivery happened in.
+// Issue #1243: the card title is a quoted third-party PR title, not a
+// heading of this page — it renders as a paragraph so it never joins the
+// page's own heading outline (the homepage SEO heading gate in
+// tests/test_landing.py collects h1–h6). The class name keeps the styling.
 function renderDeliveryCard(record, copy) {
   return [
     `      <article class="proof-card">`,
     `        <p class="proof-card-repo">${esc(record.repo)}</p>`,
-    `        <h3 class="proof-card-title"><a class="orbi-proof-card-title-a" href="${esc(githubPrUrl(record.repo, record.pr))}" rel="noopener">${esc(record.title)}</a></h3>`,
+    `        <p class="proof-card-title"><a class="orbi-proof-card-title-a" href="${esc(githubPrUrl(record.repo, record.pr))}" rel="noopener">${esc(record.title)}</a></p>`,
     `        <p class="proof-card-meta"><time datetime="${esc(record.merged_at)}">${esc(String(record.merged_at).slice(0, 10))}</time></p>`,
     // `no human review` only when there were zero: a non-zero count is never
     // claimed (the build has no data shape that would let it claim one).

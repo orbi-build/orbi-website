@@ -292,29 +292,40 @@ Orbi is open source under AGPL-3.0, or the Sustainable Use License if your polic
           <div class="social-proof-grid">
       <article class="proof-card">
         <p class="proof-card-repo">xiaods/k8e</p>
-        <h3 class="proof-card-title"><a class="orbi-proof-card-title-a" href="https://github.com/xiaods/k8e/pull/615" rel="noopener">M0：兼容规范和 rqlite 能力验证</a></h3>
+        <p class="proof-card-title"><a class="orbi-proof-card-title-a" href="https://github.com/xiaods/k8e/pull/630" rel="noopener">docs: state the NetworkPolicy enforcement guarantee (bundled Cilium) and the silent no-op risk without it</a></p>
+        <p class="proof-card-meta"><time datetime="2026-10-12T08:39:25Z">2026-10-12</time></p>
+        <p class="proof-card-review">no human review</p>
+      </article>
+      <article class="proof-card">
+        <p class="proof-card-repo">xiaods/k8e</p>
+        <p class="proof-card-title"><a class="orbi-proof-card-title-a" href="https://github.com/xiaods/k8e/pull/615" rel="noopener">M0：兼容规范和 rqlite 能力验证</a></p>
         <p class="proof-card-meta"><time datetime="2026-09-21T12:01:21Z">2026-09-21</time></p>
       </article>
       <article class="proof-card">
         <p class="proof-card-repo">xiaods/k8e</p>
-        <h3 class="proof-card-title"><a class="orbi-proof-card-title-a" href="https://github.com/xiaods/k8e/pull/613" rel="noopener">test(etcd): 设计并分阶段落地嵌入式 etcd 健壮性 E2E 方案</a></h3>
+        <p class="proof-card-title"><a class="orbi-proof-card-title-a" href="https://github.com/xiaods/k8e/pull/613" rel="noopener">test(etcd): 设计并分阶段落地嵌入式 etcd 健壮性 E2E 方案</a></p>
         <p class="proof-card-meta"><time datetime="2026-09-20T14:13:00Z">2026-09-20</time></p>
       </article>
           </div>
         </div>
         <div class="social-proof-group">
-          <h3 class="social-proof-group-title">SHUKE-LABS/mat-site</h3>
+          <h3 class="social-proof-group-title">minuda2009/Soncle-music</h3>
           <div class="social-proof-grid">
       <article class="proof-card">
-        <p class="proof-card-repo">SHUKE-LABS/mat-site</p>
-        <h3 class="proof-card-title"><a class="orbi-proof-card-title-a" href="https://github.com/SHUKE-LABS/mat-site/pull/16" rel="noopener">Replace terminal logo and favicon with new four-agent My AI Team artwork</a></h3>
-        <p class="proof-card-meta"><time datetime="2026-09-19T00:41:18Z">2026-09-19</time></p>
+        <p class="proof-card-repo">minuda2009/Soncle-music</p>
+        <p class="proof-card-title"><a class="orbi-proof-card-title-a" href="https://github.com/minuda2009/Soncle-music/pull/22" rel="noopener">Windows head scaffold: Soncle Preview — Mica shell, rail, player bar, tray</a></p>
+        <p class="proof-card-meta"><time datetime="2026-10-10T10:36:17Z">2026-10-10</time></p>
         <p class="proof-card-review">no human review</p>
       </article>
+          </div>
+        </div>
+        <div class="social-proof-group">
+          <h3 class="social-proof-group-title">toondji-ix/safehearts</h3>
+          <div class="social-proof-grid">
       <article class="proof-card">
-        <p class="proof-card-repo">SHUKE-LABS/mat-site</p>
-        <h3 class="proof-card-title"><a class="orbi-proof-card-title-a" href="https://github.com/SHUKE-LABS/mat-site/pull/14" rel="noopener">Let mat-site use the same slogan as https://shukelabs.com/products/my-ai-team/ does</a></h3>
-        <p class="proof-card-meta"><time datetime="2026-09-18T21:06:02Z">2026-09-18</time></p>
+        <p class="proof-card-repo">toondji-ix/safehearts</p>
+        <p class="proof-card-title"><a class="orbi-proof-card-title-a" href="https://github.com/toondji-ix/safehearts/pull/2" rel="noopener">Make the home page load faster (index.html is committed empty)</a></p>
+        <p class="proof-card-meta"><time datetime="2026-10-09T17:50:09Z">2026-10-09</time></p>
         <p class="proof-card-review">no human review</p>
       </article>
           </div>
@@ -324,8 +335,42 @@ Orbi is open source under AGPL-3.0, or the Sustainable Use License if your polic
           <div class="social-proof-grid">
       <article class="proof-card">
         <p class="proof-card-repo">zzuu080603/Tianshu-harness</p>
-        <h3 class="proof-card-title"><a class="orbi-proof-card-title-a" href="https://github.com/zzuu080603/Tianshu-harness/pull/3" rel="noopener">buildOaiRequest 每轮 5+ 趟全量扫描的性能战役（战略票）</a></h3>
+        <p class="proof-card-title"><a class="orbi-proof-card-title-a" href="https://github.com/zzuu080603/Tianshu-harness/pull/6" rel="noopener">天枢安全审计：清点尚未被发现的漏洞</a></p>
+        <p class="proof-card-meta"><time datetime="2026-10-07T02:45:03Z">2026-10-07</time></p>
+        <p class="proof-card-review">no human review</p>
+      </article>
+      <article class="proof-card">
+        <p class="proof-card-repo">zzuu080603/Tianshu-harness</p>
+        <p class="proof-card-title"><a class="orbi-proof-card-title-a" href="https://github.com/zzuu080603/Tianshu-harness/pull/3" rel="noopener">buildOaiRequest 每轮 5+ 趟全量扫描的性能战役（战略票）</a></p>
         <p class="proof-card-meta"><time datetime="2026-09-18T02:15:53Z">2026-09-18</time></p>
+        <p class="proof-card-review">no human review</p>
+      </article>
+          </div>
+        </div>
+        <div class="social-proof-group">
+          <h3 class="social-proof-group-title">SHUKE-LABS/my-ai-team-docs</h3>
+          <div class="social-proof-grid">
+      <article class="proof-card">
+        <p class="proof-card-repo">SHUKE-LABS/my-ai-team-docs</p>
+        <p class="proof-card-title"><a class="orbi-proof-card-title-a" href="https://github.com/SHUKE-LABS/my-ai-team-docs/pull/464" rel="noopener">docs-site: own the site here; move reference docs under /reference/ with an autogenerated sidebar and redirects</a></p>
+        <p class="proof-card-meta"><time datetime="2026-10-02T04:21:18Z">2026-10-02</time></p>
+        <p class="proof-card-review">no human review</p>
+      </article>
+          </div>
+        </div>
+        <div class="social-proof-group">
+          <h3 class="social-proof-group-title">SHUKE-LABS/mat-site</h3>
+          <div class="social-proof-grid">
+      <article class="proof-card">
+        <p class="proof-card-repo">SHUKE-LABS/mat-site</p>
+        <p class="proof-card-title"><a class="orbi-proof-card-title-a" href="https://github.com/SHUKE-LABS/mat-site/pull/16" rel="noopener">Replace terminal logo and favicon with new four-agent My AI Team artwork</a></p>
+        <p class="proof-card-meta"><time datetime="2026-09-19T00:41:18Z">2026-09-19</time></p>
+        <p class="proof-card-review">no human review</p>
+      </article>
+      <article class="proof-card">
+        <p class="proof-card-repo">SHUKE-LABS/mat-site</p>
+        <p class="proof-card-title"><a class="orbi-proof-card-title-a" href="https://github.com/SHUKE-LABS/mat-site/pull/14" rel="noopener">Let mat-site use the same slogan as https://shukelabs.com/products/my-ai-team/ does</a></p>
+        <p class="proof-card-meta"><time datetime="2026-09-18T21:06:02Z">2026-09-18</time></p>
         <p class="proof-card-review">no human review</p>
       </article>
           </div>
