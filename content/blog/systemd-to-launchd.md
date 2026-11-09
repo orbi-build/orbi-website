@@ -1,13 +1,13 @@
 ---
 title: systemd to launchd: what 1,548 macOS CI runs caught
 date: 2026-11-09
-summary: A systemd to launchd checklist tested on hosted macOS, plus 1,548 CI runs and 17 macOS-only failures: shell, PATH, sed, restart behavior and Actions cost.
+summary: A systemd to launchd checklist tested on hosted macOS: env files, PATH, sed, timeout, kickstart. Plus what 1,548 macOS CI runs caught and what they cost.
 lang: en
 author: Larry 🍀 Orbi
 image: /img/blog-systemd-to-launchd-card.png
 ---
 
-[Orbi](https://github.com/orbi-build/orbi) is an open-source runner that takes GitHub Issues through review to merged, released changes; until September, it ran only under systemd, and this is its move from systemd to launchd. This is for developers porting a Linux service or agent runner to macOS, or deciding whether to pay for macOS CI. You get a checklist tested on hosted macOS and eight weeks of CI data from 15 September through 8 November 2026 UTC.
+[Orbi](https://github.com/orbi-build/orbi) is an open-source runner that takes GitHub Issues through review to merged, released changes. Until September it ran only under systemd, the Linux service manager; this post covers its move from systemd to launchd, which starts background jobs on macOS. It is for developers porting a Linux service or agent runner to macOS, or deciding whether to pay for macOS CI: you get a checklist tested on hosted macOS and eight weeks of CI data from 15 September through 8 November 2026 UTC.
 
 I'm Larry 🍀 Orbi, the creator of Orbi. On 9 November I ran the checklist probes on a GitHub-hosted macOS 15 runner (arm64), with macOS 15.8.2 and a logged-in GUI domain, `gui/501`. This was a hosted VM. Orbi's full installer and delivery loop still have not run on a personal Mac; the README's “not yet verified on real hardware” caveat stands.
 
@@ -92,6 +92,19 @@ $ ./shim/timeout 5 sh -c 'exit 3'
 ```
 
 GNU `timeout` returned `124` in the Linux comparison. Check what your caller expects before treating the shim's `142` as interchangeable.
+
+That shim also fails open. On the hosted macOS runner, `./shim/timeout 5 no-such-command-xyz`, `./shim/timeout 5` (no command) and `./shim/timeout '' sleep 2` all exited `0`: Perl's `exec` returns when it cannot run the command, and the script then ends successfully. A CI step that loses a tool from PATH would pass. Orbi's macOS CI still carries this version. This one checks its input and exits non-zero when the command cannot start:
+
+```sh
+#!/bin/sh
+# timeout SECONDS COMMAND [ARG...]: fail closed on bad input or a command that cannot run
+case $1 in ''|*[!0-9]*) echo "timeout: seconds must be a positive integer" >&2; exit 125;; esac
+[ "$1" -gt 0 ] || { echo "timeout: seconds must be a positive integer" >&2; exit 125; }
+[ $# -ge 2 ] || { echo "timeout: missing command" >&2; exit 125; }
+exec perl -e 'alarm shift; exec { $ARGV[0] } @ARGV or do { print STDERR "timeout: $ARGV[0]: $!\n"; exit 127 }' "$@"
+```
+
+On macOS it exited `127` for the missing command, `125` for the missing command argument and for the empty seconds value, `142` after one second on `sleep 5`, and passed `exit 3` through. Save it as an executable file named `timeout` in a directory on PATH; it is a script, not a line to paste into a terminal.
 
 BSD sed reproduced the installer bug in [#868](https://github.com/orbi-build/orbi/issues/868):
 
@@ -199,16 +212,14 @@ The billing API recorded these macOS minutes for the `orbi` repository. The shar
 
 `orbi` is public: its Actions charges were fully discounted in both months. [GitHub's runner pricing](https://docs.github.com/en/billing/reference/actions-runner-pricing) lists macOS at $0.062 per minute and Linux at $0.006 per minute for the standard SKUs used here. On this public repository, that usage cost nothing. On a private repository, the same usage would be billed at list price beyond any included allowance.
 
-The [paths filter in PR #1272](https://github.com/orbi-build/orbi/pull/1272) merged on 21 September at 23:31 (+08). Comparing pull-request-triggered CI runs on either side of that merge, within the CI window above:
+The [paths filter in PR #1272](https://github.com/orbi-build/orbi/pull/1272) merged on 21 September at 23:31 (+08). The two periods differ in length, so compare pull-request-triggered CI runs per day:
 
-| Period | macOS CI runs (pull-request-triggered) | Linux CI runs (pull-request-triggered) |
-|---|---|---|
-| Before the paths filter | 269 | 273 |
-| After the paths filter | 518 | 702 |
+| Period (UTC) | macOS runs | Linux runs | macOS per day | Linux per day | macOS share |
+|---|---|---|---|---|---|
+| 15 Sep 02:01 to 21 Sep 15:31, before the filter (6.6 days) | 269 | 273 | 41.0 | 41.6 | 99% |
+| 21 Sep 15:31 to 8 Nov 13:19, after the filter (47.9 days) | 518 | 702 | 10.8 | 14.7 | 74% |
 
-The `src/orbi/**` match still covers most changes, and pushes to main always run macOS CI. October's macOS minutes were higher than September's despite the filter.
-
-The run counts and monthly billing totals cover different windows; neither comparison isolates the filter's dollar savings.
+The filter skipped macOS on about a quarter of pull-request runs; `src/orbi/**` still matches most changes, and pushes to main always run macOS CI. Overall activity also dropped between the two periods, so the per-day fall is not all the filter's doing, and none of these numbers isolates its dollar savings.
 
 ## What CI could not see
 
@@ -242,4 +253,4 @@ CI found neither bug. I have now run both commands on the hosted macOS runner: t
 
 ## Related
 
-[Running Claude Code unattended](/blog/run-claude-code-unattended/) covers another part of operating an agent without sitting beside it. The [macOS defect note](https://docs.orbi.build/notes/macos-six-defects) records the original port; the [Claude Code comparison](/compare/claude-code/?ref=blog-launchd) explains where Orbi fits. [Orbi Cloud](/cloud/?ref=blog-launchd) runs the Issue-to-release loop on your GitHub repositories.
+[From a GitHub Issue to a release](/guides/issue-to-release/) is the loop this runner drives. [Running Claude Code unattended](/blog/run-claude-code-unattended/) covers another part of operating an agent without sitting beside it. The [macOS defect note](https://docs.orbi.build/notes/macos-six-defects) records the original port; the [Claude Code comparison](/compare/claude-code/?ref=blog-launchd) explains where Orbi fits. [Orbi Cloud](/cloud/?ref=blog-launchd) runs the Issue-to-release loop on your GitHub repositories.
