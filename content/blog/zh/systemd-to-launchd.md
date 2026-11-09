@@ -176,7 +176,7 @@ pre: 1
 
 ### 启动时别终止正在做的工作
 
-迁移服务管理命令时，也要保留原本的启动行为。对于已经加载的任务，文档里的命令是：
+迁移服务管理命令时，也要保留原本的启动行为。任务要先加载才能启动；我在托管运行器上用 `launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/<label>.plist` 加载每个测试任务（Orbi 的 `orbi setup` 会替执行器做这一步）。对于已经加载的任务，文档里的命令是：
 
 ```sh
 launchctl kickstart "gui/$(id -u)/org.orbi.runner.1"
