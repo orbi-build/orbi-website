@@ -2,7 +2,7 @@
   {
     "slug": "systemd-to-launchd",
     "title": "systemd to launchd: what 1,548 macOS CI runs caught",
-    "summary": "A systemd to launchd checklist tested on hosted macOS: env files, PATH, sed, timeout, kickstart. Plus what 1,548 macOS CI runs caught and what they cost.",
+    "summary": "A systemd to launchd checklist, mostly run on hosted macOS: env files, PATH, sed, timeout. 1,548 macOS CI runs found test-suite issues, no installer bugs.",
     "zhSlug": "systemd-to-launchd",
     "zhTitle": "systemd 到 launchd：1,548 次 macOS CI 查出了什么",
     "related": []
