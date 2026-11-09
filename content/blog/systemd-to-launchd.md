@@ -1,14 +1,14 @@
 ---
 title: systemd to launchd: what 1,548 macOS CI runs caught
 date: 2026-11-09
-summary: A systemd to launchd checklist tested on hosted macOS: env files, PATH, sed, timeout, kickstart. Plus what 1,548 macOS CI runs caught and what they cost.
+summary: A systemd to launchd checklist, mostly run on hosted macOS: env files, PATH, sed, timeout. 1,548 macOS CI runs found test-suite issues, no installer bugs.
 lang: en
 author: Larry 🍀 Orbi
 image: /img/blog-systemd-to-launchd-card.png
 mirror: systemd-to-launchd
 ---
 
-If you're porting a Linux service or agent runner to macOS, or deciding whether to pay for macOS CI, you can use this checklist tested on hosted macOS and eight weeks of CI data from 15 September through 8 November 2026 UTC. [Orbi](https://github.com/orbi-build/orbi) is an open-source runner that takes GitHub Issues through review, merging and release. Until September it ran only under systemd, the Linux service manager. This post follows its move to launchd, which starts background jobs on macOS.
+If you're porting a Linux service or agent runner to macOS, or deciding whether to pay for macOS CI, you can use this checklist, run on hosted macOS except where marked, and eight weeks of CI data from 15 September through 8 November 2026 UTC. [Orbi](https://github.com/orbi-build/orbi) is an open-source runner that takes GitHub Issues through review, merging and release. Until September it ran only under systemd, the Linux service manager. This post follows its move to launchd, which starts background jobs on macOS.
 
 I'm Larry 🍀 Orbi, the creator of Orbi. On 9 November I ran the checklist probes on a GitHub-hosted macOS 15 runner (arm64), running macOS 15.8.2 with a logged-in GUI domain, `gui/501`. It was a hosted VM. Orbi's full installer and delivery loop still have not run on a personal Mac, so the README's “not yet verified on real hardware” caveat still applies.
 
@@ -94,7 +94,7 @@ $ ./shim/timeout 5 sh -c 'exit 3'
 
 GNU `timeout` returned `124` in the Linux comparison. Check what your caller expects before treating the shim's `142` as interchangeable.
 
-The shim can also report success when the command cannot run. On the hosted macOS runner, `./shim/timeout 5 no-such-command-xyz`, `./shim/timeout 5` (no command) and `./shim/timeout '' sleep 2` all exited `0`. Perl's `exec` returns when it cannot run the command, and the script then ends successfully. A CI step would pass even if a tool disappeared from PATH. Orbi's macOS CI still uses this version. The version below checks its input and exits non-zero when the command cannot start:
+The shim can also report success when the command cannot run. On the hosted macOS runner, `./shim/timeout 5 no-such-command-xyz`, `./shim/timeout 5` (no command) and `./shim/timeout '' sleep 2` all exited `0`. In the first two, Perl's `exec` returns when it cannot run the command, and the script then ends successfully; in the third, an empty seconds value means `alarm 0`, so there is no timeout at all and `sleep` simply finishes. A CI step would pass even if a tool disappeared from PATH. Orbi's macOS CI still uses this version. Copy the version below instead; it checks its input and exits non-zero when the command cannot start:
 
 ```sh
 #!/bin/sh
@@ -122,7 +122,7 @@ $ sed -i -e '/^pi_providers = /d' -e '/^pi_provider = /d' -e '/^pi_model = /d' o
 sed: -e: No such file or directory
 ```
 
-The file stayed unchanged, and the commands after `&&` did not run. Specifying the backup suffix explicitly worked on macOS:
+BSD sed took the first `-e` as the backup suffix and the first expression as the script, then read the next `-e` as a file name. It reported that file missing, left `orbi.toml` unchanged, and the commands after `&&` did not run. Specifying the backup suffix explicitly worked on macOS:
 
 ```sh
 $ sed -i.bak 's#PLACEHOLDER#deepseek#' orbi.toml && rm -f orbi.toml.bak
@@ -153,7 +153,7 @@ $ sysctl -n kern.boottime
 
 The hosted LaunchAgent above ran its shell wrapper through `/bin/sh -c` in `ProgramArguments`. Orbi also needs a step to succeed before the runner starts: its systemd unit uses `ExecStartPre` to run `orbi sync-engine-source`. launchd has no matching plist key. Put that step in the shell command and use `&&` to connect it to the runner command.
 
-The dependency-chain probe ran on Linux: my `pre.sh` fixture printed its argument and exited with that status.
+This probe ran on Linux, not macOS; `&&` is plain POSIX shell, and the guarded wrapper above, which also uses `&&`, did run inside a macOS LaunchAgent. My `pre.sh` fixture printed its argument and exited with that status.
 
 ```sh
 $ sh -c './pre.sh 0 && exec echo main-started'
@@ -182,7 +182,7 @@ When translating service-management commands, keep the intended startup behavior
 launchctl kickstart "gui/$(id -u)/org.orbi.runner.1"
 ```
 
-I tested both forms against a long-running LaunchAgent on the hosted runner. Plain `kickstart` exited `0`, kept PID `19120` and added no start line to the log. `kickstart -k` also exited `0`, but logged a new start with PID `19364`. That matches [`launchctl(1)`](https://keith.github.io/xcode-man-pages/launchctl.1.html): `-k` kills a running instance before restarting it. Leave it off when the instruction is to start the runner. An instance that is already running may be delivering an Issue.
+I tested both forms against a long-running LaunchAgent on the hosted runner. Plain `kickstart` exited `0`, kept PID `19120` and added no start line to the log. `kickstart -k` also exited `0`, but logged a new start with PID `19364`. That matches [`launchctl(1)`](https://keith.github.io/xcode-man-pages/launchctl.1.html): `-k` kills a running instance before restarting it. Leave it off when the instruction is to start the runner. An instance that is already running may be delivering an Issue. The `gui/<uid>` domain belongs to that user's GUI login session, which is why Orbi's README lists a launchd GUI session as the macOS prerequisite.
 
 ## What 1,548 macOS CI runs caught
 
@@ -213,7 +213,7 @@ The billing API recorded the following macOS minutes for the `orbi` repository. 
 
 `orbi` is a public repository, and its Actions charges were fully discounted in both months. [GitHub's runner pricing](https://docs.github.com/en/billing/reference/actions-runner-pricing) lists macOS at $0.062 per minute and Linux at $0.006 per minute for the standard SKUs used here. This usage cost the public repository nothing. A private repository would pay list price for the same usage beyond any included allowance.
 
-The [paths filter in PR #1272](https://github.com/orbi-build/orbi/pull/1272) merged on 21 September at 23:31 (+08). The two periods differ in length, so compare pull-request-triggered CI runs per day. The final column shows macOS runs as a share of Linux runs:
+The [paths filter in PR #1272](https://github.com/orbi-build/orbi/pull/1272) merged on 21 September at 23:31 (+08). The two periods differ in length, so compare pull-request-triggered CI runs per day. The macOS column adds up to 787 pull-request runs (269 + 518); the 761 push-to-main runs bring the macOS total to 1,548. The final column shows macOS runs as a share of Linux runs:
 
 | Period (UTC) | macOS runs | Linux runs | macOS per day | Linux per day | macOS share |
 |---|---|---|---|---|---|
@@ -228,7 +228,7 @@ A documentation audit against the man pages found both later bugs in the Mac set
 
 [#2109](https://github.com/orbi-build/orbi/issues/2109), opened on 3 November at 08:15 (+08), records how `launchctl kickstart -k` reached the Quickstart: [#2089](https://github.com/orbi-build/orbi/pull/2089), the fix for #2074, added it following the audit's suggested wording. Fixing one Mac documentation bug introduced another: starting the runner could kill a delivery already running.
 
-CI found neither bug. I have now run both commands on the hosted macOS runner. The #2074 command failed as described, and `-k` restarted the running job. Commands that users copy from setup docs need their own portability checks.
+CI found neither bug. I have now run both commands on the hosted macOS runner. The #2074 command failed as described, and `-k` restarted the running job. Both are fixed in the current Quickstart, which uses `sed -i.bak` and `kickstart` without `-k`. Commands that users copy from setup docs need their own portability checks.
 
 ## If you are porting a service to launchd
 

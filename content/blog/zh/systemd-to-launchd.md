@@ -1,16 +1,16 @@
 ---
 title: systemd 到 launchd：1,548 次 macOS CI 查出了什么
 date: 2026-11-09
-summary: 在托管 macOS 上实测环境文件、PATH、sed、timeout 和 kickstart，再看 1,548 次 macOS CI 查出了什么、花了多少。
+summary: 在托管 macOS 上实测环境文件、PATH、sed、timeout 和 kickstart；1,548 次 macOS CI 查出的是测试套件问题，没有安装器缺陷，另算了费用。
 lang: zh
 author: Larry 🍀 Orbi
 image: /img/blog-systemd-to-launchd-card.png
 mirror: systemd-to-launchd
 ---
 
-如果你正在把 Linux 服务或 agent 执行器迁到 macOS，或考虑要不要付费跑 macOS CI，这里有一份在托管 macOS 上实测过的清单，以及 2026 年 9 月 15 日至 11 月 8 日（UTC）八周的 CI 数据可供参考。[Orbi](https://github.com/orbi-build/orbi) 是一个开源执行器，把 GitHub Issue 送进评审流程，直到改动合并、发版。9 月之前，它只在 Linux 服务管理器 systemd 下运行。本文讲它迁到 launchd 的过程；launchd 是 macOS 用来启动后台任务的服务管理器。
+如果你正在把 Linux 服务或 agent 执行器迁到 macOS，或考虑要不要付费跑 macOS CI，这里有一份清单（除注明的几项外都在托管 macOS 上实测过），以及 2026 年 9 月 15 日至 11 月 8 日（UTC）八周的 CI 数据可供参考。[Orbi](https://github.com/orbi-build/orbi) 是一个开源执行器，把 GitHub Issue 送进评审流程，直到改动合并、发版。9 月之前，它只在 Linux 服务管理器 systemd 下运行。本文讲它迁到 launchd 的过程；launchd 是 macOS 用来启动后台任务的服务管理器。
 
-我是 Larry 🍀 Orbi，Orbi 的创始人。11 月 9 日，我在 GitHub 托管的 macOS 15 运行程序上跑了清单里的探测。它的架构是 arm64，系统是 macOS 15.8.2，图形界面域 `gui/501` 已登录。这是一台托管虚拟机。Orbi 的完整安装器和交付循环至今还没有在个人 Mac 上跑过，README 里「尚未在真实硬件上验证」的说明仍然成立。
+我是 Larry 🍀 Orbi，Orbi 的创始人。11 月 9 日，我在 GitHub 托管的 macOS 15 运行器上跑了清单里的探测。它的架构是 arm64，系统是 macOS 15.8.2，图形界面域 `gui/501` 已登录。这是一台托管虚拟机。Orbi 的完整安装器和交付循环至今还没有在个人 Mac 上跑过，README 里「尚未在真实硬件上验证」的说明仍然成立。
 
 ## 通过评审的那次迁移
 
@@ -24,7 +24,7 @@ mirror: systemd-to-launchd
 
 systemd 的 `EnvironmentFile=` 会把变量传给它启动的进程。launchd 没有对应的环境文件指令。在 shell 包装脚本里加载同一个文件，得到的是 shell 变量。如果赋值语句没写 `export`，就需要用 `set -a` 把变量传给子进程。
 
-这台托管运行程序的 `/bin/sh` 是 GNU bash 3.2.57。测试文件 `env` 里只有一条假密钥赋值：`OPENAI_API_KEY=sk-test-123`。下面这些 macOS 探测统计的是 `exec` 之后环境里有没有这个变量：
+这台托管运行器的 `/bin/sh` 是 GNU bash 3.2.57。测试文件 `env` 里只有一条假密钥赋值：`OPENAI_API_KEY=sk-test-123`。下面这些 macOS 探测统计的是 `exec` 之后环境里有没有这个变量：
 
 ```sh
 $ /bin/sh -c '. ./env; exec /usr/bin/env' | grep -c '^OPENAI_API_KEY='
@@ -59,7 +59,7 @@ Orbi 原来的 systemd unit 已经配置了服务的 PATH，复制进 plist 时�
 PATH=/usr/bin:/bin:/usr/sbin:/sbin
 ```
 
-在这个任务里，运行 `command -v git brew gh` 只找到了 `/usr/bin/git`，尽管运行程序上有 `/opt/homebrew/bin/brew`。另一个 LaunchAgent 通过 `EnvironmentVariables` 设置 PATH 后，打印出 `PATH=/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin`。两个测试 plist 都通过了 `plutil -lint`。
+在这个任务里，运行 `command -v git brew gh` 只找到了 `/usr/bin/git`，尽管运行器上有 `/opt/homebrew/bin/brew`。另一个 LaunchAgent 通过 `EnvironmentVariables` 设置 PATH 后，打印出 `PATH=/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin`。两个测试 plist 都通过了 `plutil -lint`。
 
 Orbi 目前的 plist 也把 `/opt/homebrew/bin` 放在最前面，后面是用户的工具目录。在 Linux 上解析模板，只能验证配置本身。托管环境里实际运行的 LaunchAgent 则说明了为什么必须显式设置 PATH。
 
@@ -67,7 +67,7 @@ Orbi 目前的 plist 也把 `/opt/homebrew/bin` 放在最前面，后面是用�
 
 原来的 Linux 安装环境里有 GNU 工具，systemd 本身并不提供它们。迁移服务时，才发现 `install.sh` 依赖这些工具。
 
-macOS 运行程序上没有 `timeout`：
+macOS 运行器上没有 `timeout`：
 
 ```sh
 $ timeout 5 true
@@ -94,7 +94,7 @@ $ ./shim/timeout 5 sh -c 'exit 3'
 
 Linux 对照测试里，GNU `timeout` 返回的是 `124`。先检查调用方期待什么退出码，再决定能不能用替代脚本的 `142` 代替。
 
-这个替代脚本在命令跑不起来时，也可能报成功。在托管 macOS 运行程序上，`./shim/timeout 5 no-such-command-xyz`、`./shim/timeout 5`（没给命令）和 `./shim/timeout '' sleep 2` 都以 `0` 退出。Perl 的 `exec` 无法执行命令时会返回，脚本随后正常结束。这样一来，CI 步骤即使因为 PATH 变化找不到工具，也会错误地通过。Orbi 的 macOS CI 至今还在用这个版本。下面这个版本会检查输入，并在命令无法启动时以非零状态退出：
+这个替代脚本在命令跑不起来时，也可能报成功。在托管 macOS 运行器上，`./shim/timeout 5 no-such-command-xyz`、`./shim/timeout 5`（没给命令）和 `./shim/timeout '' sleep 2` 都以 `0` 退出。前两例是 Perl 的 `exec` 无法执行命令时会返回，脚本随后正常结束；第三例的秒数为空，相当于 `alarm 0`，根本没有超时，`sleep` 照常跑完。这样一来，CI 步骤即使因为 PATH 变化找不到工具，也会错误地通过。Orbi 的 macOS CI 至今还在用这个版本。请改抄下面这个版本：它会检查输入，并在命令无法启动时以非零状态退出：
 
 ```sh
 #!/bin/sh
@@ -122,7 +122,7 @@ $ sed -i -e '/^pi_providers = /d' -e '/^pi_provider = /d' -e '/^pi_model = /d' o
 sed: -e: No such file or directory
 ```
 
-文件没有改变，`&&` 后面的命令也没执行。在 macOS 上，明确写出备份后缀就能工作：
+BSD sed 把第一个 `-e` 当成备份后缀、把第一个表达式当成脚本，再把下一个 `-e` 当成文件名，报告找不到这个文件；`orbi.toml` 没有改变，`&&` 后面的命令也没执行。在 macOS 上，明确写出备份后缀就能工作：
 
 ```sh
 $ sed -i.bak 's#PLACEHOLDER#deepseek#' orbi.toml && rm -f orbi.toml.bak
@@ -153,7 +153,7 @@ $ sysctl -n kern.boottime
 
 前面的托管 LaunchAgent 在 `ProgramArguments` 里通过 `/bin/sh -c` 执行 shell 包装脚本。Orbi 启动前还要完成一个步骤：systemd unit 用 `ExecStartPre` 在执行器启动前运行 `orbi sync-engine-source`。launchd 没有对应的 plist 键，需要把这个步骤写进 shell 命令，再用 `&&` 接上执行器命令。
 
-依赖链探测是在 Linux 上跑的：测试脚本 `pre.sh` 打印传入的参数，再用这个值作为退出状态。
+这一项是在 Linux 上跑的，不是 macOS：`&&` 是普通的 POSIX shell 语法，前面那个同样用了 `&&` 的守卫包装脚本已经在 macOS 的 LaunchAgent 里跑过。测试脚本 `pre.sh` 打印传入的参数，再用这个值作为退出状态。
 
 ```sh
 $ sh -c './pre.sh 0 && exec echo main-started'
@@ -182,7 +182,7 @@ pre: 1
 launchctl kickstart "gui/$(id -u)/org.orbi.runner.1"
 ```
 
-我在托管运行程序上，对一个持续运行的 LaunchAgent 测了两种写法。普通 `kickstart` 以 `0` 退出，PID 仍为 `19120`，日志里没有新增启动记录。`kickstart -k` 也以 `0` 退出，但日志里出现了 PID 为 `19364` 的新启动记录。这与 [`launchctl(1)`](https://keith.github.io/xcode-man-pages/launchctl.1.html) 一致：`-k` 会先终止正在运行的实例，再重新启动。指令只是启动执行器时，就别加它。已经运行的实例可能正在交付一张 Issue。
+我在托管运行器上，对一个持续运行的 LaunchAgent 测了两种写法。普通 `kickstart` 以 `0` 退出，PID 仍为 `19120`，日志里没有新增启动记录。`kickstart -k` 也以 `0` 退出，但日志里出现了 PID 为 `19364` 的新启动记录。这与 [`launchctl(1)`](https://keith.github.io/xcode-man-pages/launchctl.1.html) 一致：`-k` 会先终止正在运行的实例，再重新启动。指令只是启动执行器时，就别加它。已经运行的实例可能正在交付一张 Issue。`gui/<uid>` 域属于该用户的图形登录会话，所以 Orbi 的 README 把 launchd 图形会话列为 macOS 的前置条件。
 
 ## 1,548 次 macOS CI 查出了什么
 
@@ -211,9 +211,9 @@ launchctl kickstart "gui/$(id -u)/org.orbi.runner.1"
 | 9 月 | 3,772 | $233.86 | 67% | $0 |
 | 10 月 | 4,332 | $268.58 | 68% | $0 |
 
-`orbi` 是公开仓库，这两个月的 Actions 费用都全额减免了。按[GitHub 的运行程序定价](https://docs.github.com/en/billing/reference/actions-runner-pricing)，这里使用的标准 SKU 中，macOS 每分钟 $0.062，Linux 每分钟 $0.006。这个公开仓库的这些用量没有产生费用。私有仓库的同等用量，超出所含额度的部分就要按标价付费。
+`orbi` 是公开仓库，这两个月的 Actions 费用都全额减免了。按[GitHub 的运行器定价](https://docs.github.com/en/billing/reference/actions-runner-pricing)，这里使用的标准 SKU 中，macOS 每分钟 $0.062，Linux 每分钟 $0.006。这个公开仓库的这些用量没有产生费用。私有仓库的同等用量，超出所含额度的部分就要按标价付费。
 
-[PR #1272 里的路径过滤](https://github.com/orbi-build/orbi/pull/1272)在 9 月 21 日 23:31（+08）合并。前后两个时段长短不同，所以下表比较的是每天由拉取请求触发的 CI 运行次数：
+[PR #1272 里的路径过滤](https://github.com/orbi-build/orbi/pull/1272)在 9 月 21 日 23:31（+08）合并。前后两个时段长短不同，所以下表比较的是每天由拉取请求触发的 CI 运行次数。下表 macOS 一列合计 787 次拉取请求运行（269 + 518），加上向 main 推送触发的 761 次，才是 1,548 次：
 
 | 时段（UTC） | macOS 运行次数 | Linux 运行次数 | macOS 每天 | Linux 每天 | macOS / Linux 运行次数比 |
 |---|---|---|---|---|---|
@@ -228,7 +228,7 @@ launchctl kickstart "gui/$(id -u)/org.orbi.runner.1"
 
 11 月 3 日 08:15（+08）创建的 [#2109](https://github.com/orbi-build/orbi/issues/2109)，记录了 Quickstart 加入 `launchctl kickstart -k` 的经过：修复 #2074 的 [#2089](https://github.com/orbi-build/orbi/pull/2089) 采纳了审计建议的写法。修复这个 Mac 文档缺陷时，又引入了另一个：启动执行器可能终止正在运行的交付。
 
-CI 没有发现这两个缺陷。我现在已经在托管 macOS 运行程序上跑过这两条命令，#2074 里的命令按描述失败了，`-k` 也重启了正在运行的任务。安装文档里供人复制的命令，也需要单独检查可移植性。
+CI 没有发现这两个缺陷。我现在已经在托管 macOS 运行器上跑过这两条命令，#2074 里的命令按描述失败了，`-k` 也重启了正在运行的任务。当前的 Quickstart 两处都已改正，用的是 `sed -i.bak` 和不带 `-k` 的 `kickstart`。安装文档里供人复制的命令，也需要单独检查可移植性。
 
 ## 迁移服务到 launchd 时要测什么
 
@@ -250,7 +250,7 @@ CI 没有发现这两个缺陷。我现在已经在托管 macOS 运行程序上�
 | 9 月 21 日 23:31 | #1272 加入 PR 路径过滤。 |
 | 11 月 3 日 00:11 | #2074：Quickstart sed 可移植性问题。 |
 | 11 月 3 日 08:15 | #2109：Quickstart kickstart 行为问题。 |
-| 11 月 9 日 | 在托管 macOS 15 运行程序上实测迁移清单。 |
+| 11 月 9 日 | 在托管 macOS 15 运行器上实测迁移清单。 |
 
 ## 相关
 
