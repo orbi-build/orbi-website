@@ -77,7 +77,7 @@
 // its own width/height and viewBox 0 0 146 44 — the vendor's embed box declares
 // 200x54, a different ratio, which is why the source file decides) and
 // www.indietools.app 470x150 (PNG, 19187 bytes, its own IHDR pixel box, which the
-// vendor's 176x56 snippet keeps within 0.2%).
+// vendor's 176x56 snippet keeps within 0.31%).
 // Since Issue #1038
 // the shared footer rule renders every badge at 28px high, so the
 // placeholder's natural size decides only the width the source ratio implies
