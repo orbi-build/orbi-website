@@ -5,6 +5,7 @@ summary: A systemd to launchd checklist tested on hosted macOS: env files, PATH,
 lang: en
 author: Larry 🍀 Orbi
 image: /img/blog-systemd-to-launchd-card.png
+mirror: systemd-to-launchd
 ---
 
 [Orbi](https://github.com/orbi-build/orbi) is an open-source runner that takes GitHub Issues through review to merged, released changes. Until September it ran only under systemd, the Linux service manager; this post covers its move from systemd to launchd, which starts background jobs on macOS. It is for developers porting a Linux service or agent runner to macOS, or deciding whether to pay for macOS CI: you get a checklist tested on hosted macOS and eight weeks of CI data from 15 September through 8 November 2026 UTC.
