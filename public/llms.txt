@@ -249,6 +249,10 @@ Shipping notes from the root domain: what each delivery run hit, what fixed
 it, and the numbers behind both, traced to the issues they came from. RSS
 feed of the English posts: https://orbi.build/blog/feed.xml
 
+- systemd to launchd: what 1,548 macOS CI runs caught (English):
+  https://orbi.build/blog/systemd-to-launchd/
+- systemd 到 launchd：1,548 次 macOS CI 查出了什么 (Chinese):
+  https://orbi.build/zh/blog/systemd-to-launchd/
 - Cursor alternatives: editors, agents and who merges (English):
   https://orbi.build/blog/cursor-alternatives/
 - Cursor 替代品怎么选：编辑器、后台 agent 与合并发版 (Chinese):
