@@ -308,7 +308,7 @@ pre: 1
 </code></pre></div>
 <p>环境文件可以缺失，启动前步骤则必须成功。分号允许在环境文件缺失时继续执行，最后的 <code class="post-code--single">&amp;&amp;</code> 保证同步失败时不会启动执行器。<a href="https://keith.github.io/xcode-man-pages/launchd.plist.5.html">plist 手册对 <code class="post-code--single">ProgramArguments</code> 的定义</a>是参数向量，因此需要显式调用 shell 来解释这些运算符。</p>
 <h3 id="启动时别终止正在做的工作">启动时别终止正在做的工作</h3>
-<p>迁移服务管理命令时，也要保留原本的启动行为。对于已经加载的任务，文档里的命令是：</p>
+<p>迁移服务管理命令时，也要保留原本的启动行为。任务要先加载才能启动；我在托管运行器上用 <code class="post-code--spaced">launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/&lt;label&gt;.plist</code> 加载每个测试任务（Orbi 的 <code class="post-code--spaced">orbi setup</code> 会替执行器做这一步）。对于已经加载的任务，文档里的命令是：</p>
 <div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="已复制">复制</button><pre><code class="language-sh" data-copy-source>launchctl kickstart &quot;gui/$(id -u)/org.orbi.runner.1&quot;
 </code></pre></div>
 <p>我在托管运行器上，对一个持续运行的 LaunchAgent 测了两种写法。普通 <code class="post-code--single">kickstart</code> 以 <code class="post-code--single">0</code> 退出，PID 仍为 <code class="post-code--single">19120</code>，日志里没有新增启动记录。<code class="post-code--spaced">kickstart -k</code> 也以 <code class="post-code--single">0</code> 退出，但日志里出现了 PID 为 <code class="post-code--single">19364</code> 的新启动记录。这与 <a href="https://keith.github.io/xcode-man-pages/launchctl.1.html"><code class="post-code--single">launchctl(1)</code></a> 一致：<code class="post-code--single">-k</code> 会先终止正在运行的实例，再重新启动。指令只是启动执行器时，就别加它。已经运行的实例可能正在交付一张 Issue。<code class="post-code--single">gui/&lt;uid&gt;</code> 域属于该用户的图形登录会话，所以 Orbi 的 README 把 launchd 图形会话列为 macOS 的前置条件。</p>

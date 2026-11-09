@@ -176,7 +176,7 @@ The environment file is optional; the pre-start step must succeed. The semicolon
 
 ### Start without killing existing work
 
-When translating service-management commands, keep the intended startup behavior. For an already loaded job, the documented command is:
+When translating service-management commands, keep the intended startup behavior. A job has to be loaded before it can be started; on the hosted runner I loaded each test agent with `launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/<label>.plist` (Orbi's `orbi setup` does this step for its runner). For an already loaded job, the documented command is:
 
 ```sh
 launchctl kickstart "gui/$(id -u)/org.orbi.runner.1"
