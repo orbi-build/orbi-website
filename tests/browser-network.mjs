@@ -67,7 +67,17 @@
 // Issue #1248); and on 2026-11-08 saasfame.com 170x54 (SVG — its own width/
 // height and viewBox 0 0 170 54, Issue #1250) and www.pavelaunch.com 200x54
 // (PNG — its own pixel box, 3393 bytes on the live URL; the vendor's embed
-// snippet declares 250x54, the file it serves does not, Issue #1250).
+// snippet declares 250x54, the file it serves does not, Issue #1250); and on
+// 2026-11-09 aitoolfame.com 190x54 (SVG — its own width/height and viewBox
+// 0 0 190 54, 25294 bytes on the live URL, the ratio the vendor's
+// "height: 54px; width: auto" embed implies, Issue #1259). On 2026-11-09 the
+// Issue #1261 badges, each measured on the live URL: pickapps.org 320x96 (SVG,
+// 939 bytes, its own width/height and viewBox 0 0 320 96, while the vendor's
+// snippet declares only the 160px width), toolsclaw.com 146x44 (SVG, 955 bytes,
+// its own width/height and viewBox 0 0 146 44 — the vendor's embed box declares
+// 200x54, a different ratio, which is why the source file decides) and
+// www.indietools.app 470x150 (PNG, 19187 bytes, its own IHDR pixel box, which the
+// vendor's 176x56 snippet keeps within 0.31%).
 // Since Issue #1038
 // the shared footer rule renders every badge at 28px high, so the
 // placeholder's natural size decides only the width the source ratio implies
@@ -119,6 +129,14 @@ export const BADGE_PLACEHOLDER_SIZES = [
   // bytes with viewBox 0 0 170 54, and 200 image/png 3393 bytes at 200x54).
   { host: "saasfame.com", width: 170, height: 54 },
   { host: "www.pavelaunch.com", width: 200, height: 54 },
+  // Issue #1259: measured on the live URL (200 image/svg+xml, 25294 bytes,
+  // viewBox 0 0 190 54).
+  { host: "aitoolfame.com", width: 190, height: 54 },
+  // Issue #1261: all three measured on the live URLs (see the note above);
+  // the source files, not the vendor embed boxes, set each ratio.
+  { host: "pickapps.org", width: 320, height: 96 },
+  { host: "toolsclaw.com", width: 146, height: 44 },
+  { host: "www.indietools.app", width: 470, height: 150 },
 ];
 const FALLBACK_PLACEHOLDER_SIZE = { width: 1, height: 1 };
 
