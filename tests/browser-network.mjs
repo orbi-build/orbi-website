@@ -67,7 +67,10 @@
 // Issue #1248); and on 2026-11-08 saasfame.com 170x54 (SVG — its own width/
 // height and viewBox 0 0 170 54, Issue #1250) and www.pavelaunch.com 200x54
 // (PNG — its own pixel box, 3393 bytes on the live URL; the vendor's embed
-// snippet declares 250x54, the file it serves does not, Issue #1250).
+// snippet declares 250x54, the file it serves does not, Issue #1250); and on
+// 2026-11-09 aitoolfame.com 190x54 (SVG — its own width/height and viewBox
+// 0 0 190 54, 25294 bytes on the live URL, the ratio the vendor's
+// "height: 54px; width: auto" embed implies, Issue #1259).
 // Since Issue #1038
 // the shared footer rule renders every badge at 28px high, so the
 // placeholder's natural size decides only the width the source ratio implies
@@ -119,6 +122,9 @@ export const BADGE_PLACEHOLDER_SIZES = [
   // bytes with viewBox 0 0 170 54, and 200 image/png 3393 bytes at 200x54).
   { host: "saasfame.com", width: 170, height: 54 },
   { host: "www.pavelaunch.com", width: 200, height: 54 },
+  // Issue #1259: measured on the live URL (200 image/svg+xml, 25294 bytes,
+  // viewBox 0 0 190 54).
+  { host: "aitoolfame.com", width: 190, height: 54 },
 ];
 const FALLBACK_PLACEHOLDER_SIZE = { width: 1, height: 1 };
 
