@@ -403,9 +403,11 @@
     const details = Array.from(document.querySelectorAll("[data-pricing-detail]"));
     const ctas = Array.from(document.querySelectorAll("[data-pricing-cta]"));
     const subscriptions = Array.from(document.querySelectorAll("[data-pricing-subscribe]"));
+    // Issue #1263: the entry name rides on every checkout link this toggle
+    // rewrites, so the Cloud funnel still sees /cloud/ pricing as the source.
     const checkout = {
-      solo: { year: "/api/checkout?plan=solo&interval=year", month: "/api/checkout?plan=solo" },
-      pro: { year: "/api/checkout?plan=pro&interval=year", month: "/api/checkout?plan=pro" },
+      solo: { year: "/api/checkout?plan=solo&interval=year&cta=site-pricing", month: "/api/checkout?plan=solo&cta=site-pricing" },
+      pro: { year: "/api/checkout?plan=pro&interval=year&cta=site-pricing", month: "/api/checkout?plan=pro&cta=site-pricing" },
     };
     function setInterval(interval) {
       intervalButtons.forEach(function (button) {
