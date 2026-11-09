@@ -181,18 +181,32 @@ describe("Cloud pricing hierarchy (Issue #667)", () => {
         // Issue #1237 moved the default interval to monthly: the founding
         // price the visitor pays is the monthly one, so the card and the
         // subscription link start there.
+        // Issue #1263: every checkout link carries the entry name, and the
+        // interval toggle rewrites the href from demo.js — so this is where a
+        // rewrite that drops `cta` goes red.
         for (const plan of ["solo", "pro"]) {
           const subscribe = page.locator(`[data-pricing-subscribe="${plan}"]`);
-          expect(await subscribe.getAttribute("href")).toBe(`/api/checkout?plan=${plan}`);
+          expect(await subscribe.getAttribute("href")).toBe(`/api/checkout?plan=${plan}&cta=site-pricing`);
           expect(await subscribe.getAttribute("data-cta")).toBe(`pricing-${plan}-month`);
         }
+        // Issue #1263: the four pay-once links are static; the browser resolves
+        // their escaped ampersands, so read the href the Cloud endpoint gets.
+        const onceHrefs = await page.locator('.once-pay-note a[href*="payment=once"]').evaluateAll(
+          (links) => links.map((link) => link.getAttribute("href")),
+        );
+        expect(onceHrefs).toEqual([
+          "/api/checkout?plan=solo&interval=month&payment=once&cta=site-once",
+          "/api/checkout?plan=solo&interval=year&payment=once&cta=site-once",
+          "/api/checkout?plan=pro&interval=month&payment=once&cta=site-once",
+          "/api/checkout?plan=pro&interval=year&payment=once&cta=site-once",
+        ]);
         await page.locator('[data-pricing-interval="year"]').click();
         expect(await page.locator('[data-pricing-price="solo"]').textContent())
           .toBe(`US$${paidPrices[pricing.soloPaidAnnualMonthlyUsdToken]}`);
         expect(await page.locator('[data-pricing-price="solo"]').evaluate((price) => getComputedStyle(price).fontSize)).toBe(paid.fontSize);
         for (const plan of ["solo", "pro"]) {
           const subscribe = page.locator(`[data-pricing-subscribe="${plan}"]`);
-          expect(await subscribe.getAttribute("href")).toBe(`/api/checkout?plan=${plan}&interval=year`);
+          expect(await subscribe.getAttribute("href")).toBe(`/api/checkout?plan=${plan}&interval=year&cta=site-pricing`);
           expect(await subscribe.getAttribute("data-cta")).toBe(`pricing-${plan}-year`);
         }
       } finally {

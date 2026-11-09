@@ -305,8 +305,39 @@ describe("Cloud pricing trial integration (Issue #742)", () => {
       expect(cards[1], relativePath).toContain(`data-cta="pricing-pro-trial" href="${expected.login}"`);
       // Issue #1237: the default interval is the one whose price the card
       // leads with — monthly, the founding price the visitor actually pays.
-      expect(pricing, relativePath).toContain('data-pricing-subscribe="solo" data-cta="pricing-solo-month" href="/api/checkout?plan=solo"');
-      expect(pricing, relativePath).toContain('data-pricing-subscribe="pro" data-cta="pricing-pro-month" href="/api/checkout?plan=pro"');
+      // Issue #1263: the checkout link carries the entry name.
+      expect(pricing, relativePath).toContain('data-pricing-subscribe="solo" data-cta="pricing-solo-month" href="/api/checkout?plan=solo&amp;cta=site-pricing"');
+      expect(pricing, relativePath).toContain('data-pricing-subscribe="pro" data-cta="pricing-pro-month" href="/api/checkout?plan=pro&amp;cta=site-pricing"');
+    }
+  });
+});
+
+// Issue #1263: the visitor arrives at Cloud checkout from the /cloud/ pricing
+// section, and Cloud reads `cta` (orbi-cloud#3219) to tell that click apart
+// from a product-side one. The built pages are what ships, so the assertion
+// reads public/, with the href as the browser resolves it: the four pay-once
+// links and the two subscriptions carry different entry names, and every other
+// parameter stays as it was.
+describe("Cloud pricing checkout links carry the entry name (Issue #1263)", () => {
+  const subscriptions = [
+    "/api/checkout?plan=solo&cta=site-pricing",
+    "/api/checkout?plan=pro&cta=site-pricing",
+  ];
+  const once = [
+    "/api/checkout?plan=solo&interval=month&payment=once&cta=site-once",
+    "/api/checkout?plan=solo&interval=year&payment=once&cta=site-once",
+    "/api/checkout?plan=pro&interval=month&payment=once&cta=site-once",
+    "/api/checkout?plan=pro&interval=year&payment=once&cta=site-once",
+  ];
+
+  it("ships the six checkout links, with their cta, on both built Cloud pages", async () => {
+    for (const relativePath of CLOUD_PAGES) {
+      const html = await readFile(`${PUBLIC_DIR}${relativePath}`, "utf8");
+      const hrefs = [...html.matchAll(/href="(\/api\/checkout[^"]*)"/g)]
+        .map((match) => match[1].replaceAll("&amp;", "&"));
+      expect(hrefs.filter((href) => !href.includes("payment=once")), relativePath).toEqual(subscriptions);
+      expect(hrefs.filter((href) => href.includes("payment=once")), relativePath).toEqual(once);
+      expect(hrefs, relativePath).toHaveLength(subscriptions.length + once.length);
     }
   });
 });
@@ -601,17 +632,18 @@ describe("Cloud paid-tier pricing (Issue #441)", () => {
       expect(body, relativePath).toContain(relativePath.startsWith("zh/") ? 'href="/zh/cloud/login"' : 'href="/cloud/login"');
       // Issue #1237: the subscription link starts on the interval the card
       // leads with, so the price the visitor read is the price they land on.
-      expect(body, relativePath).toContain('href="/api/checkout?plan=solo"');
-      expect(body, relativePath).toContain('href="/api/checkout?plan=pro"');
+      // Issue #1263: each link carries its entry name (`cta`).
+      expect(body, relativePath).toContain('href="/api/checkout?plan=solo&amp;cta=site-pricing"');
+      expect(body, relativePath).toContain('href="/api/checkout?plan=pro&amp;cta=site-pricing"');
       expect(body.match(/href="\/api\/checkout[^"]*"/g), relativePath).toEqual([
-        'href="/api/checkout?plan=solo"',
-        'href="/api/checkout?plan=pro"',
+        'href="/api/checkout?plan=solo&amp;cta=site-pricing"',
+        'href="/api/checkout?plan=pro&amp;cta=site-pricing"',
         // Chinese buyers pay once with Alipay / WeChat Pay (Stripe offers no
         // subscriptions for either); orbi-cloud#1611 serves payment=once.
-        'href="/api/checkout?plan=solo&amp;interval=month&amp;payment=once"',
-        'href="/api/checkout?plan=solo&amp;interval=year&amp;payment=once"',
-        'href="/api/checkout?plan=pro&amp;interval=month&amp;payment=once"',
-        'href="/api/checkout?plan=pro&amp;interval=year&amp;payment=once"',
+        'href="/api/checkout?plan=solo&amp;interval=month&amp;payment=once&amp;cta=site-once"',
+        'href="/api/checkout?plan=solo&amp;interval=year&amp;payment=once&amp;cta=site-once"',
+        'href="/api/checkout?plan=pro&amp;interval=month&amp;payment=once&amp;cta=site-once"',
+        'href="/api/checkout?plan=pro&amp;interval=year&amp;payment=once&amp;cta=site-once"',
       ]);
       expect(body.match(/data-pricing-subscribe="solo"/g), relativePath).toHaveLength(1);
       expect(body.match(/data-pricing-subscribe="pro"/g), relativePath).toHaveLength(1);
