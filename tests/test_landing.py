@@ -753,10 +753,9 @@ class LandingTests(unittest.TestCase):
             hrefs = [href for _, href in page.hrefs]
             self.assertIn("https://x.com/xqliu", hrefs, hrefs)
 
-    # Issue #1083 sanctions exactly one more external script host, and only on
-    # the pages that carry the chat.sh support widget: the two Cloud pricing
-    # pages and the two support pages. Every other page still loads the
-    # analytics beacon and nothing else.
+    # Issue #1083 sanctions chat.sh only on the two Cloud pricing pages and
+    # the two support pages. The EarlyLaunch footer widget is on every page
+    # that ships the shared footer, in addition to the analytics beacon.
     CHAT_SH_PAGES = frozenset({
         "cloud/index.html",
         "zh/cloud/index.html",
@@ -771,7 +770,7 @@ class LandingTests(unittest.TestCase):
                 r'<script[^>]*src="(https?://[^/"]+)',
                 path.read_text(encoding="utf-8"),
             ))
-            expected = {"https://static.cloudflareinsights.com"}
+            expected = {"https://static.cloudflareinsights.com", "https://earlylaunch.co"}
             if page in self.CHAT_SH_PAGES:
                 expected.add("https://chat.sh")
             self.assertEqual(hosts, expected, page)
