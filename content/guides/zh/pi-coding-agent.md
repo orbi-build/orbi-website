@@ -9,7 +9,7 @@ updated: 2026-11-10
 
 Pi coding agent 是一个在命令行里运行的开源编程助手。如果你在评估 Pi，或者想让它无人值守地跑，这页讲 Orbi 怎么启动 Pi 会话、在外面补了哪些东西（角色、评审轮次、合并闸门、标签、静默会话的处理），并附生产数字。Orbi 是一个开源 runner：你给 GitHub issue 打上 `ai-ready` 标签，它把这张 issue 做成评审过、合并了的 PR；另开一张发版 issue，就能把合并的工作打包成带 tag 的 release。可以装在自己机器上跑，也可以用托管版 Orbi Cloud。整条流水线里写代码的那一步，全部交给 [Pi coding agent](https://pi.dev)。Pi 官网管自己叫「a minimal agent harness」，由 Earendil 开发，MIT 许可（[earendil-works/pi](https://github.com/earendil-works/pi)）。Orbi 不是 Pi 官方项目。
 
-截至 2026 年 11 月 10 日（UTC+8），我们查的那台 Orbi Cloud 沙箱主机上装的是 Pi 1.5.0。初始化脚本只在主机建好时装一次当时 npm 的 `latest`，之后主机一直用这个版本；11 月 10 日 07:45（UTC+8）发布的 1.5.1 还没装到这台主机上。下文的生产统计跨过了多个 Pi 版本，不属于某一个版本。想自己安装、运行 Pi，见[《Pi agent harness》](/zh/blog/pi-agent-harness/)的安装一节，那里的步骤用 Pi 1.5.0 测过。
+截至 2026 年 11 月 10 日（UTC+8），我们查的那台 Orbi Cloud 沙箱主机上装的是 Pi 1.5.0；npm 上最新的是 11 月 10 日 07:45（UTC+8）发布的 1.5.1。下文的生产统计跨过了多个 Pi 版本，不属于某一个版本。想自己安装、运行 Pi，见[《Pi agent harness》](/zh/blog/pi-agent-harness/)的安装一节，那里的步骤用 Pi 1.5.0 测过。
 
 ## 系列文章
 
@@ -31,9 +31,9 @@ Pi coding agent 是一个在命令行里运行的开源编程助手。如果你�
 
 Orbi Cloud 会记录交付用到的 Pi 会话。从上次统计的截止点 2026 年 10 月 5 日 15:36，到 11 月 10 日 00:00（均为 UTC+8），有 Cloud 用量记录、对应 PR 已合并的 issue 共 947 张。统计窗口按 Cloud 记录的 PR 合并时间划定。这 947 次交付中，853 次在 Orbi 自己的三个仓库（`orbi`、`orbi-cloud`、`orbi-website`），14 次在 `orbi-build` 下另外三个仓库（fork 和测试仓库），80 次在其他 GitHub 账号下的 15 个仓库。
 
-这 947 次交付一共记录了 2,271 个 Pi 会话，平均每次 2.40 个，中位数是 2。其中 713 次（75.3%）正好记了两个会话，通常是一个写代码、一个评审并给出 `pass` 的形态（评审可以自己修掉问题再给 `pass`，见下文「评审轮次」）；不过记录只数会话，不含角色和评审结论，不能据此确认每次都是一写一审。另有 23 次只记了一个会话，记录里看不出原因；其余 211 次记了三个或更多。最多的一次是另一个账号下演示仓库的 61 个会话，它只让平均数高了约 0.06，去掉它平均数是 2.34。Cloud 对每张 issue 只保留最近一次交付的用量，后续交付会覆盖之前的会话数，因此这些数字可能少算了实际做过的工作。
+这 947 次交付一共记录了 2,271 个 Pi 会话，平均每次 2.40 个，中位数是 2。其中 713 次（75.3%）正好记了两个会话，通常是一个写代码、一个评审并给出 `pass` 的形态（评审可以自己修掉问题再给 `pass`，见下文「评审轮次」）；不过记录只数会话，不含角色和评审结论，不能据此确认每次都是一写一审。另有 23 次只记了一个会话，记录里看不出原因；其余 211 次记了三个或更多。会话最多的单次交付记了 61 个，它只让平均数高了约 0.06，去掉它平均数是 2.34。Cloud 对每张 issue 只保留最近一次交付的用量，后续交付会覆盖之前的会话数，因此这些数字可能少算了实际做过的工作。
 
-模型字段里，946 次交付记的是 `deepseek-flash`，那次用了 61 个会话的交付记的是 `gemini-3.5-flash-lite`。这个字段只取每次交付中第一个带模型记录的会话，不能据此判断评审会话用了哪个模型。
+模型字段里，946 次交付记的是 `deepseek-flash`，1 次记的是 `gemini-3.5-flash-lite`。这个字段只取每次交付中第一个带模型记录的会话，不能据此判断评审会话用了哪个模型。
 
 本页 10 月 5 日的旧快照统计的是 9 月 21 日到 10 月 5 日：170 次交付、375 个会话，85% 正好两个会话。这 170 次里有 169 次有 token 数，所以成本那篇算的是 169 个。重新采集时，采集时间会刷新，旧记录也会被覆盖。如今的记录已无法按当时的口径复现那份快照，两段统计不能直接比较。截至 10 月 5 日的成本分析，见[《Pi + DeepSeek Flash 写的 169 个已合并 PR》](/zh/blog/orbi-on-pi-coding-agent/)。
 
@@ -43,7 +43,7 @@ Pi 让 Orbi 可以通过一份 `models.json` 格式的 provider 列表自己选�
 
 ## Orbi 怎么启动 Pi coding agent
 
-交付中的每个会话都是一个非交互的 `pi --print` 进程。每次运行在 worktree 里有一个会话目录 `.pi-session/`（和 `.orbi/` 一样被 git 排除，不算未提交的改动），这次运行里的每个 Pi 进程各在里面写一个自己的 JSONL 文件（`ticket` 会话改用临时目录）。runner 的实时进度和失败报告读的都是这些文件。系统提示词和任务上下文分别写进 `.pi-session/system-prompt.md`、`.pi-session/task-context.md`，命令行用 `--system-prompt <file>` 和 `@<file>` 传入路径，避免参数太长导致 Pi 无法启动。命令在 [`pi_command.py`](https://github.com/orbi-build/orbi/blob/main/src/orbi/pi_command.py) 里拼。交付用三个角色，其中 `ticket` 有两种用途：
+交付中的每个会话都是一个非交互的 `pi --print` 进程。每次运行在 worktree 里有一个会话目录 `.pi-session/`（和 `.orbi/` 一样被 git 排除，不算未提交的改动），这次运行里的每个 Pi 进程各在里面写一个自己的 JSONL 文件（`ticket` 会话改用临时目录）。runner 的实时进度和失败报告读的都是这些文件。系统提示词和任务上下文（`task-context.md`）写成 `.pi-session/` 里的文件，命令行用 `--system-prompt <file>` 和 `@<file>` 传入路径，避免参数太长导致 Pi 无法启动。命令在 [`pi_command.py`](https://github.com/orbi-build/orbi/blob/main/src/orbi/pi_command.py) 里拼。交付用三个角色，其中 `ticket` 有两种用途：
 
 | 角色 | 什么时候起 | 工具 | 产出 |
 |---|---|---|---|
@@ -54,9 +54,9 @@ Pi 让 Orbi 可以通过一份 `models.json` 格式的 provider 列表自己选�
 
 `implement` 和 `review` 会话带 `--no-extensions` 启动。在 Pi 里，这个参数同时关掉扩展的自动发现和 Pi 的内置扩展（比如 MCP 和 Pi 执行代码的工具模式 Codemode），所以某个角色要用的扩展，都得通过 Orbi 配置里的 `pi_extensions` 以 `--extension` 加回来，Orbi Cloud 就是这样加回 Codemode 的。处理 `ai-content-only` 的 `ticket` 会话用 `--no-tools` 关闭工具，从 v0.6.2 起（[Issue #1558](https://github.com/orbi-build/orbi/issues/1558)，2026 年 10 月 5 日）也带同样的 `--no-extensions` 和配置的 `--extension` 参数；在那之前它启动时完全不带扩展相关的参数，runner 所在系统用户装的扩展可能加载进去。
 
-澄清闸门用的是 `--no-builtin-tools --no-extensions --extension <clarify_verdict.ts>`，只加载引擎自己的判定工具，不加载配置里的扩展。被它拦下的 issue 会加上 `ai-needs-detail`，暂停评论里会给出修改建议：一张 issue 塞了几项交付目标，就建议拆分，用 `/orbi split` 生成子 issue；只缺验收条件，就给出条件建议，用 `/orbi amend` 追加后重新排队。Orbi 怎么加载、怎么写扩展，见[扩展那篇](/zh/blog/pi-extensions-in-production/)。交付角色也能加载用户自己的 skill：Orbi 用 `--skill` 加上自己的 skill，但不给这些角色传 `--no-skills`。
+澄清闸门关掉 Pi 的内建工具和扩展发现，只加载引擎自带的一个扩展 `clarify_verdict.ts`，用它的判定工具回答，配置里的扩展一个都不加载。被它拦下的 issue 会加上 `ai-needs-detail`，暂停评论里附有建议：`/orbi split` 把拆分建议变成子 issue，`/orbi amend` 把建议的验收条件补进 issue 并重新排队。Orbi 怎么加载、怎么写扩展，见[扩展那篇](/zh/blog/pi-extensions-in-production/)。交付角色也能加载用户自己的 skill：Orbi 用 `--skill` 加上自己的 skill，但不给这些角色传 `--no-skills`。
 
-第四个角色 `suggest` 不在 runner 的交付流程里，只供 `orbi suggest` 和 `orbi draft` 使用。它的工具白名单只允许读取，并且带 `--no-skills` 启动。
+第四个角色 `suggest` 不在 runner 的交付流程里，只供 `orbi suggest` 和 `orbi draft` 使用。
 
 模型在 runner 的 `orbi.toml` 里选；仓库自己的 `.github/orbi.toml` 不能设模型相关的键。一个最小的配置如下，评审的两个键可以指向另一个模型，这里用的是同一个：
 
@@ -99,7 +99,8 @@ tick 手上没有已开的 PR 或被打断的运行要接着做时，才按优�
 
 评审预算是五轮，数的是轮次，不是会话数。五轮用完，或者结论是 `blocked_on_human_decision`，issue 进 `ai-blocked`；这两种情况要由人把它改回 `ai-fix-needed`。只有用完了的预算才会重新回到五轮；因 `blocked_on_human_decision` 停下的，剩几轮接着用几轮。PR 和不断前进的 base 分支冲突时，下一个评审会话负责合 base、解冲突，这类轮次算在另一份预算里，也是五轮；这份预算只在用完的评审预算被人恢复时，随之一起恢复到五轮。另有两种 `ai-blocked` 会自动恢复：base 上失败的检查转绿，以及 GitHub App 获准读取检查结果，见下文「合并闸门」。
 
-Pi 评审开始前，还可以加一道人工验收闸门。默认不开，在 runner 的 `orbi.toml` 里设 `human_review_gate = true` 才启用。开启后，Orbi 在 PR 打开时把验收清单贴到 issue 上；如果有机器验不了的项目，就先不起 Pi 会话：runner 确保 issue 带着 `ai-ready`、去掉 `ai-in-progress`，并保留 `ai-pr-opened`（或 `ai-fix-needed`）作为恢复锚点，避免从头认领。槽位会释放，不消耗评审轮次。人确认这些项目后加上 `ai-human-review`，下一次 tick 就照常评审、合并。这个标签只由人添加或移除，runner 不会动它。
+runner 的 `orbi.toml` 里开了 `human_review_gate`（默认关闭）时，Orbi 会在 issue 上贴一份验收清单；清单里有机器验不了的项目，评审就在起任何 Pi 会话之前停下，等人加上 `ai-human-review`；等待不消耗评审轮次。
+
 
 ### 合并闸门
 
@@ -134,8 +135,7 @@ GitHub App 没有读取检查结果的权限，也会让 issue 阻塞；权限�
 | `ai-pr-opened` | PR 已开，在等检查或评审 |
 | `ai-fix-needed` | 评审、CI、base 冲突或评审会话失败留下了问题，下一次 tick 开新一轮评审。之后评审通过、只在等检查的 issue 也会一直挂着它（见合并闸门） |
 | `ai-awaiting-merge` | 评审通过，但分支保护要维护者介入 |
-| `ai-human-review` | 开启 `human_review_gate = true` 时，表示人已确认机器验不了的项目；只由人添加或移除 |
-| `ai-needs-detail` | 被澄清闸门拦下；按闸门的建议，用 `/orbi split` 拆分或 `/orbi amend` 补验收条件 |
+| `ai-needs-detail` | 被澄清闸门拦下；用 `/orbi split` 或 `/orbi amend` 执行它的建议 |
 | `ai-merged` | 做完了 |
 | `ai-blocked` | 需要人处理；两种情况会自动恢复：base 上失败的检查转绿，或 GitHub App 权限获批后能读取检查结果 |
 
