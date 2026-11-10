@@ -20,6 +20,13 @@ const ANNUAL_SAVINGS_PERCENT = String(pricing.annualSavingsPercent);
 const FOUNDING_PARTNER_LIMIT = String(pricing.foundingPartnerLimit);
 const FOUNDING_PARTNER_REMAINING = String(pricing.foundingPartnerRemaining);
 const FOUNDING_PROMO_CODE = pricing.foundingPromoCode;
+// Issue #1281: the Worker appends this to every /api/checkout href while
+// founding places remain, so the price Stripe shows is the founding price the
+// card shows. The href is HTML, so the separator ships escaped.
+const FOUNDING_PROMO_QUERY = `&amp;promo=${FOUNDING_PROMO_CODE}`;
+// Hoisted so a test that shadows `pricing` with a page section can still name
+// the token.
+const FOUNDING_PROMO_QUERY_TOKEN = pricing.foundingPromoQueryToken;
 const FREE_DELIVERIES = String(pricing.freeDeliveries);
 const FREE_DELIVERIES_TOKEN = pricing.freeDeliveriesToken;
 const FREE_TRIAL_TOKEN = pricing.freeTrialCopyToken;
@@ -262,7 +269,9 @@ describe("free trial copy (Issue #1216)", () => {
       ];
       for (const block of blocks) {
         expect(block, `${relativePath}: no count beside a CTA`).not.toContain(FREE_DELIVERIES_TOKEN);
-        expect(block, `${relativePath}: no count beside a CTA`).not.toMatch(/[0-9]/);
+        // Issue #1281: the checkout href carries the promo code (FOUNDING50),
+        // so the count check reads the block without its hrefs.
+        expect(block.replace(/href="[^"]*"/g, ""), `${relativePath}: no count beside a CTA`).not.toMatch(/[0-9]/);
       }
     }
   });
@@ -306,8 +315,12 @@ describe("Cloud pricing trial integration (Issue #742)", () => {
       // Issue #1237: the default interval is the one whose price the card
       // leads with — monthly, the founding price the visitor actually pays.
       // Issue #1263: the checkout link carries the entry name.
-      expect(pricing, relativePath).toContain('data-pricing-subscribe="solo" data-cta="pricing-solo-month" href="/api/checkout?plan=solo&amp;cta=site-pricing"');
-      expect(pricing, relativePath).toContain('data-pricing-subscribe="pro" data-cta="pricing-pro-month" href="/api/checkout?plan=pro&amp;cta=site-pricing"');
+      // Issue #1281: and the promo token the Worker resolves on the way out.
+      for (const plan of ["solo", "pro"]) {
+        expect(pricing, `${relativePath}: ${plan}`).toContain(
+          `data-pricing-subscribe="${plan}" data-cta="pricing-${plan}-month" href="/api/checkout?plan=${plan}&amp;cta=site-pricing${FOUNDING_PROMO_QUERY_TOKEN}"`,
+        );
+      }
     }
   });
 });
@@ -319,20 +332,26 @@ describe("Cloud pricing trial integration (Issue #742)", () => {
 // links and the two subscriptions carry different entry names, and every other
 // parameter stays as it was.
 describe("Cloud pricing checkout links carry the entry name (Issue #1263)", () => {
+  // Issue #1281: public/ ships the founding promo token, so the built hrefs
+  // are read as the Worker resolves them — the entry names still lead.
+  const promoToken = paidPriceReplacements(pricing)[pricing.foundingPromoQueryToken];
+  // The href as the browser resolves it: the escaped separator decoded.
+  const promo = promoToken.replaceAll("&amp;", "&");
   const subscriptions = [
-    "/api/checkout?plan=solo&cta=site-pricing",
-    "/api/checkout?plan=pro&cta=site-pricing",
+    `/api/checkout?plan=solo&cta=site-pricing${promo}`,
+    `/api/checkout?plan=pro&cta=site-pricing${promo}`,
   ];
   const once = [
-    "/api/checkout?plan=solo&interval=month&payment=once&cta=site-once",
-    "/api/checkout?plan=solo&interval=year&payment=once&cta=site-once",
-    "/api/checkout?plan=pro&interval=month&payment=once&cta=site-once",
-    "/api/checkout?plan=pro&interval=year&payment=once&cta=site-once",
+    `/api/checkout?plan=solo&interval=month&payment=once&cta=site-once${promo}`,
+    `/api/checkout?plan=solo&interval=year&payment=once&cta=site-once${promo}`,
+    `/api/checkout?plan=pro&interval=month&payment=once&cta=site-once${promo}`,
+    `/api/checkout?plan=pro&interval=year&payment=once&cta=site-once${promo}`,
   ];
 
   it("ships the six checkout links, with their cta, on both built Cloud pages", async () => {
     for (const relativePath of CLOUD_PAGES) {
-      const html = await readFile(`${PUBLIC_DIR}${relativePath}`, "utf8");
+      let html = await readFile(`${PUBLIC_DIR}${relativePath}`, "utf8");
+      html = html.replaceAll(pricing.foundingPromoQueryToken, promoToken);
       const hrefs = [...html.matchAll(/href="(\/api\/checkout[^"]*)"/g)]
         .map((match) => match[1].replaceAll("&amp;", "&"));
       expect(hrefs.filter((href) => !href.includes("payment=once")), relativePath).toEqual(subscriptions);
@@ -633,17 +652,19 @@ describe("Cloud paid-tier pricing (Issue #441)", () => {
       // Issue #1237: the subscription link starts on the interval the card
       // leads with, so the price the visitor read is the price they land on.
       // Issue #1263: each link carries its entry name (`cta`).
-      expect(body, relativePath).toContain('href="/api/checkout?plan=solo&amp;cta=site-pricing"');
-      expect(body, relativePath).toContain('href="/api/checkout?plan=pro&amp;cta=site-pricing"');
+      // Issue #1281: and, while founding places remain, the founding promo
+      // code — appended last, so every entry name reads as it did.
+      expect(body, relativePath).toContain(`href="/api/checkout?plan=solo&amp;cta=site-pricing${FOUNDING_PROMO_QUERY}"`);
+      expect(body, relativePath).toContain(`href="/api/checkout?plan=pro&amp;cta=site-pricing${FOUNDING_PROMO_QUERY}"`);
       expect(body.match(/href="\/api\/checkout[^"]*"/g), relativePath).toEqual([
-        'href="/api/checkout?plan=solo&amp;cta=site-pricing"',
-        'href="/api/checkout?plan=pro&amp;cta=site-pricing"',
+        `href="/api/checkout?plan=solo&amp;cta=site-pricing${FOUNDING_PROMO_QUERY}"`,
+        `href="/api/checkout?plan=pro&amp;cta=site-pricing${FOUNDING_PROMO_QUERY}"`,
         // Chinese buyers pay once with Alipay / WeChat Pay (Stripe offers no
         // subscriptions for either); orbi-cloud#1611 serves payment=once.
-        'href="/api/checkout?plan=solo&amp;interval=month&amp;payment=once&amp;cta=site-once"',
-        'href="/api/checkout?plan=solo&amp;interval=year&amp;payment=once&amp;cta=site-once"',
-        'href="/api/checkout?plan=pro&amp;interval=month&amp;payment=once&amp;cta=site-once"',
-        'href="/api/checkout?plan=pro&amp;interval=year&amp;payment=once&amp;cta=site-once"',
+        `href="/api/checkout?plan=solo&amp;interval=month&amp;payment=once&amp;cta=site-once${FOUNDING_PROMO_QUERY}"`,
+        `href="/api/checkout?plan=solo&amp;interval=year&amp;payment=once&amp;cta=site-once${FOUNDING_PROMO_QUERY}"`,
+        `href="/api/checkout?plan=pro&amp;interval=month&amp;payment=once&amp;cta=site-once${FOUNDING_PROMO_QUERY}"`,
+        `href="/api/checkout?plan=pro&amp;interval=year&amp;payment=once&amp;cta=site-once${FOUNDING_PROMO_QUERY}"`,
       ]);
       expect(body.match(/data-pricing-subscribe="solo"/g), relativePath).toHaveLength(1);
       expect(body.match(/data-pricing-subscribe="pro"/g), relativePath).toHaveLength(1);
@@ -694,6 +715,63 @@ describe("Cloud paid-tier pricing (Issue #441)", () => {
         pricing.foundingPromoCodeToken,
         pricing.measuredSoloRepositoryDeliveryRangeToken,
       ]) expect(html, relativePath).toContain(token);
+    }
+  });
+});
+
+// Issue #1281: the card leads with the founding half price, and Cloud's
+// /api/checkout hands the promo code to Stripe only when the link itself
+// carries it (orbi-cloud `src/billing-routes.ts`). Without `promo=` the
+// visitor lands on the list price the card strikes through, so every checkout
+// link in the pricing section carries the code while places remain — and none
+// once they are gone.
+describe("Cloud checkout links carry the founding promo (Issue #1281)", () => {
+  const CHECKOUT_HREF = /href="(\/api\/checkout[^"]*)"/g;
+  const checkoutHrefs = (html) => [...html.matchAll(CHECKOUT_HREF)].map(([, href]) => href);
+
+  it("derives the promo query from pricing.json, not a second copy of the code", () => {
+    expect(paidPriceReplacements(pricing)[pricing.foundingPromoQueryToken]).toBe(FOUNDING_PROMO_QUERY);
+    expect(paidPriceReplacements(pricing, 0)[pricing.foundingPromoQueryToken]).toBe("");
+  });
+
+  it("appends the founding promo to every checkout link while places remain", async () => {
+    for (const relativePath of CLOUD_PAGES) {
+      const body = await (await serve(await rawPage(relativePath), `/${relativePath.replace(/index\.html$/, "")}`)).text();
+      const hrefs = checkoutHrefs(body);
+      // Two subscriptions and the four pay-once links, as served.
+      expect(hrefs, relativePath).toHaveLength(6);
+      for (const href of hrefs) {
+        expect(href, relativePath + ": " + href).toMatch(/\/api\/checkout\?plan=(?:solo|pro)&/);
+        expect(href, relativePath + ": " + href).toContain(`cta=site-${href.includes("payment=once") ? "once" : "pricing"}`);
+        expect(href.endsWith(FOUNDING_PROMO_QUERY), relativePath + ": " + href).toBe(true);
+        // One code, not two: the token resolves once per link.
+        expect(href.match(/promo=/g), relativePath + ": " + href).toHaveLength(1);
+      }
+    }
+  });
+
+  it("drops the promo once the founding places are gone", async () => {
+    const gone = paidPriceReplacements(pricing, 0);
+    for (const relativePath of CLOUD_PAGES) {
+      let html = await readFile(`${SITE_PAGES_DIR}${relativePath}`, "utf8");
+      for (const [token, value] of Object.entries(gone)) html = html.replaceAll(token, value);
+      const hrefs = checkoutHrefs(html);
+      expect(hrefs, relativePath).toHaveLength(6);
+      for (const href of hrefs) expect(href, relativePath + ": " + href).not.toContain("promo=");
+      // The link reads exactly as it did before the code existed: no dangling
+      // separator is left where the promo used to be.
+      expect(html, relativePath).toContain('href="/api/checkout?plan=solo&amp;cta=site-pricing"');
+      expect(html, relativePath).toContain('href="/api/checkout?plan=pro&amp;interval=year&amp;payment=once&amp;cta=site-once"');
+    }
+  });
+
+  it("keeps the promo query tokenized in the source pages", async () => {
+    for (const relativePath of CLOUD_PAGES) {
+      const html = await readFile(`${SITE_PAGES_DIR}${relativePath}`, "utf8");
+      // Every checkout link, and not one hand-written FOUNDING50.
+      expect((html.match(/\/api\/checkout\?/g) ?? []), relativePath).toHaveLength(6);
+      expect((html.match(new RegExp(pricing.foundingPromoQueryToken, "g")) ?? []), relativePath).toHaveLength(6);
+      expect(html, relativePath).not.toContain(`promo=${pricing.foundingPromoCode}`);
     }
   });
 });
