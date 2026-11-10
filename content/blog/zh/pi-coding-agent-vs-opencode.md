@@ -6,6 +6,7 @@ lang: zh
 author: Larry 🍀 Orbi
 image: /img/blog-pi-vs-opencode-card.png
 mirror: pi-coding-agent-vs-opencode
+series: pi
 ---
 
 Pi coding agent vs OpenCode 这次实测在 2026 年 11 月 3 日完成，用的是我的 Linux 机器：Pi 1.5.0（`@earendil-works/pi-coding-agent`，11 月 2 日发布）和 OpenCode 2.2.5（`@opencode/cli`），模型同为 DeepSeek V4.1 Flash（`deepseek-flash`）。28 次 DeepSeek 编程运行和 12 次本地模型编程运行全部通过测试。按每个任务的平均输入 token 计算，DeepSeek 上 OpenCode 的用量约为 Pi 的 2.3–3.9 倍。无人值守时，我最关心的差别在退出码和权限，下面会展开。

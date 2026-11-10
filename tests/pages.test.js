@@ -2708,8 +2708,8 @@ describe("Article publish and update dates (Issue #889)", () => {
     "zh/benchmark/index.html": ["2026-09-30", "2026-09-30"],
     "guides/self-hosted-coding-agent/index.html": ["2026-09-26", "2026-10-20"],
     "zh/guides/self-hosted-coding-agent/index.html": ["2026-09-26", "2026-10-20"],
-    "guides/pi-coding-agent/index.html": ["2026-10-05", "2026-10-06"],
-    "zh/guides/pi-coding-agent/index.html": ["2026-10-05", "2026-10-06"],
+    "guides/pi-coding-agent/index.html": ["2026-10-05", "2026-11-10"],
+    "zh/guides/pi-coding-agent/index.html": ["2026-10-05", "2026-11-10"],
   };
   const PUBLISHER = {
     "@type": "Organization",
