@@ -8,6 +8,11 @@ import pricing from "../src/pricing.json";
 import { paidPriceReplacements } from "../src/pricing-tokens.js";
 
 const paidPrices = paidPriceReplacements(pricing);
+// Issue #1281: while founding places remain the Worker appends the promo code
+// to every checkout link, so the price Stripe shows is the founding price the
+// card shows. The toggle rewrites those hrefs, and this is where a rewrite
+// that drops the promo goes red.
+const FOUNDING_PROMO_QUERY = `&promo=${pricing.foundingPromoCode}`;
 const pricingReplacements = {
   // Issue #1237: the founding price and the struck-through list price state
   // resolve the same way the Worker resolves them.
@@ -186,7 +191,8 @@ describe("Cloud pricing hierarchy (Issue #667)", () => {
         // rewrite that drops `cta` goes red.
         for (const plan of ["solo", "pro"]) {
           const subscribe = page.locator(`[data-pricing-subscribe="${plan}"]`);
-          expect(await subscribe.getAttribute("href")).toBe(`/api/checkout?plan=${plan}&cta=site-pricing`);
+          expect(await subscribe.getAttribute("href"))
+            .toBe(`/api/checkout?plan=${plan}&cta=site-pricing${FOUNDING_PROMO_QUERY}`);
           expect(await subscribe.getAttribute("data-cta")).toBe(`pricing-${plan}-month`);
         }
         // Issue #1263: the four pay-once links are static; the browser resolves
@@ -195,10 +201,10 @@ describe("Cloud pricing hierarchy (Issue #667)", () => {
           (links) => links.map((link) => link.getAttribute("href")),
         );
         expect(onceHrefs).toEqual([
-          "/api/checkout?plan=solo&interval=month&payment=once&cta=site-once",
-          "/api/checkout?plan=solo&interval=year&payment=once&cta=site-once",
-          "/api/checkout?plan=pro&interval=month&payment=once&cta=site-once",
-          "/api/checkout?plan=pro&interval=year&payment=once&cta=site-once",
+          `/api/checkout?plan=solo&interval=month&payment=once&cta=site-once${FOUNDING_PROMO_QUERY}`,
+          `/api/checkout?plan=solo&interval=year&payment=once&cta=site-once${FOUNDING_PROMO_QUERY}`,
+          `/api/checkout?plan=pro&interval=month&payment=once&cta=site-once${FOUNDING_PROMO_QUERY}`,
+          `/api/checkout?plan=pro&interval=year&payment=once&cta=site-once${FOUNDING_PROMO_QUERY}`,
         ]);
         await page.locator('[data-pricing-interval="year"]').click();
         expect(await page.locator('[data-pricing-price="solo"]').textContent())
@@ -206,7 +212,11 @@ describe("Cloud pricing hierarchy (Issue #667)", () => {
         expect(await page.locator('[data-pricing-price="solo"]').evaluate((price) => getComputedStyle(price).fontSize)).toBe(paid.fontSize);
         for (const plan of ["solo", "pro"]) {
           const subscribe = page.locator(`[data-pricing-subscribe="${plan}"]`);
-          expect(await subscribe.getAttribute("href")).toBe(`/api/checkout?plan=${plan}&interval=year&cta=site-pricing`);
+          // The yearly rewrite moves the interval and keeps every other
+          // parameter the link was served with (Issue #1281: the promo), so
+          // the interval lands after them.
+          expect(await subscribe.getAttribute("href"))
+            .toBe(`/api/checkout?plan=${plan}&cta=site-pricing${FOUNDING_PROMO_QUERY}&interval=year`);
           expect(await subscribe.getAttribute("data-cta")).toBe(`pricing-${plan}-year`);
         }
       } finally {

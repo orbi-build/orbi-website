@@ -405,10 +405,20 @@
     const subscriptions = Array.from(document.querySelectorAll("[data-pricing-subscribe]"));
     // Issue #1263: the entry name rides on every checkout link this toggle
     // rewrites, so the Cloud funnel still sees /cloud/ pricing as the source.
-    const checkout = {
-      solo: { year: "/api/checkout?plan=solo&interval=year&cta=site-pricing", month: "/api/checkout?plan=solo&cta=site-pricing" },
-      pro: { year: "/api/checkout?plan=pro&interval=year&cta=site-pricing", month: "/api/checkout?plan=pro&cta=site-pricing" },
-    };
+    // Issue #1281: the served link also carries the founding promo code while
+    // places remain, so the toggle moves the interval on the link's own query
+    // instead of rebuilding the URL — a rebuilt one would drop the code and
+    // land the visitor on the list price the card strikes through.
+    const servedHrefs = new Map();
+    ctas.concat(subscriptions).forEach(function (link) {
+      servedHrefs.set(link, link.getAttribute("href"));
+    });
+    function checkoutHref(link, interval) {
+      const url = new URL(servedHrefs.get(link), window.location.origin);
+      if (interval === "year") url.searchParams.set("interval", "year");
+      else url.searchParams.delete("interval");
+      return url.pathname + url.search;
+    }
     function setInterval(interval) {
       intervalButtons.forEach(function (button) {
         const selected = button.getAttribute("data-pricing-interval") === interval;
@@ -428,12 +438,12 @@
       });
       ctas.forEach(function (cta) {
         const plan = cta.getAttribute("data-pricing-cta");
-        cta.href = checkout[plan][interval];
+        cta.href = checkoutHref(cta, interval);
         cta.dataset.cta = `pricing-${plan}-${interval}`;
       });
       subscriptions.forEach(function (link) {
         const plan = link.getAttribute("data-pricing-subscribe");
-        link.href = checkout[plan][interval];
+        link.href = checkoutHref(link, interval);
         link.dataset.cta = `pricing-${plan}-${interval}`;
       });
     }
