@@ -145,6 +145,13 @@ def parse(path: Path) -> tuple[str, PageParser]:
         ("foundingPriceStateToken", 'data-founding-price="on"' if remaining > 0 else 'data-founding-price="off"'),
     ):
         html = html.replace(PRICING[token_key], amount)
+    # Issue #1281: every /api/checkout link carries the founding promo while
+    # places remain, so the price Stripe shows is the founding price the card
+    # shows. Resolved here the way src/pricing-tokens.js resolves it.
+    html = html.replace(
+        PRICING["foundingPromoQueryToken"],
+        f"&amp;promo={PRICING['foundingPromoCode']}" if remaining > 0 else "",
+    )
     html = html.replace(PRICING["includedTokensToken"], str(PRICING["includedTokensLabel"]))
     html = html.replace(PRICING["foundingTokensToken"], str(PRICING["foundingTokensLabel"]))
     html = html.replace(
@@ -1115,6 +1122,22 @@ class CloudLandingPageTests(unittest.TestCase):
                 PRICING["foundingPromoCode"],
             ):
                 self.assertIn(str(value), page.text)
+
+    def test_checkout_links_carry_the_founding_promo_while_places_remain(self) -> None:
+        """Issue #1281: Cloud hands the promo code to Stripe only when the link
+        carries it, so the card's founding price is the price the visitor pays.
+
+        The two subscriptions and the four pay-once links are the only
+        /api/checkout links the pricing section ships.
+        """
+        if PRICING["foundingPartnerRemaining"] <= 0:
+            self.skipTest("no founding places left: the links carry no promo")
+        promo = f"promo={PRICING['foundingPromoCode']}"
+        for page, relative in ((self.en, "/cloud/"), (self.zh, "/zh/cloud/")):
+            checkout = [href for _, href in page.hrefs if href.startswith("/api/checkout")]
+            self.assertEqual(len(checkout), 6, checkout)
+            for href in checkout:
+                self.assertIn(promo, href, f"{relative}: {href}")
 
     def test_cloud_points_measured_cost_at_the_cost_page(self) -> None:
         """Issue #744: measured delivery ranges live in the paid cards.

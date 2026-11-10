@@ -6,6 +6,11 @@
 // a second set of numbers, so the discount cannot drift away from the prices
 // it discounts.
 //
+// Issue #1281: the same condition decides whether every Cloud checkout link
+// carries the promo code. Cloud only hands a code to Stripe when the link
+// itself names it (orbi-cloud src/billing-routes.ts), so without this the
+// visitor would land on the list price the card strikes through.
+//
 // Its own module, not src/worker.js: the plain-Node browser stand-in in
 // tests/homepage.smoke.mjs seeds its server from this rule too, and it cannot
 // import the Worker (a JSON import there needs a bundler or a vitest loader).
@@ -23,5 +28,8 @@ export function paidPriceReplacements(pricing, remaining = pricing.foundingPartn
     [pricing.proPaidAnnualUsdToken]: paid(pricing.proAnnualUsd),
     [pricing.proPaidAnnualMonthlyUsdToken]: paidAnnualMonthly(pricing.proAnnualUsd),
     [pricing.foundingPriceStateToken]: founding ? 'data-founding-price="on"' : 'data-founding-price="off"',
+    // Appended to an href, so the separator ships escaped; empty once the
+    // places are gone, which leaves the link exactly as it was.
+    [pricing.foundingPromoQueryToken]: founding ? `&amp;promo=${pricing.foundingPromoCode}` : "",
   };
 }
