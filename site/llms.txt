@@ -51,7 +51,8 @@ __SOLO_INCLUDED_TOKENS__ tokens, __SOLO_REPOSITORIES__ repository) and Pro
 __INCLUDED_TOKENS__ tokens, __PRO_REPOSITORIES__ repositories). When a paid
 allowance runs out, new deliveries pause with no overage bill. Founding
 partners get 50% off forever,
-__FOUNDING_PARTNER_REMAINING__ of __FOUNDING_PARTNER_LIMIT__ places remaining.
+__FOUNDING_PARTNER_REMAINING__ of __FOUNDING_PARTNER_LIMIT__ places
+remaining.__FOUNDING_DISCOUNT_NOTE__
 Fully self-hosting the core costs nothing and always will. Details and signup:
 https://orbi.build/cloud/
 
@@ -113,8 +114,8 @@ every step below.
    https://orbi.build/api/checkout?plan=solo or Pro at
    https://orbi.build/api/checkout?plan=pro and complete Stripe checkout.
    Founding partners get 50% off forever,
-   __FOUNDING_PARTNER_REMAINING__ of __FOUNDING_PARTNER_LIMIT__ places left;
-   use code __FOUNDING_PROMO_CODE__ at checkout. Done: the status page shows
+   __FOUNDING_PARTNER_REMAINING__ of __FOUNDING_PARTNER_LIMIT__ places
+   left.__FOUNDING_DISCOUNT_NOTE__ Done: the status page shows
    an active plan and no longer asks you to subscribe. If not: re-open the
    checkout link for the plan you chose; when the founding places are filled,
    the regular price applies.

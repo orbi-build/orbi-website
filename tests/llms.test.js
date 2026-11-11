@@ -13,6 +13,7 @@ import { describe, expect, it } from "vitest";
 import { renderLlms } from "../scripts/build-pages.mjs";
 import { handleFetch } from "../src/worker.js";
 import pricing from "../src/pricing.json";
+import { foundingDiscountNote } from "../src/pricing-tokens.js";
 
 const ROOT = fileURLToPath(new URL("..", import.meta.url));
 const llms = await readFile(join(ROOT, "public", "llms.txt"), "utf8");
@@ -84,7 +85,9 @@ describe("llms-full.txt content asset (Issue #438)", () => {
       pricing.monthlyUsdToken, pricing.proAnnualUsdToken, pricing.soloIncludedTokensToken,
       pricing.includedTokensToken, pricing.soloRepositoriesToken, pricing.proRepositoriesToken,
       pricing.foundingPartnerLimitToken, pricing.foundingPartnerRemainingToken,
-      pricing.foundingPromoCodeToken,
+      // Issue #1298: the founding sentence says the subscribe link applies the
+      // discount, so it carries the note token instead of the code.
+      pricing.foundingDiscountNoteToken,
     ]) expect(lines[4], token).toContain(token);
   });
 
@@ -318,5 +321,37 @@ describe("llms cost numbers match the /cost/ headline (Issue #886)", () => {
     const costSection = llms.slice(llms.indexOf("**What does it cost?**"), llms.indexOf("## Blog"));
     expect(costSection, "llms.txt cost answer").not.toContain("$0.125");
     expect(costSection, "llms.txt cost answer").toContain("$0.082");
+  });
+});
+// Issue #1298: the founding half price reaches Stripe because the checkout link
+// itself carries the code (Issue #1281), so the llms assets state the discount
+// is applied when the visitor subscribes. "Use code FOUNDING50 at checkout"
+// sent the reader looking for a field that does not need filling — and read as
+// "the price is still the list price" (orbi-cloud#3233 changed the same
+// sentence inside Cloud).
+describe("llms founding sentence (Issue #1298)", () => {
+  const FILES = [["llms.txt", llms, "/llms.txt"], ["llms-full.txt", llmsFull, "/llms-full.txt"]];
+  // The contract is the claim, not the exact wording.
+  const NOTE = /50% discount is applied automatically when you subscribe/i;
+
+  it("states the automatic discount, never a code to type at checkout", async () => {
+    for (const [name, raw, path] of FILES) {
+      const body = await (await serveText(raw, path)).text();
+      expect(body, name + ": no code to type at checkout").not.toMatch(/at checkout/i);
+      expect(body, name + ": no 结账时").not.toContain("结账时");
+      expect(body, name + ": the automatic discount").toMatch(NOTE);
+    }
+  });
+
+  it("drops the sentence once the founding places are gone", () => {
+    // The same condition as the founding price: no places, no promise of 50%.
+    expect(foundingDiscountNote(pricing, { remaining: 0 })).toBe("");
+    for (const [name, raw] of FILES) {
+      const body = raw.replaceAll(pricing.foundingDiscountNoteToken, foundingDiscountNote(pricing, { remaining: 0 }));
+      expect(body, name + ": automatic discount gone").not.toMatch(NOTE);
+      expect(body, name + ": no code to type at checkout").not.toMatch(/at checkout/i);
+      // The live counts stay; only the claim about the discount goes.
+      expect(body, name + ": slot counts").toContain(pricing.foundingPartnerLimitToken);
+    }
   });
 });
