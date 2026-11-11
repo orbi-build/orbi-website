@@ -145,12 +145,14 @@ export const BADGE_PLACEHOLDER_SIZES = [
   // 178x40 (SVG, 952 bytes, viewBox 0 0 178 40), lift-off.sh 360x120 (webp VP8X,
   // 12918 bytes), dailylaunch.io 200x54 (SVG, 16234 bytes, viewBox 0 0 200 54),
   // thedevtoolslist.com / themicrosaasdir.com / theaitoolsdir.com / indielineup.com
-  // 182x46 (SVG, viewBox 0 0 182 46), hypestar.org 140x24 (SVG, 929 bytes,
+  // 182x46 (SVG, viewBox 0 0 182 46; footer embed updated to the official 182x46
+  // box), hypestar.org 140x24 (SVG, 929 bytes,
   // viewBox 0 0 140 24), productfame.com 195x54 (SVG, 1324 bytes, viewBox 0 0 195 54;
   // vendor snippet declares 245x54) and aitoolslist.tools 240x64 (SVG, 1125 bytes,
   // viewBox 0 0 240 64; vendor snippet declares 220x58). Source files set the
-  // ratio. Text-only embeds (faxianai.com, topaitools4u.site, aitoolscoop.com)
-  // have no image host.
+  // ratio. Text-only embeds (faxianai.com, aitoolscoop.com) have no image host.
+  // www.topaitools4u.site 64x64 (SVG, 473 bytes, viewBox 0 0 64 64; the official
+  // submit-page embed declares 32x32, same ratio).
   { host: "linksalad.me", width: 150, height: 44 },
   { host: "softwareontheweb.com", width: 292, height: 56 },
   { host: "indiehunt.io", width: 200, height: 58 },
@@ -164,6 +166,7 @@ export const BADGE_PLACEHOLDER_SIZES = [
   { host: "productfame.com", width: 195, height: 54 },
   { host: "aitoolslist.tools", width: 240, height: 64 },
   { host: "indielineup.com", width: 182, height: 46 },
+  { host: "www.topaitools4u.site", width: 64, height: 64 },
 ];
 const FALLBACK_PLACEHOLDER_SIZE = { width: 1, height: 1 };
 
