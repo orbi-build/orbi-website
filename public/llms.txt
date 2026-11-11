@@ -152,8 +152,9 @@ every step below.
 6. **Subscribe — optional, only to keep delivering after the allowance.**
    __FREE_TRIAL__, so skip this step while it lasts. When you want more, choose
    Solo at
-   https://orbi.build/api/checkout?plan=solo or Pro at
-   https://orbi.build/api/checkout?plan=pro and complete Stripe checkout.
+   https://orbi.build/api/checkout?plan=solo__FOUNDING_PROMO_QUERY_TEXT__ or Pro at
+   https://orbi.build/api/checkout?plan=pro__FOUNDING_PROMO_QUERY_TEXT__ and complete
+   Stripe checkout.
    Founding partners get 50% off forever,
    __FOUNDING_PARTNER_REMAINING__ of __FOUNDING_PARTNER_LIMIT__ places
    left.__FOUNDING_DISCOUNT_NOTE__ Done: the status page shows

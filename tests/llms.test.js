@@ -13,7 +13,7 @@ import { describe, expect, it } from "vitest";
 import { renderLlms } from "../scripts/build-pages.mjs";
 import { handleFetch } from "../src/worker.js";
 import pricing from "../src/pricing.json";
-import { foundingDiscountNote } from "../src/pricing-tokens.js";
+import { foundingDiscountNote, paidPriceReplacements } from "../src/pricing-tokens.js";
 
 const ROOT = fileURLToPath(new URL("..", import.meta.url));
 const llms = await readFile(join(ROOT, "public", "llms.txt"), "utf8");
@@ -340,6 +340,28 @@ describe("llms founding sentence (Issue #1298)", () => {
       expect(body, name + ": no code to type at checkout").not.toMatch(/at checkout/i);
       expect(body, name + ": no 结账时").not.toContain("结账时");
       expect(body, name + ": the automatic discount").toMatch(NOTE);
+    }
+  });
+
+  it("hands out the checkout link that carries the code the sentence promises", async () => {
+    // Issue #1298 follow-through: Cloud hands the code to Stripe only when the
+    // link names it (Issue #1281, orbi-cloud src/billing-routes.ts), so the
+    // links this file gives the reader must be the promo-carrying ones — the
+    // same ones the /cloud/ subscribe buttons use. A bare `?plan=solo` here
+    // would charge the list price beside a sentence promising 50% off.
+    const body = await (await serveText(llms, "/llms.txt")).text();
+    for (const plan of ["solo", "pro"]) {
+      expect(body, plan + ": checkout link carries the founding code")
+        .toContain(`https://orbi.build/api/checkout?plan=${plan}&promo=${pricing.foundingPromoCode}`);
+    }
+    // No places left: the same links drop the code, exactly like every href.
+    const gone = llms.replaceAll(
+      pricing.foundingPromoQueryTextToken,
+      paidPriceReplacements(pricing, 0)[pricing.foundingPromoQueryTextToken],
+    );
+    expect(gone, "no promo once the places are gone").not.toContain("promo=");
+    for (const plan of ["solo", "pro"]) {
+      expect(gone, plan + ": bare checkout link").toContain(`https://orbi.build/api/checkout?plan=${plan}`);
     }
   });
 

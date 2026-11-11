@@ -53,5 +53,11 @@ export function paidPriceReplacements(pricing, remaining = pricing.foundingPartn
     // Appended to an href, so the separator ships escaped; empty once the
     // places are gone, which leaves the link exactly as it was.
     [pricing.foundingPromoQueryToken]: founding ? `&amp;promo=${pricing.foundingPromoCode}` : "",
+    // Issue #1298: the same query for plain text (llms.txt and any other
+    // text/plain asset), where an escaped separator would break the URL the
+    // reader copies. The link a reader of llms.txt clicks must be the one that
+    // carries the code, or the sentence beside it promises a discount the
+    // checkout will not apply.
+    [pricing.foundingPromoQueryTextToken]: founding ? `&promo=${pricing.foundingPromoCode}` : "",
   };
 }

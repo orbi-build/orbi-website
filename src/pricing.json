@@ -41,6 +41,7 @@
   "proPaidAnnualMonthlyUsdToken": "__PRO_PAID_ANNUAL_MONTHLY_USD__",
   "foundingPriceStateToken": "__FOUNDING_PRICE_STATE__",
   "foundingPromoQueryToken": "__FOUNDING_PROMO_QUERY__",
+  "foundingPromoQueryTextToken": "__FOUNDING_PROMO_QUERY_TEXT__",
   "foundingTokensLabel": "1.2B",
   "foundingTokensToken": "__FOUNDING_TOKENS__",
   "freeDeliveries": 3,
