@@ -137,6 +137,33 @@ export const BADGE_PLACEHOLDER_SIZES = [
   { host: "pickapps.org", width: 320, height: 96 },
   { host: "toolsclaw.com", width: 146, height: 44 },
   { host: "www.indietools.app", width: 470, height: 150 },
+  // 2026-11-11 pending reciprocal directory badges, each measured on the live URL:
+  // linksalad.me 150x44 (SVG, 69415 bytes, viewBox 0 0 150 44), softwareontheweb.com
+  // 292x56 (SVG source in the vendor <picture>, 1484 bytes, viewBox 0 0 292 56;
+  // PNG fallback 584x112, same ratio), indiehunt.io 200x58 (SVG, 21738 bytes,
+  // viewBox 0 0 200 58; vendor snippet declares 265x58), softwarecomoservicio.com
+  // 178x40 (SVG, 952 bytes, viewBox 0 0 178 40), lift-off.sh 360x120 (webp VP8X,
+  // 12918 bytes), dailylaunch.io 200x54 (SVG, 16234 bytes, viewBox 0 0 200 54),
+  // thedevtoolslist.com / themicrosaasdir.com / theaitoolsdir.com / indielineup.com
+  // 182x46 (SVG, viewBox 0 0 182 46), hypestar.org 140x24 (SVG, 929 bytes,
+  // viewBox 0 0 140 24), productfame.com 195x54 (SVG, 1324 bytes, viewBox 0 0 195 54;
+  // vendor snippet declares 245x54) and aitoolslist.tools 240x64 (SVG, 1125 bytes,
+  // viewBox 0 0 240 64; vendor snippet declares 220x58). Source files set the
+  // ratio. Text-only embeds (faxianai.com, topaitools4u.site, aitoolscoop.com)
+  // have no image host.
+  { host: "linksalad.me", width: 150, height: 44 },
+  { host: "softwareontheweb.com", width: 292, height: 56 },
+  { host: "indiehunt.io", width: 200, height: 58 },
+  { host: "softwarecomoservicio.com", width: 178, height: 40 },
+  { host: "lift-off.sh", width: 360, height: 120 },
+  { host: "dailylaunch.io", width: 200, height: 54 },
+  { host: "thedevtoolslist.com", width: 182, height: 46 },
+  { host: "themicrosaasdir.com", width: 182, height: 46 },
+  { host: "theaitoolsdir.com", width: 182, height: 46 },
+  { host: "hypestar.org", width: 140, height: 24 },
+  { host: "productfame.com", width: 195, height: 54 },
+  { host: "aitoolslist.tools", width: 240, height: 64 },
+  { host: "indielineup.com", width: 182, height: 46 },
 ];
 const FALLBACK_PLACEHOLDER_SIZE = { width: 1, height: 1 };
 
