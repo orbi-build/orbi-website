@@ -249,6 +249,10 @@ Shipping notes from the root domain: what each delivery run hit, what fixed
 it, and the numbers behind both, traced to the issues they came from. RSS
 feed of the English posts: https://orbi.build/blog/feed.xml
 
+- OpenCode vs Codex CLI: same model, headless (English):
+  https://orbi.build/blog/opencode-vs-codex/
+- OpenCode vs Codex CLI：同一模型，无人值守实测 (Chinese):
+  https://orbi.build/zh/blog/opencode-vs-codex/
 - systemd to launchd: what 1,548 macOS CI runs caught (English):
   https://orbi.build/blog/systemd-to-launchd/
 - systemd 到 launchd：1,548 次 macOS CI 查出了什么 (Chinese):
