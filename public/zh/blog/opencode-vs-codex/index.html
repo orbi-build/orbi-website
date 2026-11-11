@@ -388,7 +388,7 @@ wire_api = &quot;responses&quot;
 </tr>
 </tbody></table></div>
 <p>按每个任务的中位数比较，Codex 的输入总量更多，未命中缓存的输入更少，输出 token 是 OpenCode 的 2.1–5.9 倍。每个任务的耗时中位数也都更长。</p>
-<p>按 <a href="https://api-docs.deepseek.com/quick_start/pricing">DeepSeek 的高峰时段标价</a>，每百万 token 的价格是：缓存命中的输入 $0.006，未命中缓存的输入 $0.30，输出 $1.20。这批运行在周三 01:52 到 02:03 UTC 之间，落在 DeepSeek 工作日两个高峰时段之一（01:00 到 04:00 UTC，另一个是 06:00 到 10:00 UTC）。先按标价计算每次运行的费用，再取中位数，结果如下：</p>
+<p>按 <a href="https://api-docs.deepseek.com/quick_start/pricing">DeepSeek 的高峰时段标价</a>，每百万 token 的价格是：缓存命中的输入 $0.006，未命中缓存的输入 $0.30，输出 $1.20。这批运行在周三 02:00 UTC 前后，落在 DeepSeek 工作日两个高峰时段之一（01:00 到 04:00 UTC，另一个是 06:00 到 10:00 UTC）。先按标价计算每次运行的费用，再取中位数，结果如下：</p>
 <p class="post-table-hint" hidden>左右滑动查看所有列。</p><div class="post-table-scroll" tabindex="0" role="region" aria-label="左右滑动查看所有列。"><table class="table-comparison">
 <thead>
 <tr>
@@ -421,7 +421,7 @@ wire_api = &quot;responses&quot;
 <p>这些运行每次都不到 1 美分。对每个任务，我把每个工具的 3 次运行按总费用排序，各取中间那次来比较。Codex 的输入费用更低，但输出更多，算下来总费用更高。这次测的是开销和默认行为，不构成 benchmark，也不对 agent 的能力排名。</p>
 <h2 id="项目规则放进-agents-md">项目规则放进 AGENTS.md</h2>
 <p>我在项目 <code class="post-code--single">AGENTS.md</code> 里写了一条规则，要求回复以 <code class="post-code--single">ZEBRA-MARKER</code> 结尾，两个工具都遵守了。把同一行改放进 <code class="post-code--single">CLAUDE.md</code>、项目里不放 <code class="post-code--single">AGENTS.md</code>，两个工具都没遵守。每种文件和工具的组合只跑了 1 次。</p>
-<p>Codex 的结果符合它的<a href="https://developers.openai.com/codex/guides/agents-md">指令文件文档</a>：&quot;Filenames not on this list are ignored for instruction discovery.&quot; 要让它读取 <code class="post-code--single">CLAUDE.md</code>，可以把这个文件名加入 <code class="post-code--single">project_doc_fallback_filenames</code>。OpenCode 的<a href="https://opencode.ai/docs/rules/">规则页面</a>（页面标注为 V1 文档）列出了 &quot;CLAUDE.md in your project directory (used if no AGENTS.md exists)&quot;。我这次的 2.2.7 没有读取它，与<a href="/zh/blog/opencode-vs-claude-code/">上一篇对比中的 2.2.5</a> 一致。共用规则放进 <code class="post-code--single">AGENTS.md</code>。</p>
+<p>Codex 的结果符合它的<a href="https://developers.openai.com/codex/guides/agents-md">指令文件文档</a>：&quot;Filenames not on this list are ignored for instruction discovery.&quot; 要让它读取 <code class="post-code--single">CLAUDE.md</code>，可以把这个文件名加入 <code class="post-code--single">project_doc_fallback_filenames</code>。OpenCode 的<a href="https://opencode.ai/docs/rules/">规则页面</a>（页面标注为 V1 文档）列出了 &quot;CLAUDE.md in your project directory (used if no AGENTS.md exists)&quot;。我这次的 2.2.7 没有读取它，与<a href="/zh/blog/opencode-vs-claude-code/">上一篇对比</a>里看到的一致。共用规则放进 <code class="post-code--single">AGENTS.md</code>。</p>
 <h2 id="codex-用自家模型-chatgpt-登录的参照测试">Codex 用自家模型：ChatGPT 登录的参照测试</h2>
 <p>我用自己的 ChatGPT 账号登录，选 <code class="post-code--single">gpt-6.1-sol</code>、medium 推理强度，加上 <code class="post-code--spaced">--sandbox workspace-write</code>，把同样的 4 个任务各跑了 1 次。4 个都通过了测试，包括任务 4 的隐藏检查。每个任务执行 3–5 条 shell 命令，耗时 17.3–44.9 秒。</p>
 <p>这组运行用了我平常的 Codex HOME，里面有全局 <code class="post-code--single">AGENTS.md</code> 和配置，无法和空 HOME 的运行做受控性能比较。token 计数也没法直接比较，所以没列。</p>
@@ -462,7 +462,7 @@ echo &quot;codex exit: ${PIPESTATUS[0]}&quot;
 {&quot;input_tokens&quot;:8557,&quot;cached_input_tokens&quot;:7808,&quot;cache_write_input_tokens&quot;:0,&quot;output_tokens&quot;:8,&quot;reasoning_output_tokens&quot;:6}
 </code></pre></div>
 <p>OpenCode 只打印了主请求这一行，把 <code class="post-code--single">input</code> 和 <code class="post-code--single">cache.read</code> 相加是 5,354 个输入 token。同一个脚本更早一次跑出的是 3,562 和 1,792，两数相加同样是 5,354，只是缓存命中少。Codex 这次报告 8,557 个，第一次是 8,556 个。OpenCode 的 5,354 比上文主请求的 5,370 少 16，Codex 的 8,557 和 8,556 比表格里的 8,560 少 3 到 4。脚本换了运行目录，不在 git 仓库里，也不经过代理，差在哪我没有继续查。跑出来接近 5,354 和 8,557，就算复现了。</p>
-<p>密钥错误或为空时，两个工具的退出码都是 1，也都没有打印用量行。前面那些操作被拦的运行，退出码却都是 0。这次测到的失败情况里，只有认证失败才返回了非零退出码。</p>
+<p>密钥错误或为空时，两个工具的退出码都是 1，也都没有打印用量行。前面那些操作被拦的运行，退出码却都是 0。</p>
 <h2 id="codex-vs-opencode-我会怎么选">Codex vs OpenCode：我会怎么选</h2>
 <p>已经付费订阅 ChatGPT，又想让沙箱默认拦住项目外写入和网络访问，我会选 Codex。需要编辑文件时加 <code class="post-code--spaced">--sandbox workspace-write</code>，检查结果时别只看退出码。</p>
 <p>经常要换模型 provider 的话，我会选 OpenCode：它改一个 <code class="post-code--single">-m</code> 参数就行，Codex 要写一段自定义 provider 配置，还会提示缺模型元数据。空操作测试里，OpenCode 的主请求也更小，5,370 个输入 token 对 8,560，不过它在 DeepSeek 上按全价计费的部分更多。它拥有当前用户的完整权限，deny 规则可以限制操作。需要操作系统级隔离，就得自己把它放进容器。无论选哪个，都要自己检查 diff 和测试。</p>

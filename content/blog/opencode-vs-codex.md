@@ -99,7 +99,7 @@ I calculated the median for each metric separately over three runs. A row does n
 
 At every task median, Codex took longer and used more total input, with fewer uncached tokens. Its output was 2.1 to 5.9 times OpenCode's.
 
-At [DeepSeek's peak list prices](https://api-docs.deepseek.com/quick_start/pricing), cached input costs $0.006, uncached input $0.30 and output $1.20 per million tokens. I ran these tests between 01:52 and 02:03 UTC on a Wednesday, inside one of DeepSeek's two weekday peak windows, 01:00 to 04:00 UTC (the other is 06:00 to 10:00 UTC). The median list-price cost per run was:
+At [DeepSeek's peak list prices](https://api-docs.deepseek.com/quick_start/pricing), cached input costs $0.006, uncached input $0.30 and output $1.20 per million tokens. I ran these tests around 02:00 UTC on a Wednesday, inside one of DeepSeek's two weekday peak windows, 01:00 to 04:00 UTC (the other is 06:00 to 10:00 UTC). The median list-price cost per run was:
 
 | Task | OpenCode | Codex CLI |
 |---|---|---|
@@ -114,7 +114,7 @@ All these runs cost under one cent. I calculated costs per run before taking med
 
 I put a rule in the project's `AGENTS.md` asking each agent to end its replies with `ZEBRA-MARKER`. Both followed it. With the same line in `CLAUDE.md` and no `AGENTS.md` in the project, neither followed it. I ran each file/tool combination once.
 
-For Codex, this matches the [instruction-file docs](https://developers.openai.com/codex/guides/agents-md): "Filenames not on this list are ignored for instruction discovery." I'd add `CLAUDE.md` to `project_doc_fallback_filenames` for Codex to read it. OpenCode's [rules page](https://opencode.ai/docs/rules/), which is marked as V1 documentation, lists "CLAUDE.md in your project directory (used if no AGENTS.md exists)". My 2.2.7 run did not read that file, matching [2.2.5 in the earlier comparison](/blog/opencode-vs-claude-code/). I'd keep shared rules in `AGENTS.md`.
+For Codex, this matches the [instruction-file docs](https://developers.openai.com/codex/guides/agents-md): "Filenames not on this list are ignored for instruction discovery." I'd add `CLAUDE.md` to `project_doc_fallback_filenames` for Codex to read it. OpenCode's [rules page](https://opencode.ai/docs/rules/), which is marked as V1 documentation, lists "CLAUDE.md in your project directory (used if no AGENTS.md exists)". My 2.2.7 run did not read that file, matching what I saw in [the earlier comparison](/blog/opencode-vs-claude-code/). I'd keep shared rules in `AGENTS.md`.
 
 ## Codex on its own model, through a ChatGPT login
 

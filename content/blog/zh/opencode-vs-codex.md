@@ -101,7 +101,7 @@ OpenCode 的工具是 `edit`、`glob`、`grep`、`question`、`read`、`shell`�
 
 按每个任务的中位数比较，Codex 的输入总量更多，未命中缓存的输入更少，输出 token 是 OpenCode 的 2.1–5.9 倍。每个任务的耗时中位数也都更长。
 
-按 [DeepSeek 的高峰时段标价](https://api-docs.deepseek.com/quick_start/pricing)，每百万 token 的价格是：缓存命中的输入 $0.006，未命中缓存的输入 $0.30，输出 $1.20。这批运行在周三 01:52 到 02:03 UTC 之间，落在 DeepSeek 工作日两个高峰时段之一（01:00 到 04:00 UTC，另一个是 06:00 到 10:00 UTC）。先按标价计算每次运行的费用，再取中位数，结果如下：
+按 [DeepSeek 的高峰时段标价](https://api-docs.deepseek.com/quick_start/pricing)，每百万 token 的价格是：缓存命中的输入 $0.006，未命中缓存的输入 $0.30，输出 $1.20。这批运行在周三 02:00 UTC 前后，落在 DeepSeek 工作日两个高峰时段之一（01:00 到 04:00 UTC，另一个是 06:00 到 10:00 UTC）。先按标价计算每次运行的费用，再取中位数，结果如下：
 
 | 任务 | OpenCode | Codex CLI |
 |---|---|---|
@@ -116,7 +116,7 @@ OpenCode 的工具是 `edit`、`glob`、`grep`、`question`、`read`、`shell`�
 
 我在项目 `AGENTS.md` 里写了一条规则，要求回复以 `ZEBRA-MARKER` 结尾，两个工具都遵守了。把同一行改放进 `CLAUDE.md`、项目里不放 `AGENTS.md`，两个工具都没遵守。每种文件和工具的组合只跑了 1 次。
 
-Codex 的结果符合它的[指令文件文档](https://developers.openai.com/codex/guides/agents-md)："Filenames not on this list are ignored for instruction discovery." 要让它读取 `CLAUDE.md`，可以把这个文件名加入 `project_doc_fallback_filenames`。OpenCode 的[规则页面](https://opencode.ai/docs/rules/)（页面标注为 V1 文档）列出了 "CLAUDE.md in your project directory (used if no AGENTS.md exists)"。我这次的 2.2.7 没有读取它，与[上一篇对比中的 2.2.5](/zh/blog/opencode-vs-claude-code/) 一致。共用规则放进 `AGENTS.md`。
+Codex 的结果符合它的[指令文件文档](https://developers.openai.com/codex/guides/agents-md)："Filenames not on this list are ignored for instruction discovery." 要让它读取 `CLAUDE.md`，可以把这个文件名加入 `project_doc_fallback_filenames`。OpenCode 的[规则页面](https://opencode.ai/docs/rules/)（页面标注为 V1 文档）列出了 "CLAUDE.md in your project directory (used if no AGENTS.md exists)"。我这次的 2.2.7 没有读取它，与[上一篇对比](/zh/blog/opencode-vs-claude-code/)里看到的一致。共用规则放进 `AGENTS.md`。
 
 ## Codex 用自家模型：ChatGPT 登录的参照测试
 
@@ -174,7 +174,7 @@ echo "codex exit: ${PIPESTATUS[0]}"
 
 OpenCode 只打印了主请求这一行，把 `input` 和 `cache.read` 相加是 5,354 个输入 token。同一个脚本更早一次跑出的是 3,562 和 1,792，两数相加同样是 5,354，只是缓存命中少。Codex 这次报告 8,557 个，第一次是 8,556 个。OpenCode 的 5,354 比上文主请求的 5,370 少 16，Codex 的 8,557 和 8,556 比表格里的 8,560 少 3 到 4。脚本换了运行目录，不在 git 仓库里，也不经过代理，差在哪我没有继续查。跑出来接近 5,354 和 8,557，就算复现了。
 
-密钥错误或为空时，两个工具的退出码都是 1，也都没有打印用量行。前面那些操作被拦的运行，退出码却都是 0。这次测到的失败情况里，只有认证失败才返回了非零退出码。
+密钥错误或为空时，两个工具的退出码都是 1，也都没有打印用量行。前面那些操作被拦的运行，退出码却都是 0。
 
 ## Codex vs OpenCode：我会怎么选
 
