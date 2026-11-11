@@ -3,9 +3,8 @@ name: Deploy beta
 on:
   workflow_run:
     # Issue #1301: this filter matches a promotion PR's CI run too — a
-    # beta → main PR runs CI with head branch `beta` — so the upstream run's
-    # own trigger event decides in scripts/beta-deploy-gate.mjs; only a push
-    # to beta deploys.
+    # beta → main PR runs CI with head branch `beta` — so require-ci below
+    # also reads the upstream run's own event; only a push to beta deploys.
     workflows:
       - CI
     types:
@@ -20,35 +19,27 @@ permissions:
 
 jobs:
   require-ci:
+    # Issue #1301: only a push to beta whose CI passed deploys. The trigger
+    # filter cannot tell that apart from a promotion PR — a beta → main PR runs
+    # CI with head branch `beta` — so the upstream run's own event decides
+    # here: a pull_request CI completion, and a failed or cancelled push, match
+    # neither clause. No job starts then, so the run stays `skipped` (never a
+    # successful Deploy beta run, which src/worker.js counts as a deployment on
+    # the site) and never enters the deploy job's concurrency group.
+    if: github.event_name == 'workflow_dispatch' || (github.event.workflow_run.event == 'push' && github.event.workflow_run.conclusion == 'success')
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    outputs:
-      deploy: ${{ steps.gate.outputs.deploy }}
     steps:
-      - name: Check out repository
-        uses: actions/checkout@v5
-
-      - name: Decide whether this CI run deploys beta
-        # Issue #1301: deploys only a push to beta whose CI passed. A
-        # promotion PR's CI completion skips here, so the deploy job below
-        # never starts.
-        id: gate
-        env:
-          BETA_DEPLOY_EVENT: ${{ github.event_name }}
-          BETA_DEPLOY_UPSTREAM_EVENT: ${{ github.event.workflow_run.event }}
-          BETA_DEPLOY_UPSTREAM_CONCLUSION: ${{ github.event.workflow_run.conclusion }}
-          BETA_DEPLOY_UPSTREAM_BRANCH: ${{ github.event.workflow_run.head_branch }}
-        run: timeout 60s node scripts/beta-deploy-gate.mjs
-
-      - name: Require successful CI for the dispatched commit
-        # Only the manual path asks GitHub: the gate above already read the
-        # conclusion of a workflow_run push.
-        if: github.event_name == 'workflow_dispatch'
+      - name: Require successful CI for the deployed commit
         env:
           GH_TOKEN: ${{ github.token }}
-          TEST_SHA: ${{ github.sha }}
+          TEST_SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
         run: |
           set -euo pipefail
+          if [[ "${{ github.event_name }}" == "workflow_run" ]]; then
+            echo "CI completed successfully for $TEST_SHA"
+            exit 0
+          fi
           ci_run_id="$(timeout 120s gh run list --repo "$GITHUB_REPOSITORY" --workflow ci.yml \
             --branch beta --commit "$TEST_SHA" --status success --limit 1 \
             --json databaseId --jq '.[0].databaseId // empty')"
@@ -60,7 +51,7 @@ jobs:
 
   deploy:
     needs: require-ci
-    if: needs.require-ci.outputs.deploy == 'true'
+    if: needs.require-ci.result == 'success'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     # Issue #1301: the group sits on the deploy job, not on the workflow. A run

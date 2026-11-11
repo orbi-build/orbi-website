@@ -175,46 +175,50 @@ def parse(path: Path) -> tuple[str, PageParser]:
     return html, page
 
 
-BETA_DEPLOY_GATE = ROOT / "scripts" / "beta-deploy-gate.mjs"
+GITHUB_FIELD = re.compile(r"github\.(?:event_name|event(?:\.[\w-]+)+)")
 
 
-def run_beta_deploy_gate(
-    test: unittest.TestCase,
-    event_name: str,
-    upstream_event: str = "",
-    conclusion: str = "",
-) -> tuple[str, str]:
-    """Run the gate deploy-beta.yml runs, with the env the workflow passes.
+def beta_deploy_jobs() -> tuple[str, str, str]:
+    """deploy-beta.yml's deploy decision: its `require-ci` `if`, and both jobs.
 
-    Issue #1301: the decision lives in scripts/beta-deploy-gate.mjs and the
-    workflow feeds it the trigger payload, so executing the script here is the
-    same decision the deploy run makes. Returns what the step printed and what
-    it wrote to GITHUB_OUTPUT.
+    Issue #1301: `require-ci` decides whether a completed CI run deploys beta
+    and `deploy` runs only when it did, so each assertion below stays on the
+    job it belongs to.
     """
-    import os
-    import subprocess
-    import tempfile
+    workflow = (ROOT / ".github" / "workflows" / "deploy-beta.yml").read_text(encoding="utf-8")
+    jobs = workflow.split("\njobs:\n", 1)[1]
+    require_ci, deploy = jobs.split("\n  deploy:\n", 1)
+    condition = re.search(r"^    if: (.+)$", require_ci, re.M)
+    return (condition.group(1) if condition else ""), require_ci, deploy
 
-    with tempfile.TemporaryDirectory() as tmp:
-        output_path = Path(tmp) / "github_output"
-        output_path.write_text("", encoding="utf-8")
-        env = {
-            "PATH": os.environ.get("PATH", ""),
-            "BETA_DEPLOY_EVENT": event_name,
-            "BETA_DEPLOY_UPSTREAM_EVENT": upstream_event,
-            "BETA_DEPLOY_UPSTREAM_CONCLUSION": conclusion,
-            "BETA_DEPLOY_UPSTREAM_BRANCH": "beta",
-            "GITHUB_OUTPUT": str(output_path),
-        }
-        result = subprocess.run(
-            ["node", str(BETA_DEPLOY_GATE)],
-            env=env,
-            capture_output=True,
-            text=True,
-            timeout=60,
-        )
-        test.assertEqual(result.returncode, 0, result.stderr)
-        return result.stdout + result.stderr, output_path.read_text(encoding="utf-8")
+
+def evaluates_for(condition: str, event_name: str, payload: dict) -> bool:
+    """Evaluate a workflow `if` for one trigger payload.
+
+    The subset the deploy decisions use is `&&`, `||`, `==`, parentheses and
+    `github.*` field reads, which bind exactly as Python's `and`, `or` and
+    `==` do once the operators are spelled out; a field the payload lacks is
+    null, and null equals no string. So this runs the condition the workflow
+    actually ships instead of a second copy of the decision.
+    """
+
+    def field(match: "re.Match[str]") -> str:
+        # github.event_name is the trigger; every other github.event.* field
+        # is read from the payload this test passes in
+        path = match.group(0)[len("github."):]
+        if path == "event_name":
+            return repr(event_name)
+        path = path[len("event."):]
+        node: object = payload
+        for part in path.split("."):
+            if not isinstance(node, dict) or part not in node:
+                return "None"
+            node = node[part]
+        return repr(node)
+
+    expression = GITHUB_FIELD.sub(field, condition)
+    expression = expression.replace(" && ", " and ").replace(" || ", " or ")
+    return bool(eval(expression, {"__builtins__": {}}, {}))  # the workflow's own text
 
 
 def assert_self_hosted_fonts(test: unittest.TestCase, *htmls: str) -> None:
@@ -932,70 +936,71 @@ class LandingTests(unittest.TestCase):
         self.assertIn("CLOUDFLARE_API_TOKEN", workflow)
         self.assertIn("vars.CLOUDFLARE_ACCOUNT_ID", workflow)
 
-    def test_beta_deploy_gate_deploys_only_a_successful_push_ci(self) -> None:
+    def test_beta_deploy_follows_only_a_successful_push_to_beta(self) -> None:
         """Issue #1301: a promotion PR's CI is not a push to beta.
 
         A `beta` → `main` PR runs CI with head branch `beta`, so the
-        workflow_run trigger alone deployed that commit a second time. The
-        gate the workflow runs is executed here with the env the workflow
-        passes, for every event/result pair the Issue lists, plus the manual
-        dispatch path.
-        """
-        cases = [
-            ("push CI success", "workflow_run", "push", "success", True),
-            ("push CI failure", "workflow_run", "push", "failure", False),
-            ("push CI cancelled", "workflow_run", "push", "cancelled", False),
-            ("promotion PR CI success", "workflow_run", "pull_request", "success", False),
-            ("manual dispatch", "workflow_dispatch", "", "", True),
-        ]
-        for name, event_name, upstream_event, conclusion, expected in cases:
-            with self.subTest(name):
-                reason, gate_output = run_beta_deploy_gate(
-                    self, event_name, upstream_event, conclusion
-                )
-                self.assertEqual(
-                    gate_output.strip(),
-                    f"deploy={'true' if expected else 'false'}",
-                    reason,
-                )
+        workflow_run trigger matched its CI completion and the same commit was
+        deployed a second time. The trigger filter cannot tell the two apart,
+        so the condition on the `require-ci` job reads the upstream run's own
+        event and result. Its four event/result pairs:
 
-    def test_beta_deploy_gate_names_the_event_and_result_it_skips(self) -> None:
-        """A skip must say what it skipped, or the run log is a silent no-op:
-        the operator needs to see "the CI run was triggered by pull_request",
-        not a deploy that quietly did nothing."""
-        promotion, _ = run_beta_deploy_gate(
-            self, "workflow_run", "pull_request", "success"
-        )
-        self.assertIn("pull_request", promotion)
-        failed, _ = run_beta_deploy_gate(self, "workflow_run", "push", "failure")
-        self.assertIn("failure", failed)
-        cancelled, _ = run_beta_deploy_gate(self, "workflow_run", "push", "cancelled")
-        self.assertIn("cancelled", cancelled)
+          push + success        → runs, so the deploy runs (the beta deploy)
+          push + failure        → no job starts (nothing deploys)
+          push + cancelled      → no job starts
+          pull_request + success → no job starts (the promotion PR)
+
+        plus `workflow_dispatch`, whose dispatched commit is checked against
+        the CI runs below. The condition sits on the job, not on a step, so a
+        skipped event starts no job: the run stays `skipped` and is therefore
+        not counted as one of the site's "deploys" — src/worker.js counts
+        successful Deploy beta runs (`?status=success`) as deployments, and a
+        green run that deployed nothing would claim one.
+        """
+        condition, require_ci, deploy = beta_deploy_jobs()
+        # the four event/result pairs the Issue names, plus the manual dispatch,
+        # evaluated against the condition the workflow ships
+        cases = [
+            ("push CI success", "workflow_run", {"event": "push", "conclusion": "success"}, True),
+            ("push CI failure", "workflow_run", {"event": "push", "conclusion": "failure"}, False),
+            ("push CI cancelled", "workflow_run", {"event": "push", "conclusion": "cancelled"}, False),
+            ("promotion PR CI success", "workflow_run", {"event": "pull_request", "conclusion": "success"}, False),
+            ("manual dispatch", "workflow_dispatch", {}, True),
+        ]
+        for name, event_name, workflow_run, expected in cases:
+            with self.subTest(name):
+                self.assertEqual(
+                    evaluates_for(condition, event_name, {"workflow_run": workflow_run}),
+                    expected,
+                    f"require-ci {name}",
+                )
+        # no step precedes the decision, so a skipped event runs no job at all
+        self.assertIsNone(re.search(r"^      if:", require_ci, re.M))
+        # the deploy runs only when require-ci ran; a skipped require-ci skips it
+        self.assertIn("needs: require-ci", deploy)
+        self.assertIn("if: needs.require-ci.result == 'success'", deploy)
+        # the manual path still asks GitHub about the dispatched commit's CI
+        self.assertIn("gh run list", require_ci)
+        self.assertIn("--commit \"$TEST_SHA\"", require_ci)
+        self.assertIn("--status success", require_ci)
 
     def test_beta_deploy_skips_a_promotion_pr_without_cancelling_a_running_deploy(
         self,
     ) -> None:
-        """Issue #1301: the skipped deploy never joins the deploy-beta group.
+        """Issue #1301: a run that deploys nothing never joins the deploy group.
 
         Concurrency is declared on the deploy job, not on the workflow: a run
         whose deploy job is skipped (a promotion PR's CI completion) never
         starts that job, so it cannot cancel a beta deploy still running. A
-        newer push still replaces an older deploy.
+        newer push still replaces an older deploy — the group keeps
+        `cancel-in-progress`.
         """
         workflow = (ROOT / ".github" / "workflows" / "deploy-beta.yml").read_text(encoding="utf-8")
-        # the workflow runs the gate the tests above execute
-        self.assertIn("node scripts/beta-deploy-gate.mjs", workflow)
         self.assertIsNone(re.search(r"^concurrency:", workflow, re.M))
-        jobs = workflow.split("\njobs:\n", 1)[1]
-        require_ci_job, deploy_job = jobs.split("\n  deploy:\n", 1)
-        self.assertIn("steps.gate.outputs.deploy", require_ci_job)
-        self.assertIn("needs.require-ci.outputs.deploy == 'true'", deploy_job)
-        self.assertIn("concurrency:", deploy_job)
-        self.assertIn("group: deploy-beta", deploy_job)
-        self.assertIn("cancel-in-progress: true", deploy_job)
-        # the manual path still checks the dispatched commit's CI
-        self.assertIn("gh run list", workflow)
-        self.assertIn("--status success", workflow)
+        deploy = beta_deploy_jobs()[2]
+        self.assertIn("concurrency:", deploy)
+        self.assertIn("group: deploy-beta", deploy)
+        self.assertIn("cancel-in-progress: true", deploy)
 
     def test_production_deployment_workflow_gates_deploys_and_rolls_back(self) -> None:
         """Issue #68: production deploys of orbi.build run behind the
