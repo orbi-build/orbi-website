@@ -32,6 +32,7 @@
   "foundingPartnerRemainingToken": "__FOUNDING_PARTNER_REMAINING__",
   "foundingPromoCode": "FOUNDING50",
   "foundingPromoCodeToken": "__FOUNDING_PROMO_CODE__",
+  "foundingDiscountNoteToken": "__FOUNDING_DISCOUNT_NOTE__",
   "soloPaidMonthlyUsdToken": "__SOLO_PAID_MONTHLY_USD__",
   "soloPaidAnnualUsdToken": "__SOLO_PAID_ANNUAL_USD__",
   "soloPaidAnnualMonthlyUsdToken": "__SOLO_PAID_ANNUAL_MONTHLY_USD__",

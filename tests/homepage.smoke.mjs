@@ -4,7 +4,7 @@ import { mkdir, readFile } from "node:fs/promises";
 import { extname, join, normalize } from "node:path";
 import { pathToFileURL } from "node:url";
 import { placeholderSvg } from "./browser-network.mjs";
-import { paidPriceReplacements } from "../src/pricing-tokens.js";
+import { foundingDiscountNote, paidPriceReplacements } from "../src/pricing-tokens.js";
 
 const port = 4173;
 const baseURL = `http://127.0.0.1:${port}`;
@@ -181,6 +181,12 @@ function startServer() {
               .replaceAll(pricing.foundingPartnerLimitToken, String(pricing.foundingPartnerLimit))
               .replaceAll(pricing.foundingPartnerRemainingToken, String(pricing.foundingPartnerRemaining))
               .replaceAll(pricing.foundingPromoCodeToken, pricing.foundingPromoCode)
+              // Issue #1298: the sentence beside the founding price is copy the
+              // Worker resolves in the page's language, so the stand-in does too.
+              .replaceAll(
+                pricing.foundingDiscountNoteToken,
+                foundingDiscountNote(pricing, { zh: pathname.startsWith("/zh") }),
+              )
               .replaceAll(pricing.includedTokensToken, String(pricing.includedTokensLabel))
               // Issue #1216: the free-allowance sentence is one shared token;
               // its nested count is filled by the freeDeliveriesToken rule below.

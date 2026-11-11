@@ -2,6 +2,9 @@ name: Deploy beta
 
 on:
   workflow_run:
+    # Issue #1301: this filter matches a promotion PR's CI run too — a
+    # beta → main PR runs CI with head branch `beta` — so require-ci below
+    # also reads the upstream run's own event; only a push to beta deploys.
     workflows:
       - CI
     types:
@@ -14,13 +17,16 @@ permissions:
   actions: read
   contents: read
 
-concurrency:
-  group: deploy-beta
-  cancel-in-progress: true
-
 jobs:
   require-ci:
-    if: (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success') || github.event_name == 'workflow_dispatch'
+    # Issue #1301: only a push to beta whose CI passed deploys. The trigger
+    # filter cannot tell that apart from a promotion PR — a beta → main PR runs
+    # CI with head branch `beta` — so the upstream run's own event decides
+    # here: a pull_request CI completion, and a failed or cancelled push, match
+    # neither clause. No job starts then, so the run stays `skipped` (never a
+    # successful Deploy beta run, which src/worker.js counts as a deployment on
+    # the site) and never enters the deploy job's concurrency group.
+    if: github.event_name == 'workflow_dispatch' || (github.event.workflow_run.event == 'push' && github.event.workflow_run.conclusion == 'success')
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -48,6 +54,13 @@ jobs:
     if: needs.require-ci.result == 'success'
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    # Issue #1301: the group sits on the deploy job, not on the workflow. A run
+    # whose deploy job is skipped (a promotion PR's CI completion) never starts
+    # that job, so it never enters the group and never cancels a beta deploy
+    # still running; a newer push still replaces an older deploy.
+    concurrency:
+      group: deploy-beta
+      cancel-in-progress: true
     steps:
       - name: Check out repository
         uses: actions/checkout@v5

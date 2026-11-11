@@ -1,6 +1,6 @@
 import { visitSignals } from "./bot-detection.js";
 import pricing from "./pricing.json";
-import { paidPriceReplacements } from "./pricing-tokens.js";
+import { foundingDiscountNote, paidPriceReplacements } from "./pricing-tokens.js";
 
 // Single source of truth for the Cloud monthly price and the included token
 // quota (Issues #102, #138). The shipped HTML carries monthlyUsdToken and
@@ -834,6 +834,10 @@ async function assetResponse(asset, cloudLoginConfigured, founding = { logins: [
     .replaceAll(pricing.foundingPartnerLimitToken, FOUNDING_PARTNER_LIMIT)
     .replaceAll(pricing.foundingPartnerRemainingToken, FOUNDING_PARTNER_REMAINING)
     .replaceAll(pricing.foundingPromoCodeToken, FOUNDING_PROMO_CODE)
+    // Issue #1298: the sentence about the founding 50% is copy, not a number,
+    // so it is resolved here — in the request's language, and empty once the
+    // places are gone, exactly like the founding price above.
+    .replaceAll(pricing.foundingDiscountNoteToken, foundingDiscountNote(pricing, { zh }))
     .replaceAll(pricing.includedTokensToken, INCLUDED_TOKENS)
     .replaceAll(pricing.foundingTokensToken, FOUNDING_TOKENS)
     .replaceAll(pricing.freeTrialCopyToken, zh ? FREE_TRIAL_COPY.zh : FREE_TRIAL_COPY.en)
