@@ -169,10 +169,10 @@
           <li><a class="post-toc-link" href="#只回复-ok-的固定开销">只回复 OK 的固定开销</a></li>
           <li><a class="post-toc-link" href="#4-个小编程任务">4 个小编程任务</a></li>
           <li><a class="post-toc-link" href="#项目规则放进-agents-md">项目规则放进 AGENTS.md</a></li>
-          <li><a class="post-toc-link" href="#codex-vs-opencode-chatgpt-登录的补充测试">Codex vs OpenCode：ChatGPT 登录的补充测试</a></li>
+          <li><a class="post-toc-link" href="#codex-用自家模型-chatgpt-登录的参照测试">Codex 用自家模型：ChatGPT 登录的参照测试</a></li>
           <li><a class="post-toc-link" href="#订阅与价格">订阅与价格</a></li>
           <li><a class="post-toc-link" href="#复现空操作">复现空操作</a></li>
-          <li><a class="post-toc-link" href="#codex-cli-vs-opencode-我会怎么选">Codex CLI vs OpenCode：我会怎么选</a></li>
+          <li><a class="post-toc-link" href="#codex-vs-opencode-我会怎么选">Codex vs OpenCode：我会怎么选</a></li>
           <li><a class="post-toc-link" href="#测试范围">测试范围</a></li>
           <li><a class="post-toc-link" href="#相关">相关</a></li>
           </ol>
@@ -186,10 +186,10 @@
           <li><a class="post-toc-link" href="#只回复-ok-的固定开销">只回复 OK 的固定开销</a></li>
           <li><a class="post-toc-link" href="#4-个小编程任务">4 个小编程任务</a></li>
           <li><a class="post-toc-link" href="#项目规则放进-agents-md">项目规则放进 AGENTS.md</a></li>
-          <li><a class="post-toc-link" href="#codex-vs-opencode-chatgpt-登录的补充测试">Codex vs OpenCode：ChatGPT 登录的补充测试</a></li>
+          <li><a class="post-toc-link" href="#codex-用自家模型-chatgpt-登录的参照测试">Codex 用自家模型：ChatGPT 登录的参照测试</a></li>
           <li><a class="post-toc-link" href="#订阅与价格">订阅与价格</a></li>
           <li><a class="post-toc-link" href="#复现空操作">复现空操作</a></li>
-          <li><a class="post-toc-link" href="#codex-cli-vs-opencode-我会怎么选">Codex CLI vs OpenCode：我会怎么选</a></li>
+          <li><a class="post-toc-link" href="#codex-vs-opencode-我会怎么选">Codex vs OpenCode：我会怎么选</a></li>
           <li><a class="post-toc-link" href="#测试范围">测试范围</a></li>
           <li><a class="post-toc-link" href="#相关">相关</a></li>
           </ol>
@@ -205,7 +205,7 @@
 <div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="已复制">复制</button><pre><code class="language-text" data-copy-source>Error loading config.toml: `wire_api = &quot;chat&quot;` is no longer supported.
 How to fix: set `wire_api = &quot;responses&quot;` in your provider config.
 </code></pre></div>
-<p>编程实测用 0.167.1，配置兼容性检查用的是 0.167.0。DeepSeek 提供 Responses 接口，下面这 7 行 <code class="post-code--single">~/.codex/config.toml</code> 配置跑通了：</p>
+<p>这条报错来自机器上原有的 0.167.0，后面所有计数的运行都用 0.167.1。DeepSeek 提供 Responses 接口，下面这 7 行 <code class="post-code--single">~/.codex/config.toml</code> 配置跑通了：</p>
 <div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="已复制">复制</button><pre><code class="language-toml" data-copy-source>model = &quot;deepseek-flash&quot;
 model_provider = &quot;ds&quot;
 [model_providers.ds]
@@ -215,7 +215,7 @@ env_key = &quot;DEEPSEEK_API_KEY&quot;
 wire_api = &quot;responses&quot;
 </code></pre></div>
 <p>Codex 警告说，找不到 <code class="post-code--single">deepseek-flash</code> 的模型元数据，已回退到默认值，可能导致表现变差。Codex CLI 主要为 OpenAI 的模型设计和调优，DeepSeek 并非它主要适配的模型。我也跑了 Codex 调用 OpenAI 模型的测试，结果放在后文供参考。两组环境不同，无法做受控性能比较。</p>
-<p>每次受控运行都用 <code class="post-code--spaced">env -i</code>、空 HOME、新建的 git 仓库，并把 stdin 指向 <code class="post-code--single">/dev/null</code>。我在 <code class="post-code--single">api.deepseek.com</code> 前放了一个小型日志代理，记录每次模型请求和 DeepSeek 返回的用量。两组测试的日志覆盖了空操作、编程任务、规则检查和权限探测，其中 Codex 共跑了 28 次。每次 Codex 自报的输入用量都与代理记录一致，没有请求绕过代理。输入总量包含缓存 token，下文也把缓存用量单独列出，因为 DeepSeek 对两类输入的收费差别很大。</p>
+<p>每次受控运行都用 <code class="post-code--spaced">env -i</code>、空 HOME、新建的 git 仓库，并把 stdin 指向 <code class="post-code--single">/dev/null</code>。我在 <code class="post-code--single">api.deepseek.com</code> 前放了一个小型日志代理，记录每次模型请求和 DeepSeek 返回的用量。经过代理的 Codex 运行共 29 次，包括空操作、编程任务、规则检查和权限探测。Codex 每次自报的输入用量都与代理记录一致，没有请求绕过代理。输入总量包含缓存 token，下文也把缓存用量单独列出，因为 DeepSeek 对两类输入的收费差别很大。</p>
 <h2 id="没人盯着跑时的默认行为">没人盯着跑时的默认行为</h2>
 <p>下表每项只跑了 1 次，单独开启网络的探测也只跑了 1 次。所有运行的退出码都是 0，操作被拦也一样。“未写入”指文件最终没有写入。Codex 各列都用 <code class="post-code--spaced">codex exec</code>，沙箱参数见表头。</p>
 <p class="post-table-hint" hidden>左右滑动查看所有列。</p><div class="post-table-scroll" tabindex="0" role="region" aria-label="左右滑动查看所有列。"><table class="table-comparison">
@@ -422,7 +422,7 @@ wire_api = &quot;responses&quot;
 <h2 id="项目规则放进-agents-md">项目规则放进 AGENTS.md</h2>
 <p>我在项目 <code class="post-code--single">AGENTS.md</code> 里写了一条规则，要求回复以 <code class="post-code--single">ZEBRA-MARKER</code> 结尾，两个工具都遵守了。把同一行改放进 <code class="post-code--single">CLAUDE.md</code>，两个工具都没遵守。每种文件和工具的组合只跑了 1 次。</p>
 <p>Codex 的结果符合它的<a href="https://developers.openai.com/codex/guides/agents-md">指令文件文档</a>：&quot;Filenames not on this list are ignored for instruction discovery.&quot; 要让它读取 <code class="post-code--single">CLAUDE.md</code>，可以把这个文件名加入 <code class="post-code--single">project_doc_fallback_filenames</code>。OpenCode 标为 V1 的<a href="https://opencode.ai/docs/rules/">规则页面</a>列出了 &quot;CLAUDE.md in your project directory (used if no AGENTS.md exists)&quot;。我这次的 2.2.7 没有读取它，与<a href="/zh/blog/opencode-vs-claude-code/">上一篇对比中的 2.2.5</a> 一致。共用规则放进 <code class="post-code--single">AGENTS.md</code>。</p>
-<h2 id="codex-vs-opencode-chatgpt-登录的补充测试">Codex vs OpenCode：ChatGPT 登录的补充测试</h2>
+<h2 id="codex-用自家模型-chatgpt-登录的参照测试">Codex 用自家模型：ChatGPT 登录的参照测试</h2>
 <p>我用自己的 ChatGPT 账号登录，选 <code class="post-code--single">gpt-6.1-sol</code>、medium 推理强度，加上 <code class="post-code--spaced">--sandbox workspace-write</code>，把同样的 4 个任务各跑了 1 次。4 个都通过了测试，包括任务 4 的隐藏检查。每个任务执行 3–5 条 shell 命令，耗时 17.3–44.9 秒。</p>
 <p>这组运行用了我平常的 Codex HOME，里面有全局 <code class="post-code--single">AGENTS.md</code> 和配置，无法和空 HOME 的运行做受控性能比较。token 计数也没法直接比较，所以没列。</p>
 <p>我没跑成 OpenCode 调用 GPT 的测试。它的 <a href="https://opencode.ai/docs/providers/">provider 文档</a>介绍了 &quot;Sign in with ChatGPT&quot;，需要交互式登录，这条路径我没测。这台机器上的 OpenAI API key 被拒绝了。</p>
@@ -463,9 +463,9 @@ echo &quot;codex exit: ${PIPESTATUS[0]}&quot;
 </code></pre></div>
 <p>OpenCode 的 <code class="post-code--single">step_finish</code> 用量要把 input 和 cache read 加起来算：主请求共 5,354，不含标题请求。Codex 报告了 8,556 个输入 token。临时目录的路径长度不同，所以这里的数字和表格相差几个 token。</p>
 <p>密钥错误或为空时，两个工具的退出码都是 1，也都没有打印用量行。前面那些操作被拦的运行，退出码却都是 0。这次测到的失败情况里，只有认证失败才返回了非零退出码。</p>
-<h2 id="codex-cli-vs-opencode-我会怎么选">Codex CLI vs OpenCode：我会怎么选</h2>
+<h2 id="codex-vs-opencode-我会怎么选">Codex vs OpenCode：我会怎么选</h2>
 <p>已经付费订阅 ChatGPT，又想让沙箱默认拦住项目外写入和网络访问，我会选 Codex。需要编辑文件时加 <code class="post-code--spaced">--sandbox workspace-write</code>，检查结果时别只看退出码。</p>
-<p>想用一个模型参数切换 provider，我会选 OpenCode。空操作测试里，它每次模型请求的输入 token 也更少。它拥有当前用户的完整权限，deny 规则可以限制操作。需要操作系统级隔离，就得自己把它放进容器。无论选哪个，都要自己检查 diff 和测试。</p>
+<p>想用一个模型参数切换 provider，我会选 OpenCode。空操作测试里，它每次模型请求的输入 token 也更少，不过在 DeepSeek 上按全价计费的部分更多。它拥有当前用户的完整权限，deny 规则可以限制操作。需要操作系统级隔离，就得自己把它放进容器。无论选哪个，都要自己检查 diff 和测试。</p>
 <h2 id="测试范围">测试范围</h2>
 <p>这次只用了一台机器，都在同一天测完，用一个 DeepSeek 模型跑 4 个小任务，每个任务用每个工具各跑 3 次。权限等探测每种设置只跑 1 次。受控对比中的 Codex 没有使用它主要适配的模型，缓存数据也只适用于 DeepSeek 和这批重复运行。没有 OpenCode 调用 GPT 的运行数据。用量计数只适用于这些版本。</p>
 <aside class="post-cta">

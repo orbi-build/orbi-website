@@ -29,7 +29,7 @@ Error loading config.toml: `wire_api = "chat"` is no longer supported.
 How to fix: set `wire_api = "responses"` in your provider config.
 ```
 
-编程实测用 0.167.1，配置兼容性检查用的是 0.167.0。DeepSeek 提供 Responses 接口，下面这 7 行 `~/.codex/config.toml` 配置跑通了：
+这条报错来自机器上原有的 0.167.0，后面所有计数的运行都用 0.167.1。DeepSeek 提供 Responses 接口，下面这 7 行 `~/.codex/config.toml` 配置跑通了：
 
 ```toml
 model = "deepseek-flash"
@@ -43,7 +43,7 @@ wire_api = "responses"
 
 Codex 警告说，找不到 `deepseek-flash` 的模型元数据，已回退到默认值，可能导致表现变差。Codex CLI 主要为 OpenAI 的模型设计和调优，DeepSeek 并非它主要适配的模型。我也跑了 Codex 调用 OpenAI 模型的测试，结果放在后文供参考。两组环境不同，无法做受控性能比较。
 
-每次受控运行都用 `env -i`、空 HOME、新建的 git 仓库，并把 stdin 指向 `/dev/null`。我在 `api.deepseek.com` 前放了一个小型日志代理，记录每次模型请求和 DeepSeek 返回的用量。两组测试的日志覆盖了空操作、编程任务、规则检查和权限探测，其中 Codex 共跑了 28 次。每次 Codex 自报的输入用量都与代理记录一致，没有请求绕过代理。输入总量包含缓存 token，下文也把缓存用量单独列出，因为 DeepSeek 对两类输入的收费差别很大。
+每次受控运行都用 `env -i`、空 HOME、新建的 git 仓库，并把 stdin 指向 `/dev/null`。我在 `api.deepseek.com` 前放了一个小型日志代理，记录每次模型请求和 DeepSeek 返回的用量。经过代理的 Codex 运行共 29 次，包括空操作、编程任务、规则检查和权限探测。Codex 每次自报的输入用量都与代理记录一致，没有请求绕过代理。输入总量包含缓存 token，下文也把缓存用量单独列出，因为 DeepSeek 对两类输入的收费差别很大。
 
 ## 没人盯着跑时的默认行为
 
@@ -118,7 +118,7 @@ OpenCode 的工具是 `edit`、`glob`、`grep`、`question`、`read`、`shell`�
 
 Codex 的结果符合它的[指令文件文档](https://developers.openai.com/codex/guides/agents-md)："Filenames not on this list are ignored for instruction discovery." 要让它读取 `CLAUDE.md`，可以把这个文件名加入 `project_doc_fallback_filenames`。OpenCode 标为 V1 的[规则页面](https://opencode.ai/docs/rules/)列出了 "CLAUDE.md in your project directory (used if no AGENTS.md exists)"。我这次的 2.2.7 没有读取它，与[上一篇对比中的 2.2.5](/zh/blog/opencode-vs-claude-code/) 一致。共用规则放进 `AGENTS.md`。
 
-## Codex vs OpenCode：ChatGPT 登录的补充测试
+## Codex 用自家模型：ChatGPT 登录的参照测试
 
 我用自己的 ChatGPT 账号登录，选 `gpt-6.1-sol`、medium 推理强度，加上 `--sandbox workspace-write`，把同样的 4 个任务各跑了 1 次。4 个都通过了测试，包括任务 4 的隐藏检查。每个任务执行 3–5 条 shell 命令，耗时 17.3–44.9 秒。
 
@@ -176,11 +176,11 @@ OpenCode 的 `step_finish` 用量要把 input 和 cache read 加起来算：主�
 
 密钥错误或为空时，两个工具的退出码都是 1，也都没有打印用量行。前面那些操作被拦的运行，退出码却都是 0。这次测到的失败情况里，只有认证失败才返回了非零退出码。
 
-## Codex CLI vs OpenCode：我会怎么选
+## Codex vs OpenCode：我会怎么选
 
 已经付费订阅 ChatGPT，又想让沙箱默认拦住项目外写入和网络访问，我会选 Codex。需要编辑文件时加 `--sandbox workspace-write`，检查结果时别只看退出码。
 
-想用一个模型参数切换 provider，我会选 OpenCode。空操作测试里，它每次模型请求的输入 token 也更少。它拥有当前用户的完整权限，deny 规则可以限制操作。需要操作系统级隔离，就得自己把它放进容器。无论选哪个，都要自己检查 diff 和测试。
+想用一个模型参数切换 provider，我会选 OpenCode。空操作测试里，它每次模型请求的输入 token 也更少，不过在 DeepSeek 上按全价计费的部分更多。它拥有当前用户的完整权限，deny 规则可以限制操作。需要操作系统级隔离，就得自己把它放进容器。无论选哪个，都要自己检查 diff 和测试。
 
 ## 测试范围
 

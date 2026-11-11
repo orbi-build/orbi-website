@@ -8,11 +8,11 @@ image: /img/blog-opencode-vs-codex-card.png
 mirror: opencode-vs-codex
 ---
 
-In this headless OpenCode vs Codex test, I compared two open-source terminal coding agents: OpenCode works with many model providers, and OpenAI builds Codex CLI for its own models. I wrote this for developers running agents in scripts, CI jobs or cron with nobody watching. I measured overhead and default behaviour on the same model, and included the DeepSeek config and a script to reproduce the OK reply test. On my Linux machine on 11 November 2026, I ran OpenCode 2.2.7 and Codex CLI 0.167.1 with DeepSeek V4.1 Flash (`deepseek-flash`). All 24 controlled coding runs passed when I gave Codex workspace-write. Codex used more total input and took longer at every task median.
+OpenCode vs Codex CLI is a choice between two open-source terminal coding agents: OpenCode works with many model providers, and OpenAI builds Codex CLI for its own models. If you run one of them from a script, a CI job or cron with nobody watching, the numbers below show what each sends to the model and what each does by default, and the config and script to repeat the test are included. On my Linux machine on 11 November 2026, I ran OpenCode 2.2.7 and Codex CLI 0.167.1 on the same model, DeepSeek V4.1 Flash (`deepseek-flash`). All 24 controlled coding runs passed once Codex had workspace-write. Codex used more total input and took longer at every task median.
 
 I'm Larry 🍀 Orbi, the creator of Orbi. Orbi runs Pi, an open-source coding agent CLI, to turn GitHub Issues into merged changes. A separate Pi session reviews each one.
 
-## How I ran OpenCode vs Codex
+## Test setup
 
 I ran OpenCode with its built-in DeepSeek provider:
 
@@ -27,7 +27,7 @@ Error loading config.toml: `wire_api = "chat"` is no longer supported.
 How to fix: set `wire_api = "responses"` in your provider config.
 ```
 
-I used 0.167.0 for that compatibility check. DeepSeek has a Responses endpoint, and this seven-line `~/.codex/config.toml` worked:
+That error came from 0.167.0, the version already on the machine. Every measured run used 0.167.1. DeepSeek has a Responses endpoint, and this seven-line `~/.codex/config.toml` worked:
 
 ```toml
 model = "deepseek-flash"
@@ -41,7 +41,7 @@ wire_api = "responses"
 
 Codex warned that it had no model metadata for `deepseek-flash` and fell back to defaults, which could degrade performance. Codex CLI is built and tuned for OpenAI's models. I also ran it with its own model as a reference.
 
-For each controlled run, I used `env -i`, an empty HOME and a fresh git repository, with stdin from `/dev/null`. I put a small logging proxy in front of `api.deepseek.com` to record every model request and DeepSeek's usage numbers. Codex's self-reported input matched the proxy on all 28 Codex runs in the two sets of logged tests (no-ops, tasks, rule checks and permission probes). No request bypassed the proxy. My input totals include cached tokens. I list those separately because DeepSeek bills them very differently.
+For each controlled run, I used `env -i`, an empty HOME and a fresh git repository, with stdin from `/dev/null`. I put a small logging proxy in front of `api.deepseek.com` to record every model request and DeepSeek's usage numbers. Codex also reports its own input tokens, and that number matched the proxy on all 29 Codex runs that went through it: the no-ops, coding tasks, rule checks and permission probes. No request bypassed the proxy. My input totals include cached tokens. I list those separately because DeepSeek bills them very differently.
 
 ## Default behaviour with nobody watching
 
@@ -55,9 +55,9 @@ I ran each probe once, including a separate probe with network access enabled. E
 | Add a line to parent `notes.md`, no command supplied | Written | Not written | Not written | Not run |
 | Task 1: fix the duration bug | Fixed | Not fixed | Fixed | Not run |
 
-With plain `codex exec "<task 1 prompt>"`, Codex read the code, then reported this on stderr: `patch rejected: writing is blocked by read-only sandbox; rejected by user approval settings`. It verified a corrected version in memory, described the fix in its final message and exited 0. The file stayed unchanged and its tests still failed. That run used 6 requests, 67,537 input tokens and 27.2 seconds, more input and time than any successful run of that task.
+With plain `codex exec "<task 1 prompt>"`, Codex read the code, then reported this on stderr: `patch rejected: writing is blocked by read-only sandbox; rejected by user approval settings`. It verified a corrected version in memory, described the fix in its final message and exited 0. The file stayed unchanged and its tests still failed. That run used 6 requests, 67,537 input tokens and 27.2 seconds, more input and time than any successful run of that task. A script that checks only the exit code would count it as done.
 
-The [Codex automation docs](https://developers.openai.com/codex/noninteractive) say: "By default, codex exec runs in a read-only sandbox." They document `--sandbox workspace-write` for edits. OpenCode has no OS-level sandbox; its [permissions docs](https://opencode.ai/docs/permissions/) say "shell runs with the host user’s filesystem, process, and network authority." The full [Codex sandbox and approval matrix](/blog/codex-yolo-mode/) covers the other modes. A script checking only the exit code would count that read-only run as done. I would check the tests or diff as well.
+The [Codex automation docs](https://developers.openai.com/codex/noninteractive) say: "By default, codex exec runs in a read-only sandbox." They document `--sandbox workspace-write` for edits. OpenCode has no OS-level sandbox; its [permissions docs](https://opencode.ai/docs/permissions/) say "shell runs with the host user’s filesystem, process, and network authority." The full [Codex sandbox and approval matrix](/blog/codex-yolo-mode/) covers the other modes.
 
 For unattended GitHub Issues, [Orbi Cloud](/cloud/?ref=blog-oc-vs-codex) runs Pi on each Issue and stops runs that changed no file. A separate Pi session reviews the pull request; merge requires both that review and the repository's CI to pass.
 
@@ -78,7 +78,7 @@ In the coding requests I captured, OpenCode sent one system message of 8,654 cha
 
 Cache hits depend on an identical prompt prefix having been sent recently. I ran these tests within minutes of each other, so I'd expect fewer hits on a first-ever run. I did not measure that cold-cache rate. DeepSeek's prefix cache left Codex with 752 full-price input tokens against OpenCode's 3,767. I did not test caching on other providers.
 
-## Four small coding tasks
+## OpenCode vs Codex on four small coding tasks
 
 For task 1, I asked each agent to fix a bug in `duration.py` and named the file in the prompt. Task 2 was to implement `top_words`. For task 3, the agent had to search a three-file `shop` package without a filename in the prompt. Task 4 used a new four-file `ledger` package with four bugs, nine visible tests and hidden checks the agent never saw.
 
@@ -97,7 +97,7 @@ I calculated the median for each metric separately over three runs. A row does n
 | 4 / OpenCode | 7 | 46,814 | 39,680 | 7,259 | 1,947 | 15.3 |
 | 4 / Codex | 6 | 79,305 | 74,240 | 5,065 | 4,378 | 25.3 |
 
-At every task median, Codex took longer and used more total input, with fewer uncached tokens. Its output was 2.1–5.9× OpenCode's.
+At every task median, Codex took longer and used more total input, with fewer uncached tokens. Its output was 2.1 to 5.9 times OpenCode's.
 
 At [DeepSeek's peak list prices](https://api-docs.deepseek.com/quick_start/pricing), cached input costs $0.006, uncached input $0.30 and output $1.20 per million tokens. I ran these tests during peak hours. The median list-price cost per run was:
 
@@ -108,7 +108,7 @@ At [DeepSeek's peak list prices](https://api-docs.deepseek.com/quick_start/prici
 | 3 | $0.00280 | $0.00320 |
 | 4 | $0.00471 | $0.00722 |
 
-All these runs cost under one cent. I calculated costs per run before taking medians. In the runs that defined each cost median, Codex's input cost was lower. Its extra output made the total higher. Both tools passed these tasks, so I could not distinguish their correctness here. I measured overhead and default behaviour without benchmarking or ranking either agent's ability.
+All these runs cost under one cent. I calculated costs per run before taking medians. In the runs that defined each cost median, Codex's input cost was lower. Its extra output made the total higher. Both tools passed these tasks, so they say nothing about which agent is more capable. This is not a benchmark.
 
 ## Project rules: use AGENTS.md
 
@@ -116,9 +116,9 @@ I put a rule in the project's `AGENTS.md` asking each agent to end its replies w
 
 For Codex, this matches the [instruction-file docs](https://developers.openai.com/codex/guides/agents-md): "Filenames not on this list are ignored for instruction discovery." I'd add `CLAUDE.md` to `project_doc_fallback_filenames` for Codex to read it. OpenCode's [rules page, labelled V1](https://opencode.ai/docs/rules/), lists "CLAUDE.md in your project directory (used if no AGENTS.md exists)". My 2.2.7 run did not read that file, matching [2.2.5 in the earlier comparison](/blog/opencode-vs-claude-code/). I'd keep shared rules in `AGENTS.md`.
 
-## Codex vs OpenCode with a ChatGPT login
+## Codex on its own model, through a ChatGPT login
 
-I ran the same four tasks once each through my ChatGPT login, using `gpt-6.1-sol`, medium reasoning effort and `--sandbox workspace-write`. All four passed, including task 4's hidden checks, with 3–5 shell commands per task and wall times of 17.3–44.9 seconds.
+I ran the same four tasks once each through my ChatGPT login, using `gpt-6.1-sol`, medium reasoning effort and `--sandbox workspace-write`. All four passed, including task 4's hidden checks, with 3 to 5 shell commands per task and wall times of 17.3 to 44.9 seconds.
 
 Because I used my normal Codex home, including global `AGENTS.md` and config, I could not make a controlled performance comparison with the clean-home runs. I left out the token counts because they are not comparable.
 
@@ -172,11 +172,11 @@ OpenCode's `step_finish` counts input plus cache read: 5,354 for the main reques
 
 With a wrong or empty key, both tools exited 1 and printed no usage line. The blocked runs earlier had exited 0.
 
-## Codex CLI vs OpenCode: which one I'd use
+## Codex vs OpenCode: which one I'd use
 
-I'd choose Codex if I already paid for ChatGPT and wanted a sandbox that blocks out-of-project writes and network by default. I'd pass `--sandbox workspace-write` for edits and check results beyond the exit code.
+I'd choose Codex if I already paid for ChatGPT and wanted a sandbox that blocks out-of-project writes and network by default. I'd pass `--sandbox workspace-write` for edits.
 
-I'd choose OpenCode for provider selection with one model flag. It used fewer input tokens per request in my no-op test. OpenCode runs with the host user's full authority. Deny rules restrict actions; a container supplies OS isolation. With either tool, I'd verify the diff and run the tests myself.
+I'd choose OpenCode if I wanted to switch model providers by changing one `-m` flag. It also sent fewer input tokens per request in my no-op test, though more of them were billed at full price on DeepSeek. OpenCode runs with the host user's full authority. Its deny rules can block specific actions, but for OS-level isolation I'd run it in a container. With either tool, I'd verify the diff and run the tests myself.
 
 ## Limits
 
