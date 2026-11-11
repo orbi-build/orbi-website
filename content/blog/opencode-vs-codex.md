@@ -55,7 +55,7 @@ I ran each probe once, including a separate probe with network access enabled, a
 | Add a line to parent `notes.md`, no command supplied | Written | Not written | Not written | Not run |
 | Task 1: fix the duration bug | Fixed | Not fixed | Fixed | Not run |
 
-With plain `codex exec "<task 1 prompt>"`, Codex read the code, then reported this on stderr: `patch rejected: writing is blocked by read-only sandbox; rejected by user approval settings`. It then loaded a patched copy of the module in memory, ran the tests against that copy, where they passed, described the fix in its final message and exited 0. Nothing was written to disk, so the file stayed unchanged and the repository's tests still failed when I ran them afterwards. That run used 6 requests, 67,537 input tokens and 27.2 seconds, more input and time than any successful run of that task. A script that checks only the exit code would count it as done.
+With plain `codex exec "<task 1 prompt>"`, Codex read the code, then reported this on stderr: `patch rejected: writing is blocked by read-only sandbox; rejected by user approval settings`. It then loaded a patched copy of the module in memory, ran the tests against that copy, where they passed, described the fix in its final message and exited 0. The patch never reached disk, so the file stayed unchanged and the repository's tests still failed when I ran them afterwards. That run used 6 requests, 67,537 input tokens and 27.2 seconds, more input and time than any successful run of that task. A script that checks only the exit code would count it as done.
 
 The [Codex automation docs](https://developers.openai.com/codex/noninteractive) say: "By default, codex exec runs in a read-only sandbox." They document `--sandbox workspace-write` for edits. OpenCode has no OS-level sandbox; its [permissions docs](https://opencode.ai/docs/permissions/) say "shell runs with the host user’s filesystem, process, and network authority." The full [Codex sandbox and approval matrix](/blog/codex-yolo-mode/) covers the other modes.
 
@@ -132,11 +132,11 @@ On the [Codex pricing page](https://developers.openai.com/codex/pricing), CLI ac
 
 ## Reproduce the no-op
 
-Only the no-op measurement can be repeated from this post; the four task repositories are not published. Save the following as a Bash script. It uses `PIPESTATUS` and needs OpenCode 2.x, Codex CLI 0.167 or later (I ran 0.167.1), `jq`, and an exported `DEEPSEEK_API_KEY`. Codex stays in its default read-only sandbox here, which is enough for a reply; add `--sandbox workspace-write` before asking it to edit files. Run it from a directory with no `AGENTS.md` in it or above it, so no project rules get added to the prompt.
+Only the no-op measurement can be repeated from this post; the four task repositories are not published. Save the following as a Bash script. It uses `PIPESTATUS`. I ran it with OpenCode 2.2.7 and Codex CLI 0.167.1; it also needs `jq` and an exported `DEEPSEEK_API_KEY`. Codex stays in its default read-only sandbox here, which is enough for a reply; add `--sandbox workspace-write` before asking it to edit files. Run it from a directory with no `AGENTS.md` in it or above it, so no project rules get added to the prompt.
 
 ```bash
 #!/usr/bin/env bash
-# Needs: opencode 2.x, codex 0.167+, jq, and DEEPSEEK_API_KEY exported.
+# Tested with opencode 2.2.7 and codex 0.167.1. Needs jq and DEEPSEEK_API_KEY exported.
 # OpenCode no-op: empty HOME, stdin closed
 H=$(mktemp -d)
 env -i HOME="$H" PATH="$PATH" DEEPSEEK_API_KEY="$DEEPSEEK_API_KEY" \
@@ -161,14 +161,14 @@ env -i HOME="$H" PATH="$PATH" DEEPSEEK_API_KEY="$DEEPSEEK_API_KEY" \
 echo "codex exit: ${PIPESTATUS[0]}"
 ```
 
-My usage lines were:
+My usage lines on the latest run were:
 
 ```json
-{"input":3562,"output":2,"reasoning":0,"cache":{"read":1792,"write":0}}
-{"input_tokens":8556,"cached_input_tokens":7808,"cache_write_input_tokens":0,"output_tokens":2,"reasoning_output_tokens":0}
+{"input":234,"output":2,"reasoning":0,"cache":{"read":5120,"write":0}}
+{"input_tokens":8557,"cached_input_tokens":7808,"cache_write_input_tokens":0,"output_tokens":8,"reasoning_output_tokens":6}
 ```
 
-OpenCode printed one line, for its main request: add `input` and `cache.read` to get 5,354 input tokens. Its title request is not in `step_finish`. Codex reported 8,556. Those are 16 tokens below the 5,370 of OpenCode's main request quoted above, and 4 below Codex's 8,560 in the table. The script runs in a different directory, outside a git repository and without the proxy; I did not trace the difference further. If you get numbers close to these two, you have repeated the measurement.
+OpenCode printed one line, for its main request: add `input` and `cache.read` to get 5,354 input tokens. Its title request is not in `step_finish`. An earlier run of the same script printed 3,562 and 1,792, the same sum with fewer cache hits. Codex reported 8,557 this time and 8,556 the first time. OpenCode's 5,354 is 16 tokens below the 5,370 of its main request quoted above, and Codex's two results are 3 and 4 below the 8,560 in the table. The script runs in a different directory, outside a git repository and without the proxy; I did not trace the difference further. If you get numbers close to 5,354 and 8,557, you have repeated the measurement.
 
 With a wrong or empty key, both tools exited 1 and printed no usage line. The blocked runs earlier had exited 0.
 

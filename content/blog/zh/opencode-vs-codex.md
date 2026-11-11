@@ -57,7 +57,7 @@ Codex 警告说，找不到 `deepseek-flash` 的模型元数据，已回退到�
 | 在上级目录的 `notes.md` 追加一行，不提供命令 | 已写入 | 未写入 | 未写入 | 未测试 |
 | 任务 1：修复 duration bug | 已修复 | 未修复 | 已修复 | 未测试 |
 
-直接运行 `codex exec "<task 1 prompt>"` 时，Codex 读取了代码，随后 stderr 报出 `patch rejected: writing is blocked by read-only sandbox; rejected by user approval settings`。接着它在内存里加载一份改好的模块，对着这份副本跑测试，测试通过；然后在最终回复中描述了修复，以 0 退出。磁盘上什么都没写，文件没改，我事后重跑仓库里的测试仍然失败。这次用了 6 次请求、67,537 个输入 token，耗时 27.2 秒。这个任务的所有成功运行，输入和耗时都比这次少。
+直接运行 `codex exec "<task 1 prompt>"` 时，Codex 读取了代码，随后 stderr 报出 `patch rejected: writing is blocked by read-only sandbox; rejected by user approval settings`。接着它在内存里加载一份改好的模块，对着这份副本跑测试，测试通过；然后在最终回复中描述了修复，以 0 退出。补丁没有落盘，文件没改，我事后重跑仓库里的测试仍然失败。这次用了 6 次请求、67,537 个输入 token，耗时 27.2 秒。这个任务的所有成功运行，输入和耗时都比这次少。
 
 [Codex 自动化文档](https://developers.openai.com/codex/noninteractive)写着："By default, codex exec runs in a read-only sandbox." 文档给出的编辑参数是 `--sandbox workspace-write`。OpenCode 没有操作系统级沙箱，它的[权限文档](https://opencode.ai/docs/permissions/)写着："shell runs with the host user’s filesystem, process, and network authority." 其他模式可以看完整的 [Codex 沙箱与审批矩阵](/zh/blog/codex-yolo-mode/)。脚本只看退出码，就会把那次只读运行算作完成，还得检查测试或 diff。
 
@@ -134,13 +134,13 @@ Codex 的结果符合它的[指令文件文档](https://developers.openai.com/co
 
 ## 复现空操作
 
-本文里能照着复现的只有空操作这一项，4 个任务的仓库没有公开。把下面的内容保存为 Bash 脚本。脚本用到了 `PIPESTATUS`，需要 OpenCode 2.x、Codex CLI 0.167 或更新版本（我跑的是 0.167.1）、`jq`，还要提前导出 `DEEPSEEK_API_KEY`。脚本里的 Codex 留在默认的只读沙箱，回一句话够用；要让它改文件，先加 `--sandbox workspace-write`。运行目录及其上级目录都不能有 `AGENTS.md`，否则项目规则也会加进 prompt。
+本文里能照着复现的只有空操作这一项，4 个任务的仓库没有公开。把下面的内容保存为 Bash 脚本。脚本用到了 `PIPESTATUS`。我跑它用的是 OpenCode 2.2.7 和 Codex CLI 0.167.1，另外需要 `jq`，还要提前导出 `DEEPSEEK_API_KEY`。脚本里的 Codex 留在默认的只读沙箱，回一句话够用；要让它改文件，先加 `--sandbox workspace-write`。运行目录及其上级目录都不能有 `AGENTS.md`，否则项目规则也会加进 prompt。
 
 脚本打印的 OpenCode 用量来自主请求，不含标题请求。
 
 ```bash
 #!/usr/bin/env bash
-# Needs: opencode 2.x, codex 0.167+, jq, and DEEPSEEK_API_KEY exported.
+# Tested with opencode 2.2.7 and codex 0.167.1. Needs jq and DEEPSEEK_API_KEY exported.
 # OpenCode no-op: empty HOME, stdin closed
 H=$(mktemp -d)
 env -i HOME="$H" PATH="$PATH" DEEPSEEK_API_KEY="$DEEPSEEK_API_KEY" \
@@ -165,14 +165,14 @@ env -i HOME="$H" PATH="$PATH" DEEPSEEK_API_KEY="$DEEPSEEK_API_KEY" \
 echo "codex exit: ${PIPESTATUS[0]}"
 ```
 
-我的用量输出如下：
+我最近一次跑出的用量如下：
 
 ```json
-{"input":3562,"output":2,"reasoning":0,"cache":{"read":1792,"write":0}}
-{"input_tokens":8556,"cached_input_tokens":7808,"cache_write_input_tokens":0,"output_tokens":2,"reasoning_output_tokens":0}
+{"input":234,"output":2,"reasoning":0,"cache":{"read":5120,"write":0}}
+{"input_tokens":8557,"cached_input_tokens":7808,"cache_write_input_tokens":0,"output_tokens":8,"reasoning_output_tokens":6}
 ```
 
-OpenCode 只打印了主请求这一行，把 `input` 和 `cache.read` 相加是 5,354 个输入 token。Codex 报告了 8,556 个。前一个数比上文主请求的 5,370 少 16，后一个比表格里 Codex 的 8,560 少 4。脚本换了运行目录，不在 git 仓库里，也不经过代理，差在哪我没有继续查。跑出来接近这两个数，就算复现了。
+OpenCode 只打印了主请求这一行，把 `input` 和 `cache.read` 相加是 5,354 个输入 token。同一个脚本更早一次跑出的是 3,562 和 1,792，两数相加同样是 5,354，只是缓存命中少。Codex 这次报告 8,557 个，第一次是 8,556 个。OpenCode 的 5,354 比上文主请求的 5,370 少 16，Codex 的 8,557 和 8,556 比表格里的 8,560 少 3 到 4。脚本换了运行目录，不在 git 仓库里，也不经过代理，差在哪我没有继续查。跑出来接近 5,354 和 8,557，就算复现了。
 
 密钥错误或为空时，两个工具的退出码都是 1，也都没有打印用量行。前面那些操作被拦的运行，退出码却都是 0。这次测到的失败情况里，只有认证失败才返回了非零退出码。
 
