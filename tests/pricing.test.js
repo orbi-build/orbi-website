@@ -3,7 +3,7 @@ import { readdir, readFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import pricing from "../src/pricing.json";
 import { handleFetch } from "../src/worker.js";
-import { paidPriceReplacements } from "../src/pricing-tokens.js";
+import { foundingDiscountNote, paidPriceReplacements } from "../src/pricing-tokens.js";
 
 const PUBLIC_DIR = fileURLToPath(new URL("../public/", import.meta.url));
 const SITE_PAGES_DIR = fileURLToPath(new URL("../site/pages/", import.meta.url));
@@ -621,14 +621,17 @@ describe("Cloud paid-tier pricing (Issue #441)", () => {
 
   it("renders the founding banner before pricing cards with live slot counts", async () => {
     // Issue #1212: the banner's sentence is copy, its live values are not.
+    // Issue #1298: the code is no longer a value the visitor reads — the
+    // subscribe link applies it — so the banner carries the two counts only.
     for (const relativePath of CLOUD_PAGES) {
       const response = await serve(await rawPage(relativePath), `/${relativePath.replace(/index\.html$/, "")}`);
       const body = await response.text();
       const banner = body.match(/<p class="founding-offer">([\s\S]*?)<\/p>/)?.[1] ?? "";
       expect(banner, relativePath + ": founding banner").toBeTruthy();
-      for (const value of [FOUNDING_PARTNER_LIMIT, FOUNDING_PARTNER_REMAINING, FOUNDING_PROMO_CODE]) {
+      for (const value of [FOUNDING_PARTNER_LIMIT, FOUNDING_PARTNER_REMAINING]) {
         expect(banner, relativePath + ": live founding value " + value).toContain(value);
       }
+      expect(banner, relativePath + ": no code to type").not.toContain(FOUNDING_PROMO_CODE);
       expect(body.indexOf("founding-offer"), relativePath).toBeLessThan(body.indexOf("pricing-cards"));
     }
   });
@@ -712,7 +715,9 @@ describe("Cloud paid-tier pricing (Issue #441)", () => {
         pricing.proRepositoriesToken,
         pricing.foundingPartnerLimitToken,
         pricing.foundingPartnerRemainingToken,
-        pricing.foundingPromoCodeToken,
+        // Issue #1298: the code is applied by the subscribe link, so the copy
+        // carries the automatic-discount sentence instead of `__FOUNDING_PROMO_CODE__`.
+        pricing.foundingDiscountNoteToken,
         pricing.measuredSoloRepositoryDeliveryRangeToken,
       ]) expect(html, relativePath).toContain(token);
     }
@@ -889,3 +894,85 @@ describe("Cloud founding price (Issue #1237)", () => {
   });
 });
 
+// Issue #1298: the founding half price reaches Stripe because the subscribe
+// link itself carries the code (Issue #1281), so the copy says the discount is
+// applied by that click. "Use code FOUNDING50 at checkout" told the visitor the
+// opposite — that the price on the card was not the price, and that typing the
+// code was still their job (orbi-cloud#3233 changed the same sentence in
+// Cloud).
+describe("Cloud founding copy names the automatic discount (Issue #1298)", () => {
+  // The contract is the claim, not the exact wording.
+  const NOTE = {
+    en: /50% discount is applied automatically when you subscribe/i,
+    zh: /订阅时自动按五折结算/,
+  };
+  const banner = (body) => body.match(/<p class="founding-offer">([\s\S]*?)<\/p>/)?.[1] ?? "";
+  const faqAnswers = (body) => [...body.matchAll(/<p class="orbi-faq-answer-p">([\s\S]*?)<\/p>/g)].map(([, answer]) => answer);
+  const jsonLdAnswers = (body) => [...body.matchAll(/<script type="application\/ld\+json">(.*?)<\/script>/gs)]
+    .flatMap(([, script]) => {
+      const data = JSON.parse(script);
+      return (data["@graph"] ?? [data])
+        .filter((node) => node["@type"] === "FAQPage")
+        .flatMap((node) => node.mainEntity ?? [])
+        .map((question) => question.acceptedAnswer?.text ?? "");
+    });
+
+  it("derives the sentence from the same condition as the founding price", () => {
+    expect(foundingDiscountNote(pricing)).toMatch(NOTE.en);
+    expect(foundingDiscountNote(pricing, { zh: true })).toMatch(NOTE.zh);
+    // No places left: the sentence is gone, not reworded — a page that kept
+    // promising 50% off while charging the list price is the bug #1237 fixed.
+    expect(foundingDiscountNote(pricing, { remaining: 0 })).toBe("");
+    expect(foundingDiscountNote(pricing, { zh: true, remaining: 0 })).toBe("");
+  });
+
+  it("serves the automatic-discount sentence at the three places, never a code to type", async () => {
+    for (const relativePath of CLOUD_PAGES) {
+      const body = await (await serve(await rawPage(relativePath), `/${relativePath.replace(/index\.html$/, "")}`)).text();
+      const zh = relativePath.startsWith("zh/");
+      const note = zh ? NOTE.zh : NOTE.en;
+      // The whole page, not just the three blocks: an FAQ duplicated into copy
+      // elsewhere must not reintroduce the instruction.
+      expect(body, relativePath + ": no code to type at checkout").not.toMatch(/at checkout/i);
+      expect(body, relativePath + ": no 结账时").not.toContain("结账时");
+      // The code is still a link parameter (Issue #1281, unchanged) and only
+      // that: every FOUNDING50 on the page sits inside a checkout href.
+      const codeHits = (body.match(new RegExp(FOUNDING_PROMO_CODE, "g")) ?? []).length;
+      const promoHrefs = (body.match(/href="\/api\/checkout[^"]*"/g) ?? [])
+        .filter((href) => href.includes(`promo=${FOUNDING_PROMO_CODE}`));
+      expect(codeHits, relativePath + ": code printed as copy").toBe(promoHrefs.length);
+      // Issue #1298 names three places: the price-area banner, the visible FAQ
+      // and the JSON-LD answer search engines copy.
+      expect(banner(body), relativePath + ": price-area banner").toMatch(note);
+      expect(faqAnswers(body).filter((answer) => note.test(answer)), relativePath + ": visible FAQ")
+        .toHaveLength(1);
+      expect(jsonLdAnswers(body).filter((answer) => note.test(answer)), relativePath + ": JSON-LD FAQ")
+        .toHaveLength(1);
+    }
+  });
+
+  it("keeps the sentence out of the page once the founding places are gone", async () => {
+    const gone = { ...paidPriceReplacements(pricing, 0), [pricing.foundingDiscountNoteToken]: foundingDiscountNote(pricing, { remaining: 0 }) };
+    for (const relativePath of CLOUD_PAGES) {
+      let html = await readFile(`${SITE_PAGES_DIR}${relativePath}`, "utf8");
+      for (const [token, value] of Object.entries(gone)) html = html.replaceAll(token, value);
+      expect(html, relativePath + ": founding price state").toContain('data-founding-price="off"');
+      expect(html, relativePath + ": no automatic discount claimed")
+        .not.toMatch(/applied automatically when you subscribe|订阅时自动按五折结算/);
+      expect(html, relativePath + ": no code to type at checkout").not.toMatch(/at checkout/i);
+      expect(html, relativePath + ": no 结账时").not.toContain("结账时");
+      // The counts the banner does keep are still live values.
+      expect(banner(html), relativePath + ": slot counts").toContain(pricing.foundingPartnerRemainingToken);
+    }
+  });
+
+  it("keeps the sentence tokenized in both source pages", async () => {
+    for (const relativePath of CLOUD_PAGES) {
+      const html = await readFile(`${SITE_PAGES_DIR}${relativePath}`, "utf8");
+      expect(html, relativePath + ": note token").toContain(pricing.foundingDiscountNoteToken);
+      // Three carriers per page: banner, visible FAQ and JSON-LD.
+      expect((html.match(new RegExp(pricing.foundingDiscountNoteToken, "g")) ?? []), relativePath).toHaveLength(3);
+      expect(html, relativePath + ": no hand-written code instruction").not.toMatch(/at checkout|结账时/);
+    }
+  });
+});

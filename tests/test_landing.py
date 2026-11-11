@@ -1119,9 +1119,13 @@ class CloudLandingPageTests(unittest.TestCase):
             for value in (
                 PRICING["foundingPartnerRemaining"],
                 PRICING["foundingPartnerLimit"],
-                PRICING["foundingPromoCode"],
             ):
                 self.assertIn(str(value), page.text)
+            # Issue #1298: the promo code is no longer a value the page prints
+            # — the checkout link applies it — so it is asserted where it now
+            # lives (the hrefs), in
+            # test_checkout_links_carry_the_founding_promo_while_places_remain.
+            self.assertNotIn(PRICING["foundingPromoCode"], page.text)
 
     def test_checkout_links_carry_the_founding_promo_while_places_remain(self) -> None:
         """Issue #1281: Cloud hands the promo code to Stripe only when the link
