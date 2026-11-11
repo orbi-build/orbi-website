@@ -1,10 +1,11 @@
 ---
 title: OpenCode vs Codex CLI: same model, headless
 date: 2026-11-11
-summary: All 24 controlled DeepSeek runs passed; Codex sent more input and took longer at every task median but cached more. With default flags it left a bug unfixed.
+summary: All 24 controlled DeepSeek runs passed; Codex sent more input and ran longer at each task median but cached more. With default flags it left a bug unfixed.
 lang: en
 author: Larry 🍀 Orbi
 image: /img/blog-opencode-vs-codex-card.png
+mirror: opencode-vs-codex
 ---
 
 I tested OpenCode vs Codex headless: OpenCode is an open-source terminal coding agent that works with many model providers. Codex CLI is OpenAI's open-source terminal coding agent, built for OpenAI's models. For scripts, CI jobs or cron with nobody watching, this gives you measured overhead and default behaviour on the same model, plus DeepSeek config and a no-op reproduction script. On my Linux machine on 11 November 2026, OpenCode 2.2.7 and Codex CLI 0.167.1 both used DeepSeek V4.1 Flash (`deepseek-flash`). All 24 controlled coding runs passed with Codex given workspace-write; Codex used more total input and took longer at every task median.

@@ -6,6 +6,13 @@
     <description>Notes from shipping Orbi in the open: delivery runs, failures, fixes, and measurements.</description>
     <language>en</language>
     <item>
+      <title>OpenCode vs Codex CLI: same model, headless</title>
+      <link>https://orbi.build/blog/opencode-vs-codex/</link>
+      <guid isPermaLink="true">https://orbi.build/blog/opencode-vs-codex/</guid>
+      <pubDate>Wed, 11 Nov 2026 00:00:00 GMT</pubDate>
+      <description>All 24 controlled DeepSeek runs passed; Codex sent more input and took longer at every task median but cached more. With default flags it left a bug unfixed.</description>
+    </item>
+    <item>
       <title>systemd to launchd: what 1,548 macOS CI runs caught</title>
       <link>https://orbi.build/blog/systemd-to-launchd/</link>
       <guid isPermaLink="true">https://orbi.build/blog/systemd-to-launchd/</guid>
