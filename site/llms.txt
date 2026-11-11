@@ -109,17 +109,18 @@ every step below.
    status page's request id.
 
 6. **Subscribe — optional, only to keep delivering after the allowance.**
-   __FREE_TRIAL__, so skip this step while it lasts. When you want more, choose
-   Solo at
-   https://orbi.build/api/checkout?plan=solo__FOUNDING_PROMO_QUERY_TEXT__ or Pro at
-   https://orbi.build/api/checkout?plan=pro__FOUNDING_PROMO_QUERY_TEXT__ and complete
-   Stripe checkout.
-   Founding partners get 50% off forever,
+   __FREE_TRIAL__, so skip this step while it lasts. When you want more,
+   subscribe from the pricing section of https://orbi.build/cloud/#pricing:
+   its Solo and Pro subscribe buttons carry the founding code while places
+   remain. Founding partners get 50% off forever,
    __FOUNDING_PARTNER_REMAINING__ of __FOUNDING_PARTNER_LIMIT__ places
-   left.__FOUNDING_DISCOUNT_NOTE__ Done: the status page shows
-   an active plan and no longer asks you to subscribe. If not: re-open the
-   checkout link for the plan you chose; when the founding places are filled,
-   the regular price applies.
+   left.__FOUNDING_DISCOUNT_NOTE__ The bare checkout addresses
+   https://orbi.build/api/checkout?plan=solo and
+   https://orbi.build/api/checkout?plan=pro carry no code and charge the
+   regular price. Done: the status page shows an active plan and no longer
+   asks you to subscribe. If not: re-open the pricing section of
+   https://orbi.build/cloud/#pricing and use the subscribe button for the plan
+   you chose; when the founding places are filled, the regular price applies.
 
 ### Failure diagnosis (measured states, not hypotheticals)
 

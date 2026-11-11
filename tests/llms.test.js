@@ -13,7 +13,7 @@ import { describe, expect, it } from "vitest";
 import { renderLlms } from "../scripts/build-pages.mjs";
 import { handleFetch } from "../src/worker.js";
 import pricing from "../src/pricing.json";
-import { foundingDiscountNote, paidPriceReplacements } from "../src/pricing-tokens.js";
+import { foundingDiscountNote } from "../src/pricing-tokens.js";
 
 const ROOT = fileURLToPath(new URL("..", import.meta.url));
 const llms = await readFile(join(ROOT, "public", "llms.txt"), "utf8");
@@ -343,26 +343,29 @@ describe("llms founding sentence (Issue #1298)", () => {
     }
   });
 
-  it("hands out the checkout link that carries the code the sentence promises", async () => {
-    // Issue #1298 follow-through: Cloud hands the code to Stripe only when the
-    // link names it (Issue #1281, orbi-cloud src/billing-routes.ts), so the
-    // links this file gives the reader must be the promo-carrying ones — the
-    // same ones the /cloud/ subscribe buttons use. A bare `?plan=solo` here
-    // would charge the list price beside a sentence promising 50% off.
-    const body = await (await serveText(llms, "/llms.txt")).text();
+  it("names the entry that carries the code, and the bare links as the plain one", async () => {
+    // Issue #1298 acceptance: Cloud hands the code to Stripe only when the link
+    // names it (Issue #1281, orbi-cloud src/billing-routes.ts), and only the
+    // /cloud/ pricing subscribe buttons do. The bare `?plan=solo` / `?plan=pro`
+    // addresses carry no code, so step 6 points the reader at the pricing
+    // section's subscribe buttons and names the bare links as the plain-price
+    // entry instead of promising 50% off beside them.
+    const raw = await (await serveText(llms, "/llms.txt")).text();
+    const body = raw.replace(/\s+/g, " ");
+    const step = body.slice(body.indexOf("6. **Subscribe"), body.indexOf("### Failure diagnosis"));
+    expect(step, "step 6 points at the pricing-area subscribe buttons")
+      .toContain("https://orbi.build/cloud/#pricing");
     for (const plan of ["solo", "pro"]) {
-      expect(body, plan + ": checkout link carries the founding code")
-        .toContain(`https://orbi.build/api/checkout?plan=${plan}&promo=${pricing.foundingPromoCode}`);
+      expect(step, plan + ": bare checkout address stays as it was")
+        .toMatch(new RegExp(`https://orbi\\.build/api/checkout\\?plan=${plan}(?![&\\w])`));
     }
-    // No places left: the same links drop the code, exactly like every href.
-    const gone = llms.replaceAll(
-      pricing.foundingPromoQueryTextToken,
-      paidPriceReplacements(pricing, 0)[pricing.foundingPromoQueryTextToken],
-    );
-    expect(gone, "no promo once the places are gone").not.toContain("promo=");
-    for (const plan of ["solo", "pro"]) {
-      expect(gone, plan + ": bare checkout link").toContain(`https://orbi.build/api/checkout?plan=${plan}`);
-    }
+    // The link parameters are untouched: no promo rides on those addresses.
+    expect(step, "no promo query appended to the bare links").not.toContain("promo=");
+    // The promise follows the entry that carries the code, and the bare links
+    // are told apart from it in the same step.
+    expect(step.indexOf("https://orbi.build/cloud/#pricing"))
+      .toBeLessThan(step.indexOf("50% discount is applied automatically when you subscribe"));
+    expect(step, "bare links named as the plain-price entry").toMatch(/carry no code/);
   });
 
   it("drops the sentence once the founding places are gone", () => {
