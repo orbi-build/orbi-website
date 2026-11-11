@@ -10,7 +10,7 @@
       <link>https://orbi.build/blog/opencode-vs-codex/</link>
       <guid isPermaLink="true">https://orbi.build/blog/opencode-vs-codex/</guid>
       <pubDate>Wed, 11 Nov 2026 00:00:00 GMT</pubDate>
-      <description>All 24 controlled DeepSeek runs passed; Codex sent more input and took longer at every task median but cached more. With default flags it left a bug unfixed.</description>
+      <description>All 24 controlled DeepSeek runs passed; Codex sent more input and ran longer at each task median but cached more. With default flags it left a bug unfixed.</description>
     </item>
     <item>
       <title>systemd to launchd: what 1,548 macOS CI runs caught</title>

@@ -2,7 +2,7 @@
   {
     "slug": "opencode-vs-codex",
     "title": "OpenCode vs Codex CLI: same model, headless",
-    "summary": "All 24 controlled DeepSeek runs passed; Codex sent more input and took longer at every task median but cached more. With default flags it left a bug unfixed.",
+    "summary": "All 24 controlled DeepSeek runs passed; Codex sent more input and ran longer at each task median but cached more. With default flags it left a bug unfixed.",
     "zhSlug": "opencode-vs-codex",
     "zhTitle": "OpenCode vs Codex CLI：同一模型，无人值守实测",
     "related": []
