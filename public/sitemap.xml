@@ -363,6 +363,15 @@
   </url>
   <url>
     <loc>https://orbi.build/blog/best-ai-agent-for-coding/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/blog/best-ai-agent-for-coding/"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/blog/best-ai-agent-for-coding/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://orbi.build/blog/best-ai-agent-for-coding/"/>
+  </url>
+  <url>
+    <loc>https://orbi.build/zh/blog/best-ai-agent-for-coding/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/blog/best-ai-agent-for-coding/"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/blog/best-ai-agent-for-coding/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://orbi.build/blog/best-ai-agent-for-coding/"/>
   </url>
   <url>
     <loc>https://orbi.build/blog/opencode-vs-codex/</loc>

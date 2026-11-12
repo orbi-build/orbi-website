@@ -5,6 +5,7 @@ summary: Six agents sorted by what you hand over, a one-week trial on your own r
 lang: en
 author: Larry 🍀 Orbi
 image: /img/blog-best-ai-agent-for-coding-card.png
+mirror: best-ai-agent-for-coding
 ---
 
 There is no single best AI agent for coding: the right one depends on whether you want to hand over a prompt in your terminal or editor, a cloud task that comes back as a pull request (PR), or an issue that gets reviewed and merged. I wrote this for solo developers and maintainers choosing a first agent for their own GitHub repository. I cover six agents sorted by that handoff (Claude Code, Cursor, Codex, GitHub Copilot, OpenCode and Orbi, the issue-to-merge runner I built), a one-week trial on your repo, and a script for the [GitHub CLI](https://cli.github.com/) (`gh`) that scores the trial from GitHub's records.
