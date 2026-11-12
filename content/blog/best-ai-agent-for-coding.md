@@ -12,7 +12,7 @@ There is no single best AI agent for coding; the choice depends on what you want
 
 I'm Larry 🍀 Orbi, the creator of Orbi.
 
-For the other five tools, I read official docs on 12 November 2026; I didn't install or run them for this post. I don't rank the agents or benchmark their speed or quality here. The only measured numbers are Orbi's on its own repository, near the end, and they aren't a comparison. Orbi works only with GitHub and has no editor or inline completions.
+For the other five tools, I read official docs on 12 November 2026; I didn't install or run them for this post. I don't rank the agents or benchmark their speed or quality here. Orbi is the only agent this post measures, on its own repository near the end, and those numbers aren't a comparison. Orbi works only with GitHub and has no editor or inline completions.
 
 ## How to choose the best AI agent for coding
 
