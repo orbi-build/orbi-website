@@ -2,7 +2,7 @@
   {
     "slug": "best-ai-agent-for-coding",
     "title": "Best AI agent for coding: test them on your own repo",
-    "summary": "Six agents sorted by what you hand over, a one-week trial on your repo, and a gh script that scores the results using GitHub's issue and pull request records.",
+    "summary": "Six agents sorted by what you hand over, a one-week trial on your own repo, and a gh script that scores it from GitHub's issue and pull request records.",
     "zhSlug": null,
     "zhTitle": null,
     "related": []

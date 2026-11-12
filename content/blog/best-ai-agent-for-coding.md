@@ -1,7 +1,7 @@
 ---
 title: Best AI agent for coding: test them on your own repo
 date: 2026-11-12
-summary: Six agents sorted by what you hand over, a one-week trial on your repo, and a gh script that scores the results using GitHub's issue and pull request records.
+summary: Six agents sorted by what you hand over, a one-week trial on your own repo, and a gh script that scores it from GitHub's issue and pull request records.
 lang: en
 author: Larry 🍀 Orbi
 image: /img/blog-best-ai-agent-for-coding-card.png

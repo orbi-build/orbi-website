@@ -10,7 +10,7 @@
       <link>https://orbi.build/blog/best-ai-agent-for-coding/</link>
       <guid isPermaLink="true">https://orbi.build/blog/best-ai-agent-for-coding/</guid>
       <pubDate>Thu, 12 Nov 2026 00:00:00 GMT</pubDate>
-      <description>Six agents sorted by what you hand over, a one-week trial on your repo, and a gh script that scores the results using GitHub's issue and pull request records.</description>
+      <description>Six agents sorted by what you hand over, a one-week trial on your own repo, and a gh script that scores it from GitHub's issue and pull request records.</description>
     </item>
     <item>
       <title>OpenCode vs Codex CLI: same model, headless</title>
