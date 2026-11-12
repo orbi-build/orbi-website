@@ -7,11 +7,11 @@ author: Larry 🍀 Orbi
 image: /img/blog-best-ai-agent-for-coding-card.png
 ---
 
-There is no single best AI agent for coding: the right one depends on whether you want to hand over a prompt in your terminal or editor, a cloud task that comes back as a pull request (PR), or an issue that gets reviewed and merged. I wrote this for solo developers and maintainers choosing a first agent for their own GitHub repository. I cover six agents sorted by that handoff (Claude Code, Cursor, Codex, GitHub Copilot, OpenCode and Orbi), a one-week trial on your repo, and a `gh` script that scores it from GitHub's records.
+There is no single best AI agent for coding: the right one depends on whether you want to hand over a prompt in your terminal or editor, a cloud task that comes back as a pull request (PR), or an issue that gets reviewed and merged. I wrote this for solo developers and maintainers choosing a first agent for their own GitHub repository. I cover six agents sorted by that handoff (Claude Code, Cursor, Codex, GitHub Copilot, OpenCode and Orbi, the issue-to-merge runner I built), a one-week trial on your repo, and a script for the [GitHub CLI](https://cli.github.com/) (`gh`) that scores the trial from GitHub's records.
 
 I'm Larry 🍀 Orbi, the creator of Orbi.
 
-Orbi is on this list. I did not install or run the five third-party tools for this post; their entries rest on official docs read on 12 November 2026. This is not a benchmark, and I give no speed or quality scores. Orbi is GitHub only, not an editor, and has no inline completions.
+Orbi is on this list. I did not install or run the five third-party tools for this post; their entries rest on official docs read on 12 November 2026. This is not a benchmark: I don't rank the agents or score their speed or quality. Orbi is GitHub only, not an editor, and has no inline completions.
 
 ## How to choose the best AI agent for coding
 
@@ -19,7 +19,7 @@ I start with one question: what do I hand over, and where does the work stop? Se
 
 | Group | You hand over | Work stops at | Agents in this post |
 |---|---|---|---|
-| Terminal or editor session | A prompt | Session output; you manage the handoff | Claude Code, Cursor, Codex, OpenCode |
+| Terminal or editor session | A prompt | Session output; you manage the handoff | Claude Code, Cursor, Codex, GitHub Copilot, OpenCode |
 | Work off your machine | A task or assigned issue | A diff, branch or PR for your next action | Claude Code, Cursor, Codex, GitHub Copilot; OpenCode via Actions |
 | Issue through merge | An issue | Reviewed merge after CI, or a required human approval | Orbi |
 
@@ -49,7 +49,7 @@ Pick it when you want local sessions and cloud tasks whose results you inspect b
 
 ### GitHub Copilot
 
-For Copilot in the cloud / cloud agent, [assigning an issue](https://docs.github.com/en/copilot/how-tos/copilot-on-github/use-copilot-agents/kick-off-a-task) "always creates a pull request", and the [cloud agent](https://docs.github.com/en/copilot/concepts/security-governance-and-network-settings/risks-and-mitigations) "cannot approve or merge a pull request". [Agent Merge](https://docs.github.com/en/copilot/how-tos/copilot-on-github/use-copilot-agents/get-pull-requests-ready-to-merge) watches and fixes CI failures and conflicts, but "does not enable auto-merge". Separately, [Copilot approvals](https://docs.github.com/en/copilot/concepts/agent-capabilities/agent-powered-workflows-and-operations/code-review) can make code review's approval count toward required approvals; that setting is off by default. [Pro is $10/month, Pro+ $39/month and Max $100/month](https://github.com/features/copilot/plans), with usage billed in GitHub AI Credits; Free includes neither cloud agent access nor code review.
+Copilot also runs in IDEs and a CLI; this entry covers its cloud agent, which GitHub now calls Copilot in the cloud. [Assigning an issue](https://docs.github.com/en/copilot/how-tos/copilot-on-github/use-copilot-agents/kick-off-a-task) "always creates a pull request", and the [cloud agent](https://docs.github.com/en/copilot/concepts/security-governance-and-network-settings/risks-and-mitigations) "cannot approve or merge a pull request". [Agent Merge](https://docs.github.com/en/copilot/how-tos/copilot-on-github/use-copilot-agents/get-pull-requests-ready-to-merge) watches and fixes CI failures and conflicts, but "does not enable auto-merge". Separately, [Copilot approvals](https://docs.github.com/en/copilot/concepts/agent-capabilities/agent-powered-workflows-and-operations/code-review) can make code review's approval count toward required approvals; that setting is off by default. [Pro is $10/month, Pro+ $39/month and Max $100/month](https://github.com/features/copilot/plans), with usage billed in GitHub AI Credits; Free includes neither cloud agent access nor code review.
 
 Pick it when you want GitHub issue assignment to create a PR for human review and merge; see [Orbi vs GitHub Copilot coding agent](/compare/github-copilot-coding-agent/).
 
@@ -61,9 +61,11 @@ Pick it when you want to choose your model provider and run the GitHub workflow 
 
 ### Orbi
 
-Label a GitHub Issue `ai-ready` and Orbi runs [Pi](/guides/pi-coding-agent/), an open-source coding agent, to implement it. A second Pi session that did not write the code reviews it, and the Orbi runner merges the reviewed commit once your CI passes; if your branch protection requires a human approval, Orbi stops at `ai-awaiting-merge` and the Issue comment names the action. A person starts a release; Orbi then opens the release ticket, tags and publishes.
+Label a GitHub Issue `ai-ready` and Orbi runs [Pi](/guides/pi-coding-agent/), an open-source coding agent, to implement it. A second Pi session that did not write the code reviews it, and the Orbi runner merges the reviewed commit once your CI passes; if your branch protection requires a human approval, Orbi stops at `ai-awaiting-merge` and the Issue comment names the action. Releases don't start on their own: a person opens a release Issue and labels it both `ai-ready` and `ai-release`, and Orbi tags and publishes once its release checks pass.
 
-Pick it when you want Issues carried through review and merge, using self-hosted [Orbi](https://github.com/orbi-build/orbi) or [Orbi Cloud](/cloud/?ref=blog-best-agent).
+Self-hosted [Orbi](https://github.com/orbi-build/orbi) costs nothing under AGPL-3.0 and uses your own model key; [Orbi Cloud](/cloud/?ref=blog-best-agent) is the paid hosted version, with its plans listed on that page.
+
+Pick it when you want Issues carried through review and merge.
 
 ## Try two agents on your own repo for a week
 
@@ -99,7 +101,7 @@ To decide which AI coding agent is best for my repo, I'd use this protocol:
 
    A copy has no CI secrets or branch protection unless you add them. Set those up before handing over work.
 
-4. Keep the same instructions file throughout the week. Don't rescue a stuck run silently: leave a PR comment if you fix something by hand so the script counts the intervention. Make sure each PR says `Closes #N` for its issue.
+4. Keep the same instructions file throughout the week. Don't rescue a stuck run silently: leave a PR comment if you fix something by hand so the script counts the intervention. Make sure each PR says `Closes #N` for its issue; the script falls back to PRs that only mention the issue, but you then have to check those rows by hand.
 
 5. Use the same cutoff at the end of the week for both agents, and score both sets then, including unfinished issues. Record costs from your bill or usage record:
 
@@ -110,22 +112,27 @@ To decide which AI coding agent is best for my repo, I'd use this protocol:
 
 ## Score the trial from GitHub's records
 
-Save this as `agent-trial-score.sh`, run `chmod +x agent-trial-score.sh`, then execute it with bash. It needs logged-in `gh`, `jq`, `awk` and `sort`, plus the standard shell utilities it calls. I tested it with gh 2.100.0, jq 1.8.2, bash 5.3 and GNU Awk 5.4.1 on Linux; it uses only POSIX awk features but I have not run it on macOS.
+Save this as `agent-trial-score.sh` and run `chmod +x agent-trial-score.sh`. It is a bash script and needs the GitHub CLI (`gh`, logged in with `gh auth login`), `jq`, `awk` and `sort`. I tested it with gh 2.100.0, jq 1.8.2, bash 5.3 and GNU Awk 5.4.1 on Linux. It uses only POSIX awk features, but I have not run it on macOS.
 
 ```bash
 #!/usr/bin/env bash
 # Score a coding-agent trial from GitHub's own records, one row per issue.
-# Usage: ./agent-trial-score.sh OWNER/REPO 'ISSUE SEARCH'
+# Usage: ./agent-trial-score.sh OWNER/REPO 'ISSUE SEARCH' [CI_CHECK]
 #   ISSUE SEARCH  selects every issue you handed to the agent, e.g.
-#                 'label:trial-copilot' (GitHub issue search syntax)
+#                 'label:trial-a' (GitHub issue search syntax)
+#   CI_CHECK      exact name of the check run that is your test job, e.g. tests.
+#                 Without it the first_ci column stays "unset".
 set -euo pipefail
 
-repo="${1:?usage: $0 OWNER/REPO 'ISSUE SEARCH'}"
-query="${2:?usage: $0 OWNER/REPO 'ISSUE SEARCH'}"
+repo="${1:?usage: $0 OWNER/REPO 'ISSUE SEARCH' [CI_CHECK]}"
+query="${2:?usage: $0 OWNER/REPO 'ISSUE SEARCH' [CI_CHECK]}"
+check="${3:-}"
+
+# Any failed read stops the script: a number built on a failed call is worse than none.
+die() { echo "$1: stopping without a score" >&2; exit 2; }
 
 issues=$(gh issue list -R "$repo" --state all --search "$query" --limit 100 \
-  --json number,createdAt) \
-  || { echo "could not list issues for $repo" >&2; exit 2; }
+  --json number,createdAt) || die "could not list issues for $repo"
 
 if [ "$(jq length <<<"$issues")" -eq 0 ]; then
   echo "no issues match '$query' in $repo: nothing to score" >&2
@@ -133,12 +140,19 @@ if [ "$(jq length <<<"$issues")" -eq 0 ]; then
 fi
 
 # Comments or reviews left by human accounts (GitHub user type "User").
-humans() { gh api --paginate "$1?per_page=100" -q '.[] | select(.user.type == "User") | .id' | wc -l; }
+humans() {
+  local ids
+  ids=$(gh api --paginate "$1?per_page=100" -q '.[] | select(.user.type == "User") | .id') || return 1
+  grep -c . <<<"$ids" || true
+}
 
-printf 'issue\tpr\tlink\tresult\thours\tfirst_ci\tcommits\thuman_notes\tmerged_by\n'
-rows=$(jq -c '.[]' <<<"$issues" | while read -r issue; do
+rows=$(mktemp)
+trap 'rm -f "$rows"' EXIT
+
+while read -r issue; do
   i=$(jq -r .number <<<"$issue")
-  notes=$(humans "repos/$repo/issues/$i/comments")
+  notes=$(humans "repos/$repo/issues/$i/comments") || die "could not read comments on issue $i"
+
   # The last PR in this repository that was set to close the issue, merged or not.
   n=$(gh api graphql -F owner="${repo%/*}" -F name="${repo#*/}" -F number="$i" -f query='
     query($owner: String!, $name: String!, $number: Int!) {
@@ -146,21 +160,24 @@ rows=$(jq -c '.[]' <<<"$issues" | while read -r issue; do
         closedByPullRequestsReferences(first: 20, includeClosedPrs: true) {
           nodes { number repository { nameWithOwner } } } } } }' \
     -q "[.data.repository.issue.closedByPullRequestsReferences.nodes[]
-        | select(.repository.nameWithOwner == \"$repo\") | .number] | last // empty")
+        | select(.repository.nameWithOwner == \"$repo\") | .number] | last // empty") \
+    || die "could not read linked PRs of issue $i"
   link=closes
   if [ -z "$n" ]; then
     # No closing link: fall back to the last PR in this repository that mentions the issue.
-    n=$(gh api --paginate "repos/$repo/issues/$i/timeline?per_page=100" -q "[.[]
+    mentions=$(gh api --paginate "repos/$repo/issues/$i/timeline?per_page=100" -q ".[]
         | select(.event == \"cross-referenced\" and .source.issue.pull_request != null
-                 and .source.issue.repository.full_name == \"$repo\") | .source.issue.number] | last // empty" | tail -n 1)
+                 and .source.issue.repository.full_name == \"$repo\") | .source.issue.number") \
+      || die "could not read the timeline of issue $i"
+    n=$(tail -n 1 <<<"$mentions")
     link=mention
   fi
   if [ -z "$n" ]; then
-    printf '%s\t-\t-\tNO_PR\t-\t-\t-\t%s\t-\n' "$i" "$notes"
+    printf '%s\t-\t-\tNO_PR\t-\t-\t-\t%s\t-\n' "$i" "$notes" >>"$rows"
     continue
   fi
 
-  pr=$(gh pr view "$n" -R "$repo" --json state,mergedAt,mergedBy)
+  pr=$(gh pr view "$n" -R "$repo" --json state,mergedAt,mergedBy) || die "could not read PR $n"
   result=$(jq -r .state <<<"$pr")
   hours=-
   if [ "$result" = MERGED ]; then
@@ -168,29 +185,37 @@ rows=$(jq -c '.[]' <<<"$issues" | while read -r issue; do
       '(($b|fromdate) - ($a|fromdate)) / 3600 | . * 10 | round / 10')
   fi
 
-  shas=$(gh api --paginate "repos/$repo/pulls/$n/commits?per_page=100" -q '.[].sha')
+  shas=$(gh api --paginate "repos/$repo/pulls/$n/commits?per_page=100" -q '.[].sha') \
+    || die "could not read commits of PR $n"
   commits=$(grep -c . <<<"$shas" || true)
   first_sha=$(head -n 1 <<<"$shas")
 
-  # CI on the first commit still on the branch: pass, fail, pending or none.
-  first_ci=none
-  if [ -n "$first_sha" ]; then
-    first_ci=$(gh api "repos/$repo/commits/$first_sha/check-runs?per_page=100" -q '
-      [.check_runs[].conclusion] as $c
-      | if ($c|length) == 0 then "none"
-        elif any($c[]; . == null) then "pending"
-        elif all($c[]; . == "success" or . == "skipped" or . == "neutral") then "pass"
-        else "fail" end')
+  # Your test job on the first commit still on the branch: pass, fail, pending or none.
+  # A skipped or missing run is "none", never "pass".
+  first_ci=unset
+  if [ -n "$check" ] && [ -n "$first_sha" ]; then
+    first_ci=$(gh api --paginate "repos/$repo/commits/$first_sha/check-runs?per_page=100" \
+      -q ".check_runs[] | select(.name == \"$check\") | .conclusion // \"pending\"" \
+      | sort -u | tr '\n' ' ') || die "could not read check runs of PR $n"
+    case " $first_ci" in
+      *" pending "*) first_ci=pending ;;
+      *" failure "*|*" timed_out "*|*" cancelled "*|*" action_required "*|*" startup_failure "*) first_ci=fail ;;
+      *" success "*) first_ci=pass ;;
+      *) first_ci=none ;;
+    esac
   fi
 
-  notes=$((notes + $(humans "repos/$repo/issues/$n/comments") + $(humans "repos/$repo/pulls/$n/reviews")))
+  pr_notes=$(humans "repos/$repo/issues/$n/comments") || die "could not read comments on PR $n"
+  reviews=$(humans "repos/$repo/pulls/$n/reviews") || die "could not read reviews on PR $n"
   merged_by=$(jq -r '.mergedBy.login // "-"' <<<"$pr")
   printf '%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n' \
-    "$i" "$n" "$link" "$result" "$hours" "$first_ci" "$commits" "$notes" "$merged_by"
-done)
-printf '%s\n' "$rows"
+    "$i" "$n" "$link" "$result" "$hours" "$first_ci" "$commits" "$((notes + pr_notes + reviews))" "$merged_by" >>"$rows"
+done < <(jq -c '.[]' <<<"$issues")
 
-printf '%s\n' "$rows" | awk -F'\t' '
+printf 'issue\tpr\tlink\tresult\thours\tfirst_ci\tcommits\thuman_notes\tmerged_by\n'
+cat "$rows"
+
+awk -F'\t' -v check="$check" '
   $4 == "MERGED" { m++; if ($6 == "pass") p++; if ($6 == "fail") f++; if ($8 == 0) q++ }
   $4 == "NO_PR"  { none++ }
   $4 == "CLOSED" { c++ }
@@ -198,11 +223,11 @@ printf '%s\n' "$rows" | awk -F'\t' '
   END {
     printf "\nissues handed over: %d  merged: %d  no PR: %d  PR closed unmerged: %d  PR still open: %d\n", NR, m, none, c, o
     if (m == 0) { print "no merged PRs: no merge-time numbers"; exit }
-    printf "first-commit CI on merged PRs: %d pass, %d fail, %d other\n", p, f, m - p - f
+    if (check != "") printf "\"%s\" on the first commit of merged PRs: %d pass, %d fail, %d other\n", check, p, f, m - p - f
     printf "merged with no human comment or review: %d of %d\n", q, m
-  }'
+  }' "$rows"
 # Median without gawk-only functions: sort first, then pick the middle.
-printf '%s\n' "$rows" | awk -F'\t' '$4 == "MERGED" { print $5 }' | sort -n | awk '
+awk -F'\t' '$4 == "MERGED" { print $5 }' "$rows" | sort -n | awk '
   { h[NR] = $1 }
   END {
     if (NR == 0) exit
@@ -211,39 +236,66 @@ printf '%s\n' "$rows" | awk -F'\t' '$4 == "MERGED" { print $5 }' | sort -n | awk
   }'
 ```
 
+Run it once per agent, with the label you gave that agent's issues and the name of your test job:
+
+```bash
+./agent-trial-score.sh OWNER/REPO 'label:trial-a' tests
+```
+
+The third argument is the exact name of the check run that runs your tests. To see the names GitHub recorded for a commit:
+
+```bash
+gh api repos/OWNER/REPO/commits/COMMIT_SHA/check-runs -q '.check_runs[] | "\(.name)\t\(.conclusion)"'
+```
+
+On one Orbi PR that printed three checks: `Mintlify Deployment` (skipped), `link` and `tests`. Only `tests` runs the test suite, so that is the name I pass. Without a name the column stays `unset`: a skipped docs deployment or an agent's own status check would otherwise count as a pass.
+
 I read the columns this way:
 
-- `issue` and `pr` are GitHub numbers; `link=closes` is a closing link. `mention` falls back to the last PR in the repo that mentions the issue; check those rows by hand.
+- `issue` and `pr` are GitHub numbers. `link=closes` means the PR was set to close the issue. `mention` means the script fell back to the last PR in the repo that mentions the issue; check those rows by hand.
 - `result` is `NO_PR`, `CLOSED` (PR closed unmerged), `OPEN` or `MERGED`.
 - `hours` runs from issue creation to PR merge, for merged PRs only.
-- `first_ci` reads check runs on the first commit still on the branch. It ignores legacy commit statuses; a force-push changes which commit is first.
-- `commits` counts the PR's commits. `human_notes` counts issue/PR comments and PR reviews by accounts GitHub types as `User`.
+- `first_ci` is your test job on the first commit still on the branch: `pass`, `fail`, `pending`, or `none` when that job did not run or was skipped there. A force-push changes which commit is first.
+- `commits` counts the PR's commits. `human_notes` counts comments on the issue and the PR, plus PR reviews, left by accounts GitHub types as `User`.
 - `merged_by` names the account that merged the PR.
 
-The script reads up to 100 issues. If an agent runs under your own account, as Claude Code, Cursor or OpenCode can on your machine, its commits look like yours: this cannot distinguish your fix-up commits from the agent's. `human_notes` is only a proxy for intervention: automation using a personal account also counts, while manual edits without a comment do not.
+The script reads up to 100 issues. If an agent runs under your own account, as Claude Code, Cursor or OpenCode can on your machine, its commits look like yours, so the script cannot tell your fix-up commits from the agent's. `human_notes` is only a proxy for intervention: automation that posts through a personal account also counts, and a manual edit without a comment does not.
 
-In a private throwaway repository, I created three issues: one merged, one with a PR closed unmerged, and one with no PR. The repository name in this command is a placeholder; the output is unchanged:
+In a private throwaway repository with a one-step `tests` workflow, I created four issues and played the agent myself. One PR merged before the workflow existed, one was closed unmerged, one issue got no PR, and one PR only mentioned its issue and failed `tests` on its first commit before two more commits fixed it. The repository name below is a placeholder; the output is unchanged:
 
 ```text
-$ ./agent-trial-score.sh OWNER/trial-copy-a 'label:trial-a'
+$ ./agent-trial-score.sh OWNER/trial-copy-a 'label:trial-a' tests
 issue	pr	link	result	hours	first_ci	commits	human_notes	merged_by
+6	7	mention	MERGED	0	fail	3	0	xqliu
 3	-	-	NO_PR	-	-	-	0	-
 2	5	closes	CLOSED	-	none	1	1	-
 1	4	closes	MERGED	0	none	1	0	xqliu
 
-issues handed over: 3  merged: 1  no PR: 1  PR closed unmerged: 1  PR still open: 0
-first-commit CI on merged PRs: 0 pass, 0 fail, 1 other
-merged with no human comment or review: 1 of 1
-median hours from issue to merge: 0.0 (of 1 merged)
+issues handed over: 4  merged: 2  no PR: 1  PR closed unmerged: 1  PR still open: 0
+"tests" on the first commit of merged PRs: 0 pass, 1 fail, 1 other
+merged with no human comment or review: 2 of 2
+median hours from issue to merge: 0.0 (of 2 merged)
 exit=0
 ```
 
-The near-zero time comes from the throwaway probe. It is not an agent result. An inaccessible repository exits with code 2; a search matching no issues exits with code 1:
+The zero hours come from me opening and merging the PRs within minutes; they are not an agent result. The `exit=` line in each block is the exit status, which I printed with `echo "exit=$?"` after the run.
+
+A score built on a failed read is worse than no score, so any failed GitHub call stops the script with exit code 2 and no summary. I checked that with a stand-in `gh` that returns HTTP 403 for one kind of call at a time (issue list, issue comments, linked PRs, timeline, PR state, PR commits, check runs, PR reviews); all eight stopped the same way. Two of them, then a repository that does not exist (also exit 2) and a search that matches no issue (exit 1):
 
 ```text
+$ FAIL_ON='issues/6/comments' PATH=stub:$PATH ./agent-trial-score.sh OWNER/trial-copy-a 'label:trial-a' tests
+gh: Resource not accessible (HTTP 403)
+could not read comments on issue 6: stopping without a score
+exit=2
+
+$ FAIL_ON='check-runs' PATH=stub:$PATH ./agent-trial-score.sh OWNER/trial-copy-a 'label:trial-a' tests
+gh: Resource not accessible (HTTP 403)
+could not read check runs of PR 7: stopping without a score
+exit=2
+
 $ ./agent-trial-score.sh orbi-build/no-such-repo 'label:x'
 GraphQL: Could not resolve to a Repository with the name 'orbi-build/no-such-repo'. (repository)
-could not list issues for orbi-build/no-such-repo
+could not list issues for orbi-build/no-such-repo: stopping without a score
 exit=2
 
 $ ./agent-trial-score.sh orbi-build/orbi 'label:no-such-label-xyz'
@@ -251,45 +303,43 @@ no issues match 'label:no-such-label-xyz' in orbi-build/orbi: nothing to score
 exit=1
 ```
 
-## What the same table looks like on two real repositories
+## The same script on Orbi's own repository
 
-This is not a comparison of agents. These are different repositories, issues and people, queried on 12 November 2026.
+This section is one repository's record, not a comparison with the other five agents: I have no trial of them to put beside it.
 
-For [orbi-build/orbi](https://github.com/orbi-build/orbi), I selected issues created 5–11 November 2026, excluding epics and release tickets. The 26 results include 23 work items and three milestone-confirmation tickets Orbi opens to ask me a question; their `NO_PR` rows are not failed deliveries. This excerpt keeps those three and all three first-CI failures; `…` marks omitted rows:
+For [orbi-build/orbi](https://github.com/orbi-build/orbi), I ran the script on 12 November 2026 over issues created 5–11 November 2026, excluding epics and release tickets, with `tests` as the check name. The 26 results are 23 work items plus three milestone-confirmation tickets that Orbi opens to ask me a question; their `NO_PR` rows are not failed deliveries. This excerpt keeps those three and every row whose `first_ci` is not `pass`; `…` marks omitted rows:
 
 ```text
 issue	pr	link	result	hours	first_ci	commits	human_notes	merged_by
 …
+2164	2166	closes	MERGED	1.4	none	2	0	app/orbi-build
+…
 2143	2150	closes	MERGED	3.6	fail	5	0	app/orbi-build
+…
 2141	-	-	NO_PR	-	-	-	0	-
 2139	2146	closes	MERGED	2.2	fail	3	1	app/orbi-build
+…
 2127	2129	closes	MERGED	1	fail	3	0	app/orbi-build
 2125	-	-	NO_PR	-	-	-	1	-
+2123	2124	closes	MERGED	1	none	2	0	app/orbi-build
 2120	-	-	NO_PR	-	-	-	1	-
 …
 
 issues handed over: 26  merged: 23  no PR: 3  PR closed unmerged: 0  PR still open: 0
-first-commit CI on merged PRs: 20 pass, 3 fail, 0 other
+"tests" on the first commit of merged PRs: 18 pass, 3 fail, 2 other
 merged with no human comment or review: 19 of 23
 median hours from issue to merge: 1.1 (of 23 merged)
 exit=0
 ```
 
-The 23 work items all merged: I wrote 19 and Orbi opened four. Orbi's GitHub App merges once review and CI pass, without waiting for my merge click, so the hours are short by design. The median 1.1 hours includes implementation and CI, running from issue creation through merge.
+How to read it, with the caveats that matter:
 
-Orbi posts its review as Issue comments by the App, so `human_notes` counts only what I typed. Four of the 23 merged work items had my comments. Three of 23 failed CI on the first commit and were fixed before merge. The older [AI code review bottleneck post](/blog/ai-code-review-bottleneck/) reported a median 21 minutes from PR open to merge on Orbi Cloud's repository in a different window; the clocks differ, so don't compare them.
+- All 23 work items merged. I wrote 19 of those issues and Orbi opened the other four, so this is a maintainer handing work to his own tool on a codebase it has worked in for months.
+- Orbi's GitHub App merges once review and CI pass, without waiting for a merge click, so the hours are short by design. The median 1.1 hours runs from issue creation to merge and includes implementation, review and CI.
+- On three of the 23, `tests` failed on the first commit and later commits fixed it before the merge. On two, `tests` has no run on the first commit, so they count as `other`, not as passes.
+- Orbi posts its review as Issue comments from the App, so `human_notes` counts only what I typed. Four of the 23 had a comment from me.
 
-I also ran the script on a public repository where GitHub's Copilot agent (`app/copilot-swe-agent`) opened the PRs and the owner merged them, for issues created 1 April–31 July 2026:
-
-```text
-issues handed over: 14  merged: 11  no PR: 0  PR closed unmerged: 3  PR still open: 0
-first-commit CI on merged PRs: 11 pass, 0 fail, 0 other
-merged with no human comment or review: 9 of 11
-median hours from issue to merge: 64.1 (of 11 merged)
-exit=0
-```
-
-Three merged rows were found only through `mention`: the script catches PRs without closing links as well as PRs closed unmerged. The median 64.1 hours includes however long the owner took to review. I have not named this repository here, so readers cannot independently trace this sample from the post.
+The older [AI code review bottleneck post](/blog/ai-code-review-bottleneck/) reported a median 21 minutes from PR open to merge on Orbi Cloud's repository in a different window. That clock starts later and covers another repository, so the two numbers don't compare.
 
 ## What I'd check before paying for any of them
 

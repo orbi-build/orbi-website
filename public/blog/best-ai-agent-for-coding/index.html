@@ -173,7 +173,7 @@
             </ol></li>
           <li><a class="post-toc-link" href="#try-two-agents-on-your-own-repo-for-a-week">Try two agents on your own repo for a week</a></li>
           <li><a class="post-toc-link" href="#score-the-trial-from-github-s-records">Score the trial from GitHub's records</a></li>
-          <li><a class="post-toc-link" href="#what-the-same-table-looks-like-on-two-real-repositories">What the same table looks like on two real repositories</a></li>
+          <li><a class="post-toc-link" href="#the-same-script-on-orbi-s-own-repository">The same script on Orbi's own repository</a></li>
           <li><a class="post-toc-link" href="#what-i-d-check-before-paying-for-any-of-them">What I'd check before paying for any of them</a></li>
           <li><a class="post-toc-link" href="#related">Related</a></li>
           </ol>
@@ -194,14 +194,14 @@
             </ol></li>
           <li><a class="post-toc-link" href="#try-two-agents-on-your-own-repo-for-a-week">Try two agents on your own repo for a week</a></li>
           <li><a class="post-toc-link" href="#score-the-trial-from-github-s-records">Score the trial from GitHub's records</a></li>
-          <li><a class="post-toc-link" href="#what-the-same-table-looks-like-on-two-real-repositories">What the same table looks like on two real repositories</a></li>
+          <li><a class="post-toc-link" href="#the-same-script-on-orbi-s-own-repository">The same script on Orbi's own repository</a></li>
           <li><a class="post-toc-link" href="#what-i-d-check-before-paying-for-any-of-them">What I'd check before paying for any of them</a></li>
           <li><a class="post-toc-link" href="#related">Related</a></li>
           </ol>
         </details>
-<p>There is no single best AI agent for coding: the right one depends on whether you want to hand over a prompt in your terminal or editor, a cloud task that comes back as a pull request (PR), or an issue that gets reviewed and merged. I wrote this for solo developers and maintainers choosing a first agent for their own GitHub repository. I cover six agents sorted by that handoff (Claude Code, Cursor, Codex, GitHub Copilot, OpenCode and Orbi), a one-week trial on your repo, and a <code class="post-code--single">gh</code> script that scores it from GitHub&#39;s records.</p>
+<p>There is no single best AI agent for coding: the right one depends on whether you want to hand over a prompt in your terminal or editor, a cloud task that comes back as a pull request (PR), or an issue that gets reviewed and merged. I wrote this for solo developers and maintainers choosing a first agent for their own GitHub repository. I cover six agents sorted by that handoff (Claude Code, Cursor, Codex, GitHub Copilot, OpenCode and Orbi, the issue-to-merge runner I built), a one-week trial on your repo, and a script for the <a href="https://cli.github.com/">GitHub CLI</a> (<code class="post-code--single">gh</code>) that scores the trial from GitHub&#39;s records.</p>
 <p>I&#39;m Larry 🍀 Orbi, the creator of Orbi.</p><aside class="post-cta-inline"><span>Orbi takes your Issues all the way to a release.</span><a class="button button-signal" data-cta="post-inline-start" href="/cloud/login">Try Orbi Cloud free →</a></aside>
-<p>Orbi is on this list. I did not install or run the five third-party tools for this post; their entries rest on official docs read on 12 November 2026. This is not a benchmark, and I give no speed or quality scores. Orbi is GitHub only, not an editor, and has no inline completions.</p>
+<p>Orbi is on this list. I did not install or run the five third-party tools for this post; their entries rest on official docs read on 12 November 2026. This is not a benchmark: I don&#39;t rank the agents or score their speed or quality. Orbi is GitHub only, not an editor, and has no inline completions.</p>
 <h2 id="how-to-choose-the-best-ai-agent-for-coding">How to choose the best AI agent for coding</h2>
 <p>I start with one question: what do I hand over, and where does the work stop? Several agents support more than one of these workflows.</p>
 <p class="post-table-hint" hidden>Swipe horizontally to see all columns.</p><div class="post-table-scroll" tabindex="0" role="region" aria-label="Swipe horizontally to see all columns."><table class="table-comparison">
@@ -217,7 +217,7 @@
 <th scope="row">Terminal or editor session</th>
 <td>A prompt</td>
 <td>Session output; you manage the handoff</td>
-<td>Claude Code, Cursor, Codex, OpenCode</td>
+<td>Claude Code, Cursor, Codex, GitHub Copilot, OpenCode</td>
 </tr>
 <tr>
 <th scope="row">Work off your machine</th>
@@ -245,14 +245,15 @@
 <p><a href="https://learn.chatgpt.com/docs/codex/cli.md">Codex CLI</a> runs locally, while <a href="https://learn.chatgpt.com/docs/cloud.md">Codex Cloud</a> returns work for you to inspect, commit or open as a PR. On GitHub, <a href="https://learn.chatgpt.com/docs/third-party/github.md"><code class="post-code--spaced">@codex review</code> or automatic review</a> flags only P0 and P1, its high-priority findings. <a href="https://learn.chatgpt.com/docs/code-review.md">Reviewing a PR in chat</a> &quot;doesn&#39;t post comments, approve it, or merge it&quot;; GitHub review also leaves branch protection and required approvals in place. The docs have moved to <code class="post-code--single">learn.chatgpt.com</code>; <a href="https://learn.chatgpt.com/docs/pricing.md">Plus is $20/month</a>, while API-key access has no cloud features.</p>
 <p>Pick it when you want local sessions and cloud tasks whose results you inspect before committing or opening a PR; see <a href="/compare/codex/">Orbi vs Codex</a>.</p>
 <h3 id="github-copilot">GitHub Copilot</h3>
-<p>For Copilot in the cloud / cloud agent, <a href="https://docs.github.com/en/copilot/how-tos/copilot-on-github/use-copilot-agents/kick-off-a-task">assigning an issue</a> &quot;always creates a pull request&quot;, and the <a href="https://docs.github.com/en/copilot/concepts/security-governance-and-network-settings/risks-and-mitigations">cloud agent</a> &quot;cannot approve or merge a pull request&quot;. <a href="https://docs.github.com/en/copilot/how-tos/copilot-on-github/use-copilot-agents/get-pull-requests-ready-to-merge">Agent Merge</a> watches and fixes CI failures and conflicts, but &quot;does not enable auto-merge&quot;. Separately, <a href="https://docs.github.com/en/copilot/concepts/agent-capabilities/agent-powered-workflows-and-operations/code-review">Copilot approvals</a> can make code review&#39;s approval count toward required approvals; that setting is off by default. <a href="https://github.com/features/copilot/plans">Pro is $10/month, Pro+ $39/month and Max $100/month</a>, with usage billed in GitHub AI Credits; Free includes neither cloud agent access nor code review.</p>
+<p>Copilot also runs in IDEs and a CLI; this entry covers its cloud agent, which GitHub now calls Copilot in the cloud. <a href="https://docs.github.com/en/copilot/how-tos/copilot-on-github/use-copilot-agents/kick-off-a-task">Assigning an issue</a> &quot;always creates a pull request&quot;, and the <a href="https://docs.github.com/en/copilot/concepts/security-governance-and-network-settings/risks-and-mitigations">cloud agent</a> &quot;cannot approve or merge a pull request&quot;. <a href="https://docs.github.com/en/copilot/how-tos/copilot-on-github/use-copilot-agents/get-pull-requests-ready-to-merge">Agent Merge</a> watches and fixes CI failures and conflicts, but &quot;does not enable auto-merge&quot;. Separately, <a href="https://docs.github.com/en/copilot/concepts/agent-capabilities/agent-powered-workflows-and-operations/code-review">Copilot approvals</a> can make code review&#39;s approval count toward required approvals; that setting is off by default. <a href="https://github.com/features/copilot/plans">Pro is $10/month, Pro+ $39/month and Max $100/month</a>, with usage billed in GitHub AI Credits; Free includes neither cloud agent access nor code review.</p>
 <p>Pick it when you want GitHub issue assignment to create a PR for human review and merge; see <a href="/compare/github-copilot-coding-agent/">Orbi vs GitHub Copilot coding agent</a>.</p>
 <h3 id="opencode">OpenCode</h3>
 <p><a href="https://opencode.ai/docs/">OpenCode</a> is a terminal coding agent with <a href="https://github.com/anomalyco/opencode">MIT-licensed source</a> and support for <a href="https://opencode.ai/docs/providers/">many model providers and your own key</a>. Its <a href="https://opencode.ai/v1/docs/github/">GitHub integration</a> runs in your own Actions runner: a <code class="post-code--single">/opencode</code> or <code class="post-code--single">/oc</code> comment can have it implement an issue and open a PR. The docs I read on 12 November don&#39;t describe merging. For a free option, the software costs nothing and you budget for model access through your provider or a subscription such as <a href="https://opencode.ai/docs/console/go/">OpenCode Go at $10/month</a>.</p>
 <p>Pick it when you want to choose your model provider and run the GitHub workflow in your own Actions runner.</p>
 <h3 id="orbi">Orbi</h3>
-<p>Label a GitHub Issue <code class="post-code--single">ai-ready</code> and Orbi runs <a href="/guides/pi-coding-agent/">Pi</a>, an open-source coding agent, to implement it. A second Pi session that did not write the code reviews it, and the Orbi runner merges the reviewed commit once your CI passes; if your branch protection requires a human approval, Orbi stops at <code class="post-code--single">ai-awaiting-merge</code> and the Issue comment names the action. A person starts a release; Orbi then opens the release ticket, tags and publishes.</p>
-<p>Pick it when you want Issues carried through review and merge, using self-hosted <a href="https://github.com/orbi-build/orbi">Orbi</a> or <a href="/cloud/?ref=blog-best-agent">Orbi Cloud</a>.</p>
+<p>Label a GitHub Issue <code class="post-code--single">ai-ready</code> and Orbi runs <a href="/guides/pi-coding-agent/">Pi</a>, an open-source coding agent, to implement it. A second Pi session that did not write the code reviews it, and the Orbi runner merges the reviewed commit once your CI passes; if your branch protection requires a human approval, Orbi stops at <code class="post-code--single">ai-awaiting-merge</code> and the Issue comment names the action. Releases don&#39;t start on their own: a person opens a release Issue and labels it both <code class="post-code--single">ai-ready</code> and <code class="post-code--single">ai-release</code>, and Orbi tags and publishes once its release checks pass.</p>
+<p>Self-hosted <a href="https://github.com/orbi-build/orbi">Orbi</a> costs nothing under AGPL-3.0 and uses your own model key; <a href="/cloud/?ref=blog-best-agent">Orbi Cloud</a> is the paid hosted version, with its plans listed on that page.</p>
+<p>Pick it when you want Issues carried through review and merge.</p>
 <h2 id="try-two-agents-on-your-own-repo-for-a-week">Try two agents on your own repo for a week</h2>
 <p>To decide which AI coding agent is best for my repo, I&#39;d use this protocol:</p>
 <ol>
@@ -278,7 +279,7 @@ gh issue create -R &quot;$OWNER/$NAME&quot; --label trial-a \
 </code></pre></div>
 <p>A copy has no CI secrets or branch protection unless you add them. Set those up before handing over work.</p>
 </li>
-<li><p>Keep the same instructions file throughout the week. Don&#39;t rescue a stuck run silently: leave a PR comment if you fix something by hand so the script counts the intervention. Make sure each PR says <code class="post-code--spaced">Closes #N</code> for its issue.</p>
+<li><p>Keep the same instructions file throughout the week. Don&#39;t rescue a stuck run silently: leave a PR comment if you fix something by hand so the script counts the intervention. Make sure each PR says <code class="post-code--spaced">Closes #N</code> for its issue; the script falls back to PRs that only mention the issue, but you then have to check those rows by hand.</p>
 </li>
 <li><p>Use the same cutoff at the end of the week for both agents, and score both sets then, including unfinished issues. Record costs from your bill or usage record:</p>
 <p class="post-table-hint" hidden>Swipe horizontally to see all columns.</p><div class="post-table-scroll" tabindex="0" role="region" aria-label="Swipe horizontally to see all columns."><table class="table-comparison">
@@ -306,20 +307,25 @@ gh issue create -R &quot;$OWNER/$NAME&quot; --label trial-a \
 </li>
 </ol>
 <h2 id="score-the-trial-from-github-s-records">Score the trial from GitHub&#39;s records</h2>
-<p>Save this as <code class="post-code--single">agent-trial-score.sh</code>, run <code class="post-code--spaced">chmod +x agent-trial-score.sh</code>, then execute it with bash. It needs logged-in <code class="post-code--single">gh</code>, <code class="post-code--single">jq</code>, <code class="post-code--single">awk</code> and <code class="post-code--single">sort</code>, plus the standard shell utilities it calls. I tested it with gh 2.100.0, jq 1.8.2, bash 5.3 and GNU Awk 5.4.1 on Linux; it uses only POSIX awk features but I have not run it on macOS.</p>
+<p>Save this as <code class="post-code--single">agent-trial-score.sh</code> and run <code class="post-code--spaced">chmod +x agent-trial-score.sh</code>. It is a bash script and needs the GitHub CLI (<code class="post-code--single">gh</code>, logged in with <code class="post-code--spaced">gh auth login</code>), <code class="post-code--single">jq</code>, <code class="post-code--single">awk</code> and <code class="post-code--single">sort</code>. I tested it with gh 2.100.0, jq 1.8.2, bash 5.3 and GNU Awk 5.4.1 on Linux. It uses only POSIX awk features, but I have not run it on macOS.</p>
 <div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="Copied">Copy</button><pre><code class="language-bash" data-copy-source>#!/usr/bin/env bash
 # Score a coding-agent trial from GitHub&#39;s own records, one row per issue.
-# Usage: ./agent-trial-score.sh OWNER/REPO &#39;ISSUE SEARCH&#39;
+# Usage: ./agent-trial-score.sh OWNER/REPO &#39;ISSUE SEARCH&#39; [CI_CHECK]
 #   ISSUE SEARCH  selects every issue you handed to the agent, e.g.
-#                 &#39;label:trial-copilot&#39; (GitHub issue search syntax)
+#                 &#39;label:trial-a&#39; (GitHub issue search syntax)
+#   CI_CHECK      exact name of the check run that is your test job, e.g. tests.
+#                 Without it the first_ci column stays &quot;unset&quot;.
 set -euo pipefail
 
-repo=&quot;${1:?usage: $0 OWNER/REPO &#39;ISSUE SEARCH&#39;}&quot;
-query=&quot;${2:?usage: $0 OWNER/REPO &#39;ISSUE SEARCH&#39;}&quot;
+repo=&quot;${1:?usage: $0 OWNER/REPO &#39;ISSUE SEARCH&#39; [CI_CHECK]}&quot;
+query=&quot;${2:?usage: $0 OWNER/REPO &#39;ISSUE SEARCH&#39; [CI_CHECK]}&quot;
+check=&quot;${3:-}&quot;
+
+# Any failed read stops the script: a number built on a failed call is worse than none.
+die() { echo &quot;$1: stopping without a score&quot; &gt;&amp;2; exit 2; }
 
 issues=$(gh issue list -R &quot;$repo&quot; --state all --search &quot;$query&quot; --limit 100 \
-  --json number,createdAt) \
-  || { echo &quot;could not list issues for $repo&quot; &gt;&amp;2; exit 2; }
+  --json number,createdAt) || die &quot;could not list issues for $repo&quot;
 
 if [ &quot;$(jq length &lt;&lt;&lt;&quot;$issues&quot;)&quot; -eq 0 ]; then
   echo &quot;no issues match &#39;$query&#39; in $repo: nothing to score&quot; &gt;&amp;2
@@ -327,12 +333,19 @@ if [ &quot;$(jq length &lt;&lt;&lt;&quot;$issues&quot;)&quot; -eq 0 ]; then
 fi
 
 # Comments or reviews left by human accounts (GitHub user type &quot;User&quot;).
-humans() { gh api --paginate &quot;$1?per_page=100&quot; -q &#39;.[] | select(.user.type == &quot;User&quot;) | .id&#39; | wc -l; }
+humans() {
+  local ids
+  ids=$(gh api --paginate &quot;$1?per_page=100&quot; -q &#39;.[] | select(.user.type == &quot;User&quot;) | .id&#39;) || return 1
+  grep -c . &lt;&lt;&lt;&quot;$ids&quot; || true
+}
 
-printf &#39;issue\tpr\tlink\tresult\thours\tfirst_ci\tcommits\thuman_notes\tmerged_by\n&#39;
-rows=$(jq -c &#39;.[]&#39; &lt;&lt;&lt;&quot;$issues&quot; | while read -r issue; do
+rows=$(mktemp)
+trap &#39;rm -f &quot;$rows&quot;&#39; EXIT
+
+while read -r issue; do
   i=$(jq -r .number &lt;&lt;&lt;&quot;$issue&quot;)
-  notes=$(humans &quot;repos/$repo/issues/$i/comments&quot;)
+  notes=$(humans &quot;repos/$repo/issues/$i/comments&quot;) || die &quot;could not read comments on issue $i&quot;
+
   # The last PR in this repository that was set to close the issue, merged or not.
   n=$(gh api graphql -F owner=&quot;${repo%/*}&quot; -F name=&quot;${repo#*/}&quot; -F number=&quot;$i&quot; -f query=&#39;
     query($owner: String!, $name: String!, $number: Int!) {
@@ -340,21 +353,24 @@ rows=$(jq -c &#39;.[]&#39; &lt;&lt;&lt;&quot;$issues&quot; | while read -r issue
         closedByPullRequestsReferences(first: 20, includeClosedPrs: true) {
           nodes { number repository { nameWithOwner } } } } } }&#39; \
     -q &quot;[.data.repository.issue.closedByPullRequestsReferences.nodes[]
-        | select(.repository.nameWithOwner == \&quot;$repo\&quot;) | .number] | last // empty&quot;)
+        | select(.repository.nameWithOwner == \&quot;$repo\&quot;) | .number] | last // empty&quot;) \
+    || die &quot;could not read linked PRs of issue $i&quot;
   link=closes
   if [ -z &quot;$n&quot; ]; then
     # No closing link: fall back to the last PR in this repository that mentions the issue.
-    n=$(gh api --paginate &quot;repos/$repo/issues/$i/timeline?per_page=100&quot; -q &quot;[.[]
+    mentions=$(gh api --paginate &quot;repos/$repo/issues/$i/timeline?per_page=100&quot; -q &quot;.[]
         | select(.event == \&quot;cross-referenced\&quot; and .source.issue.pull_request != null
-                 and .source.issue.repository.full_name == \&quot;$repo\&quot;) | .source.issue.number] | last // empty&quot; | tail -n 1)
+                 and .source.issue.repository.full_name == \&quot;$repo\&quot;) | .source.issue.number&quot;) \
+      || die &quot;could not read the timeline of issue $i&quot;
+    n=$(tail -n 1 &lt;&lt;&lt;&quot;$mentions&quot;)
     link=mention
   fi
   if [ -z &quot;$n&quot; ]; then
-    printf &#39;%s\t-\t-\tNO_PR\t-\t-\t-\t%s\t-\n&#39; &quot;$i&quot; &quot;$notes&quot;
+    printf &#39;%s\t-\t-\tNO_PR\t-\t-\t-\t%s\t-\n&#39; &quot;$i&quot; &quot;$notes&quot; &gt;&gt;&quot;$rows&quot;
     continue
   fi
 
-  pr=$(gh pr view &quot;$n&quot; -R &quot;$repo&quot; --json state,mergedAt,mergedBy)
+  pr=$(gh pr view &quot;$n&quot; -R &quot;$repo&quot; --json state,mergedAt,mergedBy) || die &quot;could not read PR $n&quot;
   result=$(jq -r .state &lt;&lt;&lt;&quot;$pr&quot;)
   hours=-
   if [ &quot;$result&quot; = MERGED ]; then
@@ -362,29 +378,37 @@ rows=$(jq -c &#39;.[]&#39; &lt;&lt;&lt;&quot;$issues&quot; | while read -r issue
       &#39;(($b|fromdate) - ($a|fromdate)) / 3600 | . * 10 | round / 10&#39;)
   fi
 
-  shas=$(gh api --paginate &quot;repos/$repo/pulls/$n/commits?per_page=100&quot; -q &#39;.[].sha&#39;)
+  shas=$(gh api --paginate &quot;repos/$repo/pulls/$n/commits?per_page=100&quot; -q &#39;.[].sha&#39;) \
+    || die &quot;could not read commits of PR $n&quot;
   commits=$(grep -c . &lt;&lt;&lt;&quot;$shas&quot; || true)
   first_sha=$(head -n 1 &lt;&lt;&lt;&quot;$shas&quot;)
 
-  # CI on the first commit still on the branch: pass, fail, pending or none.
-  first_ci=none
-  if [ -n &quot;$first_sha&quot; ]; then
-    first_ci=$(gh api &quot;repos/$repo/commits/$first_sha/check-runs?per_page=100&quot; -q &#39;
-      [.check_runs[].conclusion] as $c
-      | if ($c|length) == 0 then &quot;none&quot;
-        elif any($c[]; . == null) then &quot;pending&quot;
-        elif all($c[]; . == &quot;success&quot; or . == &quot;skipped&quot; or . == &quot;neutral&quot;) then &quot;pass&quot;
-        else &quot;fail&quot; end&#39;)
+  # Your test job on the first commit still on the branch: pass, fail, pending or none.
+  # A skipped or missing run is &quot;none&quot;, never &quot;pass&quot;.
+  first_ci=unset
+  if [ -n &quot;$check&quot; ] &amp;&amp; [ -n &quot;$first_sha&quot; ]; then
+    first_ci=$(gh api --paginate &quot;repos/$repo/commits/$first_sha/check-runs?per_page=100&quot; \
+      -q &quot;.check_runs[] | select(.name == \&quot;$check\&quot;) | .conclusion // \&quot;pending\&quot;&quot; \
+      | sort -u | tr &#39;\n&#39; &#39; &#39;) || die &quot;could not read check runs of PR $n&quot;
+    case &quot; $first_ci&quot; in
+      *&quot; pending &quot;*) first_ci=pending ;;
+      *&quot; failure &quot;*|*&quot; timed_out &quot;*|*&quot; cancelled &quot;*|*&quot; action_required &quot;*|*&quot; startup_failure &quot;*) first_ci=fail ;;
+      *&quot; success &quot;*) first_ci=pass ;;
+      *) first_ci=none ;;
+    esac
   fi
 
-  notes=$((notes + $(humans &quot;repos/$repo/issues/$n/comments&quot;) + $(humans &quot;repos/$repo/pulls/$n/reviews&quot;)))
+  pr_notes=$(humans &quot;repos/$repo/issues/$n/comments&quot;) || die &quot;could not read comments on PR $n&quot;
+  reviews=$(humans &quot;repos/$repo/pulls/$n/reviews&quot;) || die &quot;could not read reviews on PR $n&quot;
   merged_by=$(jq -r &#39;.mergedBy.login // &quot;-&quot;&#39; &lt;&lt;&lt;&quot;$pr&quot;)
   printf &#39;%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n&#39; \
-    &quot;$i&quot; &quot;$n&quot; &quot;$link&quot; &quot;$result&quot; &quot;$hours&quot; &quot;$first_ci&quot; &quot;$commits&quot; &quot;$notes&quot; &quot;$merged_by&quot;
-done)
-printf &#39;%s\n&#39; &quot;$rows&quot;
+    &quot;$i&quot; &quot;$n&quot; &quot;$link&quot; &quot;$result&quot; &quot;$hours&quot; &quot;$first_ci&quot; &quot;$commits&quot; &quot;$((notes + pr_notes + reviews))&quot; &quot;$merged_by&quot; &gt;&gt;&quot;$rows&quot;
+done &lt; &lt;(jq -c &#39;.[]&#39; &lt;&lt;&lt;&quot;$issues&quot;)
 
-printf &#39;%s\n&#39; &quot;$rows&quot; | awk -F&#39;\t&#39; &#39;
+printf &#39;issue\tpr\tlink\tresult\thours\tfirst_ci\tcommits\thuman_notes\tmerged_by\n&#39;
+cat &quot;$rows&quot;
+
+awk -F&#39;\t&#39; -v check=&quot;$check&quot; &#39;
   $4 == &quot;MERGED&quot; { m++; if ($6 == &quot;pass&quot;) p++; if ($6 == &quot;fail&quot;) f++; if ($8 == 0) q++ }
   $4 == &quot;NO_PR&quot;  { none++ }
   $4 == &quot;CLOSED&quot; { c++ }
@@ -392,11 +416,11 @@ printf &#39;%s\n&#39; &quot;$rows&quot; | awk -F&#39;\t&#39; &#39;
   END {
     printf &quot;\nissues handed over: %d  merged: %d  no PR: %d  PR closed unmerged: %d  PR still open: %d\n&quot;, NR, m, none, c, o
     if (m == 0) { print &quot;no merged PRs: no merge-time numbers&quot;; exit }
-    printf &quot;first-commit CI on merged PRs: %d pass, %d fail, %d other\n&quot;, p, f, m - p - f
+    if (check != &quot;&quot;) printf &quot;\&quot;%s\&quot; on the first commit of merged PRs: %d pass, %d fail, %d other\n&quot;, check, p, f, m - p - f
     printf &quot;merged with no human comment or review: %d of %d\n&quot;, q, m
-  }&#39;
+  }&#39; &quot;$rows&quot;
 # Median without gawk-only functions: sort first, then pick the middle.
-printf &#39;%s\n&#39; &quot;$rows&quot; | awk -F&#39;\t&#39; &#39;$4 == &quot;MERGED&quot; { print $5 }&#39; | sort -n | awk &#39;
+awk -F&#39;\t&#39; &#39;$4 == &quot;MERGED&quot; { print $5 }&#39; &quot;$rows&quot; | sort -n | awk &#39;
   { h[NR] = $1 }
   END {
     if (NR == 0) exit
@@ -404,68 +428,90 @@ printf &#39;%s\n&#39; &quot;$rows&quot; | awk -F&#39;\t&#39; &#39;$4 == &quot;ME
     printf &quot;median hours from issue to merge: %.1f (of %d merged)\n&quot;, med, NR
   }&#39;
 </code></pre></div>
+<p>Run it once per agent, with the label you gave that agent&#39;s issues and the name of your test job:</p>
+<div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="Copied">Copy</button><pre><code class="language-bash" data-copy-source>./agent-trial-score.sh OWNER/REPO &#39;label:trial-a&#39; tests
+</code></pre></div>
+<p>The third argument is the exact name of the check run that runs your tests. To see the names GitHub recorded for a commit:</p>
+<div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="Copied">Copy</button><pre><code class="language-bash" data-copy-source>gh api repos/OWNER/REPO/commits/COMMIT_SHA/check-runs -q &#39;.check_runs[] | &quot;\(.name)\t\(.conclusion)&quot;&#39;
+</code></pre></div>
+<p>On one Orbi PR that printed three checks: <code class="post-code--spaced">Mintlify Deployment</code> (skipped), <code class="post-code--single">link</code> and <code class="post-code--single">tests</code>. Only <code class="post-code--single">tests</code> runs the test suite, so that is the name I pass. Without a name the column stays <code class="post-code--single">unset</code>: a skipped docs deployment or an agent&#39;s own status check would otherwise count as a pass.</p>
 <p>I read the columns this way:</p>
 <ul>
-<li><code class="post-code--single">issue</code> and <code class="post-code--single">pr</code> are GitHub numbers; <code class="post-code--single">link=closes</code> is a closing link. <code class="post-code--single">mention</code> falls back to the last PR in the repo that mentions the issue; check those rows by hand.</li>
+<li><code class="post-code--single">issue</code> and <code class="post-code--single">pr</code> are GitHub numbers. <code class="post-code--single">link=closes</code> means the PR was set to close the issue. <code class="post-code--single">mention</code> means the script fell back to the last PR in the repo that mentions the issue; check those rows by hand.</li>
 <li><code class="post-code--single">result</code> is <code class="post-code--single">NO_PR</code>, <code class="post-code--single">CLOSED</code> (PR closed unmerged), <code class="post-code--single">OPEN</code> or <code class="post-code--single">MERGED</code>.</li>
 <li><code class="post-code--single">hours</code> runs from issue creation to PR merge, for merged PRs only.</li>
-<li><code class="post-code--single">first_ci</code> reads check runs on the first commit still on the branch. It ignores legacy commit statuses; a force-push changes which commit is first.</li>
-<li><code class="post-code--single">commits</code> counts the PR&#39;s commits. <code class="post-code--single">human_notes</code> counts issue/PR comments and PR reviews by accounts GitHub types as <code class="post-code--single">User</code>.</li>
+<li><code class="post-code--single">first_ci</code> is your test job on the first commit still on the branch: <code class="post-code--single">pass</code>, <code class="post-code--single">fail</code>, <code class="post-code--single">pending</code>, or <code class="post-code--single">none</code> when that job did not run or was skipped there. A force-push changes which commit is first.</li>
+<li><code class="post-code--single">commits</code> counts the PR&#39;s commits. <code class="post-code--single">human_notes</code> counts comments on the issue and the PR, plus PR reviews, left by accounts GitHub types as <code class="post-code--single">User</code>.</li>
 <li><code class="post-code--single">merged_by</code> names the account that merged the PR.</li>
 </ul>
-<p>The script reads up to 100 issues. If an agent runs under your own account, as Claude Code, Cursor or OpenCode can on your machine, its commits look like yours: this cannot distinguish your fix-up commits from the agent&#39;s. <code class="post-code--single">human_notes</code> is only a proxy for intervention: automation using a personal account also counts, while manual edits without a comment do not.</p>
-<p>In a private throwaway repository, I created three issues: one merged, one with a PR closed unmerged, and one with no PR. The repository name in this command is a placeholder; the output is unchanged:</p>
-<div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="Copied">Copy</button><pre><code class="language-text" data-copy-source>$ ./agent-trial-score.sh OWNER/trial-copy-a &#39;label:trial-a&#39;
+<p>The script reads up to 100 issues. If an agent runs under your own account, as Claude Code, Cursor or OpenCode can on your machine, its commits look like yours, so the script cannot tell your fix-up commits from the agent&#39;s. <code class="post-code--single">human_notes</code> is only a proxy for intervention: automation that posts through a personal account also counts, and a manual edit without a comment does not.</p>
+<p>In a private throwaway repository with a one-step <code class="post-code--single">tests</code> workflow, I created four issues and played the agent myself. One PR merged before the workflow existed, one was closed unmerged, one issue got no PR, and one PR only mentioned its issue and failed <code class="post-code--single">tests</code> on its first commit before two more commits fixed it. The repository name below is a placeholder; the output is unchanged:</p>
+<div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="Copied">Copy</button><pre><code class="language-text" data-copy-source>$ ./agent-trial-score.sh OWNER/trial-copy-a &#39;label:trial-a&#39; tests
 issue	pr	link	result	hours	first_ci	commits	human_notes	merged_by
+6	7	mention	MERGED	0	fail	3	0	xqliu
 3	-	-	NO_PR	-	-	-	0	-
 2	5	closes	CLOSED	-	none	1	1	-
 1	4	closes	MERGED	0	none	1	0	xqliu
 
-issues handed over: 3  merged: 1  no PR: 1  PR closed unmerged: 1  PR still open: 0
-first-commit CI on merged PRs: 0 pass, 0 fail, 1 other
-merged with no human comment or review: 1 of 1
-median hours from issue to merge: 0.0 (of 1 merged)
+issues handed over: 4  merged: 2  no PR: 1  PR closed unmerged: 1  PR still open: 0
+&quot;tests&quot; on the first commit of merged PRs: 0 pass, 1 fail, 1 other
+merged with no human comment or review: 2 of 2
+median hours from issue to merge: 0.0 (of 2 merged)
 exit=0
 </code></pre></div>
-<p>The near-zero time comes from the throwaway probe. It is not an agent result. An inaccessible repository exits with code 2; a search matching no issues exits with code 1:</p>
-<div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="Copied">Copy</button><pre><code class="language-text" data-copy-source>$ ./agent-trial-score.sh orbi-build/no-such-repo &#39;label:x&#39;
+<p>The zero hours come from me opening and merging the PRs within minutes; they are not an agent result. The <code class="post-code--single">exit=</code> line in each block is the exit status, which I printed with <code class="post-code--spaced">echo &quot;exit=$?&quot;</code> after the run.</p>
+<p>A score built on a failed read is worse than no score, so any failed GitHub call stops the script with exit code 2 and no summary. I checked that with a stand-in <code class="post-code--single">gh</code> that returns HTTP 403 for one kind of call at a time (issue list, issue comments, linked PRs, timeline, PR state, PR commits, check runs, PR reviews); all eight stopped the same way. Two of them, then a repository that does not exist (also exit 2) and a search that matches no issue (exit 1):</p>
+<div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="Copied">Copy</button><pre><code class="language-text" data-copy-source>$ FAIL_ON=&#39;issues/6/comments&#39; PATH=stub:$PATH ./agent-trial-score.sh OWNER/trial-copy-a &#39;label:trial-a&#39; tests
+gh: Resource not accessible (HTTP 403)
+could not read comments on issue 6: stopping without a score
+exit=2
+
+$ FAIL_ON=&#39;check-runs&#39; PATH=stub:$PATH ./agent-trial-score.sh OWNER/trial-copy-a &#39;label:trial-a&#39; tests
+gh: Resource not accessible (HTTP 403)
+could not read check runs of PR 7: stopping without a score
+exit=2
+
+$ ./agent-trial-score.sh orbi-build/no-such-repo &#39;label:x&#39;
 GraphQL: Could not resolve to a Repository with the name &#39;orbi-build/no-such-repo&#39;. (repository)
-could not list issues for orbi-build/no-such-repo
+could not list issues for orbi-build/no-such-repo: stopping without a score
 exit=2
 
 $ ./agent-trial-score.sh orbi-build/orbi &#39;label:no-such-label-xyz&#39;
 no issues match &#39;label:no-such-label-xyz&#39; in orbi-build/orbi: nothing to score
 exit=1
 </code></pre></div>
-<h2 id="what-the-same-table-looks-like-on-two-real-repositories">What the same table looks like on two real repositories</h2>
-<p>This is not a comparison of agents. These are different repositories, issues and people, queried on 12 November 2026.</p>
-<p>For <a href="https://github.com/orbi-build/orbi">orbi-build/orbi</a>, I selected issues created 5–11 November 2026, excluding epics and release tickets. The 26 results include 23 work items and three milestone-confirmation tickets Orbi opens to ask me a question; their <code class="post-code--single">NO_PR</code> rows are not failed deliveries. This excerpt keeps those three and all three first-CI failures; <code class="post-code--single">…</code> marks omitted rows:</p>
+<h2 id="the-same-script-on-orbi-s-own-repository">The same script on Orbi&#39;s own repository</h2>
+<p>This section is one repository&#39;s record, not a comparison with the other five agents: I have no trial of them to put beside it.</p>
+<p>For <a href="https://github.com/orbi-build/orbi">orbi-build/orbi</a>, I ran the script on 12 November 2026 over issues created 5–11 November 2026, excluding epics and release tickets, with <code class="post-code--single">tests</code> as the check name. The 26 results are 23 work items plus three milestone-confirmation tickets that Orbi opens to ask me a question; their <code class="post-code--single">NO_PR</code> rows are not failed deliveries. This excerpt keeps those three and every row whose <code class="post-code--single">first_ci</code> is not <code class="post-code--single">pass</code>; <code class="post-code--single">…</code> marks omitted rows:</p>
 <div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="Copied">Copy</button><pre><code class="language-text" data-copy-source>issue	pr	link	result	hours	first_ci	commits	human_notes	merged_by
 …
+2164	2166	closes	MERGED	1.4	none	2	0	app/orbi-build
+…
 2143	2150	closes	MERGED	3.6	fail	5	0	app/orbi-build
+…
 2141	-	-	NO_PR	-	-	-	0	-
 2139	2146	closes	MERGED	2.2	fail	3	1	app/orbi-build
+…
 2127	2129	closes	MERGED	1	fail	3	0	app/orbi-build
 2125	-	-	NO_PR	-	-	-	1	-
+2123	2124	closes	MERGED	1	none	2	0	app/orbi-build
 2120	-	-	NO_PR	-	-	-	1	-
 …
 
 issues handed over: 26  merged: 23  no PR: 3  PR closed unmerged: 0  PR still open: 0
-first-commit CI on merged PRs: 20 pass, 3 fail, 0 other
+&quot;tests&quot; on the first commit of merged PRs: 18 pass, 3 fail, 2 other
 merged with no human comment or review: 19 of 23
 median hours from issue to merge: 1.1 (of 23 merged)
 exit=0
 </code></pre></div>
-<p>The 23 work items all merged: I wrote 19 and Orbi opened four. Orbi&#39;s GitHub App merges once review and CI pass, without waiting for my merge click, so the hours are short by design. The median 1.1 hours includes implementation and CI, running from issue creation through merge.</p>
-<p>Orbi posts its review as Issue comments by the App, so <code class="post-code--single">human_notes</code> counts only what I typed. Four of the 23 merged work items had my comments. Three of 23 failed CI on the first commit and were fixed before merge. The older <a href="/blog/ai-code-review-bottleneck/">AI code review bottleneck post</a> reported a median 21 minutes from PR open to merge on Orbi Cloud&#39;s repository in a different window; the clocks differ, so don&#39;t compare them.</p>
-<p>I also ran the script on a public repository where GitHub&#39;s Copilot agent (<code class="post-code--single">app/copilot-swe-agent</code>) opened the PRs and the owner merged them, for issues created 1 April–31 July 2026:</p>
-<div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="Copied">Copy</button><pre><code class="language-text" data-copy-source>issues handed over: 14  merged: 11  no PR: 0  PR closed unmerged: 3  PR still open: 0
-first-commit CI on merged PRs: 11 pass, 0 fail, 0 other
-merged with no human comment or review: 9 of 11
-median hours from issue to merge: 64.1 (of 11 merged)
-exit=0
-</code></pre></div>
-<p>Three merged rows were found only through <code class="post-code--single">mention</code>: the script catches PRs without closing links as well as PRs closed unmerged. The median 64.1 hours includes however long the owner took to review. I have not named this repository here, so readers cannot independently trace this sample from the post.</p>
+<p>How to read it, with the caveats that matter:</p>
+<ul>
+<li>All 23 work items merged. I wrote 19 of those issues and Orbi opened the other four, so this is a maintainer handing work to his own tool on a codebase it has worked in for months.</li>
+<li>Orbi&#39;s GitHub App merges once review and CI pass, without waiting for a merge click, so the hours are short by design. The median 1.1 hours runs from issue creation to merge and includes implementation, review and CI.</li>
+<li>On three of the 23, <code class="post-code--single">tests</code> failed on the first commit and later commits fixed it before the merge. On two, <code class="post-code--single">tests</code> has no run on the first commit, so they count as <code class="post-code--single">other</code>, not as passes.</li>
+<li>Orbi posts its review as Issue comments from the App, so <code class="post-code--single">human_notes</code> counts only what I typed. Four of the 23 had a comment from me.</li>
+</ul>
+<p>The older <a href="/blog/ai-code-review-bottleneck/">AI code review bottleneck post</a> reported a median 21 minutes from PR open to merge on Orbi Cloud&#39;s repository in a different window. That clock starts later and covers another repository, so the two numbers don&#39;t compare.</p>
 <h2 id="what-i-d-check-before-paying-for-any-of-them">What I&#39;d check before paying for any of them</h2>
 <p>When choosing the best AI agent for coding on GitHub, I&#39;d check:</p>
 <ul>
