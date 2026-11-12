@@ -167,6 +167,10 @@ export const BADGE_PLACEHOLDER_SIZES = [
   { host: "aitoolslist.tools", width: 240, height: 64 },
   { host: "indielineup.com", width: 182, height: 46 },
   { host: "www.topaitools4u.site", width: 64, height: 64 },
+  // 2026-11-12 PromptFrenzy directory badge, measured on the live URL:
+  // www.promptfrenzy.com 220x44 (SVG, 950 bytes, width/height and viewBox 0 0 220 44;
+  // the vendor snippet declares the same 220x44 box).
+  { host: "www.promptfrenzy.com", width: 220, height: 44 },
 ];
 const FALLBACK_PLACEHOLDER_SIZE = { width: 1, height: 1 };
 
