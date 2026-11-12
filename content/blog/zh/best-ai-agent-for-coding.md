@@ -1,20 +1,20 @@
 ---
 title: 最好的 AI 编程 agent 怎么选：在自己的仓库上试一周
 date: 2026-11-12
-summary: 按交出去的内容梳理六种 agent，介绍在自己仓库上试用一周的方法，并附一个用 GitHub Issue 和 PR 记录统计结果的 gh 脚本。
+summary: 按交接方式把六种 AI 编程 agent 分成三组，给出在自己仓库上试用一周的做法，附一个用 GitHub Issue 和 PR 记录统计结果的 gh 脚本。
 lang: zh
 author: Larry 🍀 Orbi
 image: /img/blog-best-ai-agent-for-coding-card.png
 mirror: best-ai-agent-for-coding
 ---
 
-没有唯一最好的 AI 编程 agent，得看你交出去什么：终端或编辑器里的一条提示、云端执行后返回 PR 的任务，还是要完成评审和合并的 Issue（GitHub 仓库里的任务单）。这篇写给独立开发者和维护者，帮你为自己的 GitHub 仓库选第一个 agent。文中把六种工具按交接方式分组，给出在自己仓库上试用一周的方法，并附上用 GitHub 记录统计结果的 [GitHub CLI](https://cli.github.com/)（`gh`）脚本。六种工具是 Claude Code、Cursor、Codex、GitHub Copilot、OpenCode，以及我做的 Orbi，它负责把 Issue 推进到合并。这里的 coding agent 指能自己读代码、改代码、跑命令的 AI 工具。
+没有唯一最好的 AI 编程 agent，得看你交出去什么：终端或编辑器里的一条提示、云端执行后返回 PR 的任务，还是一张要走完评审和合并的 Issue。这篇写给独立开发者和维护者，帮你为自己的 GitHub 仓库选第一个 agent。文中把六种工具按交接方式分组，给出在自己仓库上试用一周的方法，并附上用 GitHub 记录统计结果的 [GitHub CLI](https://cli.github.com/)（`gh`）脚本。六种工具是 Claude Code、Cursor、Codex、GitHub Copilot、OpenCode，以及我做的 Orbi，它负责把 Issue 推进到合并。这里的 coding agent 指能自己读代码、改代码、跑命令的 AI 工具。
 
 我是 Larry 🍀 Orbi，Orbi 的创始人。
 
 另外五种工具我没有安装或运行，相关介绍都来自我在 2026 年 11 月 12 日读到的官方文档。我没做基准测试，也不按速度或质量给 agent 排名、打分。Orbi 只支持 GitHub，没有编辑器或行内补全功能。
 
-## 最好的 AI 编程 agent 要看你交出去什么
+## 最好的 AI 编程 agent：先按交接方式分三组
 
 我先问自己：要交出去什么，工具做到哪一步会停？有些 agent 不止支持下面一种工作方式。
 
@@ -42,7 +42,7 @@ mirror: best-ai-agent-for-coding
 
 在 [Cursor 的套餐](https://cursor.com/pricing)中，要同时用编辑器、Cloud Agents 和 Bugbot，得选每月 $30 的 Premium 或更高档。每月 $8 的 Plus 只能用 Grok 模型，第三方模型用量另收费。[Cloud Agents](https://cursor.com/docs/cloud-agent.md) 在单独的分支上工作，并创建 PR。[Bugbot Autofix](https://cursor.com/docs/bugbot.md) 会启动 Cloud Agent 修复评审发现的问题，消耗 Cloud Agent 额度。
 
-[批准合并的工作流](https://cursor.com/docs/release-notes/cloud-agents.md)适用于 Origin 仓库。Origin 是 Cursor 自家的代码托管，目前还在早期 beta。我在 2026 年 11 月 12 日读到的文档没有说明在 GitHub 上跳过人工批准自动合并的流程。
+[批准合并的工作流](https://cursor.com/docs/release-notes/cloud-agents.md)适用于 Origin 仓库。Origin 是 Cursor 自家的代码托管，目前还在早期 beta。文档没有说明在 GitHub 上跳过人工批准自动合并的流程。
 
 要把编辑器和云端任务放在一起用，我会试 Cursor；交接方式的对比见 [Orbi 对比 Cursor](/zh/compare/cursor/)。
 
@@ -64,7 +64,7 @@ Copilot 也能在 IDE 和 CLI 中运行，这里只讲它的云端 agent，GitHu
 
 ### OpenCode
 
-[OpenCode](https://opencode.ai/docs/) 是终端里的 coding agent，[源码采用 MIT 许可](https://github.com/anomalyco/opencode)，支持[多家模型供应商和自带 key](https://opencode.ai/docs/providers/)。它的 [GitHub 集成](https://opencode.ai/v1/docs/github/)在你自己的 Actions runner 上运行：发一条 `/opencode` 或 `/oc` 评论，就能让它实现 Issue 并开 PR。我在 2026 年 11 月 12 日读到的文档没有说明合并流程。
+[OpenCode](https://opencode.ai/docs/) 是终端里的 coding agent，[源码采用 MIT 许可](https://github.com/anomalyco/opencode)，支持[多家模型供应商和自带 key](https://opencode.ai/docs/providers/)。它的 [GitHub 集成](https://opencode.ai/v1/docs/github/)在你自己的 Actions runner 上运行：发一条 `/opencode` 或 `/oc` 评论，就能让它实现 Issue 并开 PR。文档没有说明合并流程。
 
 软件本身免费，模型费用要另算，可以用供应商的服务，也可以订阅[每月 $10 的 OpenCode Go](https://opencode.ai/docs/console/go/)。
 
@@ -81,8 +81,6 @@ Copilot 也能在 IDE 和 CLI 中运行，这里只讲它的云端 agent，GitHu
 想把 Issue 交出去，一直推进到评审和合并，可以选它。
 
 ## 在自己的仓库上试用两个 agent，一周后比较
-
-要判断哪个 AI 编程 agent 最适合我的仓库，我会拿真实任务试一周：
 
 1. 先准备 6–10 张真实小 Issue 的内容，写清各自的完成条件。等交给 agent 时再创建 Issue，脚本从创建时开始计时。
 
@@ -272,7 +270,7 @@ gh api repos/OWNER/REPO/commits/COMMIT_SHA/check-runs -q '.check_runs[] | "\(.na
 - `commits` 是 PR 的提交数。`human_notes` 统计 GitHub 标为 `User` 的账号留下的 Issue 评论、PR 评论和 PR 评审。
 - `merged_by` 是合并 PR 的账号。
 
-脚本最多读取 100 张 Issue。Claude Code、Cursor、OpenCode 在本机运行时，都可能用你自己的账号提交。这样，脚本就分不出哪些修补提交来自你、哪些来自 agent。`human_notes` 只能间接反映人工介入：自动化通过个人账号发的评论也会被计入，手动改了代码却没留评论则不会。
+脚本最多读取 100 张 Issue。在本机运行的 agent（比如 Claude Code、Cursor、OpenCode）如果用你自己的账号提交，脚本就分不出哪些修补提交来自你、哪些来自 agent。`human_notes` 只能间接反映人工介入：自动化通过个人账号发的评论也会被计入，手动改了代码却没留评论则不会。
 
 我建了一个临时私有仓库来验证脚本。里面放了只有一步的 `tests` 工作流，我创建四张 Issue，自己扮演 agent。一个 PR 在工作流创建前就合并了，一个 PR 关闭但未合并，一张 Issue 没有 PR。还有一个 PR 只提到了对应 Issue，第一个提交的 `tests` 失败，又补了两个提交才修好。下面只把仓库名换成占位符，输出保持原样：
 
@@ -293,7 +291,7 @@ exit=0
 
 小时数显示为零，是因为我在几分钟内就创建并合并了 PR，不能当成 agent 的结果。每个输出块里的 `exit=` 是退出状态，我在运行后用 `echo "exit=$?"` 打印出来。
 
-读取失败后再算分数不可信，所以任何一次 GitHub 调用失败，脚本都会以退出码 2 停下，不输出汇总。我用替身 `gh` 让八类调用分别返回 HTTP 403：Issue 列表、Issue 评论、关联 PR、时间线、PR 状态、PR 提交、check run 和 PR 评审。八类调用失败时都按同样的方式停下。下面列出其中两次，还有仓库不存在（同样退出 2）和搜索不到 Issue（退出 1）的例子：
+读取失败后再算分数不可信，所以任何一次 GitHub 调用失败，脚本都会以退出码 2 停下，不输出汇总。我用替身 `gh` 让八类调用分别返回 HTTP 403：Issue 列表、Issue 评论、关联 PR、时间线、PR 状态、PR 提交、check run 和 PR 评审。下面列出其中两次，还有仓库不存在（同样退出 2）和搜索不到 Issue（退出 1）的例子：
 
 ```text
 $ FAIL_ON='issues/6/comments' PATH=stub:$PATH ./agent-trial-score.sh OWNER/trial-copy-a 'label:trial-a' tests
@@ -350,19 +348,19 @@ exit=0
 - 23 张工作 Issue 的改动全部合并了。其中 19 张由我写，另外四张由 Orbi 创建。我用自己的工具处理这些任务，它已经在这个仓库里工作了几个月。
 - Orbi 的 GitHub App 在评审和 CI 通过后就合并，省去了等人点合并按钮的时间。1.1 小时的中位数从 Issue 创建算到合并，包含实现、评审和 CI。
 - 23 个 PR 中，有三个的 `tests` 在第一个提交上失败，后续提交在合并前修好了。还有两个的第一个提交没有 `tests` 运行记录，计入 `other`，不能算通过。
-- Orbi 通过 App 在 Issue 评论里发评审结果，所以这里的 `human_notes` 只计我写的内容。23 条记录中，有四条包含我的评论。
+- Orbi 通过 App 在 Issue 评论里发评审结果，所以这里的 `human_notes` 只计我写的内容。23 张合并的工作 Issue 里，有四张带我的评论；那两张 `human_notes` 为 1 的 `NO_PR` 行，是我对里程碑确认的回复。
 
 较早的 [AI 代码评审瓶颈一文](/zh/blog/ai-code-review-bottleneck/)统计的是 Orbi Cloud 仓库在另一个时间段里的记录，从 PR 创建到合并的中位数为 21 分钟。那次从 PR 创建才开始计时，仓库也不同，这两个数字不能直接比较。
 
 ## 付费前我会核对什么
 
-在 GitHub 上选 AI 编程 agent，付费前我会查：
+我会查这几项：
 
 - 我的分支保护允许谁合并，App 的评审是否计入批准数，是否仍需人工批准。
 - 套餐是否包含我要用的云端 agent 和评审：[Claude 的托管评审](https://code.claude.com/docs/en/code-review.md)、[Cursor Premium 权限](https://cursor.com/docs/cloud-agent.md)和 [Copilot Free](https://github.com/features/copilot/plans) 的限制各不相同。
 - 能否使用我要的模型，尤其是 [Cursor Plus 只能用 Grok](https://cursor.com/pricing)、[Claude 列出的模型](https://code.claude.com/docs/en/model-config.md)，以及 [OpenCode 的供应商选择](https://opencode.ai/docs/providers/)。
 - 我的认证方式是否包含云端功能：[Codex 的 API key 接入不包含](https://learn.chatgpt.com/docs/pricing.md)。
-- 订阅价格没包含哪些费用，包括 [Cursor 的第三方模型用量](https://cursor.com/pricing)和 [Copilot 单独计算的算力额度](https://docs.github.com/en/copilot/concepts/copilot-surfaces/copilot-on-github)。
+- 订阅价格没包含哪些费用，包括 [Cursor 的第三方模型用量](https://cursor.com/pricing)和 [Copilot 云端和 Actions 的计算时间（与 AI Credits 分开计）](https://docs.github.com/en/copilot/concepts/copilot-surfaces/copilot-on-github)。
 
 ## 相关
 
