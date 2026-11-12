@@ -91,7 +91,7 @@ Copilot 也能在 IDE 和 CLI 中运行，这里只讲它的云端 agent，GitHu
    gh label create trial-b -R OWNER/REPO --description 'issue handed to agent b'
    ```
 
-3. 默认用一个仓库，两个 agent 轮流接 Issue，最后比较两组结果。一张 Issue 对应的 PR 合并后，下一个 agent 面对的代码就变了。如果要让它们从同一份代码解决相同的 Issue，就从同一个提交各建一个私有副本。在源仓库目录里运行下面的命令，把 `OWNER` 设成你的账号；第二个 agent 把 `AGENT` 改成 `b`，整段再跑一遍。示例 Issue 的标题和正文要换成你仓库里的真实问题：
+3. 默认用一个仓库，两个 agent 轮流接 Issue，最后比较两组结果。一张 Issue 对应的 PR 合并后，下一个 agent 面对的代码就变了。如果要让它们从同一份代码解决相同的 Issue，就从同一个提交各建一个私有副本。在源仓库目录里运行下面的命令，把 `OWNER` 设成你的账号；第二个 agent 把代码块里的 `AGENT=a` 改成 `AGENT=b`，整段再跑一遍。示例 Issue 的标题和正文要换成你仓库里的真实问题：
 
    ```bash
    OWNER=YOUR_GITHUB_LOGIN
@@ -269,7 +269,7 @@ gh api repos/OWNER/REPO/commits/COMMIT_SHA/check-runs -q '.check_runs[] | "\(.na
 - `issue` 和 `pr` 是 GitHub 编号。`link=closes` 表示 PR 设置了关闭该 Issue 的关联；`mention` 表示没找到关闭关联，改用了仓库里最后一个提到该 Issue 的 PR，这些行要手动核查。
 - `result` 是 `NO_PR`、`CLOSED`（PR 关闭但未合并）、`OPEN` 或 `MERGED`。
 - `hours` 从 Issue 创建算到 PR 合并，只统计已合并的 PR。由人来合并时，这个数包含 PR 等人的时间，所以只在合并方式相同的 agent 之间比较 `hours`，并且要和 `NO_PR`、`CLOSED` 的数量一起看。
-- `first_ci` 记录你的测试作业在分支当前保留的第一个提交上的结果：`pass`、`fail`、`pending`，或 `none`（该作业没跑或被跳过）。强制推送会改变哪个提交算第一个。仓库没有 CI 时，这一列一直是 `unset`，只能靠读 PR 来判断。
+- `first_ci` 记录你的测试作业在分支当前保留的第一个提交上的结果：`pass`、`fail`、`pending`，或 `none`（该作业没跑或被跳过）。强制推送会改变哪个提交算第一个。仓库没有 CI 就省略第三个参数：这一列保持 `unset`，只能靠读 PR 来判断。
 - `commits` 是 PR 的提交数。`human_notes` 统计 GitHub 标为 `User` 的账号留下的 Issue 评论、PR 评论和 PR 评审。
 - `merged_by` 是合并 PR 的账号。
 

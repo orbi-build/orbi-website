@@ -81,7 +81,7 @@ The docs won't tell you which is the best AI coding agent for your repo. A week 
    gh label create trial-b -R OWNER/REPO --description 'issue handed to agent b'
    ```
 
-3. I'd start with one repo and alternate issues between agents. Each merge changes the code the next agent starts from; compare the two sets with that change in mind. To give both agents the same issues from the same baseline, make one private copy per agent from the same commit. Run the commands from your source checkout and set `OWNER` to your account. For the second agent, set `AGENT=b` and run the block again. Replace the example issue's title and body with a real problem from your repo:
+3. I'd start with one repo and alternate issues between agents. Each merge changes the code the next agent starts from; compare the two sets with that change in mind. To give both agents the same issues from the same baseline, make one private copy per agent from the same commit. Run the commands from your source checkout and set `OWNER` to your account. For the second agent, change `AGENT=a` to `AGENT=b` in the block and run it again. Replace the example issue's title and body with a real problem from your repo:
 
    ```bash
    OWNER=YOUR_GITHUB_LOGIN
@@ -259,7 +259,7 @@ I read the columns this way:
 - `issue` and `pr` are GitHub numbers. `link=closes` means the PR was set to close the issue. `mention` means the script fell back to the last PR in the repo that mentions the issue; check those rows by hand.
 - `result` is `NO_PR`, `CLOSED` (PR closed unmerged), `OPEN` or `MERGED`.
 - `hours` runs from issue creation to PR merge, for merged PRs only. When a person merges, it includes however long the PR waited for that person, so compare `hours` only between agents whose PRs get merged the same way, and read it next to the `NO_PR` and `CLOSED` counts.
-- `first_ci` is your test job on the first commit still on the branch: `pass`, `fail`, `pending`, or `none` when that job did not run or was skipped there. A force-push changes which commit is first. If the repo has no CI, this column stays `unset` and you judge the PRs by reading them.
+- `first_ci` is your test job on the first commit still on the branch: `pass`, `fail`, `pending`, or `none` when that job did not run or was skipped there. A force-push changes which commit is first. If the repo has no CI, pass no check name: this column stays `unset` and you judge the PRs by reading them.
 - `commits` counts the PR's commits. `human_notes` counts comments on the issue and the PR, plus PR reviews, left by accounts GitHub types as `User`.
 - `merged_by` names the account that merged the PR.
 

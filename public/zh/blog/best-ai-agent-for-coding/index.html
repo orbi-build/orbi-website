@@ -272,7 +272,7 @@
 gh label create trial-b -R OWNER/REPO --description &#39;issue handed to agent b&#39;
 </code></pre></div>
 </li>
-<li><p>默认用一个仓库，两个 agent 轮流接 Issue，最后比较两组结果。一张 Issue 对应的 PR 合并后，下一个 agent 面对的代码就变了。如果要让它们从同一份代码解决相同的 Issue，就从同一个提交各建一个私有副本。在源仓库目录里运行下面的命令，把 <code class="post-code--single">OWNER</code> 设成你的账号；第二个 agent 把 <code class="post-code--single">AGENT</code> 改成 <code class="post-code--single">b</code>，整段再跑一遍。示例 Issue 的标题和正文要换成你仓库里的真实问题：</p>
+<li><p>默认用一个仓库，两个 agent 轮流接 Issue，最后比较两组结果。一张 Issue 对应的 PR 合并后，下一个 agent 面对的代码就变了。如果要让它们从同一份代码解决相同的 Issue，就从同一个提交各建一个私有副本。在源仓库目录里运行下面的命令，把 <code class="post-code--single">OWNER</code> 设成你的账号；第二个 agent 把代码块里的 <code class="post-code--single">AGENT=a</code> 改成 <code class="post-code--single">AGENT=b</code>，整段再跑一遍。示例 Issue 的标题和正文要换成你仓库里的真实问题：</p>
 <div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="已复制">复制</button><pre><code class="language-bash" data-copy-source>OWNER=YOUR_GITHUB_LOGIN
 AGENT=a
 BASE=$(git rev-parse HEAD)
@@ -451,7 +451,7 @@ awk -F&#39;\t&#39; &#39;$4 == &quot;MERGED&quot; { print $5 }&#39; &quot;$rows&q
 <li><code class="post-code--single">issue</code> 和 <code class="post-code--single">pr</code> 是 GitHub 编号。<code class="post-code--single">link=closes</code> 表示 PR 设置了关闭该 Issue 的关联；<code class="post-code--single">mention</code> 表示没找到关闭关联，改用了仓库里最后一个提到该 Issue 的 PR，这些行要手动核查。</li>
 <li><code class="post-code--single">result</code> 是 <code class="post-code--single">NO_PR</code>、<code class="post-code--single">CLOSED</code>（PR 关闭但未合并）、<code class="post-code--single">OPEN</code> 或 <code class="post-code--single">MERGED</code>。</li>
 <li><code class="post-code--single">hours</code> 从 Issue 创建算到 PR 合并，只统计已合并的 PR。由人来合并时，这个数包含 PR 等人的时间，所以只在合并方式相同的 agent 之间比较 <code class="post-code--single">hours</code>，并且要和 <code class="post-code--single">NO_PR</code>、<code class="post-code--single">CLOSED</code> 的数量一起看。</li>
-<li><code class="post-code--single">first_ci</code> 记录你的测试作业在分支当前保留的第一个提交上的结果：<code class="post-code--single">pass</code>、<code class="post-code--single">fail</code>、<code class="post-code--single">pending</code>，或 <code class="post-code--single">none</code>（该作业没跑或被跳过）。强制推送会改变哪个提交算第一个。仓库没有 CI 时，这一列一直是 <code class="post-code--single">unset</code>，只能靠读 PR 来判断。</li>
+<li><code class="post-code--single">first_ci</code> 记录你的测试作业在分支当前保留的第一个提交上的结果：<code class="post-code--single">pass</code>、<code class="post-code--single">fail</code>、<code class="post-code--single">pending</code>，或 <code class="post-code--single">none</code>（该作业没跑或被跳过）。强制推送会改变哪个提交算第一个。仓库没有 CI 就省略第三个参数：这一列保持 <code class="post-code--single">unset</code>，只能靠读 PR 来判断。</li>
 <li><code class="post-code--single">commits</code> 是 PR 的提交数。<code class="post-code--single">human_notes</code> 统计 GitHub 标为 <code class="post-code--single">User</code> 的账号留下的 Issue 评论、PR 评论和 PR 评审。</li>
 <li><code class="post-code--single">merged_by</code> 是合并 PR 的账号。</li>
 </ul>
