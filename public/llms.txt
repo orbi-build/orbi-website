@@ -252,6 +252,8 @@ Shipping notes from the root domain: what each delivery run hit, what fixed
 it, and the numbers behind both, traced to the issues they came from. RSS
 feed of the English posts: https://orbi.build/blog/feed.xml
 
+- Best AI agent for coding: test them on your own repo (English):
+  https://orbi.build/blog/best-ai-agent-for-coding/
 - OpenCode vs Codex CLI: same model, headless (English):
   https://orbi.build/blog/opencode-vs-codex/
 - OpenCode vs Codex CLI：同一模型，无人值守实测 (Chinese):
