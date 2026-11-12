@@ -95,7 +95,7 @@ The docs won't tell you which is the best AI coding agent for your repo. A week 
      --title 'add() subtracts' --body 'add(2, 3) returns -1. Expected 5.'
    ```
 
-   Keep the braces in `${BASE}:`. In zsh, `"$BASE:refs/heads/main"` invokes a modifier. My first push failed with this exact line:
+   I ran this block in bash and in zsh, with a different repository name in `NAME`; the `trial-copy-` name itself is untested. Keep the braces in `${BASE}:`. In zsh, `"$BASE:refs/heads/main"` invokes a modifier. My first push failed with this exact line:
 
    ```text
    error: src refspec 6465d879e845fbb914f0b1db9d5a04706e359b88efs/heads/main does not match any

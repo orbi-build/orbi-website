@@ -278,7 +278,7 @@ gh label create &quot;trial-$AGENT&quot; -R &quot;$OWNER/$NAME&quot; --descripti
 gh issue create -R &quot;$OWNER/$NAME&quot; --label &quot;trial-$AGENT&quot; \
   --title &#39;add() subtracts&#39; --body &#39;add(2, 3) returns -1. Expected 5.&#39;
 </code></pre></div>
-<p>Keep the braces in <code class="post-code--single">${BASE}:</code>. In zsh, <code class="post-code--single">&quot;$BASE:refs/heads/main&quot;</code> invokes a modifier. My first push failed with this exact line:</p>
+<p>I ran this block in bash and in zsh, with a different repository name in <code class="post-code--single">NAME</code>; the <code class="post-code--single">trial-copy-</code> name itself is untested. Keep the braces in <code class="post-code--single">${BASE}:</code>. In zsh, <code class="post-code--single">&quot;$BASE:refs/heads/main&quot;</code> invokes a modifier. My first push failed with this exact line:</p>
 <div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="Copied">Copy</button><pre><code class="language-text" data-copy-source>error: src refspec 6465d879e845fbb914f0b1db9d5a04706e359b88efs/heads/main does not match any
 </code></pre></div>
 <p>A copy has no CI secrets or branch protection unless you add them. Set those up before handing over work.</p>

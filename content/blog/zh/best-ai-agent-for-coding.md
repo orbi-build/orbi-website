@@ -105,7 +105,7 @@ Copilot 也能在 IDE 和 CLI 中运行，这里只讲它的云端 agent，GitHu
      --title 'add() subtracts' --body 'add(2, 3) returns -1. Expected 5.'
    ```
 
-   `${BASE}:` 要带花括号。zsh 会把 `"$BASE:refs/heads/main"` 当成带修饰符的表达式。我第一次推送就因此失败了，报错如下：
+   这段命令我在 bash 和 zsh 下各跑过一次，`NAME` 用的是另一个仓库名；`trial-copy-` 这个名字本身没有实测。`${BASE}:` 要带花括号。zsh 会把 `"$BASE:refs/heads/main"` 当成带修饰符的表达式。我第一次推送就因此失败了，报错如下：
 
    ```text
    error: src refspec 6465d879e845fbb914f0b1db9d5a04706e359b88efs/heads/main does not match any
