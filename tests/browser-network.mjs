@@ -171,6 +171,11 @@ export const BADGE_PLACEHOLDER_SIZES = [
   // www.promptfrenzy.com 220x44 (SVG, 950 bytes, width/height and viewBox 0 0 220 44;
   // the vendor snippet declares the same 220x44 box).
   { host: "www.promptfrenzy.com", width: 220, height: 44 },
+  // 2026-11-12 Smol Launch featured badge, measured on the live URL:
+  // smollaunch.com 250x60 (SVG, 35601 bytes, width/height 250x60 and
+  // viewBox 0 0 187.5 44.999999, same 25:6 ratio; the vendor snippet
+  // declares the same 250x60 box).
+  { host: "smollaunch.com", width: 250, height: 60 },
 ];
 const FALLBACK_PLACEHOLDER_SIZE = { width: 1, height: 1 };
 
