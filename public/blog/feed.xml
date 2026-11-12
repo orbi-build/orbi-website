@@ -6,6 +6,13 @@
     <description>Notes from shipping Orbi in the open: delivery runs, failures, fixes, and measurements.</description>
     <language>en</language>
     <item>
+      <title>Best AI agent for coding: test them on your own repo</title>
+      <link>https://orbi.build/blog/best-ai-agent-for-coding/</link>
+      <guid isPermaLink="true">https://orbi.build/blog/best-ai-agent-for-coding/</guid>
+      <pubDate>Thu, 12 Nov 2026 00:00:00 GMT</pubDate>
+      <description>Six agents sorted by what you hand over, a one-week trial on your own repo, and a gh script that scores it from GitHub's issue and pull request records.</description>
+    </item>
+    <item>
       <title>OpenCode vs Codex CLI: same model, headless</title>
       <link>https://orbi.build/blog/opencode-vs-codex/</link>
       <guid isPermaLink="true">https://orbi.build/blog/opencode-vs-codex/</guid>

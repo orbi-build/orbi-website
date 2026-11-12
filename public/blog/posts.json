@@ -1,5 +1,13 @@
 [
   {
+    "slug": "best-ai-agent-for-coding",
+    "title": "Best AI agent for coding: test them on your own repo",
+    "summary": "Six agents sorted by what you hand over, a one-week trial on your own repo, and a gh script that scores it from GitHub's issue and pull request records.",
+    "zhSlug": "best-ai-agent-for-coding",
+    "zhTitle": "最好的 AI 编程 agent 怎么选：在自己的仓库上试一周",
+    "related": []
+  },
+  {
     "slug": "opencode-vs-codex",
     "title": "OpenCode vs Codex CLI: same model, headless",
     "summary": "With Codex on workspace-write, all 24 DeepSeek runs passed; it sent more input and ran longer at each task median. Its default read-only run fixed nothing.",
