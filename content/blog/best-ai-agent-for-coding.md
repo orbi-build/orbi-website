@@ -12,7 +12,7 @@ There is no single best AI agent for coding; the choice depends on what you want
 
 I'm Larry 🍀 Orbi, the creator of Orbi.
 
-For the other five tools, I read official docs on 12 November 2026; I didn't install or run them for this post. I don't rank the agents or benchmark their speed or quality here. Orbi works only with GitHub and has no editor or inline completions.
+For the other five tools, I read official docs on 12 November 2026; I didn't install or run them for this post. I don't rank the agents or benchmark their speed or quality here. The only measured numbers are Orbi's on its own repository, near the end, and they aren't a comparison. Orbi works only with GitHub and has no editor or inline completions.
 
 ## How to choose the best AI agent for coding
 
@@ -38,7 +38,7 @@ Pick it when you want a Claude session locally or in the cloud; [Orbi vs Claude 
 
 ### Cursor
 
-[Cursor's plans](https://cursor.com/pricing) include its editor. Cloud Agents and Bugbot access start with Premium at $30/month. Plus at $8/month is limited to Grok models, and third-party model usage costs extra. [Cloud Agents](https://cursor.com/docs/cloud-agent.md) work on separate branches and produce PRs. [Bugbot Autofix](https://cursor.com/docs/bugbot.md) starts a Cloud Agent to fix review findings and uses Cloud Agent credits. The [merge-approval workflow](https://cursor.com/docs/release-notes/cloud-agents.md) is documented for Origin repositories, Cursor's own hosting in early beta. The docs I read on 12 November don't describe automatic merging on GitHub without human approval.
+[Cursor's plans](https://cursor.com/pricing) include its editor. Cloud Agents and Bugbot access start with Premium at $30/month. Plus at $8/month is limited to Grok models. On Premium and above, third-party models are billed separately by usage. [Cloud Agents](https://cursor.com/docs/cloud-agent.md) work on separate branches and produce PRs. [Bugbot Autofix](https://cursor.com/docs/bugbot.md) starts a Cloud Agent to fix review findings and uses Cloud Agent credits. The [merge-approval workflow](https://cursor.com/docs/release-notes/cloud-agents.md) is documented for Origin repositories, Cursor's own hosting in early beta. The docs I read on 12 November don't describe automatic merging on GitHub without human approval.
 
 Pick it when you want an editor and cloud execution together; [Orbi vs Cursor](/compare/cursor/) compares the handoffs.
 
@@ -74,23 +74,24 @@ The docs won't tell you which is the best AI coding agent for your repo. A week 
 
 1. Pick 6–10 small, real issues with a clear definition of done. Create each issue when you hand it over: the script's clock starts at issue creation.
 
-2. Label every handed-over issue `trial-<agent>`. For two agents, create both labels in the trial repo:
+2. Label every handed-over issue `trial-<agent>`. The label is only how the script finds the issue; hand the work over the way each agent expects, whether that is assigning the issue, commenting on it, or pasting its text into a terminal session. For two agents, create both labels in the trial repo:
 
    ```bash
    gh label create trial-a -R OWNER/REPO --description 'issue handed to agent a'
    gh label create trial-b -R OWNER/REPO --description 'issue handed to agent b'
    ```
 
-3. I'd start with one repo and alternate issues between agents. Each merge changes the code the next agent starts from; compare the two sets with that change in mind. To give both agents the same issues from the same baseline, make one private copy per agent from the same commit. Run the commands from your source checkout and set `OWNER` to your account. For the second agent, repeat with `NAME=trial-copy-b` and `trial-b`. Replace the example issue's title and body with a real problem from your repo:
+3. I'd start with one repo and alternate issues between agents. Each merge changes the code the next agent starts from; compare the two sets with that change in mind. To give both agents the same issues from the same baseline, make one private copy per agent from the same commit. Run the commands from your source checkout and set `OWNER` to your account. For the second agent, set `AGENT=b` and run the block again. Replace the example issue's title and body with a real problem from your repo:
 
    ```bash
    OWNER=YOUR_GITHUB_LOGIN
+   AGENT=a
    BASE=$(git rev-parse HEAD)
-   NAME=trial-copy-a
+   NAME=trial-copy-$AGENT
    gh repo create "$OWNER/$NAME" --private
    git push "https://github.com/$OWNER/$NAME.git" "${BASE}:refs/heads/main"
-   gh label create trial-a -R "$OWNER/$NAME" --description 'issue handed to agent a'
-   gh issue create -R "$OWNER/$NAME" --label trial-a \
+   gh label create "trial-$AGENT" -R "$OWNER/$NAME" --description "issue handed to agent $AGENT"
+   gh issue create -R "$OWNER/$NAME" --label "trial-$AGENT" \
      --title 'add() subtracts' --body 'add(2, 3) returns -1. Expected 5.'
    ```
 
@@ -102,9 +103,9 @@ The docs won't tell you which is the best AI coding agent for your repo. A week 
 
    A copy has no CI secrets or branch protection unless you add them. Set those up before handing over work.
 
-4. Keep the same instructions file throughout the week. If you fix a stuck run by hand, leave a PR comment so the script counts the intervention. Make sure each PR says `Closes #N` for its issue. The script falls back to PRs that only mention the issue; check those rows by hand.
+4. Keep the agents' instructions file (`AGENTS.md`, `CLAUDE.md` or whatever each agent reads) unchanged throughout the week. If you fix a stuck run by hand, leave a PR comment so the script counts the intervention. Make sure each PR says `Closes #N` for its issue. The script falls back to PRs that only mention the issue; check those rows by hand.
 
-5. At the end of the week, score both sets with the same cutoff, including unfinished issues. Record costs from your bill or usage record:
+5. At the end of the week, run the script for both sets one after the other, so unfinished issues are counted at the same moment. With three to five issues per agent, read the result as whether each agent works in your repo at all; rates and medians from so few issues are too noisy to rank on. Record costs from your bill or usage record:
 
    | Agent | Subscription, credits or API spend for the week | Issues handed over | Issues merged |
    |---|---|---|---|
@@ -139,6 +140,8 @@ if [ "$(jq length <<<"$issues")" -eq 0 ]; then
   echo "no issues match '$query' in $repo: nothing to score" >&2
   exit 1
 fi
+# The list call returns at most 100 issues; a silently cut-off list would skew the score.
+[ "$(jq length <<<"$issues")" -lt 100 ] || die "100 or more issues match '$query'; narrow the search"
 
 # Comments or reviews left by human accounts (GitHub user type "User").
 humans() {
@@ -255,12 +258,12 @@ I read the columns this way:
 
 - `issue` and `pr` are GitHub numbers. `link=closes` means the PR was set to close the issue. `mention` means the script fell back to the last PR in the repo that mentions the issue; check those rows by hand.
 - `result` is `NO_PR`, `CLOSED` (PR closed unmerged), `OPEN` or `MERGED`.
-- `hours` runs from issue creation to PR merge, for merged PRs only.
-- `first_ci` is your test job on the first commit still on the branch: `pass`, `fail`, `pending`, or `none` when that job did not run or was skipped there. A force-push changes which commit is first.
+- `hours` runs from issue creation to PR merge, for merged PRs only. When a person merges, it includes however long the PR waited for that person, so compare `hours` only between agents whose PRs get merged the same way, and read it next to the `NO_PR` and `CLOSED` counts.
+- `first_ci` is your test job on the first commit still on the branch: `pass`, `fail`, `pending`, or `none` when that job did not run or was skipped there. A force-push changes which commit is first. If the repo has no CI, this column stays `unset` and you judge the PRs by reading them.
 - `commits` counts the PR's commits. `human_notes` counts comments on the issue and the PR, plus PR reviews, left by accounts GitHub types as `User`.
 - `merged_by` names the account that merged the PR.
 
-The script reads up to 100 issues. If an agent runs under your own account, as Claude Code, Cursor or OpenCode can on your machine, its commits look like yours, so the script cannot tell your fix-up commits from the agent's. `human_notes` is only a proxy for intervention: automation that posts through a personal account also counts, and a manual edit without a comment does not.
+The script stops with exit code 2 if 100 or more issues match, because the list call returns at most 100 and a cut-off list would skew the score; narrow the search instead. If an agent runs under your own account, as Claude Code, Cursor or OpenCode can on your machine, its commits look like yours, so the script cannot tell your fix-up commits from the agent's. `human_notes` is only a proxy for intervention: automation that posts through a personal account also counts, and a manual edit without a comment does not.
 
 In a private throwaway repository with a one-step `tests` workflow, I created four issues and played the agent myself. One PR merged before the workflow existed. Another was closed unmerged, and one issue got no PR. The remaining PR only mentioned its issue and failed `tests` on its first commit before two more commits fixed it. The repository name below is a placeholder; the output is unchanged:
 
@@ -308,7 +311,7 @@ exit=1
 
 I have no trial results for the other five agents to compare with this repository's record.
 
-For [orbi-build/orbi](https://github.com/orbi-build/orbi), I ran the script on 12 November 2026 over issues created 5–11 November 2026, excluding epics and release tickets, with `tests` as the check name. The 26 rows cover 23 work items and three milestone-confirmation tickets that Orbi opens to ask me a question. Those three `NO_PR` rows are not failed deliveries. I've kept those three rows and every row whose `first_ci` is not `pass`; `…` marks omitted rows:
+For [orbi-build/orbi](https://github.com/orbi-build/orbi), I ran the script on 12 November 2026 over issues created 5–11 November 2026, excluding epics and release tickets, with `tests` as the check name. The search argument was `'created:2026-11-05..2026-11-11 -label:ai-epic -label:ai-release'`. The 26 rows cover 23 work items and three milestone-confirmation tickets that Orbi opens to ask me a question. Those three `NO_PR` rows are not failed deliveries. I've kept those three rows and every row whose `first_ci` is not `pass`; `…` marks omitted rows:
 
 ```text
 issue	pr	link	result	hours	first_ci	commits	human_notes	merged_by
@@ -335,8 +338,8 @@ exit=0
 
 - All 23 work items merged. I wrote 19 of those issues and Orbi opened the other four. I maintain the codebase, and Orbi has worked in it for months.
 - Orbi's GitHub App merges once review and CI pass, so the measured time includes no wait for a merge click. The median 1.1 hours runs from issue creation to merge and includes implementation, review and CI.
-- On three of the 23, `tests` failed on the first commit and later commits fixed it before the merge. On two, `tests` has no run on the first commit, so they count as `other`, not as passes.
-- Orbi posts its review as Issue comments from the App. In this run, `human_notes` counts only what I typed. Four of the 23 had a comment from me.
+- On three of the 23, `tests` failed on the first commit and later commits, all pushed by Orbi's App, fixed it before the merge. On two, `tests` has no run on the first commit, so they count as `other`, not as passes.
+- Orbi posts its review as Issue comments from the App. In this run, `human_notes` counts only what I typed. Four of the 23 had a comment from me. Nobody commented on or reviewed the other 19 PRs; the only review they got was the second Pi session's.
 
 The older [AI code review bottleneck post](/blog/ai-code-review-bottleneck/) reported a median 21 minutes from PR open to merge on Orbi Cloud's repository in a different window. That clock starts later and covers another repository, so the two numbers don't compare.
 
@@ -348,7 +351,7 @@ When choosing the best AI agent for coding on GitHub, I'd check:
 - Whether the plan includes the cloud agent and review I intend to use: [Claude's hosted review](https://code.claude.com/docs/en/code-review.md), [Cursor Premium access](https://cursor.com/docs/cloud-agent.md) and [Copilot Free](https://github.com/features/copilot/plans) have different limits.
 - Whether my required models are available, especially [Cursor Plus's Grok restriction](https://cursor.com/pricing), [Claude's listed models](https://code.claude.com/docs/en/model-config.md) and [OpenCode's provider choice](https://opencode.ai/docs/providers/).
 - Whether my authentication method includes cloud features: [Codex API-key access does not](https://learn.chatgpt.com/docs/pricing.md).
-- What the subscription excludes from its price, including [Cursor's third-party model usage](https://cursor.com/pricing) and [Copilot's separate compute allowance](https://docs.github.com/en/copilot/concepts/copilot-surfaces/copilot-on-github).
+- What the subscription excludes from its price, including [Cursor's third-party model usage](https://cursor.com/pricing) and [Copilot's cloud and Actions compute time, which GitHub counts separately from AI Credits](https://docs.github.com/en/copilot/concepts/copilot-surfaces/copilot-on-github).
 
 ## Related
 

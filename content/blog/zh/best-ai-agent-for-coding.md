@@ -12,7 +12,7 @@ mirror: best-ai-agent-for-coding
 
 我是 Larry 🍀 Orbi，Orbi 的创始人。
 
-另外五种工具我没有安装或运行，相关介绍都来自我在 2026 年 11 月 12 日读到的官方文档。我没做基准测试，也不按速度或质量给 agent 排名、打分。Orbi 只支持 GitHub，没有编辑器或行内补全功能。
+另外五种工具我没有安装或运行，相关介绍都来自我在 2026 年 11 月 12 日读到的官方文档。我没做基准测试，也不按速度或质量给 agent 排名、打分。全文唯一的实测数字是 Orbi 在自己仓库上的记录，放在靠后的一节，不构成比较。Orbi 只支持 GitHub，没有编辑器或行内补全功能。
 
 ## 先按交接方式把六种 agent 分成三组
 
@@ -40,7 +40,7 @@ mirror: best-ai-agent-for-coding
 
 ### Cursor
 
-在 [Cursor 的套餐](https://cursor.com/pricing)中，要同时用编辑器、Cloud Agents 和 Bugbot，得选每月 $30 的 Premium 或更高档。每月 $8 的 Plus 只能用 Grok 模型，第三方模型用量另收费。[Cloud Agents](https://cursor.com/docs/cloud-agent.md) 在单独的分支上工作，并创建 PR。[Bugbot Autofix](https://cursor.com/docs/bugbot.md) 会启动 Cloud Agent 修复评审发现的问题，消耗 Cloud Agent 额度。
+在 [Cursor 的套餐](https://cursor.com/pricing)中，要同时用编辑器、Cloud Agents 和 Bugbot，得选每月 $30 的 Premium 或更高档。每月 $8 的 Plus 只能用 Grok 模型。Premium 及以上可以用第三方模型，用量另外计费。[Cloud Agents](https://cursor.com/docs/cloud-agent.md) 在单独的分支上工作，并创建 PR。[Bugbot Autofix](https://cursor.com/docs/bugbot.md) 会启动 Cloud Agent 修复评审发现的问题，消耗 Cloud Agent 额度。
 
 [批准合并的工作流](https://cursor.com/docs/release-notes/cloud-agents.md)适用于 Origin 仓库。Origin 是 Cursor 自家的代码托管，目前还在早期 beta。文档没有说明在 GitHub 上跳过人工批准自动合并的流程。
 
@@ -84,23 +84,24 @@ Copilot 也能在 IDE 和 CLI 中运行，这里只讲它的云端 agent，GitHu
 
 1. 先准备 6–10 张真实小 Issue 的内容，写清各自的完成条件。等交给 agent 时再创建 Issue，脚本从创建时开始计时。
 
-2. 给每张交出去的 Issue 打上 `trial-<agent>` 标签。试两个 agent，就在试用仓库里创建两个标签：
+2. 给每张交出去的 Issue 打上 `trial-<agent>` 标签。标签只是让脚本找到这张 Issue；真正交给 agent 时，按各家的方式来：分派 Issue、在 Issue 下评论，或者把 Issue 正文贴进终端会话。试两个 agent，就在试用仓库里创建两个标签：
 
    ```bash
    gh label create trial-a -R OWNER/REPO --description 'issue handed to agent a'
    gh label create trial-b -R OWNER/REPO --description 'issue handed to agent b'
    ```
 
-3. 默认用一个仓库，两个 agent 轮流接 Issue，最后比较两组结果。一张 Issue 对应的 PR 合并后，下一个 agent 面对的代码就变了。如果要让它们从同一份代码解决相同的 Issue，就从同一个提交各建一个私有副本。在源仓库目录里运行下面的命令，把 `OWNER` 设成你的账号；第二个 agent 再跑一遍，使用 `NAME=trial-copy-b` 和 `trial-b` 标签。示例 Issue 的标题和正文要换成你仓库里的真实问题：
+3. 默认用一个仓库，两个 agent 轮流接 Issue，最后比较两组结果。一张 Issue 对应的 PR 合并后，下一个 agent 面对的代码就变了。如果要让它们从同一份代码解决相同的 Issue，就从同一个提交各建一个私有副本。在源仓库目录里运行下面的命令，把 `OWNER` 设成你的账号；第二个 agent 把 `AGENT` 改成 `b`，整段再跑一遍。示例 Issue 的标题和正文要换成你仓库里的真实问题：
 
    ```bash
    OWNER=YOUR_GITHUB_LOGIN
+   AGENT=a
    BASE=$(git rev-parse HEAD)
-   NAME=trial-copy-a
+   NAME=trial-copy-$AGENT
    gh repo create "$OWNER/$NAME" --private
    git push "https://github.com/$OWNER/$NAME.git" "${BASE}:refs/heads/main"
-   gh label create trial-a -R "$OWNER/$NAME" --description 'issue handed to agent a'
-   gh issue create -R "$OWNER/$NAME" --label trial-a \
+   gh label create "trial-$AGENT" -R "$OWNER/$NAME" --description "issue handed to agent $AGENT"
+   gh issue create -R "$OWNER/$NAME" --label "trial-$AGENT" \
      --title 'add() subtracts' --body 'add(2, 3) returns -1. Expected 5.'
    ```
 
@@ -112,9 +113,9 @@ Copilot 也能在 IDE 和 CLI 中运行，这里只讲它的云端 agent，GitHu
 
    副本不会自带 CI 密钥或分支保护，要在交给 agent 前自己配好。
 
-4. 整周使用同一份指令文件。运行卡住时，别悄悄手动修补。修了什么，有 PR 后就在评论里写清，让脚本计入这次介入。每个 PR 都要写上对应 Issue 的 `Closes #N`。找不到关闭关联时，脚本会改为查找只提到了该 Issue 的 PR，这些行要手动核查。
+4. 给 agent 的指令文件（`AGENTS.md`、`CLAUDE.md`，或各 agent 读的那一份）整周不要改。运行卡住时，别悄悄手动修补。修了什么，有 PR 后就在评论里写清，让脚本计入这次介入。每个 PR 都要写上对应 Issue 的 `Closes #N`。找不到关闭关联时，脚本会改为查找只提到了该 Issue 的 PR，这些行要手动核查。
 
-5. 一周结束时，在同一个截止时点分别运行脚本，统计两个 agent 当时的结果，未完成的 Issue 也算进去。从账单或用量记录里记下费用：
+5. 一周结束时，两组挨着各跑一次脚本，未完成的 Issue 就按同一时刻计入。每个 agent 只有三到五张 Issue 时，结果只能说明它在你的仓库里能不能用；这么少的样本算出的比率和中位数波动太大，不能拿来排名。从账单或用量记录里记下费用：
 
    | Agent | 一周的订阅、额度或 API 费用 | 交出去的 Issue 数 | 已合并的 Issue 数 |
    |---|---|---|---|
@@ -149,6 +150,8 @@ if [ "$(jq length <<<"$issues")" -eq 0 ]; then
   echo "no issues match '$query' in $repo: nothing to score" >&2
   exit 1
 fi
+# The list call returns at most 100 issues; a silently cut-off list would skew the score.
+[ "$(jq length <<<"$issues")" -lt 100 ] || die "100 or more issues match '$query'; narrow the search"
 
 # Comments or reviews left by human accounts (GitHub user type "User").
 humans() {
@@ -265,12 +268,12 @@ gh api repos/OWNER/REPO/commits/COMMIT_SHA/check-runs -q '.check_runs[] | "\(.na
 
 - `issue` 和 `pr` 是 GitHub 编号。`link=closes` 表示 PR 设置了关闭该 Issue 的关联；`mention` 表示没找到关闭关联，改用了仓库里最后一个提到该 Issue 的 PR，这些行要手动核查。
 - `result` 是 `NO_PR`、`CLOSED`（PR 关闭但未合并）、`OPEN` 或 `MERGED`。
-- `hours` 从 Issue 创建算到 PR 合并，只统计已合并的 PR。
-- `first_ci` 记录你的测试作业在分支当前保留的第一个提交上的结果：`pass`、`fail`、`pending`，或 `none`（该作业没跑或被跳过）。强制推送会改变哪个提交算第一个。
+- `hours` 从 Issue 创建算到 PR 合并，只统计已合并的 PR。由人来合并时，这个数包含 PR 等人的时间，所以只在合并方式相同的 agent 之间比较 `hours`，并且要和 `NO_PR`、`CLOSED` 的数量一起看。
+- `first_ci` 记录你的测试作业在分支当前保留的第一个提交上的结果：`pass`、`fail`、`pending`，或 `none`（该作业没跑或被跳过）。强制推送会改变哪个提交算第一个。仓库没有 CI 时，这一列一直是 `unset`，只能靠读 PR 来判断。
 - `commits` 是 PR 的提交数。`human_notes` 统计 GitHub 标为 `User` 的账号留下的 Issue 评论、PR 评论和 PR 评审。
 - `merged_by` 是合并 PR 的账号。
 
-脚本最多读取 100 张 Issue。在本机运行的 agent（比如 Claude Code、Cursor、OpenCode）如果用你自己的账号提交，脚本就分不出哪些修补提交来自你、哪些来自 agent。`human_notes` 只能间接反映人工介入：自动化通过个人账号发的评论也会被计入，手动改了代码却没留评论则不会。
+搜索命中 100 张及以上时，脚本以退出码 2 停下：列表接口最多返回 100 张，被截断的列表会让结果失真，这时要缩小搜索范围。在本机运行的 agent（比如 Claude Code、Cursor、OpenCode）如果用你自己的账号提交，脚本就分不出哪些修补提交来自你、哪些来自 agent。`human_notes` 只能间接反映人工介入：自动化通过个人账号发的评论也会被计入，手动改了代码却没留评论则不会。
 
 我建了一个临时私有仓库来验证脚本。里面放了只有一步的 `tests` 工作流，我创建四张 Issue，自己扮演 agent。一个 PR 在工作流创建前就合并了，一个 PR 关闭但未合并，一张 Issue 没有 PR。还有一个 PR 只提到了对应 Issue，第一个提交的 `tests` 失败，又补了两个提交才修好。下面只把仓库名换成占位符，输出保持原样：
 
@@ -318,7 +321,7 @@ exit=1
 
 这一节只有一个仓库的记录。我没有另外五个 agent 的试用结果，无法放在一起比较。
 
-2026 年 11 月 12 日，我在 [orbi-build/orbi](https://github.com/orbi-build/orbi) 上运行脚本，统计 2026 年 11 月 5–11 日创建的 Issue，排除 epic 和发版 Issue，检查名称用 `tests`。26 条结果里有 23 张工作 Issue，还有三张 Orbi 创建的里程碑确认 Issue，用来向我提问。这三张的 `NO_PR` 不算交付失败。下面保留了这三行，以及所有 `first_ci` 不为 `pass` 的行；`…` 表示省略的行：
+2026 年 11 月 12 日，我在 [orbi-build/orbi](https://github.com/orbi-build/orbi) 上运行脚本，统计 2026 年 11 月 5–11 日创建的 Issue，排除 epic 和发版 Issue，检查名称用 `tests`。搜索参数是 `'created:2026-11-05..2026-11-11 -label:ai-epic -label:ai-release'`。26 条结果里有 23 张工作 Issue，还有三张 Orbi 创建的里程碑确认 Issue，用来向我提问。这三张的 `NO_PR` 不算交付失败。下面保留了这三行，以及所有 `first_ci` 不为 `pass` 的行；`…` 表示省略的行：
 
 ```text
 issue	pr	link	result	hours	first_ci	commits	human_notes	merged_by
@@ -345,10 +348,10 @@ exit=0
 
 这些结果有几处需要说明：
 
-- 23 张工作 Issue 的改动全部合并了。其中 19 张由我写，另外四张由 Orbi 创建。我用自己的工具处理这些任务，它已经在这个仓库里工作了几个月。
+- 23 张工作 Issue 的改动全部合并了。这 23 张 Issue 里，19 张是我写的，另外四张由 Orbi 创建；代码都是 Orbi 提交的。我用自己的工具处理这些任务，它已经在这个仓库里工作了几个月。
 - Orbi 的 GitHub App 在评审和 CI 通过后就合并，省去了等人点合并按钮的时间。1.1 小时的中位数从 Issue 创建算到合并，包含实现、评审和 CI。
-- 23 个 PR 中，有三个的 `tests` 在第一个提交上失败，后续提交在合并前修好了。还有两个的第一个提交没有 `tests` 运行记录，计入 `other`，不能算通过。
-- Orbi 通过 App 在 Issue 评论里发评审结果，所以这里的 `human_notes` 只计我写的内容。23 张合并的工作 Issue 里，有四张带我的评论；那两张 `human_notes` 为 1 的 `NO_PR` 行，是我对里程碑确认的回复。
+- 23 个 PR 中，有三个的 `tests` 在第一个提交上失败，后续提交在合并前修好了，这些提交都是 Orbi 的 App 推的。还有两个的第一个提交没有 `tests` 运行记录，计入 `other`，不能算通过。
+- Orbi 通过 App 在 Issue 评论里发评审结果，所以这里的 `human_notes` 只计我写的内容。23 张合并的工作 Issue 里，有四张带我的评论；那两张 `human_notes` 为 1 的 `NO_PR` 行，是我对里程碑确认的回复。另外 19 个 PR 没有人评论或评审过，它们得到的评审只有第二个 Pi 会话那一次。
 
 较早的 [AI 代码评审瓶颈一文](/zh/blog/ai-code-review-bottleneck/)统计的是 Orbi Cloud 仓库在另一个时间段里的记录，从 PR 创建到合并的中位数为 21 分钟。那次从 PR 创建才开始计时，仓库也不同，这两个数字不能直接比较。
 

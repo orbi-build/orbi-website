@@ -204,7 +204,7 @@
         </details>
 <p>没有唯一最好的 AI 编程 agent，得看你交出去什么：终端或编辑器里的一条提示、云端执行后返回 PR 的任务，还是一张要走完评审和合并的 Issue。这篇写给独立开发者和维护者，帮你为自己的 GitHub 仓库选第一个 agent。文中把六种工具按交接方式分组，给出在自己仓库上试用一周的方法，并附上用 GitHub 记录统计结果的 <a href="https://cli.github.com/">GitHub CLI</a>（<code class="post-code--single">gh</code>）脚本。六种工具是 Claude Code、Cursor、Codex、GitHub Copilot、OpenCode，以及我做的 Orbi，它负责把 Issue 推进到合并。这里的 coding agent 指能自己读代码、改代码、跑命令的 AI 工具。</p>
 <p>我是 Larry 🍀 Orbi，Orbi 的创始人。</p><aside class="post-cta-inline"><span>Orbi 把你的 Issue 一路做到发版。</span><a class="button button-signal" data-cta="post-inline-start" href="/zh/cloud/login">免费试用 Orbi Cloud →</a></aside>
-<p>另外五种工具我没有安装或运行，相关介绍都来自我在 2026 年 11 月 12 日读到的官方文档。我没做基准测试，也不按速度或质量给 agent 排名、打分。Orbi 只支持 GitHub，没有编辑器或行内补全功能。</p>
+<p>另外五种工具我没有安装或运行，相关介绍都来自我在 2026 年 11 月 12 日读到的官方文档。我没做基准测试，也不按速度或质量给 agent 排名、打分。全文唯一的实测数字是 Orbi 在自己仓库上的记录，放在靠后的一节，不构成比较。Orbi 只支持 GitHub，没有编辑器或行内补全功能。</p>
 <h2 id="先按交接方式把六种-agent-分成三组">先按交接方式把六种 agent 分成三组</h2>
 <p>我先问自己：要交出去什么，工具做到哪一步会停？有些 agent 不止支持下面一种工作方式。</p>
 <p class="post-table-hint" hidden>左右滑动查看所有列。</p><div class="post-table-scroll" tabindex="0" role="region" aria-label="左右滑动查看所有列。"><table class="table-comparison">
@@ -243,7 +243,7 @@
 <p>托管的 <a href="https://code.claude.com/docs/en/code-review.md">Code Review</a> 只供 Team/Enterprise 使用，文档写明它「never approves or blocks」PR，即不会批准或阻止 PR。<a href="https://code.claude.com/docs/en/model-config.md">模型配置</a>只列了 Claude 模型。<a href="https://claude.com/pricing">Pro</a> 每月 $20，按年付费折合每月 $17；Free 不包含 Claude Code。</p>
 <p>需要在本机或云端使用 Claude 会话时，我会试 Claude Code；Issue 工作流的差别见 <a href="/zh/compare/claude-code/">Orbi 对比 Claude Code</a>。</p>
 <h3 id="cursor">Cursor</h3>
-<p>在 <a href="https://cursor.com/pricing">Cursor 的套餐</a>中，要同时用编辑器、Cloud Agents 和 Bugbot，得选每月 $30 的 Premium 或更高档。每月 $8 的 Plus 只能用 Grok 模型，第三方模型用量另收费。<a href="https://cursor.com/docs/cloud-agent.md">Cloud Agents</a> 在单独的分支上工作，并创建 PR。<a href="https://cursor.com/docs/bugbot.md">Bugbot Autofix</a> 会启动 Cloud Agent 修复评审发现的问题，消耗 Cloud Agent 额度。</p>
+<p>在 <a href="https://cursor.com/pricing">Cursor 的套餐</a>中，要同时用编辑器、Cloud Agents 和 Bugbot，得选每月 $30 的 Premium 或更高档。每月 $8 的 Plus 只能用 Grok 模型。Premium 及以上可以用第三方模型，用量另外计费。<a href="https://cursor.com/docs/cloud-agent.md">Cloud Agents</a> 在单独的分支上工作，并创建 PR。<a href="https://cursor.com/docs/bugbot.md">Bugbot Autofix</a> 会启动 Cloud Agent 修复评审发现的问题，消耗 Cloud Agent 额度。</p>
 <p><a href="https://cursor.com/docs/release-notes/cloud-agents.md">批准合并的工作流</a>适用于 Origin 仓库。Origin 是 Cursor 自家的代码托管，目前还在早期 beta。文档没有说明在 GitHub 上跳过人工批准自动合并的流程。</p>
 <p>要把编辑器和云端任务放在一起用，我会试 Cursor；交接方式的对比见 <a href="/zh/compare/cursor/">Orbi 对比 Cursor</a>。</p>
 <h3 id="codex">Codex</h3>
@@ -267,19 +267,20 @@
 <ol>
 <li><p>先准备 6–10 张真实小 Issue 的内容，写清各自的完成条件。等交给 agent 时再创建 Issue，脚本从创建时开始计时。</p>
 </li>
-<li><p>给每张交出去的 Issue 打上 <code class="post-code--single">trial-&lt;agent&gt;</code> 标签。试两个 agent，就在试用仓库里创建两个标签：</p>
+<li><p>给每张交出去的 Issue 打上 <code class="post-code--single">trial-&lt;agent&gt;</code> 标签。标签只是让脚本找到这张 Issue；真正交给 agent 时，按各家的方式来：分派 Issue、在 Issue 下评论，或者把 Issue 正文贴进终端会话。试两个 agent，就在试用仓库里创建两个标签：</p>
 <div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="已复制">复制</button><pre><code class="language-bash" data-copy-source>gh label create trial-a -R OWNER/REPO --description &#39;issue handed to agent a&#39;
 gh label create trial-b -R OWNER/REPO --description &#39;issue handed to agent b&#39;
 </code></pre></div>
 </li>
-<li><p>默认用一个仓库，两个 agent 轮流接 Issue，最后比较两组结果。一张 Issue 对应的 PR 合并后，下一个 agent 面对的代码就变了。如果要让它们从同一份代码解决相同的 Issue，就从同一个提交各建一个私有副本。在源仓库目录里运行下面的命令，把 <code class="post-code--single">OWNER</code> 设成你的账号；第二个 agent 再跑一遍，使用 <code class="post-code--single">NAME=trial-copy-b</code> 和 <code class="post-code--single">trial-b</code> 标签。示例 Issue 的标题和正文要换成你仓库里的真实问题：</p>
+<li><p>默认用一个仓库，两个 agent 轮流接 Issue，最后比较两组结果。一张 Issue 对应的 PR 合并后，下一个 agent 面对的代码就变了。如果要让它们从同一份代码解决相同的 Issue，就从同一个提交各建一个私有副本。在源仓库目录里运行下面的命令，把 <code class="post-code--single">OWNER</code> 设成你的账号；第二个 agent 把 <code class="post-code--single">AGENT</code> 改成 <code class="post-code--single">b</code>，整段再跑一遍。示例 Issue 的标题和正文要换成你仓库里的真实问题：</p>
 <div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="已复制">复制</button><pre><code class="language-bash" data-copy-source>OWNER=YOUR_GITHUB_LOGIN
+AGENT=a
 BASE=$(git rev-parse HEAD)
-NAME=trial-copy-a
+NAME=trial-copy-$AGENT
 gh repo create &quot;$OWNER/$NAME&quot; --private
 git push &quot;https://github.com/$OWNER/$NAME.git&quot; &quot;${BASE}:refs/heads/main&quot;
-gh label create trial-a -R &quot;$OWNER/$NAME&quot; --description &#39;issue handed to agent a&#39;
-gh issue create -R &quot;$OWNER/$NAME&quot; --label trial-a \
+gh label create &quot;trial-$AGENT&quot; -R &quot;$OWNER/$NAME&quot; --description &quot;issue handed to agent $AGENT&quot;
+gh issue create -R &quot;$OWNER/$NAME&quot; --label &quot;trial-$AGENT&quot; \
   --title &#39;add() subtracts&#39; --body &#39;add(2, 3) returns -1. Expected 5.&#39;
 </code></pre></div>
 <p><code class="post-code--single">${BASE}:</code> 要带花括号。zsh 会把 <code class="post-code--single">&quot;$BASE:refs/heads/main&quot;</code> 当成带修饰符的表达式。我第一次推送就因此失败了，报错如下：</p>
@@ -287,9 +288,9 @@ gh issue create -R &quot;$OWNER/$NAME&quot; --label trial-a \
 </code></pre></div>
 <p>副本不会自带 CI 密钥或分支保护，要在交给 agent 前自己配好。</p>
 </li>
-<li><p>整周使用同一份指令文件。运行卡住时，别悄悄手动修补。修了什么，有 PR 后就在评论里写清，让脚本计入这次介入。每个 PR 都要写上对应 Issue 的 <code class="post-code--spaced">Closes #N</code>。找不到关闭关联时，脚本会改为查找只提到了该 Issue 的 PR，这些行要手动核查。</p>
+<li><p>给 agent 的指令文件（<code class="post-code--single">AGENTS.md</code>、<code class="post-code--single">CLAUDE.md</code>，或各 agent 读的那一份）整周不要改。运行卡住时，别悄悄手动修补。修了什么，有 PR 后就在评论里写清，让脚本计入这次介入。每个 PR 都要写上对应 Issue 的 <code class="post-code--spaced">Closes #N</code>。找不到关闭关联时，脚本会改为查找只提到了该 Issue 的 PR，这些行要手动核查。</p>
 </li>
-<li><p>一周结束时，在同一个截止时点分别运行脚本，统计两个 agent 当时的结果，未完成的 Issue 也算进去。从账单或用量记录里记下费用：</p>
+<li><p>一周结束时，两组挨着各跑一次脚本，未完成的 Issue 就按同一时刻计入。每个 agent 只有三到五张 Issue 时，结果只能说明它在你的仓库里能不能用；这么少的样本算出的比率和中位数波动太大，不能拿来排名。从账单或用量记录里记下费用：</p>
 <p class="post-table-hint" hidden>左右滑动查看所有列。</p><div class="post-table-scroll" tabindex="0" role="region" aria-label="左右滑动查看所有列。"><table class="table-comparison">
 <thead>
 <tr>
@@ -339,6 +340,8 @@ if [ &quot;$(jq length &lt;&lt;&lt;&quot;$issues&quot;)&quot; -eq 0 ]; then
   echo &quot;no issues match &#39;$query&#39; in $repo: nothing to score&quot; &gt;&amp;2
   exit 1
 fi
+# The list call returns at most 100 issues; a silently cut-off list would skew the score.
+[ &quot;$(jq length &lt;&lt;&lt;&quot;$issues&quot;)&quot; -lt 100 ] || die &quot;100 or more issues match &#39;$query&#39;; narrow the search&quot;
 
 # Comments or reviews left by human accounts (GitHub user type &quot;User&quot;).
 humans() {
@@ -447,12 +450,12 @@ awk -F&#39;\t&#39; &#39;$4 == &quot;MERGED&quot; { print $5 }&#39; &quot;$rows&q
 <ul>
 <li><code class="post-code--single">issue</code> 和 <code class="post-code--single">pr</code> 是 GitHub 编号。<code class="post-code--single">link=closes</code> 表示 PR 设置了关闭该 Issue 的关联；<code class="post-code--single">mention</code> 表示没找到关闭关联，改用了仓库里最后一个提到该 Issue 的 PR，这些行要手动核查。</li>
 <li><code class="post-code--single">result</code> 是 <code class="post-code--single">NO_PR</code>、<code class="post-code--single">CLOSED</code>（PR 关闭但未合并）、<code class="post-code--single">OPEN</code> 或 <code class="post-code--single">MERGED</code>。</li>
-<li><code class="post-code--single">hours</code> 从 Issue 创建算到 PR 合并，只统计已合并的 PR。</li>
-<li><code class="post-code--single">first_ci</code> 记录你的测试作业在分支当前保留的第一个提交上的结果：<code class="post-code--single">pass</code>、<code class="post-code--single">fail</code>、<code class="post-code--single">pending</code>，或 <code class="post-code--single">none</code>（该作业没跑或被跳过）。强制推送会改变哪个提交算第一个。</li>
+<li><code class="post-code--single">hours</code> 从 Issue 创建算到 PR 合并，只统计已合并的 PR。由人来合并时，这个数包含 PR 等人的时间，所以只在合并方式相同的 agent 之间比较 <code class="post-code--single">hours</code>，并且要和 <code class="post-code--single">NO_PR</code>、<code class="post-code--single">CLOSED</code> 的数量一起看。</li>
+<li><code class="post-code--single">first_ci</code> 记录你的测试作业在分支当前保留的第一个提交上的结果：<code class="post-code--single">pass</code>、<code class="post-code--single">fail</code>、<code class="post-code--single">pending</code>，或 <code class="post-code--single">none</code>（该作业没跑或被跳过）。强制推送会改变哪个提交算第一个。仓库没有 CI 时，这一列一直是 <code class="post-code--single">unset</code>，只能靠读 PR 来判断。</li>
 <li><code class="post-code--single">commits</code> 是 PR 的提交数。<code class="post-code--single">human_notes</code> 统计 GitHub 标为 <code class="post-code--single">User</code> 的账号留下的 Issue 评论、PR 评论和 PR 评审。</li>
 <li><code class="post-code--single">merged_by</code> 是合并 PR 的账号。</li>
 </ul>
-<p>脚本最多读取 100 张 Issue。在本机运行的 agent（比如 Claude Code、Cursor、OpenCode）如果用你自己的账号提交，脚本就分不出哪些修补提交来自你、哪些来自 agent。<code class="post-code--single">human_notes</code> 只能间接反映人工介入：自动化通过个人账号发的评论也会被计入，手动改了代码却没留评论则不会。</p>
+<p>搜索命中 100 张及以上时，脚本以退出码 2 停下：列表接口最多返回 100 张，被截断的列表会让结果失真，这时要缩小搜索范围。在本机运行的 agent（比如 Claude Code、Cursor、OpenCode）如果用你自己的账号提交，脚本就分不出哪些修补提交来自你、哪些来自 agent。<code class="post-code--single">human_notes</code> 只能间接反映人工介入：自动化通过个人账号发的评论也会被计入，手动改了代码却没留评论则不会。</p>
 <p>我建了一个临时私有仓库来验证脚本。里面放了只有一步的 <code class="post-code--single">tests</code> 工作流，我创建四张 Issue，自己扮演 agent。一个 PR 在工作流创建前就合并了，一个 PR 关闭但未合并，一张 Issue 没有 PR。还有一个 PR 只提到了对应 Issue，第一个提交的 <code class="post-code--single">tests</code> 失败，又补了两个提交才修好。下面只把仓库名换成占位符，输出保持原样：</p>
 <div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="已复制">复制</button><pre><code class="language-text" data-copy-source>$ ./agent-trial-score.sh OWNER/trial-copy-a &#39;label:trial-a&#39; tests
 issue	pr	link	result	hours	first_ci	commits	human_notes	merged_by
@@ -490,7 +493,7 @@ exit=1
 </code></pre></div>
 <h2 id="在-orbi-自己的仓库上运行同一个脚本">在 Orbi 自己的仓库上运行同一个脚本</h2>
 <p>这一节只有一个仓库的记录。我没有另外五个 agent 的试用结果，无法放在一起比较。</p>
-<p>2026 年 11 月 12 日，我在 <a href="https://github.com/orbi-build/orbi">orbi-build/orbi</a> 上运行脚本，统计 2026 年 11 月 5–11 日创建的 Issue，排除 epic 和发版 Issue，检查名称用 <code class="post-code--single">tests</code>。26 条结果里有 23 张工作 Issue，还有三张 Orbi 创建的里程碑确认 Issue，用来向我提问。这三张的 <code class="post-code--single">NO_PR</code> 不算交付失败。下面保留了这三行，以及所有 <code class="post-code--single">first_ci</code> 不为 <code class="post-code--single">pass</code> 的行；<code class="post-code--single">…</code> 表示省略的行：</p>
+<p>2026 年 11 月 12 日，我在 <a href="https://github.com/orbi-build/orbi">orbi-build/orbi</a> 上运行脚本，统计 2026 年 11 月 5–11 日创建的 Issue，排除 epic 和发版 Issue，检查名称用 <code class="post-code--single">tests</code>。搜索参数是 <code class="post-code--spaced">&#39;created:2026-11-05..2026-11-11 -label:ai-epic -label:ai-release&#39;</code>。26 条结果里有 23 张工作 Issue，还有三张 Orbi 创建的里程碑确认 Issue，用来向我提问。这三张的 <code class="post-code--single">NO_PR</code> 不算交付失败。下面保留了这三行，以及所有 <code class="post-code--single">first_ci</code> 不为 <code class="post-code--single">pass</code> 的行；<code class="post-code--single">…</code> 表示省略的行：</p>
 <div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="已复制">复制</button><pre><code class="language-text" data-copy-source>issue	pr	link	result	hours	first_ci	commits	human_notes	merged_by
 …
 2164	2166	closes	MERGED	1.4	none	2	0	app/orbi-build
@@ -514,10 +517,10 @@ exit=0
 </code></pre></div>
 <p>这些结果有几处需要说明：</p>
 <ul>
-<li>23 张工作 Issue 的改动全部合并了。其中 19 张由我写，另外四张由 Orbi 创建。我用自己的工具处理这些任务，它已经在这个仓库里工作了几个月。</li>
+<li>23 张工作 Issue 的改动全部合并了。这 23 张 Issue 里，19 张是我写的，另外四张由 Orbi 创建；代码都是 Orbi 提交的。我用自己的工具处理这些任务，它已经在这个仓库里工作了几个月。</li>
 <li>Orbi 的 GitHub App 在评审和 CI 通过后就合并，省去了等人点合并按钮的时间。1.1 小时的中位数从 Issue 创建算到合并，包含实现、评审和 CI。</li>
-<li>23 个 PR 中，有三个的 <code class="post-code--single">tests</code> 在第一个提交上失败，后续提交在合并前修好了。还有两个的第一个提交没有 <code class="post-code--single">tests</code> 运行记录，计入 <code class="post-code--single">other</code>，不能算通过。</li>
-<li>Orbi 通过 App 在 Issue 评论里发评审结果，所以这里的 <code class="post-code--single">human_notes</code> 只计我写的内容。23 张合并的工作 Issue 里，有四张带我的评论；那两张 <code class="post-code--single">human_notes</code> 为 1 的 <code class="post-code--single">NO_PR</code> 行，是我对里程碑确认的回复。</li>
+<li>23 个 PR 中，有三个的 <code class="post-code--single">tests</code> 在第一个提交上失败，后续提交在合并前修好了，这些提交都是 Orbi 的 App 推的。还有两个的第一个提交没有 <code class="post-code--single">tests</code> 运行记录，计入 <code class="post-code--single">other</code>，不能算通过。</li>
+<li>Orbi 通过 App 在 Issue 评论里发评审结果，所以这里的 <code class="post-code--single">human_notes</code> 只计我写的内容。23 张合并的工作 Issue 里，有四张带我的评论；那两张 <code class="post-code--single">human_notes</code> 为 1 的 <code class="post-code--single">NO_PR</code> 行，是我对里程碑确认的回复。另外 19 个 PR 没有人评论或评审过，它们得到的评审只有第二个 Pi 会话那一次。</li>
 </ul>
 <p>较早的 <a href="/zh/blog/ai-code-review-bottleneck/">AI 代码评审瓶颈一文</a>统计的是 Orbi Cloud 仓库在另一个时间段里的记录，从 PR 创建到合并的中位数为 21 分钟。那次从 PR 创建才开始计时，仓库也不同，这两个数字不能直接比较。</p>
 <h2 id="付费前我会核对什么">付费前我会核对什么</h2>

@@ -204,7 +204,7 @@
         </details>
 <p>There is no single best AI agent for coding; the choice depends on what you want to hand over: a prompt in your terminal or editor, a cloud task that returns a pull request (PR), or an issue whose implementation gets reviewed and merged. I wrote this for solo developers and maintainers choosing a first agent for their own GitHub repository. I group six agents by that handoff (Claude Code, Cursor, Codex, GitHub Copilot, OpenCode and Orbi, the issue-to-merge runner I built), then give you a one-week trial on your repo and a <a href="https://cli.github.com/">GitHub CLI</a> (<code class="post-code--single">gh</code>) script to score it from GitHub&#39;s records.</p>
 <p>I&#39;m Larry 🍀 Orbi, the creator of Orbi.</p><aside class="post-cta-inline"><span>Orbi takes your Issues all the way to a release.</span><a class="button button-signal" data-cta="post-inline-start" href="/cloud/login">Try Orbi Cloud free →</a></aside>
-<p>For the other five tools, I read official docs on 12 November 2026; I didn&#39;t install or run them for this post. I don&#39;t rank the agents or benchmark their speed or quality here. Orbi works only with GitHub and has no editor or inline completions.</p>
+<p>For the other five tools, I read official docs on 12 November 2026; I didn&#39;t install or run them for this post. I don&#39;t rank the agents or benchmark their speed or quality here. The only measured numbers are Orbi&#39;s on its own repository, near the end, and they aren&#39;t a comparison. Orbi works only with GitHub and has no editor or inline completions.</p>
 <h2 id="how-to-choose-the-best-ai-agent-for-coding">How to choose the best AI agent for coding</h2>
 <p>I start with one question: what do I hand over, and where does the work stop? Several agents support more than one of these workflows.</p>
 <p class="post-table-hint" hidden>Swipe horizontally to see all columns.</p><div class="post-table-scroll" tabindex="0" role="region" aria-label="Swipe horizontally to see all columns."><table class="table-comparison">
@@ -242,7 +242,7 @@
 <p><a href="https://code.claude.com/docs/en/overview.md">Claude Code</a> runs in a terminal, IDE, desktop app or browser. Start a <a href="https://code.claude.com/docs/en/claude-code-on-the-web.md">cloud session</a> with <code class="post-code--spaced">claude --cloud</code>, or use <code class="post-code--single">@claude</code> in GitHub through its <a href="https://code.claude.com/docs/en/github-actions.md">GitHub Action</a>. <a href="https://code.claude.com/docs/en/claude-code-on-the-web.md">Auto-fix</a> investigates failed checks and reviewer comments. It pushes a fix when one is clear. Hosted <a href="https://code.claude.com/docs/en/code-review.md">Code Review</a> is available only on Team/Enterprise and &quot;never approves or blocks&quot; a PR. The <a href="https://code.claude.com/docs/en/model-config.md">model configuration</a> lists only Claude models. <a href="https://claude.com/pricing">Pro</a> costs $20/month ($17/month billed annually). Free does not include Claude Code.</p>
 <p>Pick it when you want a Claude session locally or in the cloud; <a href="/compare/claude-code/">Orbi vs Claude Code</a> covers the Issue workflow difference.</p>
 <h3 id="cursor">Cursor</h3>
-<p><a href="https://cursor.com/pricing">Cursor&#39;s plans</a> include its editor. Cloud Agents and Bugbot access start with Premium at $30/month. Plus at $8/month is limited to Grok models, and third-party model usage costs extra. <a href="https://cursor.com/docs/cloud-agent.md">Cloud Agents</a> work on separate branches and produce PRs. <a href="https://cursor.com/docs/bugbot.md">Bugbot Autofix</a> starts a Cloud Agent to fix review findings and uses Cloud Agent credits. The <a href="https://cursor.com/docs/release-notes/cloud-agents.md">merge-approval workflow</a> is documented for Origin repositories, Cursor&#39;s own hosting in early beta. The docs I read on 12 November don&#39;t describe automatic merging on GitHub without human approval.</p>
+<p><a href="https://cursor.com/pricing">Cursor&#39;s plans</a> include its editor. Cloud Agents and Bugbot access start with Premium at $30/month. Plus at $8/month is limited to Grok models. On Premium and above, third-party models are billed separately by usage. <a href="https://cursor.com/docs/cloud-agent.md">Cloud Agents</a> work on separate branches and produce PRs. <a href="https://cursor.com/docs/bugbot.md">Bugbot Autofix</a> starts a Cloud Agent to fix review findings and uses Cloud Agent credits. The <a href="https://cursor.com/docs/release-notes/cloud-agents.md">merge-approval workflow</a> is documented for Origin repositories, Cursor&#39;s own hosting in early beta. The docs I read on 12 November don&#39;t describe automatic merging on GitHub without human approval.</p>
 <p>Pick it when you want an editor and cloud execution together; <a href="/compare/cursor/">Orbi vs Cursor</a> compares the handoffs.</p>
 <h3 id="codex">Codex</h3>
 <p><a href="https://learn.chatgpt.com/docs/codex/cli.md">Codex CLI</a> runs locally. <a href="https://learn.chatgpt.com/docs/cloud.md">Codex Cloud</a> returns work for you to inspect, commit or open as a PR. On GitHub, <a href="https://learn.chatgpt.com/docs/third-party/github.md"><code class="post-code--spaced">@codex review</code> or automatic review</a> flags only P0 and P1, its high-priority findings. <a href="https://learn.chatgpt.com/docs/code-review.md">Reviewing a PR in chat</a> &quot;doesn&#39;t post comments, approve it, or merge it&quot;. GitHub review also leaves branch protection and required approvals in place. The docs have moved to <code class="post-code--single">learn.chatgpt.com</code>. <a href="https://learn.chatgpt.com/docs/pricing.md">Plus is $20/month</a>, and API-key access has no cloud features.</p>
@@ -262,19 +262,20 @@
 <ol>
 <li><p>Pick 6–10 small, real issues with a clear definition of done. Create each issue when you hand it over: the script&#39;s clock starts at issue creation.</p>
 </li>
-<li><p>Label every handed-over issue <code class="post-code--single">trial-&lt;agent&gt;</code>. For two agents, create both labels in the trial repo:</p>
+<li><p>Label every handed-over issue <code class="post-code--single">trial-&lt;agent&gt;</code>. The label is only how the script finds the issue; hand the work over the way each agent expects, whether that is assigning the issue, commenting on it, or pasting its text into a terminal session. For two agents, create both labels in the trial repo:</p>
 <div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="Copied">Copy</button><pre><code class="language-bash" data-copy-source>gh label create trial-a -R OWNER/REPO --description &#39;issue handed to agent a&#39;
 gh label create trial-b -R OWNER/REPO --description &#39;issue handed to agent b&#39;
 </code></pre></div>
 </li>
-<li><p>I&#39;d start with one repo and alternate issues between agents. Each merge changes the code the next agent starts from; compare the two sets with that change in mind. To give both agents the same issues from the same baseline, make one private copy per agent from the same commit. Run the commands from your source checkout and set <code class="post-code--single">OWNER</code> to your account. For the second agent, repeat with <code class="post-code--single">NAME=trial-copy-b</code> and <code class="post-code--single">trial-b</code>. Replace the example issue&#39;s title and body with a real problem from your repo:</p>
+<li><p>I&#39;d start with one repo and alternate issues between agents. Each merge changes the code the next agent starts from; compare the two sets with that change in mind. To give both agents the same issues from the same baseline, make one private copy per agent from the same commit. Run the commands from your source checkout and set <code class="post-code--single">OWNER</code> to your account. For the second agent, set <code class="post-code--single">AGENT=b</code> and run the block again. Replace the example issue&#39;s title and body with a real problem from your repo:</p>
 <div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="Copied">Copy</button><pre><code class="language-bash" data-copy-source>OWNER=YOUR_GITHUB_LOGIN
+AGENT=a
 BASE=$(git rev-parse HEAD)
-NAME=trial-copy-a
+NAME=trial-copy-$AGENT
 gh repo create &quot;$OWNER/$NAME&quot; --private
 git push &quot;https://github.com/$OWNER/$NAME.git&quot; &quot;${BASE}:refs/heads/main&quot;
-gh label create trial-a -R &quot;$OWNER/$NAME&quot; --description &#39;issue handed to agent a&#39;
-gh issue create -R &quot;$OWNER/$NAME&quot; --label trial-a \
+gh label create &quot;trial-$AGENT&quot; -R &quot;$OWNER/$NAME&quot; --description &quot;issue handed to agent $AGENT&quot;
+gh issue create -R &quot;$OWNER/$NAME&quot; --label &quot;trial-$AGENT&quot; \
   --title &#39;add() subtracts&#39; --body &#39;add(2, 3) returns -1. Expected 5.&#39;
 </code></pre></div>
 <p>Keep the braces in <code class="post-code--single">${BASE}:</code>. In zsh, <code class="post-code--single">&quot;$BASE:refs/heads/main&quot;</code> invokes a modifier. My first push failed with this exact line:</p>
@@ -282,9 +283,9 @@ gh issue create -R &quot;$OWNER/$NAME&quot; --label trial-a \
 </code></pre></div>
 <p>A copy has no CI secrets or branch protection unless you add them. Set those up before handing over work.</p>
 </li>
-<li><p>Keep the same instructions file throughout the week. If you fix a stuck run by hand, leave a PR comment so the script counts the intervention. Make sure each PR says <code class="post-code--spaced">Closes #N</code> for its issue. The script falls back to PRs that only mention the issue; check those rows by hand.</p>
+<li><p>Keep the agents&#39; instructions file (<code class="post-code--single">AGENTS.md</code>, <code class="post-code--single">CLAUDE.md</code> or whatever each agent reads) unchanged throughout the week. If you fix a stuck run by hand, leave a PR comment so the script counts the intervention. Make sure each PR says <code class="post-code--spaced">Closes #N</code> for its issue. The script falls back to PRs that only mention the issue; check those rows by hand.</p>
 </li>
-<li><p>At the end of the week, score both sets with the same cutoff, including unfinished issues. Record costs from your bill or usage record:</p>
+<li><p>At the end of the week, run the script for both sets one after the other, so unfinished issues are counted at the same moment. With three to five issues per agent, read the result as whether each agent works in your repo at all; rates and medians from so few issues are too noisy to rank on. Record costs from your bill or usage record:</p>
 <p class="post-table-hint" hidden>Swipe horizontally to see all columns.</p><div class="post-table-scroll" tabindex="0" role="region" aria-label="Swipe horizontally to see all columns."><table class="table-comparison">
 <thead>
 <tr>
@@ -334,6 +335,8 @@ if [ &quot;$(jq length &lt;&lt;&lt;&quot;$issues&quot;)&quot; -eq 0 ]; then
   echo &quot;no issues match &#39;$query&#39; in $repo: nothing to score&quot; &gt;&amp;2
   exit 1
 fi
+# The list call returns at most 100 issues; a silently cut-off list would skew the score.
+[ &quot;$(jq length &lt;&lt;&lt;&quot;$issues&quot;)&quot; -lt 100 ] || die &quot;100 or more issues match &#39;$query&#39;; narrow the search&quot;
 
 # Comments or reviews left by human accounts (GitHub user type &quot;User&quot;).
 humans() {
@@ -442,12 +445,12 @@ awk -F&#39;\t&#39; &#39;$4 == &quot;MERGED&quot; { print $5 }&#39; &quot;$rows&q
 <ul>
 <li><code class="post-code--single">issue</code> and <code class="post-code--single">pr</code> are GitHub numbers. <code class="post-code--single">link=closes</code> means the PR was set to close the issue. <code class="post-code--single">mention</code> means the script fell back to the last PR in the repo that mentions the issue; check those rows by hand.</li>
 <li><code class="post-code--single">result</code> is <code class="post-code--single">NO_PR</code>, <code class="post-code--single">CLOSED</code> (PR closed unmerged), <code class="post-code--single">OPEN</code> or <code class="post-code--single">MERGED</code>.</li>
-<li><code class="post-code--single">hours</code> runs from issue creation to PR merge, for merged PRs only.</li>
-<li><code class="post-code--single">first_ci</code> is your test job on the first commit still on the branch: <code class="post-code--single">pass</code>, <code class="post-code--single">fail</code>, <code class="post-code--single">pending</code>, or <code class="post-code--single">none</code> when that job did not run or was skipped there. A force-push changes which commit is first.</li>
+<li><code class="post-code--single">hours</code> runs from issue creation to PR merge, for merged PRs only. When a person merges, it includes however long the PR waited for that person, so compare <code class="post-code--single">hours</code> only between agents whose PRs get merged the same way, and read it next to the <code class="post-code--single">NO_PR</code> and <code class="post-code--single">CLOSED</code> counts.</li>
+<li><code class="post-code--single">first_ci</code> is your test job on the first commit still on the branch: <code class="post-code--single">pass</code>, <code class="post-code--single">fail</code>, <code class="post-code--single">pending</code>, or <code class="post-code--single">none</code> when that job did not run or was skipped there. A force-push changes which commit is first. If the repo has no CI, this column stays <code class="post-code--single">unset</code> and you judge the PRs by reading them.</li>
 <li><code class="post-code--single">commits</code> counts the PR&#39;s commits. <code class="post-code--single">human_notes</code> counts comments on the issue and the PR, plus PR reviews, left by accounts GitHub types as <code class="post-code--single">User</code>.</li>
 <li><code class="post-code--single">merged_by</code> names the account that merged the PR.</li>
 </ul>
-<p>The script reads up to 100 issues. If an agent runs under your own account, as Claude Code, Cursor or OpenCode can on your machine, its commits look like yours, so the script cannot tell your fix-up commits from the agent&#39;s. <code class="post-code--single">human_notes</code> is only a proxy for intervention: automation that posts through a personal account also counts, and a manual edit without a comment does not.</p>
+<p>The script stops with exit code 2 if 100 or more issues match, because the list call returns at most 100 and a cut-off list would skew the score; narrow the search instead. If an agent runs under your own account, as Claude Code, Cursor or OpenCode can on your machine, its commits look like yours, so the script cannot tell your fix-up commits from the agent&#39;s. <code class="post-code--single">human_notes</code> is only a proxy for intervention: automation that posts through a personal account also counts, and a manual edit without a comment does not.</p>
 <p>In a private throwaway repository with a one-step <code class="post-code--single">tests</code> workflow, I created four issues and played the agent myself. One PR merged before the workflow existed. Another was closed unmerged, and one issue got no PR. The remaining PR only mentioned its issue and failed <code class="post-code--single">tests</code> on its first commit before two more commits fixed it. The repository name below is a placeholder; the output is unchanged:</p>
 <div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="Copied">Copy</button><pre><code class="language-text" data-copy-source>$ ./agent-trial-score.sh OWNER/trial-copy-a &#39;label:trial-a&#39; tests
 issue	pr	link	result	hours	first_ci	commits	human_notes	merged_by
@@ -485,7 +488,7 @@ exit=1
 </code></pre></div>
 <h2 id="the-same-script-on-orbi-s-own-repository">The same script on Orbi&#39;s own repository</h2>
 <p>I have no trial results for the other five agents to compare with this repository&#39;s record.</p>
-<p>For <a href="https://github.com/orbi-build/orbi">orbi-build/orbi</a>, I ran the script on 12 November 2026 over issues created 5–11 November 2026, excluding epics and release tickets, with <code class="post-code--single">tests</code> as the check name. The 26 rows cover 23 work items and three milestone-confirmation tickets that Orbi opens to ask me a question. Those three <code class="post-code--single">NO_PR</code> rows are not failed deliveries. I&#39;ve kept those three rows and every row whose <code class="post-code--single">first_ci</code> is not <code class="post-code--single">pass</code>; <code class="post-code--single">…</code> marks omitted rows:</p>
+<p>For <a href="https://github.com/orbi-build/orbi">orbi-build/orbi</a>, I ran the script on 12 November 2026 over issues created 5–11 November 2026, excluding epics and release tickets, with <code class="post-code--single">tests</code> as the check name. The search argument was <code class="post-code--spaced">&#39;created:2026-11-05..2026-11-11 -label:ai-epic -label:ai-release&#39;</code>. The 26 rows cover 23 work items and three milestone-confirmation tickets that Orbi opens to ask me a question. Those three <code class="post-code--single">NO_PR</code> rows are not failed deliveries. I&#39;ve kept those three rows and every row whose <code class="post-code--single">first_ci</code> is not <code class="post-code--single">pass</code>; <code class="post-code--single">…</code> marks omitted rows:</p>
 <div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="Copied">Copy</button><pre><code class="language-text" data-copy-source>issue	pr	link	result	hours	first_ci	commits	human_notes	merged_by
 …
 2164	2166	closes	MERGED	1.4	none	2	0	app/orbi-build
@@ -510,8 +513,8 @@ exit=0
 <ul>
 <li>All 23 work items merged. I wrote 19 of those issues and Orbi opened the other four. I maintain the codebase, and Orbi has worked in it for months.</li>
 <li>Orbi&#39;s GitHub App merges once review and CI pass, so the measured time includes no wait for a merge click. The median 1.1 hours runs from issue creation to merge and includes implementation, review and CI.</li>
-<li>On three of the 23, <code class="post-code--single">tests</code> failed on the first commit and later commits fixed it before the merge. On two, <code class="post-code--single">tests</code> has no run on the first commit, so they count as <code class="post-code--single">other</code>, not as passes.</li>
-<li>Orbi posts its review as Issue comments from the App. In this run, <code class="post-code--single">human_notes</code> counts only what I typed. Four of the 23 had a comment from me.</li>
+<li>On three of the 23, <code class="post-code--single">tests</code> failed on the first commit and later commits, all pushed by Orbi&#39;s App, fixed it before the merge. On two, <code class="post-code--single">tests</code> has no run on the first commit, so they count as <code class="post-code--single">other</code>, not as passes.</li>
+<li>Orbi posts its review as Issue comments from the App. In this run, <code class="post-code--single">human_notes</code> counts only what I typed. Four of the 23 had a comment from me. Nobody commented on or reviewed the other 19 PRs; the only review they got was the second Pi session&#39;s.</li>
 </ul>
 <p>The older <a href="/blog/ai-code-review-bottleneck/">AI code review bottleneck post</a> reported a median 21 minutes from PR open to merge on Orbi Cloud&#39;s repository in a different window. That clock starts later and covers another repository, so the two numbers don&#39;t compare.</p>
 <h2 id="what-i-d-check-before-paying-for-any-of-them">What I&#39;d check before paying for any of them</h2>
@@ -521,7 +524,7 @@ exit=0
 <li>Whether the plan includes the cloud agent and review I intend to use: <a href="https://code.claude.com/docs/en/code-review.md">Claude&#39;s hosted review</a>, <a href="https://cursor.com/docs/cloud-agent.md">Cursor Premium access</a> and <a href="https://github.com/features/copilot/plans">Copilot Free</a> have different limits.</li>
 <li>Whether my required models are available, especially <a href="https://cursor.com/pricing">Cursor Plus&#39;s Grok restriction</a>, <a href="https://code.claude.com/docs/en/model-config.md">Claude&#39;s listed models</a> and <a href="https://opencode.ai/docs/providers/">OpenCode&#39;s provider choice</a>.</li>
 <li>Whether my authentication method includes cloud features: <a href="https://learn.chatgpt.com/docs/pricing.md">Codex API-key access does not</a>.</li>
-<li>What the subscription excludes from its price, including <a href="https://cursor.com/pricing">Cursor&#39;s third-party model usage</a> and <a href="https://docs.github.com/en/copilot/concepts/copilot-surfaces/copilot-on-github">Copilot&#39;s separate compute allowance</a>.</li>
+<li>What the subscription excludes from its price, including <a href="https://cursor.com/pricing">Cursor&#39;s third-party model usage</a> and <a href="https://docs.github.com/en/copilot/concepts/copilot-surfaces/copilot-on-github">Copilot&#39;s cloud and Actions compute time, which GitHub counts separately from AI Credits</a>.</li>
 </ul>
 <aside class="post-cta">
   <h2>Orbi takes your Issues all the way to a release.</h2>
