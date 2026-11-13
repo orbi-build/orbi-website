@@ -520,6 +520,33 @@ describe("email subscription forms (Issue #665)", () => {
     expect([...seen].sort(), "languages whose subscription copy was checked").toEqual(["en", "zh"]);
   });
 
+  // Issue #1320: the newsletter covers new features, hands-on posts and the
+  // numbers from our own work, not "one real delivery" a week — the box has to
+  // say what the issues actually contain.
+  it("describes what the newsletter actually covers (Issue #1320)", () => {
+    const expected = {
+      en: {
+        title: "What is new in Orbi, every week",
+        note: "One email a week: new features, hands-on posts and numbers from our own work with Orbi. Unsubscribe anytime.",
+      },
+      zh: {
+        title: "Orbi 这周又能多做什么",
+        note: "每周一封：新功能、实测文章，还有我们自己用 Orbi 干活的数据。随时退订。",
+      },
+    };
+    const seen = new Set();
+    for (const [output, html] of shipped) {
+      if (!html.includes("data-subscribe-form")) continue;
+      const formLang = html.match(/<input type="hidden" name="lang" value="([^"]+)"/)?.[1];
+      seen.add(formLang);
+      const copy = expected[formLang];
+      expect(html, `${output}: subscription title copy`).toContain(`<h2 class="subscribe-title" id="subscribe-title">${copy.title}</h2>`);
+      expect(html, `${output}: subscription note copy`).toContain(`<p class="subscribe-note">${copy.note}</p>`);
+      expect(html, `${output}: retired delivery claim`).not.toMatch(/每周一个真实交付|One real delivery, every week/);
+    }
+    expect([...seen].sort(), "languages whose subscription copy was checked").toEqual(["en", "zh"]);
+  });
+
   it("keeps subscription markup in one source partial", async () => {
     const sources = await Promise.all([
       ...pages.map((page) => readFile(join(ROOT, "site", "pages", page.source), "utf8")),
