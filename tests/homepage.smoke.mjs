@@ -28,14 +28,24 @@ const artifacts = ".orbi";
 // third-party image here, at the tabled size when one is known and with the
 // 1x1 fallback otherwise (the same rule guardBrowserRequests applies to the
 // vitest suites). No badge host can redden this suite, whatever the footer
-// embeds next. Non-image third-party requests keep their own handlers (the
-// beacon, /stats, the contributor avatars) and otherwise continue as before.
+// embeds next.
+//
+// Issue #1317: the same rule now covers the third-party SCRIPTS. The footer
+// ships earlylaunch.co's widget and /support/ and /cloud/ ship chat.sh's; leaving
+// them to the real network let a vendor decide the gate, and on 2026-11-13
+// chat.sh's ERR_CONNECTION_RESET reddened CI and the beta deploy four times
+// (`/support/: console errors=["Failed to load resource: net::ERR_CONNECTION_RESET"]
+// failed requests=["https://chat.sh/widget.js"]`). They are answered with an
+// empty 200 here, exactly as guardBrowserRequests answers them for the vitest
+// suites, so a third-party script can neither fail the page nor follow up with
+// requests of its own. Our own origin is never touched: /stats, /demo.js and
+// the rest still reach the server under test.
 async function newSmokePage(target, options) {
   const page = await target.newPage(options);
-  // "Our own image" is decided against the page's own origin, not against
+  // "Our own resource" is decided against the page's own origin, not against
   // targetURL: the vitest suite reuses this helper for a stub server and sets
   // process.env.BASE_URL to "/", so targetURL is not a parseable URL there.
-  const isOwnImage = (request) => {
+  const isOwnResource = (request) => {
     const self = page.url();
     if (self === "about:blank") return false;
     return new URL(request.url()).origin === new URL(self).origin;
@@ -44,12 +54,16 @@ async function newSmokePage(target, options) {
     (url) => url.protocol === "http:" || url.protocol === "https:",
     (route) => {
       const request = route.request();
-      if (request.resourceType() !== "image" || isOwnImage(request)) return route.fallback();
-      return route.fulfill({
-        status: 200,
-        contentType: "image/svg+xml",
-        body: placeholderSvg(request.url()),
-      });
+      const type = request.resourceType();
+      if (isOwnResource(request) || (type !== "image" && type !== "script")) return route.fallback();
+      if (type === "image") {
+        return route.fulfill({
+          status: 200,
+          contentType: "image/svg+xml",
+          body: placeholderSvg(request.url()),
+        });
+      }
+      return route.fulfill({ status: 200, contentType: "text/javascript; charset=utf-8", body: "" });
     },
   );
   return page;
@@ -2211,7 +2225,17 @@ async function assertPublishedInstallScript(browser) {
 
 // Issue #1212: the legal pages are checked for one filled h1, the verified
 // contact address and the footer's legal links — their headings are copy.
-async function assertLegalPage(browser, path, expectedAddress, size, screenshot) {
+// Issue #1317 exports it with an injectable target (the same shape
+// assertHomeCloudFlow already takes) so a test can drive this real check —
+// including its console/requestfailed gate — against a stub page.
+export async function assertLegalPage(
+  browser,
+  path,
+  expectedAddress,
+  size,
+  screenshot,
+  { baseURL = targetURL, artifactsDir = artifacts } = {},
+) {
   const page = await newSmokePage(browser, { viewport: size });
   const errors = [];
   const failures = [];
@@ -2232,7 +2256,7 @@ async function assertLegalPage(browser, path, expectedAddress, size, screenshot)
   page.on("requestfinished", (request) => open.delete(request));
   page.on("requestfailed", (request) => open.delete(request));
   try {
-    const response = await page.goto(`${targetURL}${path}`, { waitUntil: "networkidle" }).catch((error) => {
+    const response = await page.goto(`${baseURL}${path}`, { waitUntil: "networkidle" }).catch((error) => {
       throw new Error(
         `${path} at ${size.width}px never went network-idle: ${error.message.split("\n")[0]}; `
         + `still open: ${JSON.stringify([...open.values()])}; `
@@ -2259,7 +2283,7 @@ async function assertLegalPage(browser, path, expectedAddress, size, screenshot)
     }
     const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
     if (overflow > 1) throw new Error(`${path}: horizontal overflow ${overflow}px at ${size.width}px`);
-    await page.screenshot({ path: `${artifacts}/${screenshot}`, fullPage: true });
+    await page.screenshot({ path: `${artifactsDir}/${screenshot}`, fullPage: true });
     if (errors.length || failures.length) {
       throw new Error(`${path}: console errors=${JSON.stringify(errors)} failed requests=${JSON.stringify(failures)}`);
     }
