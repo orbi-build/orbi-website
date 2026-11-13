@@ -41,13 +41,19 @@ const pricingReplacements = {
   [pricing.measuredSoloLargeCodebaseDeliveriesToken]: pricing.measuredSoloLargeCodebaseDeliveries,
 };
 
+// Issue #1315: the newsletter runs double opt-in in production, so the success
+// hint sends the visitor to the confirmation mail — and it is a full sentence.
+// The longest of the new copy is the point: a status line that wrapped out of
+// the box would drag the page sideways here.
+const SUCCESS_EN = "Check your inbox and click the confirmation link to finish subscribing.";
+const SUCCESS_ZH = "请到邮箱点确认链接，确认后就订阅好了。";
 const pages = [
-  ["home-en", "/", "Subscribed"],
-  ["cloud-en", "/cloud/", "Subscribed"],
-  ["blog-en", "/blog/claude-code-github-actions-who-merges/", "Subscribed"],
-  ["home-zh", "/zh/", "已订阅"],
-  ["cloud-zh", "/zh/cloud/", "已订阅"],
-  ["blog-zh", "/zh/blog/claude-code-github-actions-who-merges/", "已订阅"],
+  ["home-en", "/", SUCCESS_EN],
+  ["cloud-en", "/cloud/", SUCCESS_EN],
+  ["blog-en", "/blog/claude-code-github-actions-who-merges/", SUCCESS_EN],
+  ["home-zh", "/zh/", SUCCESS_ZH],
+  ["cloud-zh", "/zh/cloud/", SUCCESS_ZH],
+  ["blog-zh", "/zh/blog/claude-code-github-actions-who-merges/", SUCCESS_ZH],
 ];
 const widths = [1440, 1100, 1026, 900, 390];
 const contentTypes = {

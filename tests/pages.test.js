@@ -501,6 +501,25 @@ describe("email subscription forms (Issue #665)", () => {
     expect(styles, "subscription ghost button style").toMatch(/\.subscribe-form \.button-ghost\s*\{[^}]*background:\s*transparent;[^}]*border:\s*1px solid var\(--line\);[^}]*color:\s*var\(--ink\);[^}]*border-radius:\s*var\(--radius-control\);/);
   });
 
+  // Issue #1315: the newsletter turned double opt-in on in production, so a
+  // submission no longer subscribes anyone — the hint has to send the visitor
+  // to the confirmation mail instead of saying they are subscribed.
+  it("tells the visitor to confirm the subscription by email (Issue #1315)", () => {
+    const expected = {
+      en: "Check your inbox and click the confirmation link to finish subscribing.",
+      zh: "请到邮箱点确认链接，确认后就订阅好了。",
+    };
+    const seen = new Set();
+    for (const [output, html] of shipped) {
+      if (!html.includes("data-subscribe-form")) continue;
+      const formLang = html.match(/<input type="hidden" name="lang" value="([^"]+)"/)?.[1];
+      seen.add(formLang);
+      expect(html, `${output}: subscription success copy`).toContain(`data-success="${expected[formLang]}"`);
+    }
+    // A build that shipped no form would otherwise pass without evidence.
+    expect([...seen].sort(), "languages whose subscription copy was checked").toEqual(["en", "zh"]);
+  });
+
   it("keeps subscription markup in one source partial", async () => {
     const sources = await Promise.all([
       ...pages.map((page) => readFile(join(ROOT, "site", "pages", page.source), "utf8")),

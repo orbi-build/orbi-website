@@ -2365,8 +2365,8 @@ async function main() {
     await assertEngagementEndpoint(targetURL);
     await assertCloudLoginRedirect(targetURL);
     if (!process.env.BASE_URL) {
-      await assertSubscriptionFlow(browser, "/evidence/", "Subscribed", "That email address doesn't look right");
-      await assertSubscriptionFlow(browser, "/zh/evidence/", "已订阅", "邮箱格式不对");
+      await assertSubscriptionFlow(browser, "/evidence/", "Check your inbox and click the confirmation link to finish subscribing.", "That email address doesn't look right");
+      await assertSubscriptionFlow(browser, "/zh/evidence/", "请到邮箱点确认链接，确认后就订阅好了。", "邮箱格式不对");
     }
     await assertPublishedInstallScript(browser);
     await assertInstallCopiesOneLiner(browser, "/");
