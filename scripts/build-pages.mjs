@@ -1329,7 +1329,11 @@ function renderSubscribe(lang) {
   const zh = lang === "zh";
   return fill(SUBSCRIBE_PARTIAL, {
     SUBSCRIBE_TITLE: zh ? "每周一个真实交付" : "One real delivery, every week",
-    SUBSCRIBE_SUCCESS: zh ? "已订阅" : "Subscribed",
+    // Issue #1315: the newsletter runs double opt-in in production, so a
+    // submission only sends the confirmation mail — it does not subscribe the
+    // visitor. The hint has to say so, or a real visitor stops there thinking
+    // it is done.
+    SUBSCRIBE_SUCCESS: zh ? "请到邮箱点确认链接，确认后就订阅好了。" : "Check your inbox and click the confirmation link to finish subscribing.",
     SUBSCRIBE_INVALID: zh ? "邮箱格式不对" : "That email address doesn't look right",
     SUBSCRIBE_UNAVAILABLE: zh ? "暂时无法订阅，请重试。" : "Subscription is temporarily unavailable. Please try again.",
     SUBSCRIBE_LABEL: zh ? "邮箱地址" : "Email address",
