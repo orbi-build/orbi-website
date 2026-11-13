@@ -176,6 +176,10 @@ export const BADGE_PLACEHOLDER_SIZES = [
   // viewBox 0 0 187.5 44.999999, same 25:6 ratio; the vendor snippet
   // declares the same 250x60 box).
   { host: "smollaunch.com", width: 250, height: 60 },
+  // 2026-11-13 FoundrList featured badge, measured on the live URL:
+  // foundrlist.com 150x48 (SVG, 2390 bytes, width/height and viewBox 0 0 150 48;
+  // the official vendor snippet declares the same 150x48 box).
+  { host: "foundrlist.com", width: 150, height: 48 },
 ];
 const FALLBACK_PLACEHOLDER_SIZE = { width: 1, height: 1 };
 
