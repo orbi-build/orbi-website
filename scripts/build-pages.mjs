@@ -1328,7 +1328,10 @@ function renderGuide(guide, template, posts, guidesData) {
 function renderSubscribe(lang) {
   const zh = lang === "zh";
   return fill(SUBSCRIBE_PARTIAL, {
-    SUBSCRIBE_TITLE: zh ? "每周一个真实交付" : "One real delivery, every week",
+    // Issue #1320: the newsletter now covers the week's new features, the
+    // hands-on posts and the merge/release numbers from our own work, so the
+    // box describes that instead of promising "one real delivery" a week.
+    SUBSCRIBE_TITLE: zh ? "Orbi 这周又能多做什么" : "What is new in Orbi, every week",
     // Issue #1315: the newsletter runs double opt-in in production, so a
     // submission only sends the confirmation mail — it does not subscribe the
     // visitor. The hint has to say so, or a real visitor stops there thinking
@@ -1340,7 +1343,9 @@ function renderSubscribe(lang) {
     SUBSCRIBE_PLACEHOLDER: zh ? "你的邮箱" : "you@example.com",
     SUBSCRIBE_LANG: lang,
     SUBSCRIBE_BUTTON: zh ? "订阅" : "Subscribe",
-    SUBSCRIBE_NOTE: zh ? "每周一封，讲一次真实交付。随时退订。" : "One email a week about one real delivery. Unsubscribe anytime.",
+    SUBSCRIBE_NOTE: zh
+      ? "每周一封：新功能、实测文章，还有我们自己用 Orbi 干活的数据。随时退订。"
+      : "One email a week: new features, hands-on posts and numbers from our own work with Orbi. Unsubscribe anytime.",
   });
 }
 
