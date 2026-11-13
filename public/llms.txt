@@ -252,6 +252,10 @@ Shipping notes from the root domain: what each delivery run hit, what fixed
 it, and the numbers behind both, traced to the issues they came from. RSS
 feed of the English posts: https://orbi.build/blog/feed.xml
 
+- Devin vs Cursor: what happens to the PRs they open (English):
+  https://orbi.build/blog/devin-vs-cursor/
+- Devin vs Cursor：它们开出的 PR 后来怎么样了 (Chinese):
+  https://orbi.build/zh/blog/devin-vs-cursor/
 - Best AI agent for coding: test them on your own repo (English):
   https://orbi.build/blog/best-ai-agent-for-coding/
 - 最好的 AI 编程 agent 怎么选：在自己的仓库上试一周 (Chinese):
