@@ -1817,7 +1817,12 @@ h2 {
 
 .pricing-summary-card-featured { border-color: var(--signal-on-light); }
 .pricing-summary-card > h3 { margin: 0; font: 600 clamp(1.8rem, 3vw, 2.8rem)/1 var(--display); }
-.pricing-summary-price { margin: 0; font: 600 1.35rem/1.2 var(--display); }
+/* The page is committed with its price placeholders in place and the Worker
+   substitutes them per request, so a price word here can be long enough to
+   reach past a phone's card edge (Issue #1310: the paid-price placeholder is
+   the widest word on the homepage). Break inside such a word instead of
+   letting it widen the document. */
+.pricing-summary-price { margin: 0; font: 600 1.35rem/1.2 var(--display); overflow-wrap: anywhere; }
 .pricing-summary-price span { color: var(--ink-soft); font: 400 .9rem/1 var(--body); }
 /* Issue #1310: the homepage card carries the same two prices as the Cloud
    card — the amount the visitor pays first, the list price struck through
