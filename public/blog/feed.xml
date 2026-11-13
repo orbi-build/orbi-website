@@ -6,6 +6,13 @@
     <description>Notes from shipping Orbi in the open: delivery runs, failures, fixes, and measurements.</description>
     <language>en</language>
     <item>
+      <title>Devin vs Cursor: what happens to the PRs they open</title>
+      <link>https://orbi.build/blog/devin-vs-cursor/</link>
+      <guid isPermaLink="true">https://orbi.build/blog/devin-vs-cursor/</guid>
+      <pubDate>Fri, 13 Nov 2026 00:00:00 GMT</pubDate>
+      <description>Editors, cloud agents and prices for Devin and Cursor from both vendors' pages, plus counts of the PRs their GitHub Apps opened in public repositories.</description>
+    </item>
+    <item>
       <title>Best AI agent for coding: test them on your own repo</title>
       <link>https://orbi.build/blog/best-ai-agent-for-coding/</link>
       <guid isPermaLink="true">https://orbi.build/blog/best-ai-agent-for-coding/</guid>

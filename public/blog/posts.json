@@ -1,5 +1,13 @@
 [
   {
+    "slug": "devin-vs-cursor",
+    "title": "Devin vs Cursor: what happens to the PRs they open",
+    "summary": "Editors, cloud agents and prices for Devin and Cursor from both vendors' pages, plus counts of the PRs their GitHub Apps opened in public repositories.",
+    "zhSlug": "devin-vs-cursor",
+    "zhTitle": "Devin vs Cursor：它们开出的 PR 后来怎么样了",
+    "related": []
+  },
+  {
     "slug": "best-ai-agent-for-coding",
     "title": "Best AI agent for coding: test them on your own repo",
     "summary": "Six agents sorted by what you hand over, a one-week trial on your own repo, and a gh script that scores it from GitHub's issue and pull request records.",
