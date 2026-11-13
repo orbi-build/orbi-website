@@ -973,6 +973,49 @@ async function assertHomepage(browser, path, comparisonPath, size, screenshot) {
   ]) {
     if (!summaryText.includes(String(value))) throw new Error(`${path}: founding partner summary is missing ${value}`);
   }
+  // Issue #1310: the homepage card writes the same two prices as the Cloud
+  // card — the amount the visitor pays first, the list price struck through
+  // beside it on one line — instead of the list price alone. Once the places
+  // are gone the struck price is hidden rather than repeating the amount.
+  if ((await summary.locator(".pricing-summary-cards").getAttribute("data-founding-price")) !== "on") {
+    throw new Error(`${path}: pricing summary is missing data-founding-price="on"`);
+  }
+  const summaryPrices = await summary.locator(".pricing-summary-price").evaluateAll((rows) => rows.map((row) => {
+    const list = row.querySelector("s");
+    const rowBox = row.getBoundingClientRect();
+    const listBox = list.getBoundingClientRect();
+    return {
+      paid: (row.firstChild?.textContent ?? "").trim(),
+      list: list.textContent.trim(),
+      lineThrough: getComputedStyle(list).textDecorationLine,
+      sameLine: listBox.top >= rowBox.top - 2 && listBox.bottom <= rowBox.bottom + 2,
+      height: rowBox.height,
+      lineHeight: parseFloat(getComputedStyle(row).lineHeight),
+      overflowing: row.scrollWidth - row.clientWidth,
+    };
+  }));
+  const expectedPrices = [
+    [paid[pricing.soloPaidMonthlyUsdToken], pricing.soloMonthlyUsd],
+    [paid[pricing.proPaidMonthlyUsdToken], pricing.cloudMonthlyUsd],
+  ];
+  if (summaryPrices.length !== expectedPrices.length) {
+    throw new Error(`${path}: expected ${expectedPrices.length} homepage price lines, got ${summaryPrices.length}`);
+  }
+  for (const [index, [paidAmount, listAmount]] of expectedPrices.entries()) {
+    const card = summaryPrices[index];
+    const label = `${path}: homepage price ${index + 1}`;
+    if (card.paid !== `US$${paidAmount}`) throw new Error(`${label} leads with ${card.paid}, expected US$${paidAmount}`);
+    if (card.list !== `US$${listAmount}`) throw new Error(`${label} strikes ${card.list}, expected US$${listAmount}`);
+    if (card.lineThrough !== "line-through") throw new Error(`${label}: list price is not struck through`);
+    if (!card.sameLine) throw new Error(`${label}: paid price and struck list price are not on one line`);
+    if (card.height > card.lineHeight * 1.5) throw new Error(`${label}: price row wraps`);
+    if (card.overflowing > 0) throw new Error(`${label}: price row overflows by ${card.overflowing}px`);
+  }
+  await summary.locator(".pricing-summary-cards").evaluate((node) => node.setAttribute("data-founding-price", "off"));
+  if (await summary.locator(".pricing-summary-price s").first().isVisible()) {
+    throw new Error(`${path}: struck list price is visible once the founding places are gone`);
+  }
+  await summary.locator(".pricing-summary-cards").evaluate((node) => node.setAttribute("data-founding-price", "on"));
   const summaryHref = path.startsWith("/zh") ? "/zh/cloud/#pricing" : "/cloud/#pricing";
   const summaryLink = summary.locator(`[data-cta="pricing-summary"][href="${summaryHref}"]`);
   if (await summaryLink.count() !== 1) throw new Error(`${path}: pricing summary link has wrong target`);

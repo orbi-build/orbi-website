@@ -52,7 +52,8 @@ describe("Worker request helpers", () => {
       // is the two numbers in the founding sentence, which the loop above
       // already checks. The sentence no longer says "Only" — 5 of 6 places
       // left is not an "only" — so the verbatim pin is gone (Issue #1212).
-      expect(summary).toMatch(path === "/" ? /Founding partners: 50% off for life\./ : /创始合作伙伴终身五折/);
+      // Issue #1310: the offer has one name on the homepage and on Cloud.
+      expect(summary).toMatch(path === "/" ? /Founding members: 50% off for life\./ : /创始会员永久 5 折/);
       expect(summary).not.toContain("__SOLO_MONTHLY_USD__");
       expect(summary).not.toContain("__CLOUD_MONTHLY_USD__");
       expect(summary).not.toContain("__FOUNDING_PARTNER_LIMIT__");
