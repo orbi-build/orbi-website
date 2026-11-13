@@ -180,6 +180,14 @@ export const BADGE_PLACEHOLDER_SIZES = [
   // foundrlist.com 150x48 (SVG, 2390 bytes, width/height and viewBox 0 0 150 48;
   // the official vendor snippet declares the same 150x48 box).
   { host: "foundrlist.com", width: 150, height: 48 },
+  // 2026-11-14 RoboDebut featured badge, measured on the live URL:
+  // robodebut.com 180x40 (SVG, 831 bytes, width/height and viewBox 0 0 180 40;
+  // the official vendor snippet declares the same 180x40 box).
+  { host: "robodebut.com", width: 180, height: 40 },
+  // 2026-11-14 MossAI featured badge, measured on the live URL:
+  // mossai.org 140x54 (SVG, 1034 bytes, width/height and viewBox 0 0 140 54;
+  // the official vendor snippet declares the same 140x54 box).
+  { host: "mossai.org", width: 140, height: 54 },
 ];
 const FALLBACK_PLACEHOLDER_SIZE = { width: 1, height: 1 };
 
