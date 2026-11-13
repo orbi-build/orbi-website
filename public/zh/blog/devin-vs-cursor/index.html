@@ -240,7 +240,7 @@
 <tr>
 <th scope="row">合并前的评审，文档怎么说</th>
 <td><a href="https://docs.devin.ai/essential-guidelines/sdlc-integration">“Human engineers review PRs created by Devin before choosing whether to merge the code changes.”</a></td>
-<td><a href="https://cursor.com/docs/cloud-agent">“merge-ready PRs”</a>；我没找到谁来评审的说明</td>
+<td><a href="https://cursor.com/docs/cloud-agent">“merge-ready PRs”</a>；<a href="https://cursor.com/docs/cloud-agent/mobile">iOS 应用的文档</a>写的是由你在手机上 “Review and merge pull requests”</td>
 </tr>
 <tr>
 <th scope="row">agent 能否合并，文档怎么说</th>
@@ -504,7 +504,7 @@
 <li>Devin 的 <a href="https://docs.devin.ai/integrations/gh">“Open PRs as” 设置</a>可以使用用户账号。这些 PR 没有计入。</li>
 <li>Cursor 文档写明 <a href="https://cursor.com/docs/cloud-agent/automations">Automations</a> 使用 <code class="post-code--single">cursor</code> 作为作者，但没说明普通 Cloud Agent 的作者账号。<a href="https://cursor.com/docs/bugbot">Bugbot Autofix 也会启动 Cloud Agents</a>，所以这个作者名下可能包含这部分工作。</li>
 <li>只能看到公开仓库。主要在私有仓库工作的付费团队，不在这次普查范围内。</li>
-<li>搜索计数会变。同一周的 <code class="post-code--single">devin-ai-integration[bot]</code> 已合并数，十分钟后就从 6,211 变成了 6,201。数字为什么会减少，我没有查明；变动幅度约 0.2%。</li>
+<li>搜索计数会变。同一周的 <code class="post-code--single">devin-ai-integration[bot]</code> 已合并数，普查时是 6,211，几分钟后我跑脚本时是 6,201。数字为什么会减少，我没有查明；变动幅度约 0.2%。</li>
 </ul>
 <p>还有两组数据可供了解背景：<a href="https://cognition.com/blog/devin-annual-performance-review-2025">Cognition 在 2025 年 11 月的回顾</a>里说，Devin 开出的 PR 约有三分之二被合并；<a href="https://cursor.com/blog/self-hosted-machines">Cursor 在 2026 年 9 月 2 日说</a>，它内部已合并的 PR 中，超过 60% 由云端 agent 创建。这两组数据的分母不同，彼此不能比较，也不能和这次普查比较。</p>
 <h2 id="自己统计一遍">自己统计一遍</h2>
@@ -573,7 +573,7 @@ exit=0
 </code></pre></div>
 <p>第三个参数把统计范围限定到一个仓库，也支持你的 <code class="post-code--single">gh</code> 登录账号有权读取的私有仓库。</p>
 <p>没有匹配结果时，脚本退出码为 1。我用空时间范围测试时，报错是 <code class="post-code--spaced">no PRs by app/cursor in 2031-01-01..2031-01-31 (is:public)</code>。不存在的 app slug 或仓库会以退出码 1 报 <code class="post-code--spaced">gh: Validation Failed (HTTP 422)</code>；凭据无效时，以退出码 1 报 <code class="post-code--spaced">gh: Bad credentials (HTTP 401)</code>。搜索失败还会打印查询语句。分项之和与总数不一致时，会打印脚本里的警告。</p>
-<p>搜索 API 每分钟允许 30 次请求，所以脚本在五次查询之间各等 2.2 秒。每次搜索最多能列出 1,000 条结果，但 <code class="post-code--single">total_count</code> 仍是完整的数量；这个脚本只读计数。我的完整普查脚本没有在本站发布。为了列出每个 PR，我把时间范围切分到每段不超过 1,000 条，再逐段分页拉取。</p>
+<p><a href="https://docs.github.com/en/rest/search/search">GitHub 搜索 API</a> 对已登录用户每分钟允许 30 次请求，所以脚本在五次查询之间各等 2.2 秒。每次搜索最多能列出 1,000 条结果，但 <code class="post-code--single">total_count</code> 仍是完整的数量；这个脚本只读计数。我的完整普查脚本没有在本站发布。为了列出每个 PR，我把时间范围切分到每段不超过 1,000 条，再逐段分页拉取。</p>
 <h2 id="选之前我会先查什么">选之前我会先查什么</h2>
 <ul>
 <li>如果我已经在为 Claude 或 GPT 的 API 用量付费，我会先确认 <a href="https://devin.ai/blog/windsurf-is-now-devin-desktop">Desktop 的外部 agent</a> 能否沿用这份账单，再决定是否购买另一份订阅。<a href="https://cursor.com/help/account-and-billing/pricing">Cursor 使用第三方模型需要 Premium，用量还要另付费</a>。</li>

@@ -23,7 +23,7 @@ I'm Larry 🍀 Orbi, the creator of Orbi. Orbi takes GitHub Issues through imple
 | Where cloud work runs | [Own VM per session](https://docs.devin.ai/desktop/devin) | [Own VM per agent](https://cursor.com/help/ai-features/background-agents) |
 | Start a cloud task | [Web, Slack, API](https://docs.devin.ai/enterprise/deployment/overview); more below | [App, web, editor, integrations, API](https://cursor.com/docs/cloud-agent) |
 | Lowest cloud plan | [Pro, $20/month](https://devin.ai/pricing) | [Premium, $30/month](https://cursor.com/help/account-and-billing/pricing) |
-| Review before merge, per docs | [“Human engineers review PRs created by Devin before choosing whether to merge the code changes.”](https://docs.devin.ai/essential-guidelines/sdlc-integration) | [“merge-ready PRs”](https://cursor.com/docs/cloud-agent); I found no sentence about who reviews |
+| Review before merge, per docs | [“Human engineers review PRs created by Devin before choosing whether to merge the code changes.”](https://docs.devin.ai/essential-guidelines/sdlc-integration) | [“merge-ready PRs”](https://cursor.com/docs/cloud-agent); the [iOS app docs](https://cursor.com/docs/cloud-agent/mobile) have you “Review and merge pull requests” from your phone |
 | Can the agent merge, per docs | The [GitHub guide](https://docs.devin.ai/integrations/gh) recommends branch protection “before Devin can merge changes” | On [Origin](https://cursor.com/docs/origin), Cursor's own code hosting, [an agent asks a person to approve the merge](https://cursor.com/docs/release-notes/cloud-agents); for GitHub I found no sentence |
 
 Devin's docs point both ways. The SDLC guide has people reviewing and choosing whether to merge; the GitHub guide recommends branch protection “to ensure all required checks pass before Devin can merge changes”, which allows for Devin doing the merge. Cursor's [Cloud Agents release notes](https://cursor.com/docs/release-notes/cloud-agents) for the week of 7 September 2026 describe an agent asking for approval to merge a PR on an Origin repository; I found no equivalent sentence for repositories on GitHub. A [sample further down](#what-happened-to-the-prs-each-bot-opened) reads GitHub's `merged_by` field to see which account merged in practice.
@@ -133,7 +133,7 @@ Four limits matter:
 - Devin's [“Open PRs as” setting](https://docs.devin.ai/integrations/gh) can use a user's account. Those PRs are absent.
 - Cursor documents `cursor` authorship for [Automations](https://cursor.com/docs/cloud-agent/automations), without specifying ordinary Cloud Agent authorship. [Bugbot Autofix also starts Cloud Agents](https://cursor.com/docs/bugbot), so this author may include that work.
 - Only public repositories are visible. The paying teams whose work is mostly private are outside this census.
-- Search counts drift: for the same week, the `devin-ai-integration[bot]` merged count went from 6,211 to 6,201 ten minutes later. I did not find out why a merged count would drop; the change is about 0.2%.
+- Search counts drift: for the same week, the `devin-ai-integration[bot]` merged count was 6,211 in the census and 6,201 when I ran the script a few minutes later. I did not find out why a merged count would drop; the change is about 0.2%.
 
 For context, [Cognition's November 2025 review](https://cognition.com/blog/devin-annual-performance-review-2025) said about two thirds of Devin's PRs were being merged; [Cursor said on 2 September 2026](https://cursor.com/blog/self-hosted-machines) that cloud agents created more than 60% of the PRs it merged internally. Those have different denominators and cannot be compared with each other or this census.
 
@@ -213,7 +213,7 @@ The third argument restricts the count to one repository, including a private re
 
 No matches exits 1 with `no PRs by app/cursor in 2031-01-01..2031-01-31 (is:public)` in my empty-range test. An unknown app slug or repository exits 1 with `gh: Validation Failed (HTTP 422)`; bad credentials exit 1 with `gh: Bad credentials (HTTP 401)`. Failed searches also print the query. A parts/total mismatch prints the warning in the script.
 
-The search API allows 30 requests a minute, so the script sleeps 2.2 seconds between its five queries. Search lists at most 1,000 results per query, but `total_count` still reports the full number, and this script reads counts only. My full census scripts are not published on this site. To list every PR, I split time ranges until each slice held 1,000 results or fewer, then paged through each slice.
+[GitHub's search API](https://docs.github.com/en/rest/search/search) allows 30 requests a minute for a logged-in user, so the script sleeps 2.2 seconds between its five queries. Search lists at most 1,000 results per query, but `total_count` still reports the full number, and this script reads counts only. My full census scripts are not published on this site. To list every PR, I split time ranges until each slice held 1,000 results or fewer, then paged through each slice.
 
 ## What I'd check before choosing
 

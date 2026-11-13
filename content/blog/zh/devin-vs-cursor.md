@@ -25,7 +25,7 @@ Devin 和 Cursor 的区别，先看这张表。
 | 云端任务在哪运行 | [每个会话独享一台 VM](https://docs.devin.ai/desktop/devin) | [每个 agent 独享一台 VM](https://cursor.com/help/ai-features/background-agents) |
 | 云端任务入口 | [网页、Slack、API](https://docs.devin.ai/enterprise/deployment/overview)；下文还有其他入口 | [应用、网页、编辑器、集成、API](https://cursor.com/docs/cloud-agent) |
 | 最低云端套餐 | [Pro，每月 $20](https://devin.ai/pricing) | [Premium，每月 $30](https://cursor.com/help/account-and-billing/pricing) |
-| 合并前的评审，文档怎么说 | [“Human engineers review PRs created by Devin before choosing whether to merge the code changes.”](https://docs.devin.ai/essential-guidelines/sdlc-integration) | [“merge-ready PRs”](https://cursor.com/docs/cloud-agent)；我没找到谁来评审的说明 |
+| 合并前的评审，文档怎么说 | [“Human engineers review PRs created by Devin before choosing whether to merge the code changes.”](https://docs.devin.ai/essential-guidelines/sdlc-integration) | [“merge-ready PRs”](https://cursor.com/docs/cloud-agent)；[iOS 应用的文档](https://cursor.com/docs/cloud-agent/mobile)写的是由你在手机上 “Review and merge pull requests” |
 | agent 能否合并，文档怎么说 | [GitHub 指南](https://docs.devin.ai/integrations/gh)建议设置分支保护，原文是 “before Devin can merge changes” | 在 Cursor 自家的代码托管 [Origin](https://cursor.com/docs/origin) 上，[agent 会请人批准合并](https://cursor.com/docs/release-notes/cloud-agents)；GitHub 上我没找到说明 |
 
 Devin 的文档既提到人决定是否合并，也提到 Devin 可以执行合并。SDLC 指南写的是人来评审，再决定是否合并；GitHub 指南建议设置分支保护，“to ensure all required checks pass before Devin can merge changes”，提到了由 Devin 执行合并的可能。Cursor 在 [2026 年 9 月 7 日当周的 Cloud Agents 更新记录](https://cursor.com/docs/release-notes/cloud-agents)里，描述了 agent 在 Origin 仓库请求批准合并 PR 的流程；GitHub 仓库我没找到同样的说明。下文有一组[抽样](#各个-bot-开出的-pr-后来怎么样了)读取了 GitHub 的 `merged_by` 字段，看实际执行合并的是哪个账号。
@@ -141,7 +141,7 @@ Devin 的 Teams 页面说法不一致：[定价页](https://devin.ai/pricing)写
 - Devin 的 [“Open PRs as” 设置](https://docs.devin.ai/integrations/gh)可以使用用户账号。这些 PR 没有计入。
 - Cursor 文档写明 [Automations](https://cursor.com/docs/cloud-agent/automations) 使用 `cursor` 作为作者，但没说明普通 Cloud Agent 的作者账号。[Bugbot Autofix 也会启动 Cloud Agents](https://cursor.com/docs/bugbot)，所以这个作者名下可能包含这部分工作。
 - 只能看到公开仓库。主要在私有仓库工作的付费团队，不在这次普查范围内。
-- 搜索计数会变。同一周的 `devin-ai-integration[bot]` 已合并数，十分钟后就从 6,211 变成了 6,201。数字为什么会减少，我没有查明；变动幅度约 0.2%。
+- 搜索计数会变。同一周的 `devin-ai-integration[bot]` 已合并数，普查时是 6,211，几分钟后我跑脚本时是 6,201。数字为什么会减少，我没有查明；变动幅度约 0.2%。
 
 还有两组数据可供了解背景：[Cognition 在 2025 年 11 月的回顾](https://cognition.com/blog/devin-annual-performance-review-2025)里说，Devin 开出的 PR 约有三分之二被合并；[Cursor 在 2026 年 9 月 2 日说](https://cursor.com/blog/self-hosted-machines)，它内部已合并的 PR 中，超过 60% 由云端 agent 创建。这两组数据的分母不同，彼此不能比较，也不能和这次普查比较。
 
@@ -221,7 +221,7 @@ exit=0
 
 没有匹配结果时，脚本退出码为 1。我用空时间范围测试时，报错是 `no PRs by app/cursor in 2031-01-01..2031-01-31 (is:public)`。不存在的 app slug 或仓库会以退出码 1 报 `gh: Validation Failed (HTTP 422)`；凭据无效时，以退出码 1 报 `gh: Bad credentials (HTTP 401)`。搜索失败还会打印查询语句。分项之和与总数不一致时，会打印脚本里的警告。
 
-搜索 API 每分钟允许 30 次请求，所以脚本在五次查询之间各等 2.2 秒。每次搜索最多能列出 1,000 条结果，但 `total_count` 仍是完整的数量；这个脚本只读计数。我的完整普查脚本没有在本站发布。为了列出每个 PR，我把时间范围切分到每段不超过 1,000 条，再逐段分页拉取。
+[GitHub 搜索 API](https://docs.github.com/en/rest/search/search) 对已登录用户每分钟允许 30 次请求，所以脚本在五次查询之间各等 2.2 秒。每次搜索最多能列出 1,000 条结果，但 `total_count` 仍是完整的数量；这个脚本只读计数。我的完整普查脚本没有在本站发布。为了列出每个 PR，我把时间范围切分到每段不超过 1,000 条，再逐段分页拉取。
 
 ## 选之前我会先查什么
 

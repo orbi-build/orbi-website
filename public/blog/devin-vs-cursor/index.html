@@ -239,7 +239,7 @@
 <tr>
 <th scope="row">Review before merge, per docs</th>
 <td><a href="https://docs.devin.ai/essential-guidelines/sdlc-integration">“Human engineers review PRs created by Devin before choosing whether to merge the code changes.”</a></td>
-<td><a href="https://cursor.com/docs/cloud-agent">“merge-ready PRs”</a>; I found no sentence about who reviews</td>
+<td><a href="https://cursor.com/docs/cloud-agent">“merge-ready PRs”</a>; the <a href="https://cursor.com/docs/cloud-agent/mobile">iOS app docs</a> have you “Review and merge pull requests” from your phone</td>
 </tr>
 <tr>
 <th scope="row">Can the agent merge, per docs</th>
@@ -500,7 +500,7 @@
 <li>Devin&#39;s <a href="https://docs.devin.ai/integrations/gh">“Open PRs as” setting</a> can use a user&#39;s account. Those PRs are absent.</li>
 <li>Cursor documents <code class="post-code--single">cursor</code> authorship for <a href="https://cursor.com/docs/cloud-agent/automations">Automations</a>, without specifying ordinary Cloud Agent authorship. <a href="https://cursor.com/docs/bugbot">Bugbot Autofix also starts Cloud Agents</a>, so this author may include that work.</li>
 <li>Only public repositories are visible. The paying teams whose work is mostly private are outside this census.</li>
-<li>Search counts drift: for the same week, the <code class="post-code--single">devin-ai-integration[bot]</code> merged count went from 6,211 to 6,201 ten minutes later. I did not find out why a merged count would drop; the change is about 0.2%.</li>
+<li>Search counts drift: for the same week, the <code class="post-code--single">devin-ai-integration[bot]</code> merged count was 6,211 in the census and 6,201 when I ran the script a few minutes later. I did not find out why a merged count would drop; the change is about 0.2%.</li>
 </ul>
 <p>For context, <a href="https://cognition.com/blog/devin-annual-performance-review-2025">Cognition&#39;s November 2025 review</a> said about two thirds of Devin&#39;s PRs were being merged; <a href="https://cursor.com/blog/self-hosted-machines">Cursor said on 2 September 2026</a> that cloud agents created more than 60% of the PRs it merged internally. Those have different denominators and cannot be compared with each other or this census.</p>
 <h2 id="count-it-yourself">Count it yourself</h2>
@@ -569,7 +569,7 @@ exit=0
 </code></pre></div>
 <p>The third argument restricts the count to one repository, including a private repository your <code class="post-code--single">gh</code> login can read.</p>
 <p>No matches exits 1 with <code class="post-code--spaced">no PRs by app/cursor in 2031-01-01..2031-01-31 (is:public)</code> in my empty-range test. An unknown app slug or repository exits 1 with <code class="post-code--spaced">gh: Validation Failed (HTTP 422)</code>; bad credentials exit 1 with <code class="post-code--spaced">gh: Bad credentials (HTTP 401)</code>. Failed searches also print the query. A parts/total mismatch prints the warning in the script.</p>
-<p>The search API allows 30 requests a minute, so the script sleeps 2.2 seconds between its five queries. Search lists at most 1,000 results per query, but <code class="post-code--single">total_count</code> still reports the full number, and this script reads counts only. My full census scripts are not published on this site. To list every PR, I split time ranges until each slice held 1,000 results or fewer, then paged through each slice.</p>
+<p><a href="https://docs.github.com/en/rest/search/search">GitHub&#39;s search API</a> allows 30 requests a minute for a logged-in user, so the script sleeps 2.2 seconds between its five queries. Search lists at most 1,000 results per query, but <code class="post-code--single">total_count</code> still reports the full number, and this script reads counts only. My full census scripts are not published on this site. To list every PR, I split time ranges until each slice held 1,000 results or fewer, then paged through each slice.</p>
 <h2 id="what-i-d-check-before-choosing">What I&#39;d check before choosing</h2>
 <ul>
 <li>If I already paid for Claude or GPT API usage, I&#39;d check whether <a href="https://devin.ai/blog/windsurf-is-now-devin-desktop">Desktop&#39;s external agents</a> can use that billing before buying another subscription. <a href="https://cursor.com/help/account-and-billing/pricing">Cursor requires Premium for third-party models and bills their usage separately</a>.</li>
