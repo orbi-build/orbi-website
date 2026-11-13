@@ -140,7 +140,7 @@
             "name": "Is Orbi free, and what is Managed Cloud?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Open source under AGPL-3.0, or the Sustainable Use License if your policy rules out AGPL. Self-hosting is free under either. Managed Cloud starts with GitHub login: sign in, install the App. No credit card or subscription required. Founding partners get 50% off forever, limited to __FOUNDING_PARTNER_LIMIT__ places."
+              "text": "Open source under AGPL-3.0, or the Sustainable Use License if your policy rules out AGPL. Self-hosting is free under either. Managed Cloud starts with GitHub login: sign in, install the App. No credit card or subscription required. Founding members get 50% off forever, limited to __FOUNDING_PARTNER_LIMIT__ places."
             }
           }
         ]
@@ -397,11 +397,11 @@ orbi setup --config orbi.toml</code></pre></div>
           <p class="section-tag">MANAGED CLOUD PRICING</p>
           <h2 class="orbi-pricing-summary-h2" id="pricing-summary-title">Try a few merged pull requests free, then pick the plan that fits.</h2>
           <p class="pricing-summary-trial">__FREE_TRIAL__ · No credit card required</p>
-          <div class="pricing-summary-cards">
+          <div class="pricing-summary-cards" __FOUNDING_PRICE_STATE__>
             <article class="pricing-summary-card">
               <p class="pricing-card-kicker">SOLO</p>
               <h3>Solo</h3>
-              <p class="pricing-summary-price">US$__SOLO_MONTHLY_USD__ <span>/ month</span></p>
+              <p class="pricing-summary-price">US$__SOLO_PAID_MONTHLY_USD__ <s>US$__SOLO_MONTHLY_USD__</s> <span>/ month</span></p>
               <ul>
                 <li>__SOLO_INCLUDED_TOKENS__ tokens included</li>
                 <li>__SOLO_REPOSITORIES__ repository</li>
@@ -410,14 +410,14 @@ orbi setup --config orbi.toml</code></pre></div>
             <article class="pricing-summary-card pricing-summary-card-featured">
               <p class="pricing-card-kicker">PRO</p>
               <h3>Pro</h3>
-              <p class="pricing-summary-price">US$__CLOUD_MONTHLY_USD__ <span>/ month</span></p>
+              <p class="pricing-summary-price">US$__PRO_PAID_MONTHLY_USD__ <s>US$__CLOUD_MONTHLY_USD__</s> <span>/ month</span></p>
               <ul>
                 <li>__INCLUDED_TOKENS__ tokens included</li>
                 <li>__PRO_REPOSITORIES__ repositories</li>
               </ul>
             </article>
           </div>
-          <p class="pricing-summary-founding">Founding partners: 50% off for life. __FOUNDING_PARTNER_REMAINING__ of __FOUNDING_PARTNER_LIMIT__ places left.</p>
+          <p class="pricing-summary-founding">Founding members: 50% off for life. __FOUNDING_PARTNER_REMAINING__ of __FOUNDING_PARTNER_LIMIT__ places left.</p>
           <a class="text-link pricing-summary-link" data-cta="pricing-summary" href="/cloud/#pricing">See full pricing →</a>
         </div>
       </section>
@@ -473,7 +473,7 @@ orbi setup --config orbi.toml</code></pre></div>
               <summary><span>06</span>Is it really free, and what is Managed Cloud?</summary>
               <div class="faq-answer">
                 <p class="orbi-faq-answer-p">Open source under <a href="https://github.com/orbi-build/orbi/blob/main/LICENSE">AGPL-3.0</a>, or the <a href="https://github.com/orbi-build/orbi/blob/main/docs/licenses/sustainable-use-license.md">Sustainable Use License</a> if your policy rules out AGPL. Self-hosting is free under either.</p>
-                <p class="orbi-faq-answer-p">Managed Cloud starts with GitHub: sign in, install the App. No credit card or subscription required. Paid annually, Solo is US$__SOLO_ANNUAL_MONTHLY_USD__/month (US$__SOLO_ANNUAL_USD__/year, save __SOLO_ANNUAL_SAVINGS_PERCENT__%; monthly billing US$__SOLO_MONTHLY_USD__) with __SOLO_INCLUDED_TOKENS__ tokens and Pro is US$__PRO_ANNUAL_MONTHLY_USD__/month (US$__PRO_ANNUAL_USD__/year, save __PRO_ANNUAL_SAVINGS_PERCENT__%; monthly billing US$__CLOUD_MONTHLY_USD__) with __INCLUDED_TOKENS__ tokens. Founding partners get 50% off forever, limited to __FOUNDING_PARTNER_LIMIT__ places.</p>
+                <p class="orbi-faq-answer-p">Managed Cloud starts with GitHub: sign in, install the App. No credit card or subscription required. Solo is US$__SOLO_PAID_MONTHLY_USD__/month with __SOLO_INCLUDED_TOKENS__ tokens, and Pro is US$__PRO_PAID_MONTHLY_USD__/month with __INCLUDED_TOKENS__ tokens. Yearly billing and the full comparison are in the <a href="/cloud/#pricing">Cloud pricing</a> section.</p>
               </div>
             </details>
           </div>

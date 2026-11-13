@@ -609,8 +609,17 @@ describe("Cloud paid-tier pricing (Issue #441)", () => {
     ));
   });
 
-  it("uses the annual monthly equivalent in both homepage summaries", async () => {
+  it("keeps the annual figures on the Cloud pricing section, not the homepage", async () => {
+    // Issue #1310: the homepage states one price per plan — the amount the
+    // visitor pays — and hands the yearly billing details to Cloud with a
+    // link. The annual equivalents belong where the interval toggle is.
     for (const relativePath of ["index.html", "zh/index.html"]) {
+      const body = await (await serve(await rawPage(relativePath), `/${relativePath.replace(/index\.html$/, "")}`)).text();
+      for (const value of [SOLO_ANNUAL_MONTHLY_USD, PRO_ANNUAL_MONTHLY_USD, SOLO_ANNUAL_USD, PRO_ANNUAL_USD]) {
+        expect(body, relativePath + ": annual US$" + value).not.toContain(`US$${value}`);
+      }
+    }
+    for (const relativePath of CLOUD_PAGES) {
       const body = await (await serve(await rawPage(relativePath), `/${relativePath.replace(/index\.html$/, "")}`)).text();
       expect(body, relativePath).toContain(`US$${SOLO_ANNUAL_MONTHLY_USD}`);
       expect(body, relativePath).toContain(`US$${PRO_ANNUAL_MONTHLY_USD}`);
@@ -810,8 +819,11 @@ describe("Cloud founding price (Issue #1237)", () => {
   ];
 
   it("derives the founding half price and its annual monthly equivalent", () => {
-    expect(paid[pricing.soloPaidMonthlyUsdToken]).toBe("14.5");
-    expect(paid[pricing.proPaidMonthlyUsdToken]).toBe("39.5");
+    // Issue #1310: a half price that is not a whole number ships with two
+    // decimals, so every carrier writes the same amount (14.50, not 14.5).
+    // Whole amounts keep their plain form (145, 395).
+    expect(paid[pricing.soloPaidMonthlyUsdToken]).toBe("14.50");
+    expect(paid[pricing.proPaidMonthlyUsdToken]).toBe("39.50");
     expect(paid[pricing.soloPaidAnnualUsdToken]).toBe("145");
     expect(paid[pricing.proPaidAnnualUsdToken]).toBe("395");
     expect(paid[pricing.soloPaidAnnualMonthlyUsdToken]).toBe("12");
@@ -890,6 +902,97 @@ describe("Cloud founding price (Issue #1237)", () => {
         expect(html, relativePath + ": " + name).toContain(pricing[name]);
       }
       expect(html, relativePath + ": literal founding price").not.toMatch(/US\$(?:14\.5|39\.5|145|395)(?![\d.])/);
+    }
+  });
+});
+
+// Issue #1310: the homepage card used to carry the list price alone while the
+// Cloud card carried the founding price the visitor pays, so the same plan read
+// as one price on the homepage and another on Cloud. The homepage now writes
+// the same two prices in the same order, and its FAQ stopped publishing a
+// third, annual figure. The offer has one name on both pages: founding members.
+describe("Homepage founding price and offer name (Issue #1310)", () => {
+  const HOME_PAGES = ["index.html", "zh/index.html"];
+  const paid = paidPriceReplacements(pricing);
+  const gone = paidPriceReplacements(pricing, 0);
+  const PLANS = [
+    { plan: "solo", paid: pricing.soloPaidMonthlyUsdToken, list: SOLO_USD },
+    { plan: "pro", paid: pricing.proPaidMonthlyUsdToken, list: USD },
+  ];
+  const summary = (body) => body.match(/<section class="pricing-summary"[\s\S]*?<\/section>/)?.[0] ?? "";
+  const prices = (html) => [...html.matchAll(/<p class="pricing-summary-price">([\s\S]*?)<\/p>/g)].map(([, price]) => price.trim());
+
+  it("writes the paid price first and the list price struck through on both homepages", async () => {
+    for (const relativePath of HOME_PAGES) {
+      const body = await (await serve(await rawPage(relativePath), `/${relativePath.replace(/index\.html$/, "")}`)).text();
+      const section = summary(body);
+      expect(section, relativePath + ": founding price state").toContain('data-founding-price="on"');
+      const shown = prices(section);
+      expect(shown, relativePath + ": one price line per plan").toHaveLength(PLANS.length);
+      for (const [index, plan] of PLANS.entries()) {
+        // The first number is what the visitor pays; the list price sits beside
+        // it, struck through (public/styles.css gives the s element its line).
+        expect(shown[index].startsWith(`US$${paid[plan.paid]} `), `${relativePath}: ${plan.plan} paid price`).toBe(true);
+        expect(shown[index], `${relativePath}: ${plan.plan} struck list price`).toContain(`<s>US$${plan.list}</s>`);
+      }
+    }
+  });
+
+  it("drops the struck price once the founding places are gone", async () => {
+    for (const relativePath of HOME_PAGES) {
+      let html = await rawPage(relativePath);
+      for (const [token, value] of Object.entries(gone)) html = html.replaceAll(token, value);
+      // The list prices are the fixed tokens the Worker substitutes after the
+      // paid ones (src/worker.js); the struck element carries those.
+      html = html.replaceAll(pricing.soloMonthlyUsdToken, SOLO_USD).replaceAll(pricing.monthlyUsdToken, USD);
+      const section = summary(html);
+      expect(section, relativePath + ": founding price state").toContain('data-founding-price="off"');
+      const shown = prices(section);
+      expect(shown, relativePath + ": one price line per plan").toHaveLength(PLANS.length);
+      for (const [index, plan] of PLANS.entries()) {
+        // The fallback is the list price alone; the struck element repeats it
+        // and the stylesheet hides it, so the line shows a single amount.
+        expect(shown[index].startsWith(`US$${plan.list} `), `${relativePath}: ${plan.plan} list price`).toBe(true);
+        expect(shown[index], `${relativePath}: ${plan.plan} struck list price`).toContain(`<s>US$${plan.list}</s>`);
+      }
+      // The same rule the Cloud card uses, scoped to the homepage container:
+      // the struck element stays in the markup and the stylesheet hides it.
+      const css = await readFile(`${PUBLIC_DIR}styles.css`, "utf8");
+      expect(css, "homepage struck price hidden once the places are gone")
+        .toContain('.pricing-summary-cards[data-founding-price="off"] s { display: none; }');
+    }
+  });
+
+  it("states one price per plan in the homepage FAQ", async () => {
+    const FAQ = {
+      "index.html": {
+        sentence: `Solo is US$${paid[pricing.soloPaidMonthlyUsdToken]}/month with ${SOLO_TOKENS_LABEL} tokens, and Pro is US$${paid[pricing.proPaidMonthlyUsdToken]}/month with ${TOKENS_LABEL} tokens.`,
+        link: 'href="/cloud/#pricing"',
+      },
+      "zh/index.html": {
+        sentence: `Solo 每月 US$${paid[pricing.soloPaidMonthlyUsdToken]}，含 ${SOLO_TOKENS_LABEL} token；Pro 每月 US$${paid[pricing.proPaidMonthlyUsdToken]}，含 ${TOKENS_LABEL} token。`,
+        link: 'href="/zh/cloud/#pricing"',
+      },
+    };
+    for (const relativePath of HOME_PAGES) {
+      const body = await (await serve(await rawPage(relativePath), `/${relativePath.replace(/index\.html$/, "")}`)).text();
+      const answers = [...body.matchAll(/<p class="orbi-faq-answer-p">([\s\S]*?)<\/p>/g)].map(([, answer]) => answer);
+      const answer = answers.find((text) => text.includes(FAQ[relativePath].sentence));
+      expect(answer, relativePath + ": FAQ states both paid monthly prices").toBeTruthy();
+      // The yearly figures are Cloud's to state: the homepage links there.
+      expect(answer, relativePath + ": links to the Cloud pricing section").toContain(FAQ[relativePath].link);
+      expect(answer, relativePath + ": no unfilled token").not.toMatch(/__[A-Z_]+__/);
+    }
+  });
+
+  it("names the offer founding members on the homepage and Cloud pages", async () => {
+    for (const relativePath of [...HOME_PAGES, ...CLOUD_PAGES]) {
+      const body = await (await serve(await rawPage(relativePath), `/${relativePath.replace(/index\.html$/, "")}`)).text();
+      expect(body, relativePath + ": founding partners").not.toMatch(/Founding partners?\b/i);
+      expect(body, relativePath + ": 创始合作伙伴").not.toContain("创始合作伙伴");
+      // The offer is still named: the rename must not drop it.
+      expect(body, relativePath + ": founding members")
+        .toMatch(relativePath.startsWith("zh/") ? /创始会员/ : /Founding members/);
     }
   });
 });

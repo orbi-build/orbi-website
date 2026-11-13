@@ -40,7 +40,13 @@ export function foundingDiscountNote(pricing, { zh = false, remaining = pricing.
 
 export function paidPriceReplacements(pricing, remaining = pricing.foundingPartnerRemaining) {
   const founding = foundingPlacesRemain(remaining);
-  const paid = (amount) => String(founding ? amount * (1 - FOUNDING_DISCOUNT) : amount);
+  // Issue #1310: an amount that is not a whole number of dollars ships with
+  // two decimals (14.50, 39.50), so every carrier writes the price the same
+  // way; whole amounts keep their plain form (29, 145).
+  const paid = (amount) => {
+    const value = founding ? amount * (1 - FOUNDING_DISCOUNT) : amount;
+    return Number.isInteger(value) ? String(value) : value.toFixed(2);
+  };
   const paidAnnualMonthly = (annual) => String(Math.round(Number(paid(annual)) / 12));
   return {
     [pricing.soloPaidMonthlyUsdToken]: paid(pricing.soloMonthlyUsd),
