@@ -957,9 +957,11 @@ describe("Homepage founding price and offer name (Issue #1310)", () => {
       }
       // The same rule the Cloud card uses, scoped to the homepage container:
       // the struck element stays in the markup and the stylesheet hides it.
+      // Matched loosely on purpose — the assertion owns the rule's existence,
+      // not its formatting (the browser smoke proves it hides the element).
       const css = await readFile(`${PUBLIC_DIR}styles.css`, "utf8");
       expect(css, "homepage struck price hidden once the places are gone")
-        .toContain('.pricing-summary-cards[data-founding-price="off"] s { display: none; }');
+        .toMatch(/\.pricing-summary-cards\[data-founding-price="off"\]\s+s\s*\{\s*display:\s*none;?\s*\}/);
     }
   });
 
