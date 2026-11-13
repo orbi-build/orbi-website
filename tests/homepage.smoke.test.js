@@ -1,10 +1,14 @@
 import { afterAll, afterEach, describe, expect, it } from "vitest";
 import { spawn } from "node:child_process";
+import { mkdtemp, rm } from "node:fs/promises";
 import { createServer } from "node:http";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { chromium } from "@playwright/test";
 import {
   assertCloudLoginRedirect,
   assertHomeCloudFlow,
+  assertLegalPage,
   expectedCtaLanding,
   localStatsFixture,
   resolveCloudLoginExpect,
@@ -468,6 +472,123 @@ describe("stats render matches the served /stats payload (Issue #126)", () => {
     const live = [orbiGroup("18", "376", "298", "19"), websiteGroup("7", "30", "28", "20"), cloudGroup("7", "60", "60", "2")];
     expect(statsMatchServedStats(null, rootOf(live))).toBe(false);
   });
+});
+
+// Issue #1317: /support/'s chat.sh widget is a third-party script the site does
+// not own. On 2026-11-13 its ERR_CONNECTION_RESET reddened CI and the beta
+// deploy four times with
+// `/support/: console errors=["Failed to load resource: net::ERR_CONNECTION_RESET"]
+// failed requests=["https://chat.sh/widget.js"]`. The smoke answers a
+// third-party script with an empty 200 — the rule guardBrowserRequests already
+// applies to the vitest suites — so its page checks report only what our own
+// pages did. These cases drive the real assertLegalPage (the check that threw)
+// against a stub site, with chat.sh mapped to a closed port so the request
+// really cannot connect.
+describe("third-party scripts cannot decide the smoke (Issue #1317)", () => {
+  const chatHostUnreachable = ["--host-resolver-rules=MAP chat.sh 127.0.0.1:1"];
+  const phone = { width: 390, height: 844 };
+
+  // The real /support/ page's structure that assertLegalPage reads: one filled
+  // h1, the verified address, the footer's legal links — plus the widget tag
+  // the page actually ships (site/partials/chat.html).
+  const stubPage = (body) => `<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Support</title></head><body>
+<main id="main-content"><h1>Support</h1>
+<p>Write to <a href="mailto:support@orbi.build">support@orbi.build</a>.</p></main>
+<footer class="site-footer"><nav><a href="/privacy/">Privacy</a><a href="/terms/">Terms</a><a href="/support/">Support</a></nav></footer>
+${body}
+</body></html>`;
+
+  const pages = {
+    "/support/": stubPage('<script src="https://chat.sh/widget.js" data-site="3d9e07ad-8a5f-4356-99b2-a82e52f99ecc" async></script>'),
+    // Our own script dropping the connection: a failed request in our domain.
+    "/support-own-request/": stubPage('<script src="/own-broken.js" async></script>'),
+    // Our own image answering 404: a console error with no failed request. This
+    // page carries no third-party script, so the error can only be our own.
+    "/support-own-console/": stubPage('<img src="/missing-own.png" alt="">'),
+  };
+
+  async function withStubSite(run) {
+    const server = await loginServer((request, response) => {
+      if (request.url === "/own-broken.js") {
+        request.socket.destroy();
+        return;
+      }
+      const page = pages[request.url];
+      if (!page) {
+        response.writeHead(404);
+        response.end();
+        return;
+      }
+      response.writeHead(200, { "content-type": "text/html; charset=utf-8" });
+      response.end(page);
+    });
+    try {
+      await run(`http://127.0.0.1:${server.address().port}`);
+    } finally {
+      await stopLoginServer(server);
+    }
+  }
+
+  // Screenshots belong to the run, not the repository: assertLegalPage writes
+  // one per page, so the test hands it a temporary directory.
+  async function withSmokeBrowser(run) {
+    const browser = await chromium.launch({ headless: true, args: chatHostUnreachable });
+    const artifactsDir = await mkdtemp(join(tmpdir(), "orbi-issue-1317-"));
+    try {
+      await run(browser, artifactsDir);
+    } finally {
+      await rm(artifactsDir, { recursive: true, force: true });
+      await browser.close();
+    }
+  }
+
+  it("passes the /support/ check while chat.sh cannot connect", async () => {
+    await withSmokeBrowser(async (browser, artifactsDir) => {
+      // The precondition is proved, not assumed: in this browser chat.sh
+      // itself refuses the connection, so a pass below cannot be a page that
+      // never asked for the widget.
+      const probe = await browser.newPage();
+      const probeResult = await probe.goto("https://chat.sh/widget.js").then(() => "loaded", (error) => error.message);
+      await probe.close();
+      expect(probeResult).toMatch(/ERR_CONNECTION_REFUSED/);
+      await withStubSite(async (baseURL) => {
+        await expect(assertLegalPage(
+          browser,
+          "/support/",
+          "support@orbi.build",
+          phone,
+          "support-third-party-script-down.png",
+          { baseURL, artifactsDir },
+        )).resolves.toBeUndefined();
+      });
+    });
+  }, 30_000);
+
+  it("still fails on our own failed request and our own console error", async () => {
+    await withSmokeBrowser(async (browser, artifactsDir) => {
+      await withStubSite(async (baseURL) => {
+        await expect(assertLegalPage(
+          browser,
+          "/support-own-request/",
+          "support@orbi.build",
+          phone,
+          "support-own-request-down.png",
+          { baseURL, artifactsDir },
+        )).rejects.toThrow(/own-broken\.js/);
+        await expect(assertLegalPage(
+          browser,
+          "/support-own-console/",
+          "support@orbi.build",
+          phone,
+          "support-own-console-error.png",
+          { baseURL, artifactsDir },
+          // A console error, and no failed request at all: the two gates are
+          // separate, so this proves the console one still fires.
+        )).rejects.toThrow(/console errors=\[.+\] failed requests=\[\]/);
+      });
+    });
+  }, 30_000);
 });
 
 describe("browser smoke lifecycle", () => {
