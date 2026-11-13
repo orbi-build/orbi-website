@@ -365,11 +365,11 @@ orbi setup --config orbi.toml</code></pre>
         <p class="section-tag">托管 Cloud 价格</p>
         <h2 class="orbi-pricing-summary-h2" id="pricing-summary-title">先免费试几个合并的 PR，再选适合你的套餐。</h2>
         <p class="pricing-summary-trial">__FREE_TRIAL__ · 不用绑卡</p>
-        <div class="pricing-summary-cards">
+        <div class="pricing-summary-cards" __FOUNDING_PRICE_STATE__>
           <article class="pricing-summary-card">
             <p class="pricing-card-kicker">SOLO</p>
             <h3>Solo</h3>
-            <p class="pricing-summary-price">US$__SOLO_MONTHLY_USD__ <span>/ 月</span></p>
+            <p class="pricing-summary-price">US$__SOLO_PAID_MONTHLY_USD__ <s>US$__SOLO_MONTHLY_USD__</s> <span>/ 月</span></p>
             <ul>
               <li>每月含 __SOLO_INCLUDED_TOKENS__ token</li>
               <li>__SOLO_REPOSITORIES__ 个仓库</li>
@@ -378,14 +378,14 @@ orbi setup --config orbi.toml</code></pre>
           <article class="pricing-summary-card pricing-summary-card-featured">
             <p class="pricing-card-kicker">PRO</p>
             <h3>Pro</h3>
-            <p class="pricing-summary-price">US$__CLOUD_MONTHLY_USD__ <span>/ 月</span></p>
+            <p class="pricing-summary-price">US$__PRO_PAID_MONTHLY_USD__ <s>US$__CLOUD_MONTHLY_USD__</s> <span>/ 月</span></p>
             <ul>
               <li>每月含 __INCLUDED_TOKENS__ token</li>
               <li>__PRO_REPOSITORIES__ 个仓库</li>
             </ul>
           </article>
         </div>
-        <p class="pricing-summary-founding">创始合作伙伴终身五折，__FOUNDING_PARTNER_LIMIT__ 个名额只剩 __FOUNDING_PARTNER_REMAINING__ 个。</p>
+        <p class="pricing-summary-founding">创始会员永久 5 折，__FOUNDING_PARTNER_LIMIT__ 个名额只剩 __FOUNDING_PARTNER_REMAINING__ 个。</p>
         <a class="text-link pricing-summary-link" data-cta="pricing-summary" href="/zh/cloud/#pricing">查看完整价格 →</a>
       </div>
     </section>
@@ -441,7 +441,7 @@ orbi setup --config orbi.toml</code></pre>
             <summary><span>06</span>真的免费吗？托管 Cloud 是什么？</summary>
             <div class="faq-answer">
               <p class="orbi-faq-answer-p">Orbi 以 <a href="https://github.com/orbi-build/orbi/blob/main/LICENSE">AGPL-3.0</a> 开源；若你的政策不允许 AGPL，也可选 <a href="https://github.com/orbi-build/orbi/blob/main/docs/licenses/sustainable-use-license.md">Sustainable Use License</a>。两种许可下自托管都免费。</p>
-              <p class="orbi-faq-answer-p">托管 Cloud 用 GitHub 登录即可开始：授权、安装 App。不用绑卡，也不用订阅。按年付时，Solo 每月 US$__SOLO_ANNUAL_MONTHLY_USD__（年付 US$__SOLO_ANNUAL_USD__，省 __SOLO_ANNUAL_SAVINGS_PERCENT__%；按月付 US$__SOLO_MONTHLY_USD__，含 __SOLO_INCLUDED_TOKENS__ token），Pro 每月 US$__PRO_ANNUAL_MONTHLY_USD__（年付 US$__PRO_ANNUAL_USD__，省 __PRO_ANNUAL_SAVINGS_PERCENT__%；按月付 US$__CLOUD_MONTHLY_USD__，含 __INCLUDED_TOKENS__ token）。创始会员永久 5 折，限 __FOUNDING_PARTNER_LIMIT__ 位。</p>
+              <p class="orbi-faq-answer-p">托管 Cloud 用 GitHub 登录即可开始：授权、安装 App。不用绑卡，也不用订阅。Solo 每月 US$__SOLO_PAID_MONTHLY_USD__，含 __SOLO_INCLUDED_TOKENS__ token；Pro 每月 US$__PRO_PAID_MONTHLY_USD__，含 __INCLUDED_TOKENS__ token。按年付和完整对比见 <a href="/zh/cloud/#pricing">Cloud 价格区</a>。</p>
             </div>
           </details>
         </div>
