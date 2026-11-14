@@ -188,6 +188,17 @@ export const BADGE_PLACEHOLDER_SIZES = [
   // mossai.org 140x54 (SVG, 1034 bytes, width/height and viewBox 0 0 140 54;
   // the official vendor snippet declares the same 140x54 box).
   { host: "mossai.org", width: 140, height: 54 },
+  // 2026-11-14 Super Launch, Best AI Tool and IndieLaunch featured badges,
+  // measured on the live URLs: super-launch.app 153x44 (SVG, 8797 bytes,
+  // width/height and viewBox 0 0 153 44; the official vendor snippet
+  // declares 200x54, a different ratio, so the source file decides),
+  // www.bestaitool.co 153x44 (SVG, 48764 bytes, width/height and viewBox
+  // 0 0 153 44; the official vendor snippet also declares 200x54), and
+  // indielaunch.dev 200x54 (SVG, 1034 bytes, width/height and viewBox
+  // 0 0 200 54; the official vendor snippet declares the same 200x54 box).
+  { host: "super-launch.app", width: 153, height: 44 },
+  { host: "www.bestaitool.co", width: 153, height: 44 },
+  { host: "indielaunch.dev", width: 200, height: 54 },
 ];
 const FALLBACK_PLACEHOLDER_SIZE = { width: 1, height: 1 };
 
