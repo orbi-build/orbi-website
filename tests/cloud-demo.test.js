@@ -35,11 +35,13 @@ describe("Cloud onboarding demo (Issue #292, #578)", () => {
         expect(video, `${file}: Cloud video must not carry ${attribute}`).not.toMatch(new RegExp(`(?:^|\\s)${attribute}(?:\\s|=|$)`));
       }
       expect(video).toContain('preload="none"');
-      expect(video).toContain('poster="/video/cloud-onboarding-poster.jpg"');
-      expect(video).toContain('src="/video/cloud-onboarding.mp4"');
+      // The Chinese page plays the Chinese-narrated cut; the English page keeps the original paths.
+      const cut = file.includes("/zh/") ? ".zh" : "";
+      expect(video).toContain(`poster="/video/cloud-onboarding-poster${cut}.jpg"`);
+      expect(video).toContain(`src="/video/cloud-onboarding${cut}.mp4"`);
       expect(video).toContain("aria-label=");
-      expect(html).toContain('<source src="/video/cloud-onboarding.webm" type="video/webm">');
-      expect(html).toContain('<source src="/video/cloud-onboarding.mp4" type="video/mp4">');
+      expect(html).toContain(`<source src="/video/cloud-onboarding${cut}.webm" type="video/webm">`);
+      expect(html).toContain(`<source src="/video/cloud-onboarding${cut}.mp4" type="video/mp4">`);
     }
   });
 
