@@ -1642,6 +1642,20 @@ describe("one unified footer on every content page", () => {
     }
   });
 
+  // Issue #1337: IndieLaunch publishes Orbi on its own product page, so the
+  // footer badge opens that page instead of the directory home. Image and its
+  // 200x54 box stay as they were; the link is the only thing that moves.
+  it("points the IndieLaunch footer badge at the Orbi product page, on en and zh (Issue #1337)", () => {
+    const badge = '<a href="https://indielaunch.dev/products/orbi?ref=badge" target="_blank" rel="noopener">'
+      + '<img src="https://indielaunch.dev/badges/indielaunch-light.svg" alt="Featured on IndieLaunch" width="200" height="54" /></a>';
+    for (const output of ["index.html", "zh/index.html"]) {
+      const footer = footerRegion(shipped.get(output));
+      const occurrences = footer.split(badge).length - 1;
+      expect(occurrences, `${output}: the IndieLaunch badge must ship exactly once in the footer`)
+        .toBe(1);
+    }
+  });
+
   it("carries the 11 compare deep dives, in the right language tree", () => {
     for (const page of content()) {
       const footer = footerRegion(shipped.get(page.output));
