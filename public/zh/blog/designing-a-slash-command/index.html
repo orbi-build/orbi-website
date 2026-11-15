@@ -706,8 +706,8 @@ release 票不存在就开、落地配置值。跑两遍，得到一个 mileston
     if(!link||!login.test(link.pathname))return;
     if(pending.has(link)){event.preventDefault();return;}
     pending.set(link,link.innerHTML);
-    link.textContent=pendingLabel;
     link.setAttribute("aria-disabled","true");
+    setTimeout(()=>{link.textContent=pendingLabel;},0);
   },true);
   addEventListener("pageshow",event=>{
     if(!event.persisted)return;

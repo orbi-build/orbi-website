@@ -170,6 +170,39 @@ describe("Issue #1342 login handoff", () => {
     }, 60_000);
   }
 
+  // The Cloud page's pricing CTA ends in a ↗ span, so a visitor's click can
+  // land on that child of the link rather than on the link itself. The handoff
+  // script must not detach that child inside its capture listener: the
+  // engagement script's own click listener then sees a target whose parent
+  // chain is gone, and that click's cta_click beacon is lost.
+  const CHILD_CLICK_CASES = [
+    { name: "cloud-en", path: "/cloud/", detail: "pricing", pending: "Opening GitHub…" },
+    { name: "cloud-zh", path: "/zh/cloud/", detail: "pricing", pending: "正在打开 GitHub…" },
+  ];
+
+  for (const spec of CHILD_CLICK_CASES) {
+    for (const viewport of VIEWPORTS) {
+      it(`${spec.name} at ${viewport.width}px: a click on the CTA's own arrow still records its cta_click`, async () => {
+        const { page, beacons, logins, pageErrors } = await openPage(viewport);
+        try {
+          await page.goto(`${baseUrl}${spec.path}`, { waitUntil: "load", timeout: 25_000 });
+          const button = page.locator(`[data-cta="${spec.detail}"]`);
+          await button.scrollIntoViewIfNeeded();
+          await button.locator("span").click();
+          await waitFor(async () => (await button.textContent()).trim() === spec.pending,
+            `${spec.detail} did not switch to ${spec.pending}`);
+          expect((await button.getAttribute("aria-disabled")), "the link must be marked disabled").toBe("true");
+          await waitFor(() => Promise.resolve(ctaClicks(beacons, spec.detail).length === 1),
+            `${spec.detail}: a click on the link's own markup must still record its cta_click`);
+          await waitFor(() => Promise.resolve(logins.length === 1), `${spec.detail} started no login jump`);
+          expect(pageErrors, `${spec.path}: no script may throw`).toEqual([]);
+        } finally {
+          await page.close();
+        }
+      }, 60_000);
+    }
+  }
+
   for (const spec of CASES.filter((entry) => entry.name.startsWith("home"))) {
     for (const viewport of VIEWPORTS) {
       it(`${spec.name} at ${viewport.width}px shows the pending label in place`, async () => {

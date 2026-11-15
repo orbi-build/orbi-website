@@ -671,8 +671,8 @@ env -i HOME=&quot;$CLEAN&quot; PATH=&quot;$PATH&quot; ANTHROPIC_BASE_URL=https:/
     if(!link||!login.test(link.pathname))return;
     if(pending.has(link)){event.preventDefault();return;}
     pending.set(link,link.innerHTML);
-    link.textContent=pendingLabel;
     link.setAttribute("aria-disabled","true");
+    setTimeout(()=>{link.textContent=pendingLabel;},0);
   },true);
   addEventListener("pageshow",event=>{
     if(!event.persisted)return;

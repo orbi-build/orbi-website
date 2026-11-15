@@ -494,8 +494,8 @@ List any tests the main session should run. Do not change files.
     if(!link||!login.test(link.pathname))return;
     if(pending.has(link)){event.preventDefault();return;}
     pending.set(link,link.innerHTML);
-    link.textContent=pendingLabel;
     link.setAttribute("aria-disabled","true");
+    setTimeout(()=>{link.textContent=pendingLabel;},0);
   },true);
   addEventListener("pageshow",event=>{
     if(!event.persisted)return;

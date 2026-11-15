@@ -112,6 +112,15 @@ const ENGAGEMENT_SCRIPT = `<script>(()=>{
 // click, once. When the visitor comes back with the browser's Back button the
 // page is restored from the cache (pageshow with persisted), so the link is put
 // back the way it was and can start a new jump.
+//
+// The label swap waits for the next task because it replaces the link's
+// children, and the click may land on one of them — the ↗ inside the Cloud
+// page's pricing CTA is a child, so it is the click's target. Detaching it
+// inside this capture listener leaves the engagement script's own click
+// listener (injected just before this one) with a target whose parent chain is
+// gone, so its closest("[data-cta]") drops that click's cta_click beacon. The task boundary
+// keeps the document intact for the rest of this dispatch and still lands the
+// label before the next paint.
 const LOGIN_HANDOFF_SCRIPT = `<script data-login-handoff>(()=>{
   const login=new RegExp("^(?:/zh)?/cloud/login/?$"), pending=new Map();
   const pendingLabel=/^zh/i.test(document.documentElement.lang)?"正在打开 GitHub…":"Opening GitHub…";
@@ -120,8 +129,8 @@ const LOGIN_HANDOFF_SCRIPT = `<script data-login-handoff>(()=>{
     if(!link||!login.test(link.pathname))return;
     if(pending.has(link)){event.preventDefault();return;}
     pending.set(link,link.innerHTML);
-    link.textContent=pendingLabel;
     link.setAttribute("aria-disabled","true");
+    setTimeout(()=>{link.textContent=pendingLabel;},0);
   },true);
   addEventListener("pageshow",event=>{
     if(!event.persisted)return;

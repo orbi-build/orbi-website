@@ -38,10 +38,18 @@ function scriptOf(html) {
 // attributes; the click handler reaches the listeners the script registered.
 function loginHarness(source, lang = "en") {
   const listeners = [];
+  // The label swap is a task after the click, so the click's target stays in
+  // the document for the rest of the dispatch (tests/login-handoff.browser.test.js
+  // proves the cta_click beacon survives a click on the link's own markup).
+  const tasks = [];
   const context = {
     document: { documentElement: { lang } },
     addEventListener(type, handler) {
       listeners.push({ type, handler });
+    },
+    setTimeout(handler) {
+      tasks.push(handler);
+      return tasks.length;
     },
     console,
   };
@@ -105,6 +113,9 @@ function loginHarness(source, lang = "en") {
     pageshow(persisted) {
       dispatch("pageshow", { persisted });
     },
+    flush() {
+      while (tasks.length > 0) tasks.shift()();
+    },
   };
 }
 
@@ -131,10 +142,15 @@ describe("Issue #1342 login handoff script", () => {
     const link = harness.anchor("/cloud/login", "Try Orbi Cloud free →");
 
     expect(harness.click(link).prevented, "the first click must start the jump").toBe(false);
-    expect(link.textContent).toBe("Opening GitHub…");
-    expect(link.getAttribute("aria-disabled")).toBe("true");
+    expect(link.getAttribute("aria-disabled"), "the link stops taking jumps at once").toBe("true");
+    expect(link.textContent, "the swap waits for the rest of the click's dispatch").toBe("Try Orbi Cloud free →");
 
+    harness.flush();
+    expect(link.textContent).toBe("Opening GitHub…");
+
+    // The second click is refused before any task runs, and adds no second swap.
     expect(harness.click(link).prevented, "the second click must not jump again").toBe(true);
+    harness.flush();
     expect(link.textContent).toBe("Opening GitHub…");
   });
 
@@ -143,6 +159,7 @@ describe("Issue #1342 login handoff script", () => {
     const link = harness.anchor("/zh/cloud/login", "免费试用 Orbi Cloud →");
 
     harness.click(link);
+    harness.flush();
     expect(link.textContent).toBe("正在打开 GitHub…");
     expect(link.getAttribute("aria-disabled")).toBe("true");
   });
@@ -152,6 +169,7 @@ describe("Issue #1342 login handoff script", () => {
     const link = harness.anchor("/cloud/login", 'Try Orbi Cloud free <span aria-hidden="true">→</span>');
 
     harness.click(link);
+    harness.flush();
     expect(link.getAttribute("aria-disabled")).toBe("true");
 
     harness.pageshow(false);
@@ -163,7 +181,9 @@ describe("Issue #1342 login handoff script", () => {
     expect(link.textContent).toBe("Try Orbi Cloud free →");
 
     expect(harness.click(link).prevented, "the restored link must start a new jump").toBe(false);
+    harness.flush();
     expect(link.getAttribute("aria-disabled")).toBe("true");
+    expect(link.textContent).toBe("Opening GitHub…");
   });
 
   it("leaves every other link alone", async () => {
