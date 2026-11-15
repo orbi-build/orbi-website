@@ -43,6 +43,30 @@ const AUTHORS_DATA_PATH = join(ROOT, "site", "data", "authors.json");
 // uses Beacon so page exits do not block navigation or rendering.
 const CLOUDFLARE_ANALYTICS_SCRIPT = `<script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "44c2c3310e2e46b7955bb09f04c93fd1"}'></script>`;
 
+// Issue #1330: PostHog product analytics and session recording, reported
+// through Cloud's same-origin forwarder at /api/ph — the origin the visitor is
+// already on, so beta reports to beta, production to production, and a build
+// without the forwarder (local, CI) gets a 404 instead of reaching production.
+// One PostHog project serves the site and Cloud, so a visitor who goes from the
+// homepage into Cloud stays one session.
+//
+// posthog-js comes from the official snippet, which loads it from
+// `<api_host>/static/array.js` — hence /api/ph/static/array.js — rather than a
+// bundled npm build or a static script tag. Init waits for the load event, so
+// neither the download nor the recording setup competes with the first paint.
+// Autocapture and recording stay on (the SDK's defaults; the init names them
+// because the Issue asks for both). Input values stay masked by the SDK's own
+// recording default. PostHog's project settings must have session replay
+// switched on for recordings to run; the key below is the public frontend key,
+// which the browser needs to report.
+const POSTHOG_SCRIPT = `<script>(function(){
+  var start=function(){
+    !function(t,e){var o,n,p,r;e.__SV||(window.posthog=e,e._i=[],e.init=function(i,s,a){function g(t,e){var o=e.split(".");2==o.length&&(t=t[o[0]],e=o[1]),t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}}(p=t.createElement("script")).type="text/javascript",p.crossOrigin="anonymous",p.async=!0,p.src=s.api_host.replace(".i.posthog.com","-assets.i.posthog.com")+"/static/array.js",(r=t.getElementsByTagName("script")[0]).parentNode.insertBefore(p,r);var u=e;for(void 0!==a?u=e[a]=[]:a="posthog",u.people=u.people||[],Object.defineProperty(u,"toString",{configurable:!0,enumerable:!0,writable:!0,value:function(t){var e="posthog";return"posthog"!==a&&(e+="."+a),t||(e+=" (stub)"),e}}),Object.defineProperty(u.people,"toString",{configurable:!0,enumerable:!0,writable:!0,value:function(){return u.toString(1)+".people (stub)"}}),o="init capture register register_once register_for_session unregister unregister_for_session getFeatureFlag getFeatureFlagResult isFeatureEnabled reloadFeatureFlags updateEarlyAccessFeatureEnrollment getEarlyAccessFeatures on onFeatureFlags onSessionId getSurveys getActiveMatchingSurveys renderSurvey canRenderSurvey getNextSurveyStep identify setPersonProperties group resetGroups setPersonPropertiesForFlags resetPersonPropertiesForFlags setGroupPropertiesForFlags resetGroupPropertiesForFlags reset get_distinct_id getGroups get_session_id get_session_replay_url alias set_config startSessionRecording stopSessionRecording sessionRecordingStarted captureException loadToolbar get_property getSessionProperty createPersonProfile opt_in_capturing opt_out_capturing has_opted_in_capturing has_opted_out_capturing clear_opt_in_out_capturing debug".split(" "),n=0;n<o.length;n++)g(u,o[n]);e._i.push([i,s,a])},e.__SV=1)}(document,window.posthog||[]);
+    posthog.init("phc_nhxAwie7BY0blOSHfAbNzRGcb2rGDJInLUGPh93i8Mx",{api_host:"/api/ph",ui_host:"https://us.posthog.com",autocapture:true,disable_session_recording:false});
+  };
+  if(document.readyState==="complete")start();else addEventListener("load",start,{once:true});
+})();</script>`;
+
 const ENGAGEMENT_SCRIPT = `<script>(()=>{
   const endpoint="/cloud/e", start=Date.now();
   let visible=document.visibilityState!=="hidden", visibleAt=visible?start:0, visibleMs=0, interacted=false, engagedSent=false, depthSent=false, maxDepth=0;
@@ -1320,7 +1344,7 @@ function renderGuide(guide, template, posts, guidesData) {
   });
   return html
     .replace("</head>", `<script type="application/ld+json">${articleJson}</script>${breadcrumbJson}</head>`)
-    .replace("</body>", `${tocScript}${ENGAGEMENT_SCRIPT}${CLOUDFLARE_ANALYTICS_SCRIPT}</body>`);
+    .replace("</body>", `${tocScript}${ENGAGEMENT_SCRIPT}${CLOUDFLARE_ANALYTICS_SCRIPT}${POSTHOG_SCRIPT}</body>`);
 }
 
 // A post's page: the rendered CommonMark body inside the post template, with
@@ -1439,7 +1463,7 @@ function renderPost(post, template, seriesGuide, author) {
     SERIES_LINK: seriesLink,
     RELATED_MARKER: "<!--orbi:related-posts-->",
     FOOTER: toLayout(renderFooter(page), "pretty"),
-  }).replace("</body>", `${tocScript}${ENGAGEMENT_SCRIPT}${CLOUDFLARE_ANALYTICS_SCRIPT}</body>`);
+  }).replace("</body>", `${tocScript}${ENGAGEMENT_SCRIPT}${CLOUDFLARE_ANALYTICS_SCRIPT}${POSTHOG_SCRIPT}</body>`);
 }
 
 // The blog index entry list: title, date, one-line summary, link — one
@@ -1703,7 +1727,7 @@ export async function buildPages(outDir, { contentDir = CONTENT_DIR, guidesDir =
       html = html.replace("<!--@chat-->", () => toLayout(CHAT_PARTIAL, page.layout));
     }
     if (!html.includes("</body>")) throw new Error(`${page.source}: missing </body> for engagement script`);
-    html = html.replace("</body>", `${ENGAGEMENT_SCRIPT}${CLOUDFLARE_ANALYTICS_SCRIPT}</body>`);
+    html = html.replace("</body>", `${ENGAGEMENT_SCRIPT}${CLOUDFLARE_ANALYTICS_SCRIPT}${POSTHOG_SCRIPT}</body>`);
     if (page.source === "blog/index.html" || page.source === "zh/blog/index.html") {
       if (!html.includes("<!--@posts-->")) {
         throw new Error(`${page.source}: blog index is missing the <!--@posts--> marker`);
