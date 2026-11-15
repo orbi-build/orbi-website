@@ -121,7 +121,7 @@
               <tr><th scope="row">任务入口</th><td data-label="Orbi">GitHub Issue + <code>ai-ready</code> 标签</td><td data-label="Orca">桌面应用、移动伴侣、CLI（<code>orca worktree create</code>）；未说明无人值守队列</td></tr>
               <tr><th scope="row">开交付 PR</th><td data-label="Orbi">是</td><td data-label="Orca">未能核实——官方说明应用内可浏览 PR；agent 打开交付 PR 未说明</td></tr>
               <tr><th scope="row">独立评审（能改代码重跑测试）</th><td data-label="Orbi">是——独立 session 修复代码并重跑测试</td><td data-label="Orca">未能核实——文档化的评审是人标注 diff</td></tr>
-              <tr><th scope="row">自动 merge</th><td data-label="Orbi">是——只合并审过的那个提交</td><td data-label="Orca">未能核实——「merge the winner」指比较多个并行 agent 的产出，不是文档化的 PR 自动合并</td></tr>
+              <tr><th scope="row">自动 merge</th><td data-label="Orbi">是——审过的代码要在最新基线上 CI 通过才合并</td><td data-label="Orca">未能核实——「merge the winner」指比较多个并行 agent 的产出，不是文档化的 PR 自动合并</td></tr>
               <tr><th scope="row">打 Tag / 发 Release</th><td data-label="Orbi">是——冻结 SHA、打 Tag、发布 Release</td><td data-label="Orca">未能核实</td></tr>
               <tr><th scope="row">形态</th><td data-label="Orbi">自托管 CLI + systemd，跑在你自己的机器上；另有托管 Cloud 试点</td><td data-label="Orca">桌面（macOS/Windows/Linux）、移动（iOS/Android）、远程运行时；CLI</td></tr>
               <tr><th scope="row">许可证</th><td data-label="Orbi">AGPL-3.0 或 Sustainable Use License</td><td data-label="Orca">MIT</td></tr>
@@ -181,7 +181,7 @@
           <h3 class="orbi-run-option-h3">让交付无人值守地跑</h3>
           <ul class="orbi-run-option-ul">
             <li class="orbi-run-option-li">打了 <code>ai-ready</code> 的 GitHub Issue 自动变成审查过的 PR——独立 session 会改代码、重跑测试</li>
-            <li class="orbi-run-option-li">只合并审过的那个提交，并发布为打 Tag 的 Release，中间不需要人操作</li>
+            <li class="orbi-run-option-li">审过的代码要在最新基线上 CI 通过后才合并，并发布为打 Tag 的 Release，中间不需要人操作</li>
             <li class="orbi-run-option-li">BYOK、自己的机器、GitHub 同时是队列和证据账本</li>
             <li class="orbi-run-option-li">接受 AGPL-3.0 或 Sustainable Use License，换取一条有人维护的交付产线</li>
           </ul>
@@ -473,6 +473,23 @@
     });},{threshold:thresholds});
     sections.forEach(section=>sectionObserver.observe(section));
   }
+})();</script><script data-login-handoff>(()=>{
+  const login=new RegExp("^(?:/zh)?/cloud/login/?$"), pending=new Map();
+  const pendingLabel=/^zh/i.test(document.documentElement.lang)?"正在打开 GitHub…":"Opening GitHub…";
+  addEventListener("click",event=>{
+    if(event.metaKey||event.ctrlKey||event.shiftKey||event.altKey)return;
+    const link=event.target.closest?.("a[href]");
+    if(!link||!login.test(link.pathname))return;
+    if(pending.has(link)){event.preventDefault();return;}
+    pending.set(link,link.innerHTML);
+    link.setAttribute("aria-disabled","true");
+    setTimeout(()=>{link.textContent=pendingLabel;},0);
+  },true);
+  addEventListener("pageshow",event=>{
+    if(!event.persisted)return;
+    pending.forEach((html,link)=>{link.innerHTML=html;link.removeAttribute("aria-disabled");});
+    pending.clear();
+  });
 })();</script><script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "44c2c3310e2e46b7955bb09f04c93fd1"}'></script><script>(function(){
   var start=function(){
     !function(t,e){var o,n,p,r;e.__SV||(window.posthog=e,e._i=[],e.init=function(i,s,a){function g(t,e){var o=e.split(".");2==o.length&&(t=t[o[0]],e=o[1]),t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}}(p=t.createElement("script")).type="text/javascript",p.crossOrigin="anonymous",p.async=!0,p.src=s.api_host.replace(".i.posthog.com","-assets.i.posthog.com")+"/static/array.js",(r=t.getElementsByTagName("script")[0]).parentNode.insertBefore(p,r);var u=e;for(void 0!==a?u=e[a]=[]:a="posthog",u.people=u.people||[],Object.defineProperty(u,"toString",{configurable:!0,enumerable:!0,writable:!0,value:function(t){var e="posthog";return"posthog"!==a&&(e+="."+a),t||(e+=" (stub)"),e}}),Object.defineProperty(u.people,"toString",{configurable:!0,enumerable:!0,writable:!0,value:function(){return u.toString(1)+".people (stub)"}}),o="init capture register register_once register_for_session unregister unregister_for_session getFeatureFlag getFeatureFlagResult isFeatureEnabled reloadFeatureFlags updateEarlyAccessFeatureEnrollment getEarlyAccessFeatures on onFeatureFlags onSessionId getSurveys getActiveMatchingSurveys renderSurvey canRenderSurvey getNextSurveyStep identify setPersonProperties group resetGroups setPersonPropertiesForFlags resetPersonPropertiesForFlags setGroupPropertiesForFlags resetGroupPropertiesForFlags reset get_distinct_id getGroups get_session_id get_session_replay_url alias set_config startSessionRecording stopSessionRecording sessionRecordingStarted captureException loadToolbar get_property getSessionProperty createPersonProfile opt_in_capturing opt_out_capturing has_opted_in_capturing has_opted_out_capturing clear_opt_in_out_capturing debug".split(" "),n=0;n<o.length;n++)g(u,o[n]);e._i.push([i,s,a])},e.__SV=1)}(document,window.posthog||[]);

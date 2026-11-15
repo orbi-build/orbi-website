@@ -40,7 +40,7 @@
   <meta property="og:locale:alternate" content="en_US">
   <meta property="og:url" content="https://orbi.build/zh/">
   <meta property="og:title" content="Orbi — 软件黑灯工厂，开源（AGPL-3.0）：提个 Issue，收个版本">
-  <meta property="og:description" content="Agent 时代的软件黑灯工厂，开源（AGPL-3.0），可以自己部署。把 GitHub Issue 交付成打 Tag 的 Release：独立审查能改代码并重跑测试，只合并审过的那个提交，再冻结 SHA、发布 Tag。自带模型即可。">
+  <meta property="og:description" content="Agent 时代的软件黑灯工厂，开源（AGPL-3.0），可以自己部署。把 GitHub Issue 交付成打 Tag 的 Release：独立审查能改代码并重跑测试，审过的代码要在最新基线上 CI 通过才合并，再冻结 SHA、发布 Tag。自带模型即可。">
   <meta property="og:image" content="https://orbi.build/img/og-zh.png">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
@@ -103,7 +103,7 @@
           "Epic 与 Milestone 确定范围",
           "读取 GitHub 原生 blockedBy 依赖排序",
           "可直接修复分支的独立审查",
-          "只合并通过评审的提交",
+          "审过的代码要在最新基线上 CI 通过才合并",
           "Release Issue 把 SHA 冻结成不可变 Tag",
           "中断后可恢复同一现场"
         ],
@@ -142,7 +142,7 @@
             "name": "Orbi 和 GitHub Copilot、Cursor 有什么区别？",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Copilot 和 Cursor 是编辑器，让你敲键盘时更快。Orbi 管的是没人敲键盘的时候：从 Backlog 领 Issue，在隔离的工作副本里干活，过评审、合并，一直做到打 tag 发版。另一场会话审查同一份改动、直接修复、重跑测试，只有通过评审的那个提交才允许合并。"
+              "text": "Copilot 和 Cursor 是编辑器，让你敲键盘时更快。Orbi 管的是没人敲键盘的时候：从 Backlog 领 Issue，在隔离的工作副本里干活，过评审、合并，一直做到打 tag 发版。另一场会话审查同一份改动、直接修复、重跑测试，审过的代码要在最新基线上 CI 通过才合并。"
             }
           },
           {
@@ -167,6 +167,14 @@
             "acceptedAnswer": {
               "@type": "Answer",
               "text": "Orbi 以 AGPL-3.0 开源；若你的政策不允许 AGPL，也可选 Sustainable Use License。两种许可下自托管都免费。托管 Cloud 用 GitHub 登录即可开始：授权、安装 App。不用绑卡，也不用订阅。创始会员永久 5 折，限 __FOUNDING_PARTNER_LIMIT__ 位。"
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "可以用 USDT 代替银行卡付款吗？",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "只支持年付：在 TRC20（TRON）网络把 USDT 转到 __USDT_TRC20_ADDRESS__——Solo __SOLO_PAID_ANNUAL_USD__ USDT、Pro __PRO_PAID_ANNUAL_USD__ USDT，不需要优惠码——再把交易哈希和你的 GitHub 用户名发到 support@orbi.build（或 Telegram 群），确认到账后开通。只收 TRC20 网络：转错网络的资产无法找回，转账手续费由付款方承担。复制按钮和创始会员条款在 Cloud 价格区。"
             }
           }
         ]
@@ -233,8 +241,8 @@
           </div>
           <div class="map-row" data-capability="release">
             <div class="map-label"><span>03</span><strong>合并并发版</strong></div>
-            <div class="map-track"><span>审过的提交</span><i></i><span>合并</span><i></i><span>Tag</span></div>
-            <p >只合并审过的那个提交，然后打 tag 发版。</p>
+            <div class="map-track"><span>审过的代码</span><i></i><span>合并</span><i></i><span>Tag</span></div>
+            <p >审过的代码要在最新基线上 CI 通过才合并，然后打 tag 发版。</p>
           </div>
         </div>
         <!-- Issue #119：开源（AGPL-3.0）、自托管、自带模型是决策后期才展开的考量
@@ -276,7 +284,7 @@
       </div>
       <ul class="proof-ledger">
         <li class="orbi-proof-ledger-li"><span>01</span><strong>会修复的独立审查</strong><p class="orbi-proof-ledger-p">评审会改代码、重跑全量测试，再对修复后的提交下结论。</p></li>
-        <li class="orbi-proof-ledger-li"><span>02</span><strong>合并证据只绑定一个提交</strong><p class="orbi-proof-ledger-p">基准分支是最新的、PR 可以合并，以及真正通过评审的那个提交。</p></li>
+        <li class="orbi-proof-ledger-li"><span>02</span><strong>合并证据只绑定一个提交</strong><p class="orbi-proof-ledger-p">基准分支是最新的、PR 可以合并，以及 CI 在其上通过的那个提交——评审后基线更新会直接合入并重跑 CI，不重新评审。</p></li>
         <li class="orbi-proof-ledger-li"><span>03</span><strong>恢复不必从头再来</strong><p class="orbi-proof-ledger-p">每一步都写回 Issue 和 PR，重启后接着同一个 PR 往下做。</p></li>
       </ul>
       <figure class="proof-loop">
@@ -417,7 +425,7 @@ orbi setup --config orbi.toml</code></pre>
             <summary><span>03</span>和 Copilot、Cursor 有什么区别？</summary>
             <div class="faq-answer">
               <p class="orbi-faq-answer-p">那些是编辑器——让你在敲键盘时更快。Orbi 管的是没人敲键盘的时候：从 Backlog 领一个 Issue，在隔离的工作副本里干活，过评审、合并，一直做到打 tag 发版。</p>
-              <p class="orbi-faq-answer-p">真正的区别在代码写完之后。另一场会话审查同一份改动、直接修复、重跑全量测试，只有通过评审的那个提交才允许合并。这个审查环节才是产品本身。</p>
+              <p class="orbi-faq-answer-p">真正的区别在代码写完之后。另一场会话审查同一份改动、直接修复、重跑全量测试，审过的代码要在最新基线上 CI 通过才合并。这个审查环节才是产品本身。</p>
             </div>
           </details>
 
@@ -444,6 +452,12 @@ orbi setup --config orbi.toml</code></pre>
               <p class="orbi-faq-answer-p">托管 Cloud 用 GitHub 登录即可开始：授权、安装 App。不用绑卡，也不用订阅。Solo 每月 US$__SOLO_PAID_MONTHLY_USD__，含 __SOLO_INCLUDED_TOKENS__ token；Pro 每月 US$__PRO_PAID_MONTHLY_USD__，含 __INCLUDED_TOKENS__ token。按年付和完整对比见 <a href="/zh/cloud/#pricing">Cloud 价格区</a>。</p>
             </div>
           </details>
+          <details class="faq-item">
+            <summary><span>07</span>可以用 USDT 代替银行卡付款吗？</summary>
+            <div class="faq-answer">
+              <p class="orbi-faq-answer-p">只支持年付：在 TRC20（TRON）网络把 USDT 转到 <code class="usdt-pay-address">__USDT_TRC20_ADDRESS__</code>——Solo __SOLO_PAID_ANNUAL_USD__ USDT、Pro __PRO_PAID_ANNUAL_USD__ USDT，不需要优惠码——再把交易哈希和你的 GitHub 用户名发到 <a href="mailto:support@orbi.build">support@orbi.build</a>（或 <a href="https://t.me/+kJRTTpFGBRU0M2Y9">Telegram 群</a>），确认到账后开通。只收 TRC20 网络：转错网络的资产无法找回，转账手续费由付款方承担。复制按钮和创始会员条款在 Cloud 价格区。</p>
+              </div>
+            </details>
         </div>
       </div>
     </section>

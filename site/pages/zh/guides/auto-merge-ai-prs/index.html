@@ -26,7 +26,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>AI 代码审查工作流：让 AI 自己合并 PR 的四道门 | Orbi</title>
-  <meta name="description" content="AI 写的代码要不要人审？Orbi 的做法：另开一个评审会话对照 Issue 验收项审 diff，CI 通过、分支含最新 base、只合审过的那个 head。">
+  <meta name="description" content="AI 写的代码要不要人审？Orbi 的做法：另开一个评审会话对照 Issue 验收项审 diff，CI 通过、分支含最新 base、合并的是审过的代码。">
   <link rel="canonical" href="https://orbi.build/zh/guides/auto-merge-ai-prs/">
   <link rel="alternate" hreflang="en" href="https://orbi.build/guides/auto-merge-ai-prs/">
   <link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/guides/auto-merge-ai-prs/">
@@ -39,17 +39,17 @@
   <meta property="og:locale:alternate" content="en_US">
   <meta property="og:url" content="https://orbi.build/zh/guides/auto-merge-ai-prs/">
   <meta property="og:title" content="AI 代码审查工作流：让 AI 自己合并 PR 的四道门 | Orbi">
-  <meta property="og:description" content="AI 写的代码要不要人审？Orbi 的做法：另开一个评审会话对照 Issue 验收项审 diff，CI 通过、分支含最新 base、只合审过的那个 head。">
+  <meta property="og:description" content="AI 写的代码要不要人审？Orbi 的做法：另开一个评审会话对照 Issue 验收项审 diff，CI 通过、分支含最新 base、合并的是审过的代码。">
   <meta property="og:image" content="https://orbi.build/img/og-zh.png">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="AI 代码审查工作流：让 AI 自己合并 PR 的四道门 | Orbi">
-  <meta name="twitter:description" content="AI 写的代码要不要人审？Orbi 的做法：另开一个评审会话对照 Issue 验收项审 diff，CI 通过、分支含最新 base、只合审过的那个 head。">
+  <meta name="twitter:description" content="AI 写的代码要不要人审？Orbi 的做法：另开一个评审会话对照 Issue 验收项审 diff，CI 通过、分支含最新 base、合并的是审过的代码。">
   <meta name="twitter:image" content="https://orbi.build/img/og-zh.png">
   <link rel="stylesheet" href="/fonts/fonts.css">
   <link rel="stylesheet" href="/styles.css">
-  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"AI 代码审查工作流：让 AI 自己合并 PR 的四道门","description":"AI 写的代码要不要人审？Orbi 的做法：另开一个评审会话对照 Issue 验收项审 diff，CI 通过、分支含最新 base、只合审过的那个 head。","inLanguage":"zh-CN","url":"https://orbi.build/zh/guides/auto-merge-ai-prs/"}</script>
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"AI 代码审查工作流：让 AI 自己合并 PR 的四道门","description":"AI 写的代码要不要人审？Orbi 的做法：另开一个评审会话对照 Issue 验收项审 diff，CI 通过、分支含最新 base、合并的是审过的代码。","inLanguage":"zh-CN","url":"https://orbi.build/zh/guides/auto-merge-ai-prs/"}</script>
 </head>
 <body>
   <a class="skip-link" href="#main-content">跳到正文</a>
@@ -68,7 +68,7 @@
       <p class="section-tag">问题在哪里</p>
       <h2 class="orbi-compare-section-h2" id="why-title">为什么不能只说「CI 绿了，合并」</h2>
       <p class="section-lede">agent 可以开出一个测试通过、却漏掉验收细节的 PR。如果唯一的决定依据是绿色 CI，就没人核对 diff 是否满足 Issue、是否经过独立评审，也没人确认分支是不是基于最新代码。</p>
-      <p class="thesis-punch">真正安全的问题不是「agent 跑测试了吗」，而是「哪个精确、审过的 head 过了所有门」。</p>
+      <p class="thesis-punch">真正安全的问题不是「agent 跑测试了吗」，而是「哪份审过的代码在即将落地的那个 head 上过了所有门」。</p>
     </section>
 
     <section class="compare-section compare-section-tint" id="four-gates" aria-labelledby="gates-title">
@@ -78,9 +78,9 @@
         <p class="section-lede">规则来自 <a href="https://github.com/orbi-build/orbi/blob/main/docs/workflow.mdx" rel="noopener">Orbi workflow</a>；评审对照的是 Issue 里写的验收项：</p>
         <ul class="event-list">
           <li class="orbi-event-list-li"><span class="event-era">01 · 独立结论</span><div><strong>另开的评审会话给出 clean verdict</strong><p class="orbi-event-list-p">结论绑定 PR 当前 head。verdict 里的 head 不是 PR head，就没有合并授权。</p></div></li>
-          <li class="orbi-event-list-li"><span class="event-era">02 · 最新 BASE</span><div><strong>审过的 head 包含最新 base</strong><p class="orbi-event-list-p">审一个过时分支，不等于审现在要落地的代码；分支必须含最新 base branch。</p></div></li>
+          <li class="orbi-event-list-li"><span class="event-era">02 · 最新 BASE</span><div><strong>落地的 head 包含最新 base</strong><p class="orbi-event-list-p">审一个过时分支，不等于审现在要落地的代码，所以分支必须含最新 base branch。基线在评审后有更新时，Orbi 直接合入并等 CI 在新 head 上跑过——不重新评审；有冲突则回到评审轮。</p></div></li>
           <li class="orbi-event-list-li"><span class="event-era">03 · CI 已结束</span><div><strong>CI 已经有结论</strong><p class="orbi-event-list-p">CI 还在 pending，就等下一轮。检查仍在运行时，不能提前当成通过。</p></div></li>
-          <li class="orbi-event-list-li"><span class="event-era">04 · HEAD 未变化</span><div><strong>PR 可合并，远端 head 没变</strong><p class="orbi-event-list-p">Orbi 读取 mergeability 和远端 head，然后只合刚刚核验过的那个 head。</p></div></li>
+          <li class="orbi-event-list-li"><span class="event-era">04 · HEAD 未变化</span><div><strong>PR 可合并，远端 head 没变</strong><p class="orbi-event-list-p">Orbi 读取 mergeability 和远端 head，然后只合刚刚核验过的那个 head。head 被 runner 之外的推送改动，会重新评审。</p></div></li>
         </ul>
       </div>
     </section>

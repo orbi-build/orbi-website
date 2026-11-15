@@ -40,6 +40,9 @@ const pricingReplacements = {
   [pricing.proRepositoriesToken]: pricing.proRepositories,
   [pricing.foundingPartnerLimitToken]: pricing.foundingPartnerLimit,
   [pricing.foundingPromoCodeToken]: pricing.foundingPromoCode,
+  // Issue #583: the USDT wallet address, so the measured widths are the ones a
+  // visitor sees rather than the length of the token.
+  [pricing.usdtTrc20AddressToken]: pricing.usdtTrc20Address,
   [pricing.includedTokensToken]: pricing.includedTokensLabel,
   [pricing.foundingTokensToken]: pricing.foundingTokensLabel,
   [pricing.measuredSmallRepositoryDeliveryRangeToken]: pricing.measuredSmallRepositoryDeliveryRange,

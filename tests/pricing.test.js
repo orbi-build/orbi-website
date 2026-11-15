@@ -702,7 +702,12 @@ describe("Cloud paid-tier pricing (Issue #441)", () => {
             .map((question) => question.acceptedAnswer?.text ?? "");
         });
       expect(answers.length, relativePath).toBeGreaterThan(3);
-      const limits = answers.filter((answer) => answer.includes(String(pricing.soloRepositories)) && answer.includes(String(pricing.proRepositories)));
+      // Issue #583: the USDT answer states amounts (145 / 395), so a substring
+      // test mistook it for the repository-limit answer. The limit is a number
+      // standing on its own, which is what this reads.
+      const states = (answer, value) => new RegExp(`\\b${value}\\b`).test(answer);
+      const limits = answers.filter((answer) =>
+        states(answer, pricing.soloRepositories) && states(answer, pricing.proRepositories));
       expect(limits.length, relativePath + ": one repository-limit answer").toBe(1);
     }
   });
@@ -1078,6 +1083,150 @@ describe("Cloud founding copy names the automatic discount (Issue #1298)", () =>
       // Three carriers per page: banner, visible FAQ and JSON-LD.
       expect((html.match(new RegExp(pricing.foundingDiscountNoteToken, "g")) ?? []), relativePath).toHaveLength(3);
       expect(html, relativePath + ": no hand-written code instruction").not.toMatch(/at checkout|结账时/);
+    }
+  });
+});
+
+
+// Issue #583: a visitor whose card cannot pay an overseas subscription gets a
+// self-service annual USDT path on /cloud/#pricing. The address lives once, in
+// pricing.json, and is filled by the Worker like every other price token; the
+// amounts are the same paid-price tokens the cards lead with, so the block
+// cannot drift from the price beside it, and both the struck list price and
+// the 50%-off sentence disappear from the screen once the places are gone.
+describe("USDT (TRC20) annual payment (Issue #583)", () => {
+  const ADDRESS = pricing.usdtTrc20Address;
+  // The address the maintainer confirmed on 2026-11-15 (Issue comment); pinned
+  // here so a mistyped token replacement cannot ship to a wallet.
+  const CONFIRMED_ADDRESS = "TWPwTNo4PMndRKi2ffGGmJkE3PwHwX8Job";
+  const USDT_PAGES = ["cloud/index.html", "zh/cloud/index.html"];
+  const FAQ_PAGES = [...CLOUD_PAGES, "index.html", "zh/index.html"];
+  const paid = paidPriceReplacements(pricing);
+  const gone = paidPriceReplacements(pricing, 0);
+  const served = (html, relativePath) => serve(html, "/" + relativePath.replace(/index\.html$/, ""));
+  const blockOn = (html) => html.match(/<section class="usdt-pay"[\s\S]*?<\/section>/)?.[0] ?? "";
+  const strip = (html) => html.replace(/<[^>]+>/g, "").replace(/\s+/g, " ").trim();
+  const faqItems = (html) => {
+    const section = html.match(/<section class="faq" id="faq"[\s\S]*?<\/section>/)?.[0] ?? "";
+    return [...section.matchAll(/<details class="faq-item"(?: open)?>([\s\S]*?)<\/details>/g)].map(([, inner]) => ({
+      question: strip((inner.match(/<summary>([\s\S]*?)<\/summary>/)?.[1] ?? "").replace(/<span>[^<]*<\/span>/, "")),
+      answer: strip(inner.match(/<div class="faq-answer">([\s\S]*?)<\/div>/)?.[1] ?? ""),
+    }));
+  };
+  const faqEntities = (html) => [...html.matchAll(/<script type="application\/ld\+json">(.*?)<\/script>/gs)]
+    .flatMap(([, script]) => JSON.parse(script))
+    .flatMap((data) => data["@graph"] ?? [data])
+    .filter((node) => node["@type"] === "FAQPage")
+    .flatMap((node) => node.mainEntity ?? []);
+
+  it("keeps the wallet address in one place, typed into no page", async () => {
+    expect(ADDRESS, "the address the maintainer confirmed").toBe(CONFIRMED_ADDRESS);
+    for (const relativePath of FAQ_PAGES) {
+      const html = await readFile(SITE_PAGES_DIR + relativePath, "utf8");
+      expect(html, relativePath + ": address token").toContain(pricing.usdtTrc20AddressToken);
+      expect(html, relativePath + ": address typed into the page").not.toContain(ADDRESS);
+    }
+    // No hand-written copy anywhere in the sources or the committed build.
+    for (const dir of [SITE_PAGES_DIR, PUBLIC_DIR]) {
+      for (const path of await listHtmlFiles(dir)) {
+        expect(await readFile(path, "utf8"), path + ": address typed in by hand").not.toContain(ADDRESS);
+      }
+    }
+  });
+
+  it("serves the address, the amounts and the annual-only terms in the pricing section", async () => {
+    for (const relativePath of USDT_PAGES) {
+      const body = await (await served(await rawPage(relativePath), relativePath)).text();
+      expect(body, relativePath + ": unfilled address token").not.toContain(pricing.usdtTrc20AddressToken);
+      const block = blockOn(body);
+      expect(block, relativePath + ": USDT block").toBeTruthy();
+      expect(block, relativePath + ": address").toContain(ADDRESS);
+      expect((block.match(new RegExp(ADDRESS, "g")) ?? []), relativePath + ": addresses in the payment block").toHaveLength(1);
+      // The founding price the visitor transfers first, the list price struck
+      // beside it — the same token pair the pricing cards use.
+      expect(block, relativePath + ": Solo founding price").toContain(">" + paid[pricing.soloPaidAnnualUsdToken] + " USDT<");
+      expect(block, relativePath + ": Solo list price").toContain("<s>" + SOLO_ANNUAL_USD + " USDT</s>");
+      expect(block, relativePath + ": Pro founding price").toContain(">" + paid[pricing.proPaidAnnualUsdToken] + " USDT<");
+      expect(block, relativePath + ": Pro list price").toContain("<s>" + PRO_ANNUAL_USD + " USDT</s>");
+      const zh = relativePath.startsWith("zh/");
+      expect(block, relativePath + ": annual only").toContain(zh ? "只支持年付" : "Annual plans only");
+      expect(block, relativePath + ": TRC20 network").toContain("TRC20");
+      expect(block, relativePath + ": the fee is the sender's").toContain(zh ? "手续费由付款方承担" : "fee is paid by the sender");
+      expect(block, relativePath + ": founding places").toContain(FOUNDING_PARTNER_LIMIT);
+      // The copy button is the build's shared one, wired by demo.js: one source
+      // element, one button, no page-local copy code.
+      expect((block.match(/data-copy-source/g) ?? []), relativePath + ": copy sources").toHaveLength(1);
+      expect((block.match(/class="code-copy-btn"/g) ?? []), relativePath + ": copy buttons").toHaveLength(1);
+      expect(body.indexOf('id="pricing"'), relativePath).toBeLessThan(body.indexOf('class="usdt-pay"'));
+      expect(body.indexOf('class="pricing-cards"'), relativePath).toBeLessThan(body.indexOf('class="usdt-pay"'));
+    }
+  });
+
+  // The shipped bytes carry the placeholders, so this is the acceptance check
+  // that matters: through the real Worker path, no page in the set leaves one
+  // behind — the address and the amounts are all filled.
+  it("leaves no unfilled placeholder on any of the four served pages", async () => {
+    for (const relativePath of FAQ_PAGES) {
+      const body = await (await served(await rawPage(relativePath), relativePath)).text();
+      expect([...new Set([...body.matchAll(/__[A-Z_]+__/g)].map((match) => match[0]))], relativePath).toEqual([]);
+    }
+  });
+
+  it("falls back to the list price and hides the 50% claim once the places are gone", async () => {
+    for (const relativePath of USDT_PAGES) {
+      let html = await readFile(SITE_PAGES_DIR + relativePath, "utf8");
+      // Every token the Worker fills on this page, with the founding places at
+      // zero — the state a maintainer reaches by editing pricing.json alone.
+      const expired = {
+        ...gone,
+        [pricing.soloAnnualUsdToken]: String(pricing.soloAnnualUsd),
+        [pricing.proAnnualUsdToken]: String(pricing.proAnnualUsd),
+        [pricing.soloRepositoriesToken]: String(pricing.soloRepositories),
+        [pricing.proRepositoriesToken]: String(pricing.proRepositories),
+        [pricing.foundingPartnerLimitToken]: String(pricing.foundingPartnerLimit),
+        [pricing.usdtTrc20AddressToken]: ADDRESS,
+      };
+      for (const [token, value] of Object.entries(expired)) html = html.replaceAll(token, value);
+      const block = blockOn(html);
+      expect(block, relativePath + ": founding price state").toContain('data-founding-price="off"');
+      // The founding slot now carries the list price; the struck twin repeats
+      // it and the stylesheet hides both it and the 50% sentence, the same
+      // rule the pricing cards use for the struck price.
+      expect(block, relativePath + ": Solo list price").toContain(">" + SOLO_ANNUAL_USD + " USDT<");
+      expect(block, relativePath + ": Pro list price").toContain(">" + PRO_ANNUAL_USD + " USDT<");
+      expect(block, relativePath + ": Solo struck twin").toContain("<s>" + SOLO_ANNUAL_USD + " USDT</s>");
+      const css = await readFile(PUBLIC_DIR + "styles.css", "utf8");
+      expect(css, "the strike and the 50% sentence are hidden once the places are gone")
+        .toMatch(/\.usdt-pay\[data-founding-price="off"\]\s+:is\(s,\s*\.usdt-pay-founding\)\s*\{\s*display:\s*none;?\s*\}/);
+    }
+  });
+
+  it("answers the USDT question on every FAQ page, JSON-LD in lockstep", async () => {
+    for (const relativePath of FAQ_PAGES) {
+      const body = await (await served(await rawPage(relativePath), relativePath)).text();
+      const zh = relativePath.startsWith("zh/");
+      expect(body, relativePath + ": the answer carries the address").toContain(ADDRESS);
+      const item = faqItems(body).find((entry) => /USDT/.test(entry.question));
+      expect(item, relativePath + ": a visible USDT question").toBeTruthy();
+      expect(item.answer, relativePath + ": address").toContain(ADDRESS);
+      expect(item.answer.toUpperCase(), relativePath + ": TRC20").toContain("TRC20");
+      expect(item.answer, relativePath + ": annual only").toMatch(zh ? /只支持年付/ : /annual plans only/i);
+      expect(item.answer, relativePath + ": the transfer is the founding price").toContain(zh ? "不需要优惠码" : "no code");
+      const entity = faqEntities(body).find((entry) => /USDT/.test(entry.name));
+      expect(entity, relativePath + ": JSON-LD USDT question").toBeTruthy();
+      expect(entity.name, relativePath + ": same question").toBe(item.question);
+      expect(String(entity.acceptedAnswer?.text ?? "").replace(/\s+/g, " ").trim(), relativePath + ": same answer")
+        .toBe(item.answer);
+    }
+  });
+
+  it("states the founding offer's USDT path in the founding answer, without a code", async () => {
+    for (const relativePath of CLOUD_PAGES) {
+      const body = await (await served(await rawPage(relativePath), relativePath)).text();
+      const item = faqItems(body).find((entry) => /founding|创始会员/i.test(entry.question));
+      expect(item, relativePath + ": founding answer").toBeTruthy();
+      expect(item.answer, relativePath + ": USDT pays the founding price directly")
+        .toMatch(relativePath.startsWith("zh/") ? /USDT 付款/ : /USDT payment/);
     }
   });
 });

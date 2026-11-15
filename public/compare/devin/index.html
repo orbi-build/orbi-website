@@ -61,7 +61,7 @@
     {"@type":"Question","name":"Is Orbi an open-source Devin alternative?","acceptedAnswer":{"@type":"Answer","text":"Yes. Orbi is available under AGPL-3.0, and it is designed for self-hosted GitHub delivery from Issue to reviewed pull request and release."}},
     {"@type":"Question","name":"Can I self-host Orbi?","acceptedAnswer":{"@type":"Answer","text":"Yes. You can self-host Orbi on your own machine with your own model key. Orbi Cloud is the hosted option when you want Orbi to run the delivery line for you."}},
     {"@type":"Question","name":"How is Orbi priced compared with Devin?","acceptedAnswer":{"@type":"Answer","text":"Self-hosted Orbi is free under AGPL-3.0, with your hardware and model provider as your costs. Orbi Cloud has two paid plans, Solo and Pro; Devin lists subscription plans and message-based usage pricing. See the cost comparison and the dated price table."}},
-    {"@type":"Question","name":"Does Orbi merge its own pull requests?","acceptedAnswer":{"@type":"Answer","text":"Orbi can merge a delivery's pull request only after an independent review, passing CI, and an exact reviewed head check. Read how Orbi auto-merges AI pull requests safely."}}
+    {"@type":"Question","name":"Does Orbi merge its own pull requests?","acceptedAnswer":{"@type":"Answer","text":"Orbi can merge a delivery's pull request only after an independent review and green CI on a head that contains the current base; a base that moved after the review is merged in and re-checked, not reviewed again. Read how Orbi auto-merges AI pull requests safely."}}
   ]
 }
 </script>
@@ -230,7 +230,7 @@
           </table>
         </div>
         <p class="src-note">Sources: <a class="orbi-src-note-a" href="https://cognition.com" rel="noopener">cognition.com</a> and <a class="orbi-src-note-a" href="https://docs.devin.ai" rel="noopener">docs.devin.ai</a> (managed cloud, in-house models); <a class="orbi-src-note-a" href="https://docs.devin.ai/admin/billing/self-serve" rel="noopener">Devin — self-serve plans</a> and <a class="orbi-src-note-a" href="https://docs.devin.ai/admin/billing/usage" rel="noopener">usage metering</a> (quota, credits, enterprise ACUs) — verified 2026-09-07. Claude Code: <a class="orbi-src-note-a" href="https://code.claude.com/docs/en/overview" rel="noopener">overview</a> and <a class="orbi-src-note-a" href="https://code.claude.com/docs/en/costs" rel="noopener">costs</a> — verified 2026-10-08.</p>
-        <p>Want the Devin shape — a task that runs itself to a pull request and on to a merged, tagged release — while keeping Claude Code as the agent? Wrap it in Orbi. Orbi is open source (AGPL-3.0), defaults to Pi, and can drive Claude Code through an adapter, with the adapter's caveat written down in the <a class="orbi-src-note-a" href="/guides/pi-coding-agent/">Pi coding agent guide</a>. Orbi claims an <code>ai-ready</code> Issue, runs the coding session, reviews the frozen head, merges it and publishes the tag; the boundary it adds is compared against Claude Code on its own in <a class="orbi-src-note-a" href="/compare/claude-code/">Orbi vs Claude Code</a>. The same delivery line runs Orbi's own repository, and the record is public: <a class="orbi-src-note-a" href="https://github.com/orbi-build/orbi/issues/852" rel="noopener">Issue #852</a> was claimed, planned and tested by the runner, <a class="orbi-src-note-a" href="https://github.com/orbi-build/orbi/pull/854" rel="noopener">PR #854</a> merged with no human review, and the fix shipped in <a class="orbi-src-note-a" href="https://github.com/orbi-build/orbi/releases/tag/v0.5.5" rel="noopener">release v0.5.5</a>.</p>
+        <p>Want the Devin shape — a task that runs itself to a pull request and on to a merged, tagged release — while keeping Claude Code as the agent? Wrap it in Orbi. Orbi is open source (AGPL-3.0), defaults to Pi, and can drive Claude Code through an adapter, with the adapter's caveat written down in the <a class="orbi-src-note-a" href="/guides/pi-coding-agent/">Pi coding agent guide</a>. Orbi claims an <code>ai-ready</code> Issue, runs the coding session, reviews the frozen head, merges the reviewed code once CI passes and publishes the tag; the boundary it adds is compared against Claude Code on its own in <a class="orbi-src-note-a" href="/compare/claude-code/">Orbi vs Claude Code</a>. The same delivery line runs Orbi's own repository, and the record is public: <a class="orbi-src-note-a" href="https://github.com/orbi-build/orbi/issues/852" rel="noopener">Issue #852</a> was claimed, planned and tested by the runner, <a class="orbi-src-note-a" href="https://github.com/orbi-build/orbi/pull/854" rel="noopener">PR #854</a> merged with no human review, and the fix shipped in <a class="orbi-src-note-a" href="https://github.com/orbi-build/orbi/releases/tag/v0.5.5" rel="noopener">release v0.5.5</a>.</p>
       </div>
     </section>
 
@@ -274,7 +274,7 @@
           <details class="faq-item" open><summary><span>01</span>Is Orbi an open-source Devin alternative?</summary><div class="faq-answer"><p class="orbi-faq-answer-p">Yes. Orbi is available under <a href="https://github.com/orbi-build/orbi/blob/main/LICENSE" rel="noopener">AGPL-3.0</a>, and it is designed for self-hosted GitHub delivery from Issue to reviewed pull request and release.</p></div></details>
           <details class="faq-item"><summary><span>02</span>Can I self-host Orbi?</summary><div class="faq-answer"><p class="orbi-faq-answer-p">Yes. You can self-host Orbi on your own machine with your own model key. <a href="/cloud/">Orbi Cloud</a> is the hosted option when you want Orbi to run the delivery line for you.</p></div></details>
           <details class="faq-item"><summary><span>03</span>How is Orbi priced compared with Devin?</summary><div class="faq-answer"><p class="orbi-faq-answer-p">Self-hosted Orbi is free under AGPL-3.0, with your hardware and model provider as your costs. Orbi Cloud has two paid plans, Solo and Pro; Devin lists subscription plans and message-based usage pricing. See the <a href="/cost/">cost comparison</a> and the dated <a href="#pricing-title">price table</a>.</p></div></details>
-          <details class="faq-item"><summary><span>04</span>Does Orbi merge its own pull requests?</summary><div class="faq-answer"><p class="orbi-faq-answer-p">Orbi can merge a delivery's pull request only after an independent review, passing CI, and an exact reviewed head check. Read <a href="/guides/auto-merge-ai-prs/">how Orbi auto-merges AI pull requests safely</a>.</p></div></details>
+          <details class="faq-item"><summary><span>04</span>Does Orbi merge its own pull requests?</summary><div class="faq-answer"><p class="orbi-faq-answer-p">Orbi can merge a delivery's pull request only after an independent review and green CI on a head that contains the current base; a base that moved after the review is merged in and re-checked, not reviewed again. Read <a href="/guides/auto-merge-ai-prs/">how Orbi auto-merges AI pull requests safely</a>.</p></div></details>
         </div>
       </div>
     </section>
@@ -578,6 +578,23 @@
     });},{threshold:thresholds});
     sections.forEach(section=>sectionObserver.observe(section));
   }
+})();</script><script data-login-handoff>(()=>{
+  const login=new RegExp("^(?:/zh)?/cloud/login/?$"), pending=new Map();
+  const pendingLabel=/^zh/i.test(document.documentElement.lang)?"正在打开 GitHub…":"Opening GitHub…";
+  addEventListener("click",event=>{
+    if(event.metaKey||event.ctrlKey||event.shiftKey||event.altKey)return;
+    const link=event.target.closest?.("a[href]");
+    if(!link||!login.test(link.pathname))return;
+    if(pending.has(link)){event.preventDefault();return;}
+    pending.set(link,link.innerHTML);
+    link.setAttribute("aria-disabled","true");
+    setTimeout(()=>{link.textContent=pendingLabel;},0);
+  },true);
+  addEventListener("pageshow",event=>{
+    if(!event.persisted)return;
+    pending.forEach((html,link)=>{link.innerHTML=html;link.removeAttribute("aria-disabled");});
+    pending.clear();
+  });
 })();</script><script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "44c2c3310e2e46b7955bb09f04c93fd1"}'></script><script>(function(){
   var start=function(){
     !function(t,e){var o,n,p,r;e.__SV||(window.posthog=e,e._i=[],e.init=function(i,s,a){function g(t,e){var o=e.split(".");2==o.length&&(t=t[o[0]],e=o[1]),t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}}(p=t.createElement("script")).type="text/javascript",p.crossOrigin="anonymous",p.async=!0,p.src=s.api_host.replace(".i.posthog.com","-assets.i.posthog.com")+"/static/array.js",(r=t.getElementsByTagName("script")[0]).parentNode.insertBefore(p,r);var u=e;for(void 0!==a?u=e[a]=[]:a="posthog",u.people=u.people||[],Object.defineProperty(u,"toString",{configurable:!0,enumerable:!0,writable:!0,value:function(t){var e="posthog";return"posthog"!==a&&(e+="."+a),t||(e+=" (stub)"),e}}),Object.defineProperty(u.people,"toString",{configurable:!0,enumerable:!0,writable:!0,value:function(){return u.toString(1)+".people (stub)"}}),o="init capture register register_once register_for_session unregister unregister_for_session getFeatureFlag getFeatureFlagResult isFeatureEnabled reloadFeatureFlags updateEarlyAccessFeatureEnrollment getEarlyAccessFeatures on onFeatureFlags onSessionId getSurveys getActiveMatchingSurveys renderSurvey canRenderSurvey getNextSurveyStep identify setPersonProperties group resetGroups setPersonPropertiesForFlags resetPersonPropertiesForFlags setGroupPropertiesForFlags resetGroupPropertiesForFlags reset get_distinct_id getGroups get_session_id get_session_replay_url alias set_config startSessionRecording stopSessionRecording sessionRecordingStarted captureException loadToolbar get_property getSessionProperty createPersonProfile opt_in_capturing opt_out_capturing has_opted_in_capturing has_opted_out_capturing clear_opt_in_out_capturing debug".split(" "),n=0;n<o.length;n++)g(u,o[n]);e._i.push([i,s,a])},e.__SV=1)}(document,window.posthog||[]);

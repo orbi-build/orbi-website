@@ -18,7 +18,7 @@
   <meta property="og:locale:alternate" content="zh_CN">
   <meta property="og:url" content="https://orbi.build/">
   <meta property="og:title" content="Orbi — Lights-out software factory, open source (AGPL-3.0): File an Issue. Get a release.">
-  <meta property="og:description" content="A self-hosted, open source (AGPL-3.0) lights-out software factory where AI coding agents do the work. It turns GitHub Issues into tagged releases: independent review repairs the code, the exact reviewed head merges, and the frozen SHA ships as a published tag. Bring your own model.">
+  <meta property="og:description" content="A self-hosted, open source (AGPL-3.0) lights-out software factory where AI coding agents do the work. It turns GitHub Issues into tagged releases: independent review repairs the code, the reviewed code merges once CI passes on the latest base, and the frozen SHA ships as a published tag. Bring your own model.">
   <meta property="og:image" content="https://orbi.build/img/og.png">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
@@ -79,7 +79,7 @@
           "Epic and milestone scoping",
           "Native GitHub blockedBy dependency ordering",
           "Independent review that can repair the branch",
-          "Only the reviewed commit merges",
+          "The reviewed code merges once CI passes on the latest base",
           "Release Issues that freeze a SHA into an immutable tag",
           "Recovery from an interrupted run"
         ],
@@ -116,7 +116,7 @@
             "name": "How is Orbi different from GitHub Copilot or Cursor?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Copilot and Cursor are editors that make you faster while you type. Orbi works when nobody is typing: it takes an Issue from your backlog, works in an isolated working copy, and takes it through review and merge to a tagged release. A second session reviews the exact diff, repairs it, and reruns the suite, and only the reviewed commit merges."
+              "text": "Copilot and Cursor are editors that make you faster while you type. Orbi works when nobody is typing: it takes an Issue from your backlog, works in an isolated working copy, and takes it through review and merge to a tagged release. A second session reviews the exact diff, repairs it, and reruns the suite, and the reviewed code merges once CI passes on the latest base."
             }
           },
           {
@@ -141,6 +141,14 @@
             "acceptedAnswer": {
               "@type": "Answer",
               "text": "Open source under AGPL-3.0, or the Sustainable Use License if your policy rules out AGPL. Self-hosting is free under either. Managed Cloud starts with GitHub login: sign in, install the App. No credit card or subscription required. Founding members get 50% off forever, limited to __FOUNDING_PARTNER_LIMIT__ places."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Can I pay with USDT instead of a card?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Annual plans only: send USDT on the TRC20 (TRON) network to __USDT_TRC20_ADDRESS__ — Solo __SOLO_PAID_ANNUAL_USD__ USDT or Pro __PRO_PAID_ANNUAL_USD__ USDT, no code needed — then email the transaction hash and your GitHub username to support@orbi.build (or the Telegram group), and we open the plan once the transfer confirms. TRC20 only: a transfer on another network cannot be recovered, and the transfer fee is paid by the sender. The Cloud pricing section carries the copy button and the founding terms."
             }
           }
         ]
@@ -224,8 +232,8 @@
             </div>
             <div class="map-row" data-capability="release">
               <div class="map-label"><span>03</span><strong>Merge and release</strong></div>
-              <div class="map-track"><span>Reviewed commit</span><i></i><span>Merge</span><i></i><span>Tag</span></div>
-              <p >Only the reviewed commit merges, then Orbi tags the release.</p>
+              <div class="map-track"><span>Reviewed code</span><i></i><span>Merge</span><i></i><span>Tag</span></div>
+              <p >The reviewed code merges once CI passes on the latest base, then Orbi tags the release.</p>
             </div>
           </div>
           <!-- Issue #119: open source (AGPL-3.0), self-hosting, and BYOK are decision-stage
@@ -267,7 +275,7 @@
         </div>
         <ul class="proof-ledger">
           <li class="orbi-proof-ledger-li"><span>01</span><strong>Independent review that can fix</strong><p class="orbi-proof-ledger-p">The reviewer changes code, reruns the suite, and judges the repaired head.</p></li>
-          <li class="orbi-proof-ledger-li"><span>02</span><strong>Merge evidence tied to one SHA</strong><p class="orbi-proof-ledger-p">A fresh base, a mergeable PR, and the exact commit that received the verdict.</p></li>
+          <li class="orbi-proof-ledger-li"><span>02</span><strong>Merge evidence tied to one SHA</strong><p class="orbi-proof-ledger-p">A fresh base, a mergeable PR, and the commit CI passed on — a base update after the review is merged in and re-checked, not reviewed again.</p></li>
           <li class="orbi-proof-ledger-li"><span>03</span><strong>Recovery that never starts over</strong><p class="orbi-proof-ledger-p">Every step is written back to the Issue and the pull request, so a restart continues where the last one stopped.</p></li>
         </ul>
         <figure class="proof-loop">
@@ -449,7 +457,7 @@ orbi setup --config orbi.toml</code></pre></div>
               <summary><span>03</span>How is this different from Copilot or Cursor?</summary>
               <div class="faq-answer">
                 <p class="orbi-faq-answer-p">Those are editors — they make you faster while you are typing. Orbi is what happens when nobody is typing: it takes an Issue from your backlog, works in an isolated working copy, and takes it through review and merge to a tagged release.</p>
-                <p class="orbi-faq-answer-p">The difference that matters is what happens after the code is written. A second session reviews the exact diff, repairs it, and reruns the suite, and only the reviewed commit is allowed to merge. That review step is the product.</p>
+                <p class="orbi-faq-answer-p">The difference that matters is what happens after the code is written. A second session reviews the exact diff, repairs it, and reruns the suite, and the reviewed code merges once CI passes on the latest base. That review step is the product.</p>
               </div>
             </details>
 
@@ -474,6 +482,12 @@ orbi setup --config orbi.toml</code></pre></div>
               <div class="faq-answer">
                 <p class="orbi-faq-answer-p">Open source under <a href="https://github.com/orbi-build/orbi/blob/main/LICENSE">AGPL-3.0</a>, or the <a href="https://github.com/orbi-build/orbi/blob/main/docs/licenses/sustainable-use-license.md">Sustainable Use License</a> if your policy rules out AGPL. Self-hosting is free under either.</p>
                 <p class="orbi-faq-answer-p">Managed Cloud starts with GitHub: sign in, install the App. No credit card or subscription required. Solo is US$__SOLO_PAID_MONTHLY_USD__/month with __SOLO_INCLUDED_TOKENS__ tokens, and Pro is US$__PRO_PAID_MONTHLY_USD__/month with __INCLUDED_TOKENS__ tokens. Yearly billing and the full comparison are in the <a href="/cloud/#pricing">Cloud pricing</a> section.</p>
+              </div>
+            </details>
+            <details class="faq-item">
+              <summary><span>07</span>Can I pay with USDT instead of a card?</summary>
+              <div class="faq-answer">
+                <p class="orbi-faq-answer-p">Annual plans only: send USDT on the TRC20 (TRON) network to <code class="usdt-pay-address">__USDT_TRC20_ADDRESS__</code> — Solo __SOLO_PAID_ANNUAL_USD__ USDT or Pro __PRO_PAID_ANNUAL_USD__ USDT, no code needed — then email the transaction hash and your GitHub username to <a href="mailto:support@orbi.build">support@orbi.build</a> (or the <a href="https://t.me/+kJRTTpFGBRU0M2Y9">Telegram group</a>), and we open the plan once the transfer confirms. TRC20 only: a transfer on another network cannot be recovered, and the transfer fee is paid by the sender. The <a href="/cloud/#pricing">Cloud pricing section</a> carries the copy button and the founding terms.</p>
               </div>
             </details>
           </div>
@@ -726,6 +740,23 @@ orbi setup --config orbi.toml</code></pre></div>
     });},{threshold:thresholds});
     sections.forEach(section=>sectionObserver.observe(section));
   }
+})();</script><script data-login-handoff>(()=>{
+  const login=new RegExp("^(?:/zh)?/cloud/login/?$"), pending=new Map();
+  const pendingLabel=/^zh/i.test(document.documentElement.lang)?"正在打开 GitHub…":"Opening GitHub…";
+  addEventListener("click",event=>{
+    if(event.metaKey||event.ctrlKey||event.shiftKey||event.altKey)return;
+    const link=event.target.closest?.("a[href]");
+    if(!link||!login.test(link.pathname))return;
+    if(pending.has(link)){event.preventDefault();return;}
+    pending.set(link,link.innerHTML);
+    link.setAttribute("aria-disabled","true");
+    setTimeout(()=>{link.textContent=pendingLabel;},0);
+  },true);
+  addEventListener("pageshow",event=>{
+    if(!event.persisted)return;
+    pending.forEach((html,link)=>{link.innerHTML=html;link.removeAttribute("aria-disabled");});
+    pending.clear();
+  });
 })();</script><script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "44c2c3310e2e46b7955bb09f04c93fd1"}'></script><script>(function(){
   var start=function(){
     !function(t,e){var o,n,p,r;e.__SV||(window.posthog=e,e._i=[],e.init=function(i,s,a){function g(t,e){var o=e.split(".");2==o.length&&(t=t[o[0]],e=o[1]),t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}}(p=t.createElement("script")).type="text/javascript",p.crossOrigin="anonymous",p.async=!0,p.src=s.api_host.replace(".i.posthog.com","-assets.i.posthog.com")+"/static/array.js",(r=t.getElementsByTagName("script")[0]).parentNode.insertBefore(p,r);var u=e;for(void 0!==a?u=e[a]=[]:a="posthog",u.people=u.people||[],Object.defineProperty(u,"toString",{configurable:!0,enumerable:!0,writable:!0,value:function(t){var e="posthog";return"posthog"!==a&&(e+="."+a),t||(e+=" (stub)"),e}}),Object.defineProperty(u.people,"toString",{configurable:!0,enumerable:!0,writable:!0,value:function(){return u.toString(1)+".people (stub)"}}),o="init capture register register_once register_for_session unregister unregister_for_session getFeatureFlag getFeatureFlagResult isFeatureEnabled reloadFeatureFlags updateEarlyAccessFeatureEnrollment getEarlyAccessFeatures on onFeatureFlags onSessionId getSurveys getActiveMatchingSurveys renderSurvey canRenderSurvey getNextSurveyStep identify setPersonProperties group resetGroups setPersonPropertiesForFlags resetPersonPropertiesForFlags setGroupPropertiesForFlags resetGroupPropertiesForFlags reset get_distinct_id getGroups get_session_id get_session_replay_url alias set_config startSessionRecording stopSessionRecording sessionRecordingStarted captureException loadToolbar get_property getSessionProperty createPersonProfile opt_in_capturing opt_out_capturing has_opted_in_capturing has_opted_out_capturing clear_opt_in_out_capturing debug".split(" "),n=0;n<o.length;n++)g(u,o[n]);e._i.push([i,s,a])},e.__SV=1)}(document,window.posthog||[]);

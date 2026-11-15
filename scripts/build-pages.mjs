@@ -100,6 +100,51 @@ const ENGAGEMENT_SCRIPT = `<script>(()=>{
   }
 })();</script>`;
 
+// Issue #1342: a visitor who clicks a Cloud login link waits for a redirect
+// that a slow connection can stretch for seconds, and a second click restarts
+// it (the handoff looks like nothing happened). One shared script serves every
+// login link on every page: find the link by its pathname, so no page and no
+// CTA list is maintained here, and nothing listens by data-cta. The first click
+// switches the link to "Opening GitHub…" / "正在打开 GitHub…", marks it
+// aria-disabled and lets the browser start the jump; a further click is
+// preventDefault()ed, so the redirect happens once. It does not stop
+// propagation: the engagement script's cta_click beacon still records each
+// click, once. When the visitor comes back with the browser's Back button the
+// page is restored from the cache (pageshow with persisted), so the link is put
+// back the way it was and can start a new jump.
+//
+// The label swap waits for the next task because it replaces the link's
+// children, and the click may land on one of them — the ↗ inside the Cloud
+// page's pricing CTA is a child, so it is the click's target. Detaching it
+// inside this capture listener leaves the engagement script's own click
+// listener (injected just before this one) with a target whose parent chain is
+// gone, so its closest("[data-cta]") drops that click's cta_click beacon. The
+// task boundary keeps the document intact for the rest of this dispatch and
+// still lands the label before the next paint.
+//
+// A ⌘/Ctrl/Shift/Alt click opens the redirect in another tab or window and
+// keeps this page, so it is left alone: the page is not waiting for a jump it
+// never starts, and the link stays clickable here instead of sitting dead
+// until the visitor reloads (there is no Back-from-GitHub pageshow to undo it).
+const LOGIN_HANDOFF_SCRIPT = `<script data-login-handoff>(()=>{
+  const login=new RegExp("^(?:/zh)?/cloud/login/?$"), pending=new Map();
+  const pendingLabel=/^zh/i.test(document.documentElement.lang)?"正在打开 GitHub…":"Opening GitHub…";
+  addEventListener("click",event=>{
+    if(event.metaKey||event.ctrlKey||event.shiftKey||event.altKey)return;
+    const link=event.target.closest?.("a[href]");
+    if(!link||!login.test(link.pathname))return;
+    if(pending.has(link)){event.preventDefault();return;}
+    pending.set(link,link.innerHTML);
+    link.setAttribute("aria-disabled","true");
+    setTimeout(()=>{link.textContent=pendingLabel;},0);
+  },true);
+  addEventListener("pageshow",event=>{
+    if(!event.persisted)return;
+    pending.forEach((html,link)=>{link.innerHTML=html;link.removeAttribute("aria-disabled");});
+    pending.clear();
+  });
+})();</script>`;
+
 // The four pages that carry the data-driven social-proof section (Issue #226):
 // the two homes render the capped grid, the two evidence pages the full
 // grouped list. A page in this map without the <!--@social-proof--> marker
@@ -1344,7 +1389,7 @@ function renderGuide(guide, template, posts, guidesData) {
   });
   return html
     .replace("</head>", `<script type="application/ld+json">${articleJson}</script>${breadcrumbJson}</head>`)
-    .replace("</body>", `${tocScript}${ENGAGEMENT_SCRIPT}${CLOUDFLARE_ANALYTICS_SCRIPT}${POSTHOG_SCRIPT}</body>`);
+    .replace("</body>", `${tocScript}${ENGAGEMENT_SCRIPT}${LOGIN_HANDOFF_SCRIPT}${CLOUDFLARE_ANALYTICS_SCRIPT}${POSTHOG_SCRIPT}</body>`);
 }
 
 // A post's page: the rendered CommonMark body inside the post template, with
@@ -1463,7 +1508,7 @@ function renderPost(post, template, seriesGuide, author) {
     SERIES_LINK: seriesLink,
     RELATED_MARKER: "<!--orbi:related-posts-->",
     FOOTER: toLayout(renderFooter(page), "pretty"),
-  }).replace("</body>", `${tocScript}${ENGAGEMENT_SCRIPT}${CLOUDFLARE_ANALYTICS_SCRIPT}${POSTHOG_SCRIPT}</body>`);
+  }).replace("</body>", `${tocScript}${ENGAGEMENT_SCRIPT}${LOGIN_HANDOFF_SCRIPT}${CLOUDFLARE_ANALYTICS_SCRIPT}${POSTHOG_SCRIPT}</body>`);
 }
 
 // The blog index entry list: title, date, one-line summary, link — one
@@ -1727,7 +1772,7 @@ export async function buildPages(outDir, { contentDir = CONTENT_DIR, guidesDir =
       html = html.replace("<!--@chat-->", () => toLayout(CHAT_PARTIAL, page.layout));
     }
     if (!html.includes("</body>")) throw new Error(`${page.source}: missing </body> for engagement script`);
-    html = html.replace("</body>", `${ENGAGEMENT_SCRIPT}${CLOUDFLARE_ANALYTICS_SCRIPT}${POSTHOG_SCRIPT}</body>`);
+    html = html.replace("</body>", `${ENGAGEMENT_SCRIPT}${LOGIN_HANDOFF_SCRIPT}${CLOUDFLARE_ANALYTICS_SCRIPT}${POSTHOG_SCRIPT}</body>`);
     if (page.source === "blog/index.html" || page.source === "zh/blog/index.html") {
       if (!html.includes("<!--@posts-->")) {
         throw new Error(`${page.source}: blog index is missing the <!--@posts--> marker`);
