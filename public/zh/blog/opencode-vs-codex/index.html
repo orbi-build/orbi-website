@@ -426,6 +426,7 @@ wire_api = &quot;responses&quot;
 <p>我用自己的 ChatGPT 账号登录，选 <code class="post-code--single">gpt-6.1-sol</code>、medium 推理强度，加上 <code class="post-code--spaced">--sandbox workspace-write</code>，把同样的 4 个任务各跑了 1 次。4 个都通过了测试，包括任务 4 的隐藏检查。每个任务执行 3–5 条 shell 命令，耗时 17.3–44.9 秒。</p>
 <p>这组运行用了我平常的 Codex HOME，里面有全局 <code class="post-code--single">AGENTS.md</code> 和配置，无法和空 HOME 的运行做受控性能比较。token 计数也没法直接比较，所以没列。</p>
 <p>我没跑成 OpenCode 调用 GPT 的测试。它的 <a href="https://opencode.ai/docs/providers/">provider 文档</a>介绍了 &quot;Sign in with ChatGPT&quot;，需要交互式登录，这条路径我没测。这台机器上的 OpenAI API key 被拒绝了。</p>
+<p>要无人值守地处理 GitHub Issue，可以<a href="/zh/guides/codex-github-issues/">在自托管 Orbi 中用 ChatGPT 订阅给 Pi 登录</a>。</p>
 <h2 id="订阅与价格">订阅与价格</h2>
 <p>按 <a href="https://developers.openai.com/codex/pricing">Codex 价格页</a>，通过 ChatGPT 套餐使用 CLI，至少需要 Plus（$20/月）。Pro 起价为 $100/月；Business 至少 2 位用户，按年付是 $20/用户/月，按月付是 $25/用户/月。Free（$0）和 Go（$8/月）列出的 Codex 权益只适用于桌面应用。以上是该页面 2026 年 11 月 11 日的价格。用 API key 就按 token 付费。<a href="https://github.com/openai/codex">Codex CLI 采用 Apache-2.0 许可证</a>。</p>
 <p><a href="https://github.com/anomalyco/opencode">OpenCode 免费，采用 MIT 许可证</a>，模型费用付给 provider。它也提供 <a href="https://opencode.ai/docs/">OpenCode Go，$10/月</a>。</p>

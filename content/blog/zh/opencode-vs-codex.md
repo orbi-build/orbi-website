@@ -126,6 +126,8 @@ Codex 的结果符合它的[指令文件文档](https://developers.openai.com/co
 
 我没跑成 OpenCode 调用 GPT 的测试。它的 [provider 文档](https://opencode.ai/docs/providers/)介绍了 "Sign in with ChatGPT"，需要交互式登录，这条路径我没测。这台机器上的 OpenAI API key 被拒绝了。
 
+要无人值守地处理 GitHub Issue，可以[在自托管 Orbi 中用 ChatGPT 订阅给 Pi 登录](/zh/guides/codex-github-issues/)。
+
 ## 订阅与价格
 
 按 [Codex 价格页](https://developers.openai.com/codex/pricing)，通过 ChatGPT 套餐使用 CLI，至少需要 Plus（$20/月）。Pro 起价为 $100/月；Business 至少 2 位用户，按年付是 $20/用户/月，按月付是 $25/用户/月。Free（$0）和 Go（$8/月）列出的 Codex 权益只适用于桌面应用。以上是该页面 2026 年 11 月 11 日的价格。用 API key 就按 token 付费。[Codex CLI 采用 Apache-2.0 许可证](https://github.com/openai/codex)。
