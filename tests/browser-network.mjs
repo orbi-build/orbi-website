@@ -199,6 +199,10 @@ export const BADGE_PLACEHOLDER_SIZES = [
   { host: "super-launch.app", width: 153, height: 44 },
   { host: "www.bestaitool.co", width: 153, height: 44 },
   { host: "indielaunch.dev", width: 200, height: 54 },
+  // 2026-11-15 BetterLaunch featured badge, measured on the live URL:
+  // betterlaunch.app 196x72 (SVG, 58786 bytes, width/height and viewBox
+  // 0 0 196 72; the vendor snippet declares the same 196x72 box, Issue #1332).
+  { host: "betterlaunch.app", width: 196, height: 72 },
 ];
 const FALLBACK_PLACEHOLDER_SIZE = { width: 1, height: 1 };
 
