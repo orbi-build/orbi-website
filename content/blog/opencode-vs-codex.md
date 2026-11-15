@@ -124,6 +124,8 @@ Because I used my normal Codex home, including global `AGENTS.md` and config, I 
 
 I could not run OpenCode on GPT with this machine's OpenAI API key because the key was rejected. Its [providers docs](https://opencode.ai/docs/providers/) describe "Sign in with ChatGPT", an interactive sign-in I did not test.
 
+To process GitHub issues unattended, you can [sign Pi in with your ChatGPT subscription in self-hosted Orbi](/guides/codex-github-issues/).
+
 ## Subscriptions and price
 
 On the [Codex pricing page](https://developers.openai.com/codex/pricing), CLI access through a ChatGPT plan starts at Plus ($20/month). Pro starts at $100/month, and Business is $20/user/month billed annually for two or more users, or $25 billed monthly. The Free ($0) and Go ($8/month) plans list Codex in the desktop app only. Those are the prices on that page on 11 November 2026. API-key usage is billed per token. [Codex CLI is Apache-2.0](https://github.com/openai/codex).
