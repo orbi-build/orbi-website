@@ -33,6 +33,7 @@ const BROWSER_SUITES = [
   "tests/hero-counter.test.js",
   "tests/homepage.smoke.test.js",
   "tests/horizontal-scroll.test.js",
+  "tests/login-handoff.browser.test.js",
   "tests/nav-menu-width.test.js",
 ];
 
