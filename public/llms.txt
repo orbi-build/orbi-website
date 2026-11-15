@@ -19,8 +19,10 @@ The [Issue-to-release guide](https://orbi.build/guides/issue-to-release/) explai
   mistake a coordination item for an executable task.
 - **Order** — Reads GitHub's native `blockedBy` dependency graph. A task enters
   production only once its blockers close.
-- **Deliver** — Worktree → Agent → tests → review + fix → exact-head merge. A
-  second session may patch the branch, and only the reviewed head can land.
+- **Deliver** — Worktree → Agent → tests → review + fix → merge. A second
+  session may patch the branch, and the reviewed code lands once CI passes on
+  the head that contains the current base — a base that moved after the review
+  is merged in and re-checked, not reviewed again.
 - **Release** — Freeze a SHA, run the full gate, publish an immutable tag, with
   no Agent improvising the release.
 - **Recover** — After a killed process, a failed test, or an unpushed commit, the
@@ -205,9 +207,11 @@ request.
 
 The distinguishing step is what happens after code is written. A second,
 independent Orbi session reviews the exact diff, can repair the branch rather
-than only comment on it, reruns the test suite against its own repairs, and only
-the reviewed commit is allowed to merge. That review-and-repair gate is the
-product, not the code generation.
+than only comment on it, reruns the test suite against its own repairs, and the
+reviewed code is what merges — once CI passes on the head that contains the
+current base. A base that moved after the review is merged in and re-checked,
+not reviewed again; a conflict or an outside push goes back to review. That
+review-and-repair gate is the product, not the code generation.
 
 ## Requirements
 

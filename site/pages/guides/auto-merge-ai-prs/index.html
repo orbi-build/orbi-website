@@ -26,7 +26,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Auto-merge AI pull requests safely: the merge gate | Orbi</title>
-  <meta name="description" content="How to let an AI coding agent merge its own pull requests safely: an independent review against acceptance criteria, CI, fresh base, and one reviewed head.">
+  <meta name="description" content="How to let an AI coding agent merge its own pull requests safely: an independent review, CI on the latest base, and the reviewed code merging.">
   <link rel="canonical" href="https://orbi.build/guides/auto-merge-ai-prs/">
   <link rel="alternate" hreflang="en" href="https://orbi.build/guides/auto-merge-ai-prs/">
   <link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/guides/auto-merge-ai-prs/">
@@ -39,17 +39,17 @@
   <meta property="og:locale:alternate" content="zh_CN">
   <meta property="og:url" content="https://orbi.build/guides/auto-merge-ai-prs/">
   <meta property="og:title" content="Auto-merge AI pull requests safely: the merge gate | Orbi">
-  <meta property="og:description" content="How to let an AI coding agent merge its own pull requests safely: an independent review against acceptance criteria, CI, fresh base, and one reviewed head.">
+  <meta property="og:description" content="How to let an AI coding agent merge its own pull requests safely: an independent review, CI on the latest base, and the reviewed code merging.">
   <meta property="og:image" content="https://orbi.build/img/og.png">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Auto-merge AI pull requests safely: the merge gate | Orbi">
-  <meta name="twitter:description" content="How to let an AI coding agent merge its own pull requests safely: an independent review against acceptance criteria, CI, fresh base, and one reviewed head.">
+  <meta name="twitter:description" content="How to let an AI coding agent merge its own pull requests safely: an independent review, CI on the latest base, and the reviewed code merging.">
   <meta name="twitter:image" content="https://orbi.build/img/og.png">
   <link rel="stylesheet" href="/fonts/fonts.css">
   <link rel="stylesheet" href="/styles.css">
-  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"Auto-merge AI pull requests safely: the merge gate","description":"How to let an AI coding agent merge its own pull requests safely: an independent review against acceptance criteria, CI, fresh base, and one reviewed head.","inLanguage":"en","url":"https://orbi.build/guides/auto-merge-ai-prs/"}</script>
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"Auto-merge AI pull requests safely: the merge gate","description":"How to let an AI coding agent merge its own pull requests safely: an independent review, CI on the latest base, and the reviewed code merging.","inLanguage":"en","url":"https://orbi.build/guides/auto-merge-ai-prs/"}</script>
 </head>
 <body>
   <a class="skip-link" href="#main-content">Skip to content</a>
@@ -71,7 +71,7 @@
       <p class="section-tag">THE PROBLEM</p>
       <h2 class="orbi-compare-section-h2" id="why-title">Why “CI is green, merge it” is not enough</h2>
       <p class="section-lede">An agent can open a PR whose tests pass while the tests miss an acceptance detail. If green CI is the only decision, nobody checks whether the diff satisfies the Issue, whether it was reviewed independently, or whether the branch is still based on current code.</p>
-      <p class="thesis-punch">The safe question is not “did the agent run tests?” It is “which exact, reviewed head passed every gate?”</p>
+      <p class="thesis-punch">The safe question is not “did the agent run tests?” It is “which reviewed code passed every gate on the head that is about to land?”</p>
     </section>
 
     <section class="compare-section compare-section-tint" id="four-gates" aria-labelledby="gates-title">
@@ -81,9 +81,9 @@
         <p class="section-lede">These rules come from the <a href="https://github.com/orbi-build/orbi/blob/main/docs/workflow.mdx" rel="noopener">Orbi workflow</a>, and the review checks the acceptance criteria written in the Issue:</p>
         <ul class="event-list">
           <li class="orbi-event-list-li"><span class="event-era">01 · INDEPENDENT VERDICT</span><div><strong>A separate review session gives a clean verdict</strong><p class="orbi-event-list-p">The verdict is bound to the PR’s current head. If the verdict head is not the PR head, the merge is not authorized.</p></div></li>
-          <li class="orbi-event-list-li"><span class="event-era">02 · FRESH BASE</span><div><strong>The reviewed head contains the latest base</strong><p class="orbi-event-list-p">A review of stale code is not a review of what would land now. The branch must include the latest base branch.</p></div></li>
+          <li class="orbi-event-list-li"><span class="event-era">02 · FRESH BASE</span><div><strong>The head that merges contains the latest base</strong><p class="orbi-event-list-p">A review of stale code is not a review of what would land now, so the branch must include the latest base branch. When the base moves after the review, Orbi merges it in and waits for CI on the new head — no second review; a conflict goes back to the review round.</p></div></li>
           <li class="orbi-event-list-li"><span class="event-era">03 · CI CONCLUDED</span><div><strong>CI has a conclusion</strong><p class="orbi-event-list-p">Pending CI waits for the next round. A check is not treated as passed while it is still running.</p></div></li>
-          <li class="orbi-event-list-li"><span class="event-era">04 · HEAD STILL SAFE</span><div><strong>The PR is mergeable and the remote head has not changed</strong><p class="orbi-event-list-p">Orbi reads mergeability and the remote head once, then only merges the head it just verified.</p></div></li>
+          <li class="orbi-event-list-li"><span class="event-era">04 · HEAD STILL SAFE</span><div><strong>The PR is mergeable and the remote head has not changed</strong><p class="orbi-event-list-p">Orbi reads mergeability and the remote head once, then only merges the head it just verified. A head changed from outside the runner goes back to review.</p></div></li>
         </ul>
       </div>
     </section>

@@ -26,7 +26,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Orbi Cloud — 提个 Issue，收个版本 | Orbi</title>
-  <meta name="description" content="Orbi Cloud 托管 GitHub 交付：提 Issue、独立审查修复、只合并审过的提交并发布 Release，并说明执行边界与记录来源。">
+  <meta name="description" content="Orbi Cloud 托管 GitHub 交付：提 Issue、独立审查修复、审过的代码要在最新基线上 CI 通过才合并并发布 Release，并说明执行边界与记录来源。">
   <link rel="canonical" href="https://orbi.build/zh/cloud/">
   <link rel="alternate" hreflang="en" href="https://orbi.build/cloud/">
   <link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/cloud/">
@@ -40,7 +40,7 @@
   <meta property="og:locale:alternate" content="en_US">
   <meta property="og:url" content="https://orbi.build/zh/cloud/">
   <meta property="og:title" content="Orbi Cloud — 提个 Issue，收个版本">
-  <meta property="og:description" content="托管运行环境：提个 Issue，收个版本——独立审查、只合并审过的提交、关闭 milestone。Solo 每月含 __SOLO_INCLUDED_TOKENS__ token 模型用量，Pro 每月含 __INCLUDED_TOKENS__。Cloud 有 Solo 和 Pro 两个付费套餐，每月分别为 US$__SOLO_PAID_MONTHLY_USD__ 和 US$__PRO_PAID_MONTHLY_USD__。创始会员永久 5 折，限 __FOUNDING_PARTNER_LIMIT__ 位。">
+  <meta property="og:description" content="托管运行环境：提个 Issue，收个版本——独立审查、审过的代码要在最新基线上 CI 通过才合并、关闭 milestone。Solo 每月含 __SOLO_INCLUDED_TOKENS__ token 模型用量，Pro 每月含 __INCLUDED_TOKENS__。Cloud 有 Solo 和 Pro 两个付费套餐，每月分别为 US$__SOLO_PAID_MONTHLY_USD__ 和 US$__PRO_PAID_MONTHLY_USD__。创始会员永久 5 折，限 __FOUNDING_PARTNER_LIMIT__ 位。">
   <meta property="og:image" content="https://orbi.build/img/og-cloud-zh.png">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
@@ -168,7 +168,7 @@
         <aside class="cloud-gate" aria-labelledby="cloud-gate-title">
           <div class="cloud-gate-copy">
             <h2 class="cloud-gate-title" id="cloud-gate-title">连接 GitHub 之前</h2>
-            <p class="cloud-gate-line">Orbi 只合并通过评审的那个提交。</p>
+            <p class="cloud-gate-line">Orbi 合并的是审过的代码，且 CI 要在包含最新基线的 head 上通过。</p>
             <p class="cloud-gate-line">想自己批准合并？在分支保护里要求审批，Orbi 会停下来等你。</p>
             <p class="cloud-gate-line">只有你开了发版 Issue，才会发版。</p>
           </div>
@@ -192,13 +192,13 @@
     <section class="compare-section shell" aria-labelledby="what-title">
       <p class="section-tag">ORBI CLOUD 是什么</p>
       <h2 class="orbi-compare-section-h2" id="what-title">托管的运行环境，记录仍然以 GitHub 为准</h2>
-      <p class="section-lede">Orbi Cloud 跑的是与自托管 Orbi 相同的 GitHub 原生产线——Issue 进，工作副本、测试、独立审查与修复，只合并审过的提交——只是运行在由我们维护的基础设施上。你的工作流一点不变：Issue、PR 和发布证据都留在你自己的仓库里。</p>
+      <p class="section-lede">Orbi Cloud 跑的是与自托管 Orbi 相同的 GitHub 原生产线——Issue 进，工作副本、测试、独立审查与修复，审过的代码要在最新基线上 CI 通过才合并——只是运行在由我们维护的基础设施上。你的工作流一点不变：Issue、PR 和发布证据都留在你自己的仓库里。</p>
       <ul class="event-list">
         <li class="orbi-event-list-li">
           <span class="event-era">交付闭环</span>
           <div>
             <strong >GitHub Issue 进，打好 Tag 的 Release 出</strong>
-            <p class="orbi-event-list-p">能改代码、会重跑测试的独立审查，再只合并审过的那个提交，然后冻结 SHA、打 Tag、发布 GitHub Release、关闭 milestone——你的仓库本来就懂这条闭环，不需要引入第二个工作区。</p>
+            <p class="orbi-event-list-p">能改代码、会重跑测试的独立审查，再让审过的代码在最新基线上 CI 通过后才合并，然后冻结 SHA、打 Tag、发布 GitHub Release、关闭 milestone——你的仓库本来就懂这条闭环，不需要引入第二个工作区。</p>
           </div>
         </li>
         <li class="orbi-event-list-li">
