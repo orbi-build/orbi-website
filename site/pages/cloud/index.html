@@ -26,7 +26,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Self-hosted or cloud coding agent: Orbi Cloud | Orbi</title>
-  <meta name="description" content="Orbi Cloud runs reviewed GitHub delivery for you: implement an Issue, repair it in independent review, merge the exact head, and publish the release.">
+  <meta name="description" content="Orbi Cloud runs reviewed GitHub delivery for you: implement an Issue, review and repair it, merge the reviewed code once CI is green, publish the release.">
   <link rel="canonical" href="https://orbi.build/cloud/">
   <link rel="alternate" hreflang="en" href="https://orbi.build/cloud/">
   <link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/cloud/">
@@ -40,7 +40,7 @@
   <meta property="og:locale:alternate" content="zh_CN">
   <meta property="og:url" content="https://orbi.build/cloud/">
   <meta property="og:title" content="Orbi Cloud — file an Issue, get a release">
-  <meta property="og:description" content="A hosted worker that takes GitHub Issues to tagged GitHub Releases — independent review, the reviewed commit merging, the milestone closed. Solo includes __SOLO_INCLUDED_TOKENS__ tokens of model usage per month; Pro includes __INCLUDED_TOKENS__. Solo and Pro are the two paid plans, at US$__SOLO_PAID_MONTHLY_USD__/month and US$__PRO_PAID_MONTHLY_USD__/month. Founding members receive 50% off forever, __FOUNDING_PARTNER_LIMIT__ places.">
+  <meta property="og:description" content="A hosted worker that takes GitHub Issues to tagged GitHub Releases — independent review, the reviewed code merging once CI passes on the latest base, the milestone closed. Solo includes __SOLO_INCLUDED_TOKENS__ tokens of model usage per month; Pro includes __INCLUDED_TOKENS__. Solo and Pro are the two paid plans, at US$__SOLO_PAID_MONTHLY_USD__/month and US$__PRO_PAID_MONTHLY_USD__/month. Founding members receive 50% off forever, __FOUNDING_PARTNER_LIMIT__ places.">
   <meta property="og:image" content="https://orbi.build/img/og-cloud-free-trial.png">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
@@ -168,7 +168,7 @@
         <aside class="cloud-gate" aria-labelledby="cloud-gate-title">
           <div class="cloud-gate-copy">
             <h2 class="cloud-gate-title" id="cloud-gate-title">Before you connect GitHub</h2>
-            <p class="cloud-gate-line">Orbi only merges the commit its review passed.</p>
+            <p class="cloud-gate-line">Orbi merges the reviewed code, and CI has to pass on a head that contains the latest base.</p>
             <p class="cloud-gate-line">Want to approve merges yourself? Require an approving review in branch protection. Orbi stops and waits for it.</p>
             <p class="cloud-gate-line">Releases ship only when you open a release Issue.</p>
           </div>
@@ -192,13 +192,13 @@
     <section class="compare-section shell" aria-labelledby="what-title">
       <p class="section-tag">WHAT ORBI CLOUD IS</p>
       <h2 class="orbi-compare-section-h2" id="what-title">A hosted worker — GitHub stays the source of truth</h2>
-      <p class="section-lede">Orbi Cloud runs the same GitHub-native delivery line as self-hosted Orbi — Issue in, a working copy, tests, independent review and repair, the reviewed commit merging — on infrastructure we operate. Nothing about your workflow moves: the Issues, pull requests, and release evidence stay in your repositories.</p>
+      <p class="section-lede">Orbi Cloud runs the same GitHub-native delivery line as self-hosted Orbi — Issue in, a working copy, tests, independent review and repair, the reviewed code merging once CI passes on the latest base — on infrastructure we operate. Nothing about your workflow moves: the Issues, pull requests, and release evidence stay in your repositories.</p>
       <ul class="event-list">
         <li class="orbi-event-list-li">
           <span class="event-era">THE LOOP</span>
           <div>
             <strong >GitHub Issue in, tagged release out</strong>
-            <p class="orbi-event-list-p">Independent review that repairs code and reruns tests, then the merge of the reviewed commit, the frozen SHA, the tag, the GitHub Release, and the closed milestone — the loop your repository already speaks, with no second workspace to adopt.</p>
+            <p class="orbi-event-list-p">Independent review that repairs code and reruns tests, then the merge of the reviewed code once CI passes on the latest base, the frozen SHA, the tag, the GitHub Release, and the closed milestone — the loop your repository already speaks, with no second workspace to adopt.</p>
           </div>
         </li>
         <li class="orbi-event-list-li">

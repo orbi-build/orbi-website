@@ -126,7 +126,7 @@
               <tr><th scope="row">Task entry</th><td>GitHub Issue + <code>ai-ready</code> label</td><td>Desktop app, mobile companion, and CLI (<code>orca worktree create</code>); no unattended queue documented</td></tr>
               <tr><th scope="row">Opens the delivery PR</th><td>Yes</td><td>Not verified — browsing PRs in-app is documented; an agent opening the delivery PR is not</td></tr>
               <tr><th scope="row">Independent review (can edit code and rerun tests)</th><td>Yes — an independent session repairs the code and reruns the suite</td><td>Not verified — the documented review is a human annotating the diff</td></tr>
-              <tr><th scope="row">Auto-merge</th><td>Yes — merges the exact reviewed head</td><td>Not verified — “merge the winner” refers to comparing parallel agent outputs, not a documented PR auto-merge</td></tr>
+              <tr><th scope="row">Auto-merge</th><td>Yes — merges the reviewed code once CI passes on the latest base</td><td>Not verified — “merge the winner” refers to comparing parallel agent outputs, not a documented PR auto-merge</td></tr>
               <tr><th scope="row">Tag / Release</th><td>Yes — freezes the SHA, tags, publishes the Release</td><td>Not verified</td></tr>
               <tr><th scope="row">Form factor</th><td>Self-hosted CLI + systemd on your machine; hosted Cloud pilot</td><td>Desktop (macOS/Windows/Linux), mobile (iOS/Android), remote runtime; CLI</td></tr>
               <tr><th scope="row">Licence</th><td>AGPL-3.0 or Sustainable Use License</td><td>MIT</td></tr>
@@ -186,7 +186,7 @@
           <h3 class="orbi-run-option-h3">You want the delivery to run unattended</h3>
           <ul class="orbi-run-option-ul">
             <li class="orbi-run-option-li">A GitHub Issue with <code>ai-ready</code> should become a reviewed PR — with an independent session repairing code and rerunning tests</li>
-            <li class="orbi-run-option-li">You want the exact reviewed head merged and published as a tagged Release, without anyone operating the middle</li>
+            <li class="orbi-run-option-li">You want the reviewed code merged once CI passes on the latest base, and published as a tagged Release, without anyone operating the middle</li>
             <li class="orbi-run-option-li">You want BYOK, your own machine, and GitHub as the queue and the evidence ledger</li>
             <li class="orbi-run-option-li">You accept an open source (AGPL-3.0) licence in exchange for a maintained delivery line</li>
           </ul>
