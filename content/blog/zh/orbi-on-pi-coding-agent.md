@@ -190,7 +190,7 @@ ls -la "$WT/.pi-session/"
 下面几条只说 Pi 特有的。谁认领、谁评审、谁合并这类问题，写在[无人值守地跑 Claude Code](/zh/blog/run-claude-code-unattended/) 里，换成 Pi 也适用。
 
 - 每个 run 给一个单独的 `--session-dir`。agent 做过什么，完整记录都在里面，token 用量也在，出了事看最后几条，比报错信息清楚。
-- 从 `--no-extensions` 开始，用 `--extension`（简写 `-e`）一个一个加回来。不然账号下装的东西会被带进一个没人盯着的 run。这个参数也会关掉 Pi 的内置扩展，包括 MCP 和 Codemode，需要的话用 `--extension builtin:mcp` 或 `--extension builtin:codemode` 加回来。扩展加回来以后，Codemode 这个工具默认还是关的，有两种办法打开：连上一个 MCP server（它默认就用 Codemode 方式暴露工具，连上时 Pi 会自动打开 Codemode），或者自己在 Pi 的设置里写 `"defaultTools": ["+codemode"]`，Orbi Cloud 的 runner 就是这么设的。用 `--tools` 也行，但它会替换整个工具列表，默认的那几个工具要一起写上。
+- 从 `--no-extensions` 开始，用 `--extension`（简写 `-e`）一个一个加回来。不然账号下装的东西会被带进一个没人盯着的 run。这个参数也会关掉 Pi 的内置扩展，包括 MCP 和 Codemode，需要的话用 `--extension builtin:mcp` 或 `--extension builtin:codemode` 加回来。扩展加回来以后，Codemode 这个工具默认还是关的，有两种办法打开：连上一个 MCP server（它默认就用 Codemode 方式暴露工具，连上时 Pi 会自动打开 Codemode），或者自己在 Pi 的设置里写 `"defaultTools": ["+codemode"]`，Orbi Cloud 的 runner 就是这么设的。用 `--tools` 也行，但它会替换整个工具列表，默认的那几个工具要一起写上。[Pi 扩展实测](/zh/blog/best-pi-extensions/)列出了无人值守运行时哪些扩展能用、哪些会改写 Pi 的设置。
 - 某个角色一定不能看到某个 skill，就传 `--no-skills`，再把要用的 skill 逐个列出来。`--skill` 只是在 Pi 自动发现的 skill 之外再加：用户的 skill 目录总会被发现，仓库里的要等 Pi 信任这个项目之后。
 - provider 和模型写在命令行上。不写的话，Pi 会按设置和它能看到的模型自己挑一个；我们那次挑中的是保存的 `defaultModel`。
 - 盯住不出声的会话。卡住的会话不会退出，上游收不到报错。看会话文件最后一次变大是什么时候，也看启动一分钟后会话文件到底建出来没有。

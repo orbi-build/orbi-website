@@ -199,6 +199,10 @@ export const BADGE_PLACEHOLDER_SIZES = [
   { host: "super-launch.app", width: 153, height: 44 },
   { host: "www.bestaitool.co", width: 153, height: 44 },
   { host: "indielaunch.dev", width: 200, height: 54 },
+  // 2026-11-15 BetterLaunch featured badge, measured on the live URL:
+  // betterlaunch.app 196x72 (SVG, 58786 bytes, width/height and viewBox
+  // 0 0 196 72; the vendor snippet declares the same 196x72 box, Issue #1332).
+  { host: "betterlaunch.app", width: 196, height: 72 },
 ];
 const FALLBACK_PLACEHOLDER_SIZE = { width: 1, height: 1 };
 
@@ -231,6 +235,17 @@ export function guardBrowserRequests(context, origin) {
     if (!isNetworkUrl(url) || url.origin === localOrigin) return;
     blockedRequests.add(request);
   });
+
+  // Issue #1330: every page loads PostHog through Cloud's forwarder, so the
+  // browser asks the origin under test for /api/ph/static/array.js. Cloud owns
+  // /api/*, the local static server has no file there, and Chromium reports the
+  // 404 as a console error that a suite asserting a clean console would count
+  // as a page defect. Answer it with an empty script, the same way a
+  // third-party script is answered just below.
+  context.route(
+    (url) => isNetworkUrl(url) && url.origin === localOrigin && url.pathname.startsWith("/api/ph/"),
+    (route) => route.fulfill({ status: 200, contentType: "text/javascript; charset=utf-8", body: "" }),
+  );
 
   return context.route(
     (url) => isNetworkUrl(url) && url.origin !== localOrigin,
