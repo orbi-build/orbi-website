@@ -206,6 +206,9 @@ function startServer() {
               .replaceAll(pricing.foundingPartnerLimitToken, String(pricing.foundingPartnerLimit))
               .replaceAll(pricing.foundingPartnerRemainingToken, String(pricing.foundingPartnerRemaining))
               .replaceAll(pricing.foundingPromoCodeToken, pricing.foundingPromoCode)
+              // Issue #583: the USDT wallet address, filled the way the Worker
+              // fills it so the browser sees the real string.
+              .replaceAll(pricing.usdtTrc20AddressToken, pricing.usdtTrc20Address)
               // Issue #1298: the sentence beside the founding price is copy the
               // Worker resolves in the page's language, so the stand-in does too.
               .replaceAll(

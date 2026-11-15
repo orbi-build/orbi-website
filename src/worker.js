@@ -834,6 +834,9 @@ async function assetResponse(asset, cloudLoginConfigured, founding = { logins: [
     .replaceAll(pricing.foundingPartnerLimitToken, FOUNDING_PARTNER_LIMIT)
     .replaceAll(pricing.foundingPartnerRemainingToken, FOUNDING_PARTNER_REMAINING)
     .replaceAll(pricing.foundingPromoCodeToken, FOUNDING_PROMO_CODE)
+    // Issue #583: the USDT wallet address is data too — one value in
+    // pricing.json, filled into every page that offers the payment path.
+    .replaceAll(pricing.usdtTrc20AddressToken, pricing.usdtTrc20Address)
     // Issue #1298: the sentence about the founding 50% is copy, not a number,
     // so it is resolved here — in the request's language, and empty once the
     // places are gone, exactly like the founding price above.

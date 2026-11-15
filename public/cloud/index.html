@@ -104,7 +104,7 @@
             "name": "What does the founding offer include?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Founding members receive 50% off forever. There are __FOUNDING_PARTNER_LIMIT__ places.__FOUNDING_DISCOUNT_NOTE__ The offer does not change the Solo or Pro plan allowances."
+              "text": "Founding members receive 50% off forever. There are __FOUNDING_PARTNER_LIMIT__ places.__FOUNDING_DISCOUNT_NOTE__ USDT payments transfer the founding price directly, so there is nothing to enter. The offer does not change the Solo or Pro plan allowances."
             }
           },
           {
@@ -121,6 +121,14 @@
             "acceptedAnswer": {
               "@type": "Answer",
               "text": "Incidents are published on the public status page at status.orbi.build, which shows real-time status and 60 days of history."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Can I pay with USDT / crypto?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Annual plans only, at the same original price as a Stripe yearly plan: the USDT block under the pricing cards lists the amount to transfer — Solo __SOLO_PAID_ANNUAL_USD__ USDT or Pro __PRO_PAID_ANNUAL_USD__ USDT, with the original __SOLO_ANNUAL_USD__ / __PRO_ANNUAL_USD__ USDT struck beside it while the founding places last, and no code needed. Send USDT on the TRC20 (TRON) network to __USDT_TRC20_ADDRESS__, then email the transaction hash and your GitHub username to support@orbi.build (or the Telegram group); we open the plan once the transfer confirms. TRC20 only: a transfer on another network cannot be recovered, and the transfer fee is paid by the sender."
             }
           }
         ]
@@ -276,6 +284,23 @@
           </figure>
         </div>
         <p class="once-pay-note">Alipay / WeChat Pay, paid once (no auto-renewal): <a data-cta="pricing-once-solo-month" href="/api/checkout?plan=solo&amp;interval=month&amp;payment=once&amp;cta=site-once__FOUNDING_PROMO_QUERY__">Solo monthly</a> · <a data-cta="pricing-once-solo-year" href="/api/checkout?plan=solo&amp;interval=year&amp;payment=once&amp;cta=site-once__FOUNDING_PROMO_QUERY__">Solo yearly</a> · <a data-cta="pricing-once-pro-month" href="/api/checkout?plan=pro&amp;interval=month&amp;payment=once&amp;cta=site-once__FOUNDING_PROMO_QUERY__">Pro monthly</a> · <a data-cta="pricing-once-pro-year" href="/api/checkout?plan=pro&amp;interval=year&amp;payment=once&amp;cta=site-once__FOUNDING_PROMO_QUERY__">Pro yearly</a></p>
+        <section class="usdt-pay" __FOUNDING_PRICE_STATE__ aria-labelledby="usdt-pay-title">
+          <h3 class="usdt-pay-title" id="usdt-pay-title">Pay with USDT (annual plans)</h3>
+          <p class="usdt-pay-lede">No card that works overseas? Pay a whole year in USDT on the <strong>TRC20 (TRON)</strong> network. Annual plans only, and the original price is the same as a Stripe yearly plan.</p>
+          <div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="Copied">Copy</button><pre><code class="usdt-pay-address" data-copy-source>__USDT_TRC20_ADDRESS__</code></pre></div>
+          <p class="usdt-pay-note">USDT on <strong>TRC20 (TRON)</strong> only — assets sent on another network cannot be recovered, and the transfer fee is paid by the sender.</p>
+          <table class="usdt-pay-table">
+            <thead>
+              <tr><th scope="col">Plan</th><th scope="col">One year</th></tr>
+            </thead>
+            <tbody>
+              <tr><th scope="row">Solo · __SOLO_REPOSITORIES__ repository</th><td><span class="usdt-pay-price">__SOLO_PAID_ANNUAL_USD__ USDT</span> <s>__SOLO_ANNUAL_USD__ USDT</s></td></tr>
+              <tr><th scope="row">Pro · __PRO_REPOSITORIES__ repositories</th><td><span class="usdt-pay-price">__PRO_PAID_ANNUAL_USD__ USDT</span> <s>__PRO_ANNUAL_USD__ USDT</s></td></tr>
+            </tbody>
+          </table>
+          <p class="usdt-pay-founding">Founding members: transfer the bold amount — 50% off for life, renewed at the same price — for the first __FOUNDING_PARTNER_LIMIT__ places; once the places are gone, transfer the struck amount.</p>
+          <p class="usdt-pay-note">Transfer, then email the transaction hash and your GitHub username to <a href="mailto:support@orbi.build">support@orbi.build</a> (or the <a href="https://t.me/+kJRTTpFGBRU0M2Y9">Telegram group</a>). We open the plan once the transfer confirms. For a large amount, a 1 USDT test transfer first is fine.</p>
+        </section>
         <p class="self-hosted-note">Self-hosted: US$0 under AGPL-3.0 or the Sustainable Use License; bring your own model key.</p>
         <p class="founder-talk-note"><a data-cta="pricing-founder-talk" href="https://calendly.com/xiangqianliu/talk-to-the-orbi-founder-15-min" target="_blank" rel="noopener">Questions before you start? Talk to the founder (15 min) ↗</a></p>
       </div>
@@ -361,7 +386,7 @@
           <details class="faq-item">
             <summary><span>05</span>What does the founding offer include?</summary>
             <div class="faq-answer">
-              <p class="orbi-faq-answer-p">Founding members receive 50% off forever. There are __FOUNDING_PARTNER_LIMIT__ places.__FOUNDING_DISCOUNT_NOTE__ The offer does not change the Solo or Pro plan allowances.</p>
+              <p class="orbi-faq-answer-p">Founding members receive 50% off forever. There are __FOUNDING_PARTNER_LIMIT__ places.__FOUNDING_DISCOUNT_NOTE__ USDT payments transfer the founding price directly, so there is nothing to enter. The offer does not change the Solo or Pro plan allowances.</p>
             </div>
           </details>
 
@@ -376,6 +401,12 @@
             <summary><span>07</span>What happens when Orbi Cloud has an incident?</summary>
             <div class="faq-answer">
               <p class="orbi-faq-answer-p">Incidents are published on the public status page at <a href="https://status.orbi.build">status.orbi.build</a>, which shows real-time status and 60 days of history.</p>
+            </div>
+          </details>
+          <details class="faq-item">
+            <summary><span>08</span>Can I pay with USDT / crypto?</summary>
+            <div class="faq-answer">
+              <p class="orbi-faq-answer-p">Annual plans only, at the same original price as a Stripe yearly plan: the USDT block under the pricing cards lists the amount to transfer — Solo __SOLO_PAID_ANNUAL_USD__ USDT or Pro __PRO_PAID_ANNUAL_USD__ USDT, with the original __SOLO_ANNUAL_USD__ / __PRO_ANNUAL_USD__ USDT struck beside it while the founding places last, and no code needed. Send USDT on the TRC20 (TRON) network to <code class="usdt-pay-address">__USDT_TRC20_ADDRESS__</code>, then email the transaction hash and your GitHub username to <a href="mailto:support@orbi.build">support@orbi.build</a> (or the <a href="https://t.me/+kJRTTpFGBRU0M2Y9">Telegram group</a>); we open the plan once the transfer confirms. TRC20 only: a transfer on another network cannot be recovered, and the transfer fee is paid by the sender.</p>
             </div>
           </details>
         </div>
