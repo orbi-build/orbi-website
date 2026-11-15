@@ -126,7 +126,7 @@
             "name": "创始会员优惠包含什么？",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "创始会员永久 5 折，限 __FOUNDING_PARTNER_LIMIT__ 位。__FOUNDING_DISCOUNT_NOTE__Solo、Pro 两个套餐的额度不变。"
+              "text": "创始会员永久 5 折，限 __FOUNDING_PARTNER_LIMIT__ 位。__FOUNDING_DISCOUNT_NOTE__USDT 付款直接按创始会员价转账，也不需要优惠码。Solo、Pro 两个套餐的额度不变。"
             }
           },
           {
@@ -143,6 +143,14 @@
             "acceptedAnswer": {
               "@type": "Answer",
               "text": "故障会发布在公开的状态页 status.orbi.build 上，页面展示实时状态和最近 60 天的历史记录。"
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "可以用 USDT 付款吗？",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "只支持年付，原价与 Stripe 年付相同：价格卡片下方的 USDT 支付块列出应转金额——Solo __SOLO_PAID_ANNUAL_USD__ USDT、Pro __PRO_PAID_ANNUAL_USD__ USDT，创始名额还在时旁边划掉的是原价 __SOLO_ANNUAL_USD__ / __PRO_ANNUAL_USD__ USDT，不需要优惠码。只收 USDT、TRC20（TRON）网络，转到 __USDT_TRC20_ADDRESS__，再把交易哈希和你的 GitHub 用户名发到 support@orbi.build（或 Telegram 群）；确认到账后开通。转错网络的资产无法找回，转账手续费由付款方承担。"
             }
           }
         ]
@@ -266,6 +274,23 @@
         </div>
 <!--@cloud-evidence-->
         <p class="once-pay-note">支付宝 / 微信一次付清（不自动续费）：<a data-cta="pricing-once-solo-month" href="/api/checkout?plan=solo&amp;interval=month&amp;payment=once&amp;cta=site-once__FOUNDING_PROMO_QUERY__">Solo 月付</a> · <a data-cta="pricing-once-solo-year" href="/api/checkout?plan=solo&amp;interval=year&amp;payment=once&amp;cta=site-once__FOUNDING_PROMO_QUERY__">Solo 年付</a> · <a data-cta="pricing-once-pro-month" href="/api/checkout?plan=pro&amp;interval=month&amp;payment=once&amp;cta=site-once__FOUNDING_PROMO_QUERY__">Pro 月付</a> · <a data-cta="pricing-once-pro-year" href="/api/checkout?plan=pro&amp;interval=year&amp;payment=once&amp;cta=site-once__FOUNDING_PROMO_QUERY__">Pro 年付</a></p>
+        <section class="usdt-pay" __FOUNDING_PRICE_STATE__ aria-labelledby="usdt-pay-title">
+          <h3 class="usdt-pay-title" id="usdt-pay-title">USDT 年付（TRC20）</h3>
+          <p class="usdt-pay-lede">没有能付海外订阅的银行卡？用 USDT 一次付清一年，走 <strong>TRC20（TRON）</strong> 网络。只支持年付，原价与 Stripe 年付相同。</p>
+          <pre><code class="usdt-pay-address">__USDT_TRC20_ADDRESS__</code></pre>
+          <p class="usdt-pay-note">只收 USDT、<strong>TRC20（TRON）</strong> 网络——转错网络的资产无法找回，转账手续费由付款方承担。</p>
+          <table class="usdt-pay-table">
+            <thead>
+              <tr><th scope="col">套餐</th><th scope="col">年付</th></tr>
+            </thead>
+            <tbody>
+              <tr><th scope="row">Solo · __SOLO_REPOSITORIES__ 个仓库</th><td><span class="usdt-pay-price">__SOLO_PAID_ANNUAL_USD__ USDT</span> <s>__SOLO_ANNUAL_USD__ USDT</s></td></tr>
+              <tr><th scope="row">Pro · __PRO_REPOSITORIES__ 个仓库</th><td><span class="usdt-pay-price">__PRO_PAID_ANNUAL_USD__ USDT</span> <s>__PRO_ANNUAL_USD__ USDT</s></td></tr>
+            </tbody>
+          </table>
+          <p class="usdt-pay-founding">创始会员：按加粗金额转账——永久 5 折、续费同价，限前 __FOUNDING_PARTNER_LIMIT__ 位；名额用完后按划线金额转账。</p>
+          <p class="usdt-pay-note">转账后把交易哈希和你的 GitHub 用户名发到 <a href="mailto:support@orbi.build">support@orbi.build</a>（或 <a href="https://t.me/+kJRTTpFGBRU0M2Y9">Telegram 群</a>），确认到账后开通。金额较大时，可以先转 1 USDT 测试。</p>
+        </section>
         <p class="self-hosted-note">自托管：US$0，可选 AGPL-3.0 或 Sustainable Use License；模型 key 自己带。</p>
         <p class="founder-talk-note"><a data-cta="pricing-founder-talk" href="https://calendly.com/xiangqianliu/talk-to-the-orbi-founder-15-min" target="_blank" rel="noopener">开始前想先聊聊？约创始人 15 分钟 ↗</a></p>
       </div>
@@ -350,7 +375,7 @@
           <details class="faq-item">
             <summary><span>05</span>创始会员优惠包含什么？</summary>
             <div class="faq-answer">
-              <p class="orbi-faq-answer-p">创始会员永久 5 折，限 __FOUNDING_PARTNER_LIMIT__ 位。__FOUNDING_DISCOUNT_NOTE__Solo、Pro 两个套餐的额度不变。</p>
+              <p class="orbi-faq-answer-p">创始会员永久 5 折，限 __FOUNDING_PARTNER_LIMIT__ 位。__FOUNDING_DISCOUNT_NOTE__USDT 付款直接按创始会员价转账，也不需要优惠码。Solo、Pro 两个套餐的额度不变。</p>
             </div>
           </details>
 
@@ -365,6 +390,12 @@
             <summary><span>07</span>Orbi Cloud 出故障了怎么办？</summary>
             <div class="faq-answer">
               <p class="orbi-faq-answer-p">故障会发布在公开的状态页 <a href="https://status.orbi.build">status.orbi.build</a> 上，页面展示实时状态和最近 60 天的历史记录。</p>
+            </div>
+          </details>
+          <details class="faq-item">
+            <summary><span>08</span>可以用 USDT 付款吗？</summary>
+            <div class="faq-answer">
+              <p class="orbi-faq-answer-p">只支持年付，原价与 Stripe 年付相同：价格卡片下方的 USDT 支付块列出应转金额——Solo __SOLO_PAID_ANNUAL_USD__ USDT、Pro __PRO_PAID_ANNUAL_USD__ USDT，创始名额还在时旁边划掉的是原价 __SOLO_ANNUAL_USD__ / __PRO_ANNUAL_USD__ USDT，不需要优惠码。只收 USDT、TRC20（TRON）网络，转到 <code class="usdt-pay-address">__USDT_TRC20_ADDRESS__</code>，再把交易哈希和你的 GitHub 用户名发到 <a href="mailto:support@orbi.build">support@orbi.build</a>（或 <a href="https://t.me/+kJRTTpFGBRU0M2Y9">Telegram 群</a>）；确认到账后开通。转错网络的资产无法找回，转账手续费由付款方承担。</p>
             </div>
           </details>
         </div>
