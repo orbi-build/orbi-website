@@ -100,6 +100,36 @@ const ENGAGEMENT_SCRIPT = `<script>(()=>{
   }
 })();</script>`;
 
+// Issue #1342: a visitor who clicks a Cloud login link waits for a redirect
+// that a slow connection can stretch for seconds, and a second click restarts
+// it (the handoff looks like nothing happened). One shared script serves every
+// login link on every page: find the link by its pathname, so no page and no
+// CTA list is maintained here, and nothing listens by data-cta. The first click
+// switches the link to "Opening GitHub…" / "正在打开 GitHub…", marks it
+// aria-disabled and lets the browser start the jump; a further click is
+// preventDefault()ed, so the redirect happens once. It does not stop
+// propagation: the engagement script's cta_click beacon still records each
+// click, once. When the visitor comes back with the browser's Back button the
+// page is restored from the cache (pageshow with persisted), so the link is put
+// back the way it was and can start a new jump.
+const LOGIN_HANDOFF_SCRIPT = `<script data-login-handoff>(()=>{
+  const login=new RegExp("^(?:/zh)?/cloud/login/?$"), pending=new Map();
+  const pendingLabel=/^zh/i.test(document.documentElement.lang)?"正在打开 GitHub…":"Opening GitHub…";
+  addEventListener("click",event=>{
+    const link=event.target.closest?.("a[href]");
+    if(!link||!login.test(link.pathname))return;
+    if(pending.has(link)){event.preventDefault();return;}
+    pending.set(link,link.innerHTML);
+    link.textContent=pendingLabel;
+    link.setAttribute("aria-disabled","true");
+  },true);
+  addEventListener("pageshow",event=>{
+    if(!event.persisted)return;
+    pending.forEach((html,link)=>{link.innerHTML=html;link.removeAttribute("aria-disabled");});
+    pending.clear();
+  });
+})();</script>`;
+
 // The four pages that carry the data-driven social-proof section (Issue #226):
 // the two homes render the capped grid, the two evidence pages the full
 // grouped list. A page in this map without the <!--@social-proof--> marker
@@ -1344,7 +1374,7 @@ function renderGuide(guide, template, posts, guidesData) {
   });
   return html
     .replace("</head>", `<script type="application/ld+json">${articleJson}</script>${breadcrumbJson}</head>`)
-    .replace("</body>", `${tocScript}${ENGAGEMENT_SCRIPT}${CLOUDFLARE_ANALYTICS_SCRIPT}${POSTHOG_SCRIPT}</body>`);
+    .replace("</body>", `${tocScript}${ENGAGEMENT_SCRIPT}${LOGIN_HANDOFF_SCRIPT}${CLOUDFLARE_ANALYTICS_SCRIPT}${POSTHOG_SCRIPT}</body>`);
 }
 
 // A post's page: the rendered CommonMark body inside the post template, with
@@ -1463,7 +1493,7 @@ function renderPost(post, template, seriesGuide, author) {
     SERIES_LINK: seriesLink,
     RELATED_MARKER: "<!--orbi:related-posts-->",
     FOOTER: toLayout(renderFooter(page), "pretty"),
-  }).replace("</body>", `${tocScript}${ENGAGEMENT_SCRIPT}${CLOUDFLARE_ANALYTICS_SCRIPT}${POSTHOG_SCRIPT}</body>`);
+  }).replace("</body>", `${tocScript}${ENGAGEMENT_SCRIPT}${LOGIN_HANDOFF_SCRIPT}${CLOUDFLARE_ANALYTICS_SCRIPT}${POSTHOG_SCRIPT}</body>`);
 }
 
 // The blog index entry list: title, date, one-line summary, link — one
@@ -1727,7 +1757,7 @@ export async function buildPages(outDir, { contentDir = CONTENT_DIR, guidesDir =
       html = html.replace("<!--@chat-->", () => toLayout(CHAT_PARTIAL, page.layout));
     }
     if (!html.includes("</body>")) throw new Error(`${page.source}: missing </body> for engagement script`);
-    html = html.replace("</body>", `${ENGAGEMENT_SCRIPT}${CLOUDFLARE_ANALYTICS_SCRIPT}${POSTHOG_SCRIPT}</body>`);
+    html = html.replace("</body>", `${ENGAGEMENT_SCRIPT}${LOGIN_HANDOFF_SCRIPT}${CLOUDFLARE_ANALYTICS_SCRIPT}${POSTHOG_SCRIPT}</body>`);
     if (page.source === "blog/index.html" || page.source === "zh/blog/index.html") {
       if (!html.includes("<!--@posts-->")) {
         throw new Error(`${page.source}: blog index is missing the <!--@posts--> marker`);
