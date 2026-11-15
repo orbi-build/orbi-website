@@ -32,6 +32,9 @@ const pricingReplacements = {
   [pricing.proRepositoriesToken]: String(pricing.proRepositories),
   [pricing.foundingPartnerLimitToken]: String(pricing.foundingPartnerLimit),
   [pricing.foundingPromoCodeToken]: pricing.foundingPromoCode,
+  // Issue #583: the USDT wallet address, so the measured widths are the ones a
+  // visitor sees rather than the length of the token.
+  [pricing.usdtTrc20AddressToken]: pricing.usdtTrc20Address,
   [pricing.includedTokensToken]: String(pricing.includedTokensLabel),
   [pricing.foundingTokensToken]: String(pricing.foundingTokensLabel),
   [pricing.measuredSmallRepositoryDeliveryRangeToken]: String(pricing.measuredSmallRepositoryDeliveryRange),
@@ -405,6 +408,103 @@ describe("Cloud founding price (Issue #1237)", () => {
         expect(await page.locator('[data-pricing-price="solo"]').isVisible()).toBe(true);
         expect(await page.locator('[data-pricing-detail="solo"]').innerText(), `${path}: no gap left by the hidden list price`)
           .not.toMatch(/US$\d+(?:\.\d+)?\s+[;，,]/);
+      } finally {
+        await page.close();
+      }
+    }, 30_000);
+  }
+});
+
+// Issue #583: USDT (TRC20) is the payment path for a visitor whose card cannot
+// pay an overseas subscription, so it has to work with a thumb on a phone: the
+// copy button puts the address on the clipboard, the block never grows wider
+// than the viewport, the transferred price comes from pricing.json, and once
+// the founding places are gone the struck price and the 50% sentence leave the
+// screen.
+describe("USDT annual payment block (Issue #583)", () => {
+  for (const [name, path] of pages) {
+    it(name + " copies the address and fits a phone", async () => {
+      const page = await guardedPage(browser, baseUrl);
+      await page.context().grantPermissions(["clipboard-read", "clipboard-write"], { origin: baseUrl });
+      const errors = [];
+      page.on("pageerror", (error) => errors.push(String(error)));
+      page.on("console", (message) => {
+        if (message.type() === "error" && !message.text().includes("Failed to load resource")) errors.push(message.text());
+      });
+      try {
+        await page.goto(baseUrl + path, { waitUntil: "load", timeout: 25_000 });
+        await page.evaluate((replacements) => {
+          const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+          while (walker.nextNode()) walker.currentNode.nodeValue = walker.currentNode.nodeValue.replace(/__[A-Z_]+__/g, (value) => replacements[value] ?? value);
+        }, pricingReplacements);
+        // The clipboard API answers only a focused document.
+        await page.bringToFront();
+        const block = page.locator("#pricing .usdt-pay");
+        expect(await block.count(), path + ": one USDT block").toBe(1);
+        const address = pricing.usdtTrc20Address;
+        expect((await page.locator("#pricing .usdt-pay pre code").textContent()).trim(), path + ": address")
+          .toBe(address);
+        const button = page.locator("#pricing .usdt-pay .code-copy-btn");
+        expect(await button.count(), path + ": one copy button").toBe(1);
+        await button.click();
+        const started = Date.now();
+        let copied = "";
+        while (Date.now() - started < 5000) {
+          copied = await page.evaluate(() => navigator.clipboard.readText());
+          if (copied === address) break;
+          await page.waitForTimeout(50);
+        }
+        expect(copied, path + ": the clipboard holds the address").toBe(address);
+        // The amount the visitor transfers is the founding price the card leads
+        // with, from the same tokens — not a number typed into the page.
+        expect(await page.locator("#pricing .usdt-pay .usdt-pay-price").allTextContents(), path + ": amounts")
+          .toEqual([
+            paidPrices[pricing.soloPaidAnnualUsdToken] + " USDT",
+            paidPrices[pricing.proPaidAnnualUsdToken] + " USDT",
+          ]);
+        for (const width of [390, 1440]) {
+          await page.setViewportSize({ width, height: 900 });
+          const layout = await block.evaluate((node) => ({
+            overflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
+            blockRight: node.getBoundingClientRect().right,
+            tableRight: node.querySelector("table").getBoundingClientRect().right,
+          }));
+          expect(layout.overflow, path + " at " + width + "px page overflow").toBe(0);
+          expect(layout.blockRight, path + " at " + width + "px block inside the viewport").toBeLessThanOrEqual(width);
+          expect(layout.tableRight, path + " at " + width + "px table inside the viewport").toBeLessThanOrEqual(width);
+          // The block is readable, not merely present: the address shows in
+          // full (wrapped, not clipped), the button is a real target, the
+          // founding amount is the loudest number in the row and the list price
+          // is struck, and the last row sits inside the panel.
+          const detail = await block.evaluate((node) => {
+            const code = node.querySelector("pre code");
+            const button = node.querySelector(".code-copy-btn");
+            const paid = node.querySelector(".usdt-pay-price");
+            const struck = node.querySelector("s");
+            const rows = [...node.querySelectorAll("tbody tr")];
+            const lastRow = rows[rows.length - 1].getBoundingClientRect();
+            const box = node.getBoundingClientRect();
+            return {
+              addressClipped: code.scrollWidth - code.clientWidth,
+              buttonHeight: Math.round(button.getBoundingClientRect().height),
+              paidFont: parseFloat(getComputedStyle(paid).fontSize),
+              struckFont: parseFloat(getComputedStyle(struck).fontSize),
+              strike: getComputedStyle(struck).textDecorationLine,
+              rows: rows.length,
+              lastRowInside: lastRow.bottom <= box.bottom + 1,
+            };
+          });
+          expect(detail.addressClipped, path + " at " + width + "px the address is clipped").toBeLessThanOrEqual(1);
+          expect(detail.buttonHeight, path + " at " + width + "px copy button height").toBeGreaterThanOrEqual(32);
+          expect(detail.paidFont, path + " at " + width + "px the founding amount leads").toBeGreaterThan(detail.struckFont);
+          expect(detail.strike, path + " at " + width + "px list price struck").toBe("line-through");
+          expect(detail.rows, path + " at " + width + "px one row per plan").toBe(2);
+          expect(detail.lastRowInside, path + " at " + width + "px the table stays inside the panel").toBe(true);
+        }
+        await block.evaluate((node) => node.setAttribute("data-founding-price", "off"));
+        expect(await page.locator("#pricing .usdt-pay s").first().isVisible(), path + ": struck price hidden").toBe(false);
+        expect(await page.locator("#pricing .usdt-pay .usdt-pay-founding").isVisible(), path + ": 50% sentence hidden").toBe(false);
+        expect(errors, path + ": page errors").toEqual([]);
       } finally {
         await page.close();
       }

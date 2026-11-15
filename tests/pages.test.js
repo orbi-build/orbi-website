@@ -2260,8 +2260,10 @@ describe("cloud buyer FAQ (Issue #166)", () => {
   it("keeps the same item count on EN and ZH, first two open", () => {
     const counts = CLOUD_FAQ_PAGES.map(({ output }) => {
       const items = cloudFaqItems(shipped.get(output));
-      expect(items.length, `${output}: need 5–7 buyer questions`).toBeGreaterThanOrEqual(5);
-      expect(items.length, `${output}: need 5–7 buyer questions`).toBeLessThanOrEqual(7);
+      // Issue #583 added the eighth buyer question (USDT annual payment), so
+      // the band moves with it: the page still has to stay a short list.
+      expect(items.length, `${output}: need 5–8 buyer questions`).toBeGreaterThanOrEqual(5);
+      expect(items.length, `${output}: need 5–8 buyer questions`).toBeLessThanOrEqual(8);
       expect(
         items.map((item) => item.open),
         `${output}: first two open, the rest collapsed (homepage pattern)`,
