@@ -1627,6 +1627,21 @@ describe("one unified footer on every content page", () => {
     }
   });
 
+  // Issue #1332: BetterLaunch features Orbi on its product page and hands out
+  // the badge for the site footer, so the shared badge track carries the embed
+  // once on each language's home page — with the file's own 196x72 box, which
+  // the footer rule then renders at its 28px mark without squashing it.
+  it("carries the BetterLaunch featured badge in the footer, on en and zh (Issue #1332)", () => {
+    const badge = '<a href="https://betterlaunch.app/p/orbi" target="_blank" rel="noopener noreferrer">'
+      + '<img src="https://betterlaunch.app/api/badges/orbi?kind=featured&amp;theme=light&amp;v=4" alt="Orbi" width="196" height="72" /></a>';
+    for (const output of ["index.html", "zh/index.html"]) {
+      const footer = footerRegion(shipped.get(output));
+      const occurrences = footer.split(badge).length - 1;
+      expect(occurrences, `${output}: the BetterLaunch badge must ship exactly once in the footer`)
+        .toBe(1);
+    }
+  });
+
   it("carries the 11 compare deep dives, in the right language tree", () => {
     for (const page of content()) {
       const footer = footerRegion(shipped.get(page.output));
