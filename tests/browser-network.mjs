@@ -232,6 +232,17 @@ export function guardBrowserRequests(context, origin) {
     blockedRequests.add(request);
   });
 
+  // Issue #1330: every page loads PostHog through Cloud's forwarder, so the
+  // browser asks the origin under test for /api/ph/static/array.js. Cloud owns
+  // /api/*, the local static server has no file there, and Chromium reports the
+  // 404 as a console error that a suite asserting a clean console would count
+  // as a page defect. Answer it with an empty script, the same way a
+  // third-party script is answered just below.
+  context.route(
+    (url) => isNetworkUrl(url) && url.origin === localOrigin && url.pathname.startsWith("/api/ph/"),
+    (route) => route.fulfill({ status: 200, contentType: "text/javascript; charset=utf-8", body: "" }),
+  );
+
   return context.route(
     (url) => isNetworkUrl(url) && url.origin !== localOrigin,
     (route) => {

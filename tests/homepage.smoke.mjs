@@ -38,8 +38,10 @@ const artifacts = ".orbi";
 // failed requests=["https://chat.sh/widget.js"]`). They are answered with an
 // empty 200 here, exactly as guardBrowserRequests answers them for the vitest
 // suites, so a third-party script can neither fail the page nor follow up with
-// requests of its own. Our own origin is never touched: /stats, /demo.js and
-// the rest still reach the server under test.
+// requests of its own. Our own origin is otherwise never touched: /stats,
+// /demo.js and the rest still reach the server under test — except /api/ph, the
+// one path the page asks our own origin for and no website build can answer
+// (Issue #1330, see below).
 async function newSmokePage(target, options) {
   const page = await target.newPage(options);
   // "Our own resource" is decided against the page's own origin, not against
@@ -55,6 +57,15 @@ async function newSmokePage(target, options) {
     (route) => {
       const request = route.request();
       const type = request.resourceType();
+      // Issue #1330: PostHog's snippet loads its SDK from /api/ph/static/array.js,
+      // Cloud's forwarder (scripts/build-pages.mjs). Cloud owns /api/*, so the
+      // static server under test answers 404 — expected, and harmless to the
+      // page, but Chromium logs it as a console error and the console gate below
+      // would read that as a page defect. Answer it with an empty script, like
+      // the third-party scripts above.
+      if (new URL(request.url()).pathname.startsWith("/api/ph/")) {
+        return route.fulfill({ status: 200, contentType: "text/javascript; charset=utf-8", body: "" });
+      }
       if (isOwnResource(request) || (type !== "image" && type !== "script")) return route.fallback();
       if (type === "image") {
         return route.fulfill({
