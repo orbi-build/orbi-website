@@ -203,6 +203,39 @@ describe("Issue #1342 login handoff", () => {
     }
   }
 
+  // ⌘/Ctrl/Shift/Alt opens the redirect in another tab or window and keeps this
+  // page: the page is not waiting for a jump it never makes, so the link must
+  // stay as it was. A pending state here would never be undone — there is no
+  // Back-from-GitHub pageshow on a page that never left.
+  it("home-en: a modified click opens the jump elsewhere and leaves this page usable", async () => {
+    const { page, logins, pageErrors } = await openPage(VIEWPORTS[1]);
+    const popups = [];
+    page.context().on("page", (popup) => popups.push(popup));
+    try {
+      await page.goto(`${baseUrl}/`, { waitUntil: "load", timeout: 25_000 });
+      const button = page.locator('[data-cta="cloud-start"]');
+      const original = (await button.textContent()).trim();
+
+      await button.click({ modifiers: ["ControlOrMeta"] });
+      await new Promise((resolve) => setTimeout(resolve, 400));
+
+      expect(page.url(), "a modified click must not navigate this page").toBe(`${baseUrl}/`);
+      expect((await button.textContent()).trim(), "this page is not waiting for the jump").toBe(original);
+      expect(await button.getAttribute("aria-disabled"), "the link stays clickable here").toBeNull();
+      expect(logins, "this page started no jump of its own").toHaveLength(0);
+
+      // The visitor's next plain click still starts the jump from here.
+      await button.click();
+      await waitFor(() => Promise.resolve(logins.length === 1), "the plain click must start the jump");
+      await waitFor(async () => (await button.textContent()).trim() === "Opening GitHub…",
+        "the plain click must show the pending label");
+      expect(pageErrors, "/: no script may throw").toEqual([]);
+    } finally {
+      for (const popup of popups) await popup.close().catch(() => {});
+      await page.close();
+    }
+  }, 60_000);
+
   for (const spec of CASES.filter((entry) => entry.name.startsWith("home"))) {
     for (const viewport of VIEWPORTS) {
       it(`${spec.name} at ${viewport.width}px shows the pending label in place`, async () => {

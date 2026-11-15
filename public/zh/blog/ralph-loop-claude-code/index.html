@@ -571,6 +571,7 @@ slugify(&quot;a€b&quot;)      -&gt; &#39;ab&#39;       （规格：&#39;a-b&#3
   const login=new RegExp("^(?:/zh)?/cloud/login/?$"), pending=new Map();
   const pendingLabel=/^zh/i.test(document.documentElement.lang)?"正在打开 GitHub…":"Opening GitHub…";
   addEventListener("click",event=>{
+    if(event.metaKey||event.ctrlKey||event.shiftKey||event.altKey)return;
     const link=event.target.closest?.("a[href]");
     if(!link||!login.test(link.pathname))return;
     if(pending.has(link)){event.preventDefault();return;}

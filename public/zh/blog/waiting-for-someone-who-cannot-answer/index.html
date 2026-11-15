@@ -582,6 +582,7 @@ orbi-cloud#870（通用配置下发，而不是第五个手写同步函数）、
   const login=new RegExp("^(?:/zh)?/cloud/login/?$"), pending=new Map();
   const pendingLabel=/^zh/i.test(document.documentElement.lang)?"正在打开 GitHub…":"Opening GitHub…";
   addEventListener("click",event=>{
+    if(event.metaKey||event.ctrlKey||event.shiftKey||event.altKey)return;
     const link=event.target.closest?.("a[href]");
     if(!link||!login.test(link.pathname))return;
     if(pending.has(link)){event.preventDefault();return;}

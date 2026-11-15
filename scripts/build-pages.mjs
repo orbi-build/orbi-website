@@ -118,13 +118,19 @@ const ENGAGEMENT_SCRIPT = `<script>(()=>{
 // page's pricing CTA is a child, so it is the click's target. Detaching it
 // inside this capture listener leaves the engagement script's own click
 // listener (injected just before this one) with a target whose parent chain is
-// gone, so its closest("[data-cta]") drops that click's cta_click beacon. The task boundary
-// keeps the document intact for the rest of this dispatch and still lands the
-// label before the next paint.
+// gone, so its closest("[data-cta]") drops that click's cta_click beacon. The
+// task boundary keeps the document intact for the rest of this dispatch and
+// still lands the label before the next paint.
+//
+// A ⌘/Ctrl/Shift/Alt click opens the redirect in another tab or window and
+// keeps this page, so it is left alone: the page is not waiting for a jump it
+// never starts, and the link stays clickable here instead of sitting dead
+// until the visitor reloads (there is no Back-from-GitHub pageshow to undo it).
 const LOGIN_HANDOFF_SCRIPT = `<script data-login-handoff>(()=>{
   const login=new RegExp("^(?:/zh)?/cloud/login/?$"), pending=new Map();
   const pendingLabel=/^zh/i.test(document.documentElement.lang)?"正在打开 GitHub…":"Opening GitHub…";
   addEventListener("click",event=>{
+    if(event.metaKey||event.ctrlKey||event.shiftKey||event.altKey)return;
     const link=event.target.closest?.("a[href]");
     if(!link||!login.test(link.pathname))return;
     if(pending.has(link)){event.preventDefault();return;}

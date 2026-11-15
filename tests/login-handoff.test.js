@@ -96,11 +96,12 @@ function loginHarness(source, lang = "en") {
 
   return {
     anchor,
-    click(target) {
+    click(target, modifiers = {}) {
       let prevented = false;
       let stopped = false;
       dispatch("click", {
         target,
+        ...modifiers,
         preventDefault() {
           prevented = true;
         },
@@ -184,6 +185,28 @@ describe("Issue #1342 login handoff script", () => {
     harness.flush();
     expect(link.getAttribute("aria-disabled")).toBe("true");
     expect(link.textContent).toBe("Opening GitHub…");
+  });
+
+  // ⌘/Ctrl/Shift/Alt opens the jump in another tab or window and keeps this
+  // page. Nothing here is waiting for a jump this page never makes, so the link
+  // must stay as it is — otherwise it sits dead until the visitor reloads,
+  // because no Back-from-GitHub pageshow ever restores it.
+  it("leaves a modified click alone, because it opens the jump in another tab", async () => {
+    const harness = loginHarness(scriptOf(await read("public/index.html")));
+    const link = harness.anchor("/cloud/login", "Try Orbi Cloud free →");
+
+    for (const modifier of ["metaKey", "ctrlKey", "shiftKey", "altKey"]) {
+      expect(harness.click(link, { [modifier]: true }).prevented, modifier).toBe(false);
+      harness.flush();
+      expect(link.textContent, modifier).toBe("Try Orbi Cloud free →");
+      expect(link.getAttribute("aria-disabled"), modifier).toBeNull();
+    }
+
+    // The plain click the same visitor makes next still starts the jump.
+    expect(harness.click(link).prevented).toBe(false);
+    harness.flush();
+    expect(link.textContent).toBe("Opening GitHub…");
+    expect(link.getAttribute("aria-disabled")).toBe("true");
   });
 
   it("leaves every other link alone", async () => {
