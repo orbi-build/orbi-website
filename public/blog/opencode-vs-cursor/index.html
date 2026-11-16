@@ -384,7 +384,7 @@ npm rebuild @opencode/cli
 <td>0</td>
 </tr>
 </tbody></table></div>
-<p>OpenCode ran without a key. Even supplying my DeepSeek key did not select DeepSeek unless I pinned it or disabled free models. The no-model cases each picked the same model across three repetitions. OpenCode&#39;s <a href="https://opencode.ai/docs/models/">model docs</a> describe the fallback as &quot;falls back to the newest available supported model&quot;. A configured default was insufficient when its key was missing.</p>
+<p>OpenCode ran without a key. Even supplying my DeepSeek key did not select DeepSeek unless I pinned it or disabled free models. I ran each row without <code class="post-code--single">-m</code> three times: the rows that picked a model picked the same one every time, and the row with free models disabled and no credentials gave the same error every time. OpenCode&#39;s <a href="https://opencode.ai/docs/models/">model docs</a> describe the fallback as &quot;falls back to the newest available supported model&quot;. A configured default was insufficient when its key was missing.</p>
 <p>Those free models have different data terms. The <a href="https://opencode.ai/docs/console/models/">model page</a> says Big Pickle&#39;s collected data may improve the model during its free period; Iceman Free&#39;s data is retained and used to improve it. A CI secret going missing can therefore send code to another model under different terms and still report success.</p>
 <p>I&#39;d disable free models and pin the model:</p>
 <div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="Copied">Copy</button><pre><code class="language-bash" data-copy-source>export OPENCODE_DISABLE_FREE_MODELS=1

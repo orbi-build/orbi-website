@@ -384,7 +384,7 @@ npm rebuild @opencode/cli
 <td>0</td>
 </tr>
 </tbody></table></div>
-<p>OpenCode 没有密钥也能运行。即使提供了我的 DeepSeek 密钥，仍要固定模型或禁用免费模型，它才会选 DeepSeek。不指定模型的几种情况各重复了三次，每种情况选出的模型都没变。OpenCode 的<a href="https://opencode.ai/docs/models/">模型文档</a>把回退行为写为 “falls back to the newest available supported model”。只在配置里写默认模型还不够，缺少它的密钥时仍会回退。</p>
+<p>OpenCode 没有密钥也能运行。即使提供了我的 DeepSeek 密钥，仍要固定模型或禁用免费模型，它才会选 DeepSeek。不带 <code class="post-code--single">-m</code> 的每一行我都跑了三次：选出了模型的那几行，三次选的都是同一个模型；禁用免费模型且没有凭据的那一行，三次都报同一个错。OpenCode 的<a href="https://opencode.ai/docs/models/">模型文档</a>把回退行为写为 “falls back to the newest available supported model”。只在配置里写默认模型还不够，缺少它的密钥时仍会回退。</p>
 <p>这些免费模型的数据条款不同。<a href="https://opencode.ai/docs/console/models/">模型页</a>写着，Big Pickle 在免费期间收集的数据可能用于改进模型；Iceman Free 的数据会保留并用于改进模型。CI 中的 secret 一旦缺失，代码就可能发给适用另一套数据条款的模型，运行仍然报成功。</p>
 <p>我会禁用免费模型，并固定模型：</p>
 <div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="已复制">复制</button><pre><code class="language-bash" data-copy-source>export OPENCODE_DISABLE_FREE_MODELS=1

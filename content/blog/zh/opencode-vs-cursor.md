@@ -89,7 +89,7 @@ opencode run --standalone "Reply with exactly: hi"
 | 禁用免费模型，没有凭据 | 不加额外参数 | `Error: No model is available for session …` | 1 |
 | 禁用免费模型，有密钥，不指定模型 | 不加额外参数 | `> build · deepseek-flash`; `hi` | 0 |
 
-OpenCode 没有密钥也能运行。即使提供了我的 DeepSeek 密钥，仍要固定模型或禁用免费模型，它才会选 DeepSeek。不指定模型的几种情况各重复了三次，每种情况选出的模型都没变。OpenCode 的[模型文档](https://opencode.ai/docs/models/)把回退行为写为 “falls back to the newest available supported model”。只在配置里写默认模型还不够，缺少它的密钥时仍会回退。
+OpenCode 没有密钥也能运行。即使提供了我的 DeepSeek 密钥，仍要固定模型或禁用免费模型，它才会选 DeepSeek。不带 `-m` 的每一行我都跑了三次：选出了模型的那几行，三次选的都是同一个模型；禁用免费模型且没有凭据的那一行，三次都报同一个错。OpenCode 的[模型文档](https://opencode.ai/docs/models/)把回退行为写为 “falls back to the newest available supported model”。只在配置里写默认模型还不够，缺少它的密钥时仍会回退。
 
 这些免费模型的数据条款不同。[模型页](https://opencode.ai/docs/console/models/)写着，Big Pickle 在免费期间收集的数据可能用于改进模型；Iceman Free 的数据会保留并用于改进模型。CI 中的 secret 一旦缺失，代码就可能发给适用另一套数据条款的模型，运行仍然报成功。
 

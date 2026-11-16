@@ -89,7 +89,7 @@ opencode run --standalone "Reply with exactly: hi"
 | Free models disabled, no credentials | No extra flags | `Error: No model is available for session …` | 1 |
 | Free models disabled, key, no model | No extra flags | `> build · deepseek-flash`; `hi` | 0 |
 
-OpenCode ran without a key. Even supplying my DeepSeek key did not select DeepSeek unless I pinned it or disabled free models. The no-model cases each picked the same model across three repetitions. OpenCode's [model docs](https://opencode.ai/docs/models/) describe the fallback as "falls back to the newest available supported model". A configured default was insufficient when its key was missing.
+OpenCode ran without a key. Even supplying my DeepSeek key did not select DeepSeek unless I pinned it or disabled free models. I ran each row without `-m` three times: the rows that picked a model picked the same one every time, and the row with free models disabled and no credentials gave the same error every time. OpenCode's [model docs](https://opencode.ai/docs/models/) describe the fallback as "falls back to the newest available supported model". A configured default was insufficient when its key was missing.
 
 Those free models have different data terms. The [model page](https://opencode.ai/docs/console/models/) says Big Pickle's collected data may improve the model during its free period; Iceman Free's data is retained and used to improve it. A CI secret going missing can therefore send code to another model under different terms and still report success.
 
