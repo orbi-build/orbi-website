@@ -8,9 +8,9 @@ image: /img/blog-opencode-vs-cursor-card.png
 mirror: opencode-vs-cursor
 ---
 
-OpenCode vs Cursor is a choice between [OpenCode, an MIT-licensed, open-source terminal coding agent from anomalyco](https://github.com/anomalyco/opencode) that uses [whichever model provider you connect](https://opencode.ai/docs/providers/), and [Cursor, a subscription product](https://cursor.com/help/account-and-billing/pricing) with an AI editor, [cloud agents](https://cursor.com/docs/cloud-agent) and a [terminal CLI called `agent`](https://cursor.com/docs/cli/overview). For developers and team leads choosing unattended runs in scripts, cron or CI, credentials are the first difference: OpenCode ran on a free model without a key; Cursor stopped. I have no Cursor account on the test machine and did not create or pay for one, so I made no logged-in Cursor run; authenticated behaviour below comes from Cursor's docs. I compare both vendors' pages on 16 November 2026, give missing-key and wrong-key output and exit codes, four OpenCode tasks' costs and passes with a free model and my DeepSeek key, prices, and public GitHub App PR counts with their limits.
+OpenCode vs Cursor is a choice between an open-source terminal agent and a subscription product. [OpenCode is an MIT-licensed terminal coding agent from anomalyco](https://github.com/anomalyco/opencode) that uses [whichever model provider you connect](https://opencode.ai/docs/providers/). [Cursor is a subscription product](https://cursor.com/help/account-and-billing/pricing) with an AI editor, [cloud agents](https://cursor.com/docs/cloud-agent) and a [terminal CLI called `agent`](https://cursor.com/docs/cli/overview). This post is for developers and team leads who want to run either one unattended in scripts, cron or CI. Below are each CLI's output and exit codes when the key is missing or wrong, OpenCode's results on four small tasks, both price lists as of 16 November 2026, and counts of the pull requests (PRs) the two GitHub Apps opened in public repositories. Credentials are the first difference: OpenCode ran on a free model without a key; Cursor stopped. I have no Cursor account on the test machine and did not create or pay for one, so I made no logged-in Cursor run; authenticated behaviour below comes from Cursor's docs.
 
-I'm Larry 🍀 Orbi, the creator of Orbi. Orbi takes GitHub Issues through implementation, separate review and merge using Pi, another open-source terminal agent; it overlaps with Cursor's cloud-agent half, so read the last section with that in mind.
+I'm Larry 🍀 Orbi, the creator of Orbi. Orbi takes GitHub Issues through implementation, separate review and merge using Pi, another open-source terminal agent; it overlaps with Cursor's cloud-agent half, so read the section on where Orbi fits with that in mind.
 
 ## OpenCode vs Cursor at a glance
 
@@ -28,7 +28,7 @@ Cursor's docs say it has the capabilities in its column; I did not test them sig
 | Cheapest way to run it | [$0 free models](https://opencode.ai/docs/console/models/) or [own key, provider bill](https://opencode.ai/docs/providers/); [Go $10/month optional](https://opencode.ai/docs/console/go/) | [Free $0 limited; Plus $8/month; cloud agents and third-party models from Premium $30/month](https://cursor.com/help/account-and-billing/pricing) |
 | GitHub entry point | [`/opencode` or `/oc`, your Actions runner; V1 docs only](https://opencode.ai/v1/docs/github/) | [`@cursor` on a PR or issue starts a cloud agent](https://cursor.com/docs/cloud-agent) |
 
-With OpenCode you bring the model and machine. With Cursor you buy the plan, including the machine for cloud agents. Free/Plus prices describe plans; their CLI access is unverified.
+With OpenCode you bring the model and machine. With Cursor you buy the plan, including the machine for cloud agents. I could not verify whether the Free or Plus plan includes CLI access.
 
 ## OpenCode vs Cursor CLI: running headless
 
@@ -80,7 +80,7 @@ opencode run --standalone "Reply with exactly: hi"
 
 Cursor's run failed closed. `agent status` returned 0 without login and with a wrong key, making it useless as a CI authentication precheck. `agent models` returned 1 without credentials; I could not test it with valid credentials.
 
-OpenCode ran without a key. Even supplying my DeepSeek key did not select DeepSeek unless I pinned it or disabled free models. The no-model cases each picked the same model across three repetitions. OpenCode's [model docs](https://opencode.ai/docs/models/) describe the fallback as “falls back to the newest available supported model”. A configured default was insufficient when its key was missing.
+OpenCode ran without a key. Even supplying my DeepSeek key did not select DeepSeek unless I pinned it or disabled free models. The no-model cases each picked the same model across three repetitions. OpenCode's [model docs](https://opencode.ai/docs/models/) describe the fallback as "falls back to the newest available supported model". A configured default was insufficient when its key was missing.
 
 Those free models have different data terms. The [model page](https://opencode.ai/docs/console/models/) says Big Pickle's collected data may improve the model during its free period; Iceman Free's data is retained and used to improve it. A CI secret going missing can therefore send code to another model under different terms and still report success.
 
@@ -95,7 +95,7 @@ opencode run --standalone -m deepseek/deepseek-flash "your prompt"
 
 ### What a headless run may do without asking
 
-With no config file and no `--auto` (the probes pinned `-m deepseek/deepseek-flash`), OpenCode created a project file, ran a shell command writing outside the project, and ran `curl` against `https://example.com`, returning HTTP 200. All three exited 0 and nothing was asked or rejected. That matches the [permission defaults](https://opencode.ai/docs/permissions/#defaults): every agent starts from a base rule of `{ "action": "*", "resource": "*", "effect": "allow" }`, with `ask` only for reading `.env` files, and the docs add that reads and edits outside the project “proceed without a prompt”. So the default policy allowed all three probes; the `.env` read rule and the rules built into each agent still apply. To restrict anything else, you add rules.
+With no config file and no `--auto` (the probes pinned `-m deepseek/deepseek-flash`), OpenCode created a project file, ran a shell command writing outside the project, and ran `curl` against `https://example.com`, returning HTTP 200. All three exited 0 and nothing was asked or rejected. That matches the [permission defaults](https://opencode.ai/docs/permissions/#defaults): every agent starts from a base rule of `{ "action": "*", "resource": "*", "effect": "allow" }`, with `ask` only for reading `.env` files, and the docs add that reads and edits outside the project "proceed without a prompt". So the default policy allowed all three probes; the `.env` read rule and the rules built into each agent still apply. To restrict anything else, you add rules.
 
 To restrict shell commands, I put this rule in `~/.config/opencode/opencode.jsonc`:
 
@@ -107,15 +107,15 @@ To restrict shell commands, I put this rule in `~/.config/opencode/opencode.json
 }
 ```
 
-The outside-write probe then reported: `This non-interactive run cannot ask the user for permission, so the request was rejected. Continue without this action.` The file was absent, yet exit was 0. Adding `--auto` let it through. Changing `"effect"` to `"deny"` blocked the shell command with or without `--auto`, matching the [flag's explicit-deny exception](https://opencode.ai/docs/permissions/).
+The outside-write probe then reported: `This non-interactive run cannot ask the user for permission, so the request was rejected. Continue without this action.` The file was not written, yet the exit code was still 0. Adding `--auto` let it through. Changing `"effect"` to `"deny"` blocked the shell command with or without `--auto`, matching the [flag's explicit-deny exception](https://opencode.ai/docs/permissions/).
 
-On task 1 with the ask rule, OpenCode edited the file, but its `python3 -m unittest` calls were rejected. The tests passed when I ran them afterwards.
+On the first coding task from the next section (fix a bug in one file), with the ask rule in place, OpenCode edited the file, but its `python3 -m unittest` calls were rejected. The tests passed when I ran them afterwards.
 
 Cursor's authenticated behaviour here is untested. [Cursor's docs say](https://cursor.com/docs/cli/headless) print mode edits workspace files without `--force`; outside writes and unapproved MCP tools or web fetches are rejected, as are shell commands neither allowlisted nor runnable in an enabled sandbox. The docs say `--force`/`--yolo` allows everything except [`permissions.deny`](https://cursor.com/docs/cli/reference/permissions) and team-policy blocks. [Team admins can disable headless mode](https://cursor.com/docs/cli/headless), enforced by the client.
 
 In either tool, exit 0 does not establish that every step ran; have your script check tests and the diff.
 
-## Free model vs my own key: four small tasks on OpenCode
+## Four small tasks on OpenCode with a free model and my own key
 
 I reused the four tiny Python repositories from [OpenCode vs Codex](/blog/opencode-vs-codex/): fix a bug in one file, implement a function, find a bug across files, and fix several bugs with extra hidden checks. Each ran three times per model in a fresh clone and clean home. A pass means the repository tests passed afterwards, test files were unchanged, and task 4's hidden checks passed.
 
@@ -134,17 +134,17 @@ I pinned both models: `deepseek/deepseek-flash` with my key, and `opencode/big-p
 
 DeepSeek: 12 runs, 12 passes, $0.01686 total reported cost, 7.1s median wall time. Big Pickle: 12 runs, 12 passes, $0.00000 total reported cost, 20.1s median wall time.
 
-These tasks are too small to separate models or tools. Cost is OpenCode's event-stream `cost` field summed across steps, not my DeepSeek invoice. Free means free of charge with the data terms above; [Big Pickle is free “for a limited time”](https://opencode.ai/docs/console/models/). I broke task 4's second DeepSeek repetition by editing the runner while it was running, then reran it; the table uses the replacement. I could not run these tasks on Cursor CLI because I had no account.
+These tasks are too small to separate models or tools. Cost is OpenCode's event-stream `cost` field summed across steps, not my DeepSeek invoice. Free means free of charge with the data terms above; [Big Pickle is free "for a limited time"](https://opencode.ai/docs/console/models/). I broke task 4's second DeepSeek repetition by editing the runner while it was running, then reran it; the table uses the replacement. I did not run these tasks on Cursor CLI because I had no account.
 
 ## OpenCode vs Cursor pricing
 
-Monthly prices on 16 November 2026. [Cursor is part of The X Subscription; legacy Pro/Pro+ plans are closed to new customers](https://cursor.com/help/account-and-billing/pricing).
+Monthly prices on 16 November 2026. [Cursor is now sold as part of The X Subscription, one subscription for Grok, Cursor and X; the legacy Pro and Pro+ plans are closed to new customers](https://cursor.com/help/account-and-billing/pricing).
 
 | Cursor plan | Monthly price | Access |
 |---|---|---|
 | [Free](https://cursor.com/help/account-and-billing/pricing) | $0 | Limited; Cursor models only |
 | [Plus](https://cursor.com/help/account-and-billing/pricing) | $8 | Cursor models (Grok, Composer) at fixed settings; no cloud agents, Bugbot, Origin or third-party models |
-| [Premium](https://cursor.com/help/account-and-billing/pricing) | $30 | Adds those; third-party models separately at API list price from prepaid credit |
+| [Premium](https://cursor.com/help/account-and-billing/pricing) | $30 | Adds cloud agents, Bugbot, Origin and third-party models; third-party usage is billed separately at API list price from prepaid credit |
 | [Super](https://cursor.com/help/account-and-billing/pricing) | $100 | Higher usage |
 | [Ultra](https://cursor.com/help/account-and-billing/pricing) | $200 | Higher usage |
 | [Teams](https://cursor.com/help/account-and-billing/pricing) | $30/$100/$200 per seat | Seat-tier usage |
@@ -174,11 +174,11 @@ I counted public PRs created 2 to 8 November 2026 UTC on 16 November 2026. These
 | `opencode-agent[bot]` | 167 | 119 | 24 | 24 | 3 | 32 |
 | `cursor[bot]` | 4,758 | 928 | 440 | 3,390 | 3,601 | 750 |
 
-The populations differ in scale: 167 PRs across 32 repositories against 4,758 across 750. OpenCode's publisher also matters: in October, 2,709 of its App's 3,435 PRs were in anomalyco, including 2,357 in `anomalyco/models.dev`. Outside anomalyco, October had 726 opened and 530 merged. In the November week, anomalyco accounted for 37 of 167.
+The populations differ in scale: 167 PRs across 32 repositories against 4,758 across 750. Who owns the repositories also matters. In October, 2,709 of the App's 3,435 PRs were in anomalyco, the organisation that publishes OpenCode, including 2,357 in `anomalyco/models.dev`. Outside anomalyco, October had 726 opened and 530 merged. In the November week, anomalyco accounted for 37 of 167.
 
 Draft now overlaps the state columns: Cursor's 3,601 flagged records include 363 closed unmerged and 36 merged PRs. I did not establish why merged records retained the flag, or the default at creation. Of all 4,758, 19.5% were merged; among the 1,157 not flagged draft, 892 (77.1%) were. [Devin vs Cursor](/blog/devin-vs-cursor/) found the same gap for October: 19.2% of all `cursor[bot]` PRs merged, 73.0% of those not flagged draft. The creation windows and observation dates differ, giving unequal follow-up periods.
 
-I also read `merged_by`: all 119 merged OpenCode App PRs had 87 user-account merges and 32 bot merges, including 28 by `github-actions[bot]` and 4 by `opencode-agent[bot]`. Among 150 randomly sampled merged Cursor PRs, 101 were merged by users and 49 by bots, including 43 by `cursor[bot]`. The field does not say who requested the merge.
+I also read `merged_by`. Of the 119 merged OpenCode App PRs, user accounts merged 87 and bots merged 32, including 28 by `github-actions[bot]` and 4 by `opencode-agent[bot]`. Among 150 randomly sampled merged Cursor PRs, 101 were merged by users and 49 by bots, including 43 by `cursor[bot]`. The field does not say who requested the merge.
 
 I take this as evidence of public usage: a small set of repositories wiring OpenCode into Actions, and a larger set with mostly draft Cursor PRs. It cannot tell me which agent's code gets accepted more often. Private repositories and other PR authors are absent.
 
@@ -192,7 +192,7 @@ gh api -X GET search/issues \
 
 Replace `OWNER/REPO`, the App slug (`cursor` or `opencode-agent`) and dates; drop `is:merged` for the total. It needs GitHub CLI logged in. My tests returned 17 merged PRs in a repository with matches; no matches printed 0 and exited 0. A nonexistent repository or App produced `gh: Validation Failed (HTTP 422)` and exit 1. The search API allows 30 requests a minute. The [fuller script](/blog/devin-vs-cursor/#count-it-yourself) counts the other states too.
 
-## Which one I'd pick, and what I'd check first
+## Which one to choose, and what I'd check first
 
 - Choose Cursor for an [editor with completions and a subscription bill](https://cursor.com/help/account-and-billing/pricing). I have not compared the editors hands-on.
 - Choose OpenCode to pick your own [provider](https://opencode.ai/docs/providers/), run on your own [machine or CI runner](https://opencode.ai/v1/docs/github/), or [read the source](https://github.com/anomalyco/opencode).

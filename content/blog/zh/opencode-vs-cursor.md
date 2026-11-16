@@ -8,13 +8,13 @@ image: /img/blog-opencode-vs-cursor-card.png
 mirror: opencode-vs-cursor
 ---
 
-OpenCode vs Cursor 比的是两款编程工具：[OpenCode 是 anomalyco 开源的终端编程 agent，采用 MIT 许可](https://github.com/anomalyco/opencode)，[模型由你自己接](https://opencode.ai/docs/providers/)；[Cursor 是订阅制产品](https://cursor.com/help/account-and-billing/pricing)，有 AI 编辑器、[云端 agent](https://cursor.com/docs/cloud-agent) 和[叫 `agent` 的命令行](https://cursor.com/docs/cli/overview)。这篇写给要把任务放进脚本、cron 或 CI 无人值守执行的开发者和团队负责人，关注的是无头运行（不开交互界面，直接在脚本里跑）。我按 2026 年 11 月 16 日两家的页面做 OpenCode 和 Cursor 对比，列出密钥缺失或错误时的输出和退出码、OpenCode 用免费模型和我的 DeepSeek 密钥跑四个任务的费用与通过情况、价格，以及两家 GitHub App 在公开仓库开出的 PR（pull request，合并请求）数量和统计限制。凭据是先遇到的区别：OpenCode 没有密钥也用免费模型跑了，Cursor 则停了下来。测试机器上没有 Cursor 账号，我没有注册，也没有付费，所以没有做登录后的 Cursor 运行；下文登录后的行为都引自 Cursor 文档。
+OpenCode vs Cursor 这个选择，一边是开源的终端编程 agent，一边是订阅制产品。[OpenCode 由 anomalyco 开源，采用 MIT 许可](https://github.com/anomalyco/opencode)，[模型由你自己接](https://opencode.ai/docs/providers/)；[Cursor 是订阅制产品](https://cursor.com/help/account-and-billing/pricing)，有 AI 编辑器、[云端 agent](https://cursor.com/docs/cloud-agent) 和[叫 `agent` 的命令行](https://cursor.com/docs/cli/overview)。这篇写给要把任务放进脚本、cron 或 CI 无人值守执行的开发者和团队负责人，关注的是无头运行（不开交互界面，直接在脚本里跑）。下面有两个命令行在密钥缺失或写错时的输出和退出码，有 OpenCode 跑四个小任务的结果，有两家截至 2026 年 11 月 16 日的价格，还有两家 GitHub App 在公开仓库开出的 PR（pull request，合并请求）数量。凭据是先遇到的区别：OpenCode 没有密钥也用免费模型跑了，Cursor 则停了下来。测试机器上没有 Cursor 账号，我没有注册，也没有付费，所以没有做登录后的 Cursor 运行；下文登录后的行为都引自 Cursor 文档。
 
-我是 Larry 🍀 Orbi，Orbi 的创始人。Orbi 用另一个开源终端 agent Pi，把 GitHub Issue 推进到实现、独立评审和合并。它与 Cursor 的云端 agent 部分存在竞争关系，读最后一节时，请把这层关系算进去。
+我是 Larry 🍀 Orbi，Orbi 的创始人。Orbi 用另一个开源终端 agent Pi，把 GitHub Issue 推进到实现、独立评审和合并。它与 Cursor 的云端 agent 部分存在竞争关系，读「Orbi 能接哪部分工作」一节时，请把这层关系算进去。
 
-## OpenCode vs Cursor：OpenCode 和 Cursor 的区别一览
+## OpenCode 和 Cursor 的区别一览
 
-Cursor 一栏的能力来自它的文档，我没有登录实测。Free/Plus 的价格说的是套餐，我没有验证这两档能否使用 CLI。
+这张 OpenCode 和 Cursor 对比表里，Cursor 一栏的能力来自它的文档，我没有登录实测。Free/Plus 的价格说的是套餐，我没有验证这两档能否使用 CLI。
 
 | | OpenCode | Cursor |
 |---|---|---|
@@ -109,13 +109,13 @@ opencode run --standalone -m deepseek/deepseek-flash "your prompt"
 
 项目外写入的探测随后报告：`This non-interactive run cannot ask the user for permission, so the request was rejected. Continue without this action.` 文件没有生成，退出码却是 0。加 `--auto` 后就放行了。把 `"effect"` 改为 `"deny"`，加不加 `--auto` 都会拦住 shell 命令，符合[这个参数保留显式 deny 规则的说明](https://opencode.ai/docs/permissions/)。
 
-用 ask 规则跑后文的任务 1 时，OpenCode 改了文件，但它调用 `python3 -m unittest` 时被拒绝了。我事后自己跑测试，通过了。
+用 ask 规则跑下一节的第一个编程任务（修复单文件 bug）时，OpenCode 改了文件，但它调用 `python3 -m unittest` 时被拒绝了。我事后自己跑测试，通过了。
 
 Cursor 登录后的这些行为，我没有实测。[Cursor 文档说](https://cursor.com/docs/cli/headless)，print mode 不加 `--force` 也能编辑工作区文件；项目外写入、未经批准的 MCP 工具和网页抓取会被拒绝。shell 命令如果既不在允许列表里，也不能在已启用的沙箱里运行，同样会被拒绝。文档说，`--force`/`--yolo` 会放行所有操作，但 [`permissions.deny`](https://cursor.com/docs/cli/reference/permissions) 和团队策略拦截的操作除外。[团队管理员可以禁用无头模式](https://cursor.com/docs/cli/headless)，由客户端执行这项限制。
 
 用哪款工具，都别把退出码 0 当成每一步都执行过的证明；脚本还得检查测试和 diff。
 
-## 免费模型与自备密钥：OpenCode 的四个小任务
+## 用免费模型和自备密钥在 OpenCode 上跑四个小任务
 
 我沿用了 [OpenCode vs Codex](/zh/blog/opencode-vs-codex/) 的四个小型 Python 仓库：修复单文件 bug、实现一个函数、跨文件找 bug，以及修复多个 bug 并接受额外的隐藏检查。每个模型在每个任务上各跑三次，每次都重新克隆仓库，用干净的 HOME。通过的条件是事后仓库测试通过、测试文件没改，任务 4 还得通过隐藏检查。
 
@@ -134,17 +134,17 @@ Cursor 登录后的这些行为，我没有实测。[Cursor 文档说](https://c
 
 DeepSeek 跑了 12 次，12 次通过，报告的总费用是 $0.01686，耗时中位数 7.1s。Big Pickle 跑了 12 次，12 次通过，报告的总费用是 $0.00000，耗时中位数 20.1s。
 
-这些任务太小，还不足以区分模型或工具的能力。费用是把 OpenCode 事件流中各步的 `cost` 字段相加，并非我的 DeepSeek 账单。免费指不收钱，仍适用上文的数据条款；[Big Pickle 的免费期是 “for a limited time”](https://opencode.ai/docs/console/models/)。任务 4 用 DeepSeek 跑第二次时，我在运行中改了 runner，把那次运行弄坏了，随后重跑了一次，表里用的是重跑结果。我没有账号，没能用 Cursor CLI 跑这些任务。
+这些任务太小，还不足以区分模型或工具的能力。费用是把 OpenCode 事件流中各步的 `cost` 字段相加，并非我的 DeepSeek 账单。免费指不收钱，仍适用上文的数据条款；[Big Pickle 的免费期是 “for a limited time”](https://opencode.ai/docs/console/models/)。任务 4 用 DeepSeek 跑第二次时，我在运行中改了 runner，把那次运行弄坏了，随后重跑了一次，表里用的是重跑结果。我没有 Cursor 账号，所以没有用 Cursor CLI 跑这些任务。
 
 ## OpenCode 和 Cursor 的价格
 
-下面是 2026 年 11 月 16 日的月付价格。[Cursor 属于 The X Subscription，旧 Pro/Pro+ 套餐已不接受新客户](https://cursor.com/help/account-and-billing/pricing)。
+下面是 2026 年 11 月 16 日的月付价格。[Cursor 现在并入 The X Subscription（一份订阅同时包含 Grok、Cursor 和 X），旧的 Pro、Pro+ 套餐已不接受新客户](https://cursor.com/help/account-and-billing/pricing)。
 
 | Cursor 套餐 | 月费 | 使用权限 |
 |---|---|---|
 | [Free](https://cursor.com/help/account-and-billing/pricing) | $0 | 用量有限；仅限 Cursor 模型 |
-| [Plus](https://cursor.com/help/account-and-billing/pricing) | $8 | 固定设置下的 Cursor 模型（Grok、Composer）；不含云端 agent、Bugbot、Origin 或第三方模型 |
-| [Premium](https://cursor.com/help/account-and-billing/pricing) | $30 | 增加上述功能；第三方模型按 API 标价从预付额度中另扣 |
+| [Plus](https://cursor.com/help/account-and-billing/pricing) | $8 | Cursor 自家模型（Grok、Composer），运行设置固定；不含云端 agent、Bugbot、Origin 和第三方模型 |
+| [Premium](https://cursor.com/help/account-and-billing/pricing) | $30 | 含云端 agent、Bugbot、Origin 和第三方模型；第三方模型按 API 标价从预付额度中另扣 |
 | [Super](https://cursor.com/help/account-and-billing/pricing) | $100 | 更高用量 |
 | [Ultra](https://cursor.com/help/account-and-billing/pricing) | $200 | 更高用量 |
 | [Teams](https://cursor.com/help/account-and-billing/pricing) | 每席位 $30/$100/$200 | 用量随席位档位变化 |
@@ -163,7 +163,7 @@ DeepSeek 跑了 12 次，12 次通过，报告的总费用是 $0.01686，耗时�
 
 我会分别看 Cursor 的席位价格和 OpenCode 的模型账单。哪边花费少，取决于 token 用量。我没有 Cursor 用量数据，不判断哪款产品更便宜。
 
-## Cursor vs OpenCode：两家 GitHub App 开出的 PR
+## 两家 GitHub App 在公开仓库开出的 PR
 
 OpenCode 的 [V1 GitHub 集成](https://opencode.ai/v1/docs/github/)在收到 `/opencode` 或 `/oc` 后，用你的模型密钥在你的 Actions runner 上运行。它的 App 开出的 PR，作者是 `opencode-agent[bot]`。文档里的 `use_github_token: true` 模式不需要安装 App，所以这些 PR 没计入 App 数量；在终端里做完工作后由你自己开的 PR 也没计入。V2 文档索引没有 GitHub 页面，CLI `2.3.0` 也没有 `github` 子命令。我没有在 V2 上测试这项集成。Cursor 的[云端 agent](https://cursor.com/docs/cloud-agent)开出的 PR，在这次观察中作者是 `cursor[bot]`。
 
@@ -174,7 +174,7 @@ OpenCode 的 [V1 GitHub 集成](https://opencode.ai/v1/docs/github/)在收到 `/
 | `opencode-agent[bot]` | 167 | 119 | 24 | 24 | 3 | 32 |
 | `cursor[bot]` | 4,758 | 928 | 440 | 3,390 | 3,601 | 750 |
 
-两组的规模不同：一组是 32 个仓库中的 167 个 PR，另一组是 750 个仓库中的 4,758 个。OpenCode 的发布方也要算进去：10 月，它的 App 开出的 3,435 个 PR 中，2,709 个在 anomalyco，其中 2,357 个在 `anomalyco/models.dev`。排除 anomalyco，10 月开出 726 个，已合并 530 个。11 月这一周的 167 个中，anomalyco 占了 37 个。
+两组的规模不同：一组是 32 个仓库中的 167 个 PR，另一组是 750 个仓库中的 4,758 个。仓库归谁也要算进去：10 月，这个 App 开出的 3,435 个 PR 中，2,709 个在发布 OpenCode 的 anomalyco 组织里，其中 2,357 个在 `anomalyco/models.dev`。排除 anomalyco，10 月开出 726 个，已合并 530 个。11 月这一周的 167 个中，anomalyco 占了 37 个。
 
 「当前标为草稿」与状态列有重叠：Cursor 的 3,601 条带草稿标记的记录中，363 个关闭未合并，36 个已合并。我没有查明已合并记录为什么仍带标记，也没有查明创建时的默认状态。全部 4,758 个中，19.5% 已合并；没有草稿标记的 1,157 个中，892 个（77.1%）已合并。这些数字说明不了哪个 agent 的代码更常被接受。[Devin vs Cursor](/zh/blog/devin-vs-cursor/) 在 10 月数据中也看到了同样的差距：全部 `cursor[bot]` PR 中，19.2% 已合并；没有草稿标记的那部分，73.0% 已合并。创建窗口和观察日期不同，留给这些 PR 的后续处理时间也不同。
 
@@ -192,7 +192,7 @@ gh api -X GET search/issues \
 
 把 `OWNER/REPO`、App slug（`cursor` 或 `opencode-agent`）和日期换掉；去掉 `is:merged` 就查总数。需要先登录 GitHub CLI。我的测试在有匹配结果的仓库返回了 17 个已合并 PR；没有匹配结果时打印 0，退出码 0。仓库或 App 不存在时，报 `gh: Validation Failed (HTTP 422)`，退出码 1。搜索 API 每分钟允许 30 次请求。[更完整的脚本](/zh/blog/devin-vs-cursor/#自己统计一遍)还会统计其他状态。
 
-## OpenCode 和 Cursor 哪个好用：我怎么选、先查什么
+## OpenCode 和 Cursor 哪个好用，我按这几条选
 
 - 要带补全功能、按订阅付费的[编辑器](https://cursor.com/help/account-and-billing/pricing)，选 Cursor。我没有上手比较过编辑器。
 - 要自己选 [provider](https://opencode.ai/docs/providers/)、在自己的[机器或 CI runner](https://opencode.ai/v1/docs/github/) 上跑，或者[读源码](https://github.com/anomalyco/opencode)，选 OpenCode。

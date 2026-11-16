@@ -164,17 +164,17 @@
         <nav class="post-toc" aria-label="本页目录">
           <h2>本页目录</h2>
           <ol>
-          <li><a class="post-toc-link" href="#opencode-vs-cursor-opencode-和-cursor-的区别一览">OpenCode vs Cursor：OpenCode 和 Cursor 的区别一览</a></li>
+          <li><a class="post-toc-link" href="#opencode-和-cursor-的区别一览">OpenCode 和 Cursor 的区别一览</a></li>
           <li><a class="post-toc-link" href="#opencode-vs-cursor-cli-无头运行">OpenCode vs Cursor CLI：无头运行</a>
             <ol>
               <li><a class="post-toc-link" href="#安装和运行命令">安装和运行命令</a></li>
               <li><a class="post-toc-link" href="#凭据缺失或错误时会发生什么">凭据缺失或错误时会发生什么</a></li>
               <li><a class="post-toc-link" href="#无头运行不询问就能做什么">无头运行不询问就能做什么</a></li>
             </ol></li>
-          <li><a class="post-toc-link" href="#免费模型与自备密钥-opencode-的四个小任务">免费模型与自备密钥：OpenCode 的四个小任务</a></li>
+          <li><a class="post-toc-link" href="#用免费模型和自备密钥在-opencode-上跑四个小任务">用免费模型和自备密钥在 OpenCode 上跑四个小任务</a></li>
           <li><a class="post-toc-link" href="#opencode-和-cursor-的价格">OpenCode 和 Cursor 的价格</a></li>
-          <li><a class="post-toc-link" href="#cursor-vs-opencode-两家-github-app-开出的-pr">Cursor vs OpenCode：两家 GitHub App 开出的 PR</a></li>
-          <li><a class="post-toc-link" href="#opencode-和-cursor-哪个好用-我怎么选-先查什么">OpenCode 和 Cursor 哪个好用：我怎么选、先查什么</a></li>
+          <li><a class="post-toc-link" href="#两家-github-app-在公开仓库开出的-pr">两家 GitHub App 在公开仓库开出的 PR</a></li>
+          <li><a class="post-toc-link" href="#opencode-和-cursor-哪个好用-我按这几条选">OpenCode 和 Cursor 哪个好用，我按这几条选</a></li>
           <li><a class="post-toc-link" href="#orbi-能接哪部分工作">Orbi 能接哪部分工作</a></li>
           <li><a class="post-toc-link" href="#相关">相关</a></li>
           </ol>
@@ -183,25 +183,25 @@
         <details class="post-toc-inline">
           <summary>本页目录 · 8 节</summary>
           <ol>
-          <li><a class="post-toc-link" href="#opencode-vs-cursor-opencode-和-cursor-的区别一览">OpenCode vs Cursor：OpenCode 和 Cursor 的区别一览</a></li>
+          <li><a class="post-toc-link" href="#opencode-和-cursor-的区别一览">OpenCode 和 Cursor 的区别一览</a></li>
           <li><a class="post-toc-link" href="#opencode-vs-cursor-cli-无头运行">OpenCode vs Cursor CLI：无头运行</a>
             <ol>
               <li><a class="post-toc-link" href="#安装和运行命令">安装和运行命令</a></li>
               <li><a class="post-toc-link" href="#凭据缺失或错误时会发生什么">凭据缺失或错误时会发生什么</a></li>
               <li><a class="post-toc-link" href="#无头运行不询问就能做什么">无头运行不询问就能做什么</a></li>
             </ol></li>
-          <li><a class="post-toc-link" href="#免费模型与自备密钥-opencode-的四个小任务">免费模型与自备密钥：OpenCode 的四个小任务</a></li>
+          <li><a class="post-toc-link" href="#用免费模型和自备密钥在-opencode-上跑四个小任务">用免费模型和自备密钥在 OpenCode 上跑四个小任务</a></li>
           <li><a class="post-toc-link" href="#opencode-和-cursor-的价格">OpenCode 和 Cursor 的价格</a></li>
-          <li><a class="post-toc-link" href="#cursor-vs-opencode-两家-github-app-开出的-pr">Cursor vs OpenCode：两家 GitHub App 开出的 PR</a></li>
-          <li><a class="post-toc-link" href="#opencode-和-cursor-哪个好用-我怎么选-先查什么">OpenCode 和 Cursor 哪个好用：我怎么选、先查什么</a></li>
+          <li><a class="post-toc-link" href="#两家-github-app-在公开仓库开出的-pr">两家 GitHub App 在公开仓库开出的 PR</a></li>
+          <li><a class="post-toc-link" href="#opencode-和-cursor-哪个好用-我按这几条选">OpenCode 和 Cursor 哪个好用，我按这几条选</a></li>
           <li><a class="post-toc-link" href="#orbi-能接哪部分工作">Orbi 能接哪部分工作</a></li>
           <li><a class="post-toc-link" href="#相关">相关</a></li>
           </ol>
         </details>
-<p>OpenCode vs Cursor 比的是两款编程工具：<a href="https://github.com/anomalyco/opencode">OpenCode 是 anomalyco 开源的终端编程 agent，采用 MIT 许可</a>，<a href="https://opencode.ai/docs/providers/">模型由你自己接</a>；<a href="https://cursor.com/help/account-and-billing/pricing">Cursor 是订阅制产品</a>，有 AI 编辑器、<a href="https://cursor.com/docs/cloud-agent">云端 agent</a> 和<a href="https://cursor.com/docs/cli/overview">叫 <code class="post-code--single">agent</code> 的命令行</a>。这篇写给要把任务放进脚本、cron 或 CI 无人值守执行的开发者和团队负责人，关注的是无头运行（不开交互界面，直接在脚本里跑）。我按 2026 年 11 月 16 日两家的页面做 OpenCode 和 Cursor 对比，列出密钥缺失或错误时的输出和退出码、OpenCode 用免费模型和我的 DeepSeek 密钥跑四个任务的费用与通过情况、价格，以及两家 GitHub App 在公开仓库开出的 PR（pull request，合并请求）数量和统计限制。凭据是先遇到的区别：OpenCode 没有密钥也用免费模型跑了，Cursor 则停了下来。测试机器上没有 Cursor 账号，我没有注册，也没有付费，所以没有做登录后的 Cursor 运行；下文登录后的行为都引自 Cursor 文档。</p>
-<p>我是 Larry 🍀 Orbi，Orbi 的创始人。Orbi 用另一个开源终端 agent Pi，把 GitHub Issue 推进到实现、独立评审和合并。它与 Cursor 的云端 agent 部分存在竞争关系，读最后一节时，请把这层关系算进去。</p><aside class="post-cta-inline"><span>Orbi 把你的 Issue 一路做到发版。</span><a class="button button-signal" data-cta="post-inline-start" href="/zh/cloud/login">免费试用 Orbi Cloud →</a></aside>
-<h2 id="opencode-vs-cursor-opencode-和-cursor-的区别一览">OpenCode vs Cursor：OpenCode 和 Cursor 的区别一览</h2>
-<p>Cursor 一栏的能力来自它的文档，我没有登录实测。Free/Plus 的价格说的是套餐，我没有验证这两档能否使用 CLI。</p>
+<p>OpenCode vs Cursor 这个选择，一边是开源的终端编程 agent，一边是订阅制产品。<a href="https://github.com/anomalyco/opencode">OpenCode 由 anomalyco 开源，采用 MIT 许可</a>，<a href="https://opencode.ai/docs/providers/">模型由你自己接</a>；<a href="https://cursor.com/help/account-and-billing/pricing">Cursor 是订阅制产品</a>，有 AI 编辑器、<a href="https://cursor.com/docs/cloud-agent">云端 agent</a> 和<a href="https://cursor.com/docs/cli/overview">叫 <code class="post-code--single">agent</code> 的命令行</a>。这篇写给要把任务放进脚本、cron 或 CI 无人值守执行的开发者和团队负责人，关注的是无头运行（不开交互界面，直接在脚本里跑）。下面有两个命令行在密钥缺失或写错时的输出和退出码，有 OpenCode 跑四个小任务的结果，有两家截至 2026 年 11 月 16 日的价格，还有两家 GitHub App 在公开仓库开出的 PR（pull request，合并请求）数量。凭据是先遇到的区别：OpenCode 没有密钥也用免费模型跑了，Cursor 则停了下来。测试机器上没有 Cursor 账号，我没有注册，也没有付费，所以没有做登录后的 Cursor 运行；下文登录后的行为都引自 Cursor 文档。</p>
+<p>我是 Larry 🍀 Orbi，Orbi 的创始人。Orbi 用另一个开源终端 agent Pi，把 GitHub Issue 推进到实现、独立评审和合并。它与 Cursor 的云端 agent 部分存在竞争关系，读「Orbi 能接哪部分工作」一节时，请把这层关系算进去。</p><aside class="post-cta-inline"><span>Orbi 把你的 Issue 一路做到发版。</span><a class="button button-signal" data-cta="post-inline-start" href="/zh/cloud/login">免费试用 Orbi Cloud →</a></aside>
+<h2 id="opencode-和-cursor-的区别一览">OpenCode 和 Cursor 的区别一览</h2>
+<p>这张 OpenCode 和 Cursor 对比表里，Cursor 一栏的能力来自它的文档，我没有登录实测。Free/Plus 的价格说的是套餐，我没有验证这两档能否使用 CLI。</p>
 <p class="post-table-hint" hidden>左右滑动查看所有列。</p><div class="post-table-scroll" tabindex="0" role="region" aria-label="左右滑动查看所有列。"><table class="table-comparison">
 <thead>
 <tr>
@@ -395,10 +395,10 @@ opencode run --standalone -m deepseek/deepseek-flash &quot;your prompt&quot;
 }
 </code></pre></div>
 <p>项目外写入的探测随后报告：<code class="post-code--spaced">This non-interactive run cannot ask the user for permission, so the request was rejected. Continue without this action.</code> 文件没有生成，退出码却是 0。加 <code class="post-code--single">--auto</code> 后就放行了。把 <code class="post-code--single">&quot;effect&quot;</code> 改为 <code class="post-code--single">&quot;deny&quot;</code>，加不加 <code class="post-code--single">--auto</code> 都会拦住 shell 命令，符合<a href="https://opencode.ai/docs/permissions/">这个参数保留显式 deny 规则的说明</a>。</p>
-<p>用 ask 规则跑后文的任务 1 时，OpenCode 改了文件，但它调用 <code class="post-code--spaced">python3 -m unittest</code> 时被拒绝了。我事后自己跑测试，通过了。</p>
+<p>用 ask 规则跑下一节的第一个编程任务（修复单文件 bug）时，OpenCode 改了文件，但它调用 <code class="post-code--spaced">python3 -m unittest</code> 时被拒绝了。我事后自己跑测试，通过了。</p>
 <p>Cursor 登录后的这些行为，我没有实测。<a href="https://cursor.com/docs/cli/headless">Cursor 文档说</a>，print mode 不加 <code class="post-code--single">--force</code> 也能编辑工作区文件；项目外写入、未经批准的 MCP 工具和网页抓取会被拒绝。shell 命令如果既不在允许列表里，也不能在已启用的沙箱里运行，同样会被拒绝。文档说，<code class="post-code--single">--force</code>/<code class="post-code--single">--yolo</code> 会放行所有操作，但 <a href="https://cursor.com/docs/cli/reference/permissions"><code class="post-code--single">permissions.deny</code></a> 和团队策略拦截的操作除外。<a href="https://cursor.com/docs/cli/headless">团队管理员可以禁用无头模式</a>，由客户端执行这项限制。</p>
 <p>用哪款工具，都别把退出码 0 当成每一步都执行过的证明；脚本还得检查测试和 diff。</p>
-<h2 id="免费模型与自备密钥-opencode-的四个小任务">免费模型与自备密钥：OpenCode 的四个小任务</h2>
+<h2 id="用免费模型和自备密钥在-opencode-上跑四个小任务">用免费模型和自备密钥在 OpenCode 上跑四个小任务</h2>
 <p>我沿用了 <a href="/zh/blog/opencode-vs-codex/">OpenCode vs Codex</a> 的四个小型 Python 仓库：修复单文件 bug、实现一个函数、跨文件找 bug，以及修复多个 bug 并接受额外的隐藏检查。每个模型在每个任务上各跑三次，每次都重新克隆仓库，用干净的 HOME。通过的条件是事后仓库测试通过、测试文件没改，任务 4 还得通过隐藏检查。</p>
 <p>两个模型我都固定了：一个是用我自己密钥的 <code class="post-code--single">deepseek/deepseek-flash</code>，另一个是无凭据探测中选出的免费模型 <code class="post-code--single">opencode/big-pickle</code>。中位数按指标分别取，一行不对应某一次运行。</p>
 <p class="post-table-hint" hidden>左右滑动查看所有列。</p><div class="post-table-scroll" tabindex="0" role="region" aria-label="左右滑动查看所有列。"><table class="table-comparison">
@@ -478,9 +478,9 @@ opencode run --standalone -m deepseek/deepseek-flash &quot;your prompt&quot;
 </tr>
 </tbody></table></div>
 <p>DeepSeek 跑了 12 次，12 次通过，报告的总费用是 $0.01686，耗时中位数 7.1s。Big Pickle 跑了 12 次，12 次通过，报告的总费用是 $0.00000，耗时中位数 20.1s。</p>
-<p>这些任务太小，还不足以区分模型或工具的能力。费用是把 OpenCode 事件流中各步的 <code class="post-code--single">cost</code> 字段相加，并非我的 DeepSeek 账单。免费指不收钱，仍适用上文的数据条款；<a href="https://opencode.ai/docs/console/models/">Big Pickle 的免费期是 “for a limited time”</a>。任务 4 用 DeepSeek 跑第二次时，我在运行中改了 runner，把那次运行弄坏了，随后重跑了一次，表里用的是重跑结果。我没有账号，没能用 Cursor CLI 跑这些任务。</p>
+<p>这些任务太小，还不足以区分模型或工具的能力。费用是把 OpenCode 事件流中各步的 <code class="post-code--single">cost</code> 字段相加，并非我的 DeepSeek 账单。免费指不收钱，仍适用上文的数据条款；<a href="https://opencode.ai/docs/console/models/">Big Pickle 的免费期是 “for a limited time”</a>。任务 4 用 DeepSeek 跑第二次时，我在运行中改了 runner，把那次运行弄坏了，随后重跑了一次，表里用的是重跑结果。我没有 Cursor 账号，所以没有用 Cursor CLI 跑这些任务。</p>
 <h2 id="opencode-和-cursor-的价格">OpenCode 和 Cursor 的价格</h2>
-<p>下面是 2026 年 11 月 16 日的月付价格。<a href="https://cursor.com/help/account-and-billing/pricing">Cursor 属于 The X Subscription，旧 Pro/Pro+ 套餐已不接受新客户</a>。</p>
+<p>下面是 2026 年 11 月 16 日的月付价格。<a href="https://cursor.com/help/account-and-billing/pricing">Cursor 现在并入 The X Subscription（一份订阅同时包含 Grok、Cursor 和 X），旧的 Pro、Pro+ 套餐已不接受新客户</a>。</p>
 <p class="post-table-hint" hidden>左右滑动查看所有列。</p><div class="post-table-scroll" tabindex="0" role="region" aria-label="左右滑动查看所有列。"><table class="table-comparison">
 <thead>
 <tr>
@@ -497,12 +497,12 @@ opencode run --standalone -m deepseek/deepseek-flash &quot;your prompt&quot;
 <tr>
 <th scope="row"><a href="https://cursor.com/help/account-and-billing/pricing">Plus</a></th>
 <td>$8</td>
-<td>固定设置下的 Cursor 模型（Grok、Composer）；不含云端 agent、Bugbot、Origin 或第三方模型</td>
+<td>Cursor 自家模型（Grok、Composer），运行设置固定；不含云端 agent、Bugbot、Origin 和第三方模型</td>
 </tr>
 <tr>
 <th scope="row"><a href="https://cursor.com/help/account-and-billing/pricing">Premium</a></th>
 <td>$30</td>
-<td>增加上述功能；第三方模型按 API 标价从预付额度中另扣</td>
+<td>含云端 agent、Bugbot、Origin 和第三方模型；第三方模型按 API 标价从预付额度中另扣</td>
 </tr>
 <tr>
 <th scope="row"><a href="https://cursor.com/help/account-and-billing/pricing">Super</a></th>
@@ -557,7 +557,7 @@ opencode run --standalone -m deepseek/deepseek-flash &quot;your prompt&quot;
 <p><a href="https://opencode.ai/docs/console/models/">Console 的 Claude Opus 5.5 一行</a>列出的每百万 token 价格是：输入 $4.00、输出 $20.00、缓存读取 $0.20、缓存写入 $5.00。<a href="https://opencode.ai/docs/console/go/">Go</a> 和 <a href="https://opencode.ai/docs/console/">Console</a> 都是可选服务，这两个付费服务我都没测。</p>
 <p><a href="https://cursor.com/help/models-and-usage/api-keys">Cursor 的自备密钥文档</a>只介绍编辑器设置和聊天模型；Tab 用内置模型。文档说，模型用量由你的 provider 收费，请求仍经过 Cursor 的服务器。在 Premium、Super 和 Ultra 上，自备密钥的请求既不消耗套餐用量，也不消耗预付额度；在 Teams/Enterprise 上，即使用自己的密钥，符合条件的第三方模型仍收取每百万 token $0.25 的 Cursor Token Rate。我没找到文档明确说自备密钥是否适用于 CLI。CLI 帮助列有 <code class="post-code--single">bedrock</code>，说明是 <code class="post-code--spaced">Configure AWS Bedrock usage for CLI</code>，我没有测试。</p>
 <p>我会分别看 Cursor 的席位价格和 OpenCode 的模型账单。哪边花费少，取决于 token 用量。我没有 Cursor 用量数据，不判断哪款产品更便宜。</p>
-<h2 id="cursor-vs-opencode-两家-github-app-开出的-pr">Cursor vs OpenCode：两家 GitHub App 开出的 PR</h2>
+<h2 id="两家-github-app-在公开仓库开出的-pr">两家 GitHub App 在公开仓库开出的 PR</h2>
 <p>OpenCode 的 <a href="https://opencode.ai/v1/docs/github/">V1 GitHub 集成</a>在收到 <code class="post-code--single">/opencode</code> 或 <code class="post-code--single">/oc</code> 后，用你的模型密钥在你的 Actions runner 上运行。它的 App 开出的 PR，作者是 <code class="post-code--single">opencode-agent[bot]</code>。文档里的 <code class="post-code--spaced">use_github_token: true</code> 模式不需要安装 App，所以这些 PR 没计入 App 数量；在终端里做完工作后由你自己开的 PR 也没计入。V2 文档索引没有 GitHub 页面，CLI <code class="post-code--single">2.3.0</code> 也没有 <code class="post-code--single">github</code> 子命令。我没有在 V2 上测试这项集成。Cursor 的<a href="https://cursor.com/docs/cloud-agent">云端 agent</a>开出的 PR，在这次观察中作者是 <code class="post-code--single">cursor[bot]</code>。</p>
 <p>我在 2026 年 11 月 16 日统计了 2026 年 11 月 2 日至 8 日 UTC 创建的公开 PR。数字反映查询时的状态，之后可能变化。两行不能拿来比较合并率。</p>
 <p class="post-table-hint" hidden>左右滑动查看所有列。</p><div class="post-table-scroll" tabindex="0" role="region" aria-label="左右滑动查看所有列。"><table class="table-comparison">
@@ -591,7 +591,7 @@ opencode run --standalone -m deepseek/deepseek-flash &quot;your prompt&quot;
 <td>750</td>
 </tr>
 </tbody></table></div>
-<p>两组的规模不同：一组是 32 个仓库中的 167 个 PR，另一组是 750 个仓库中的 4,758 个。OpenCode 的发布方也要算进去：10 月，它的 App 开出的 3,435 个 PR 中，2,709 个在 anomalyco，其中 2,357 个在 <code class="post-code--single">anomalyco/models.dev</code>。排除 anomalyco，10 月开出 726 个，已合并 530 个。11 月这一周的 167 个中，anomalyco 占了 37 个。</p>
+<p>两组的规模不同：一组是 32 个仓库中的 167 个 PR，另一组是 750 个仓库中的 4,758 个。仓库归谁也要算进去：10 月，这个 App 开出的 3,435 个 PR 中，2,709 个在发布 OpenCode 的 anomalyco 组织里，其中 2,357 个在 <code class="post-code--single">anomalyco/models.dev</code>。排除 anomalyco，10 月开出 726 个，已合并 530 个。11 月这一周的 167 个中，anomalyco 占了 37 个。</p>
 <p>「当前标为草稿」与状态列有重叠：Cursor 的 3,601 条带草稿标记的记录中，363 个关闭未合并，36 个已合并。我没有查明已合并记录为什么仍带标记，也没有查明创建时的默认状态。全部 4,758 个中，19.5% 已合并；没有草稿标记的 1,157 个中，892 个（77.1%）已合并。这些数字说明不了哪个 agent 的代码更常被接受。<a href="/zh/blog/devin-vs-cursor/">Devin vs Cursor</a> 在 10 月数据中也看到了同样的差距：全部 <code class="post-code--single">cursor[bot]</code> PR 中，19.2% 已合并；没有草稿标记的那部分，73.0% 已合并。创建窗口和观察日期不同，留给这些 PR 的后续处理时间也不同。</p>
 <p>我还读了 <code class="post-code--single">merged_by</code> 字段。OpenCode App 的全部 119 个已合并 PR 中，87 个由用户账号合并，32 个由 bot 合并，后者包括 <code class="post-code--single">github-actions[bot]</code> 合并的 28 个和 <code class="post-code--single">opencode-agent[bot]</code> 合并的 4 个。我从 Cursor 已合并的 PR 中随机抽了 150 个，101 个由用户合并，49 个由 bot 合并，其中 43 个由 <code class="post-code--single">cursor[bot]</code> 合并。这个字段不说明是谁请求了合并。</p>
 <p>我把这些数字看作公开使用的证据：一小批仓库把 OpenCode 接进 Actions，另一批规模更大的仓库在用 Cursor，PR 大多是草稿。私有仓库和其他 PR 作者都不在统计里。</p>
@@ -601,7 +601,7 @@ opencode run --standalone -m deepseek/deepseek-flash &quot;your prompt&quot;
   -q .total_count
 </code></pre></div>
 <p>把 <code class="post-code--single">OWNER/REPO</code>、App slug（<code class="post-code--single">cursor</code> 或 <code class="post-code--single">opencode-agent</code>）和日期换掉；去掉 <code class="post-code--single">is:merged</code> 就查总数。需要先登录 GitHub CLI。我的测试在有匹配结果的仓库返回了 17 个已合并 PR；没有匹配结果时打印 0，退出码 0。仓库或 App 不存在时，报 <code class="post-code--spaced">gh: Validation Failed (HTTP 422)</code>，退出码 1。搜索 API 每分钟允许 30 次请求。<a href="/zh/blog/devin-vs-cursor/#%E8%87%AA%E5%B7%B1%E7%BB%9F%E8%AE%A1%E4%B8%80%E9%81%8D">更完整的脚本</a>还会统计其他状态。</p>
-<h2 id="opencode-和-cursor-哪个好用-我怎么选-先查什么">OpenCode 和 Cursor 哪个好用：我怎么选、先查什么</h2>
+<h2 id="opencode-和-cursor-哪个好用-我按这几条选">OpenCode 和 Cursor 哪个好用，我按这几条选</h2>
 <ul>
 <li>要带补全功能、按订阅付费的<a href="https://cursor.com/help/account-and-billing/pricing">编辑器</a>，选 Cursor。我没有上手比较过编辑器。</li>
 <li>要自己选 <a href="https://opencode.ai/docs/providers/">provider</a>、在自己的<a href="https://opencode.ai/v1/docs/github/">机器或 CI runner</a> 上跑，或者<a href="https://github.com/anomalyco/opencode">读源码</a>，选 OpenCode。</li>
