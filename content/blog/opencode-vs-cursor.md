@@ -94,9 +94,9 @@ opencode run --standalone -m deepseek/deepseek-flash "your prompt"
 
 ### What a headless run may do without asking
 
-With default flags and no config, OpenCode created a project file, ran a shell command writing outside the project, and ran `curl` against `https://example.com`, returning HTTP 200. All exited 0 without `--auto`. OpenCode's [permission docs](https://opencode.ai/docs/permissions/) say “If no rule matches, OpenCode uses `ask`”. In my default runs nothing was asked or rejected. I did not establish why.
+With no config file and no `--auto` (the probes pinned `-m deepseek/deepseek-flash`), OpenCode created a project file, ran a shell command writing outside the project, and ran `curl` against `https://example.com`, returning HTTP 200. All three exited 0 and nothing was asked or rejected. That matches the [permission defaults](https://opencode.ai/docs/permissions/#defaults): every agent starts from a base rule of `{ "action": "*", "resource": "*", "effect": "allow" }`, with `ask` only for reading `.env` files, and the docs add that reads and edits outside the project “proceed without a prompt”. So the default policy allowed all three probes; the `.env` read rule and the rules built into each agent still apply. To restrict anything else, you add rules.
 
-I put this rule in `~/.config/opencode/opencode.jsonc`:
+To restrict shell commands, I put this rule in `~/.config/opencode/opencode.jsonc`:
 
 ```jsonc
 {
@@ -142,7 +142,7 @@ Monthly prices on 16 November 2026. [Cursor is part of The X Subscription; legac
 | Cursor plan | Monthly price | Access |
 |---|---|---|
 | [Free](https://cursor.com/help/account-and-billing/pricing) | $0 | Limited; Cursor models only |
-| [Plus](https://cursor.com/help/account-and-billing/pricing) | $8 | Cursor models, fixed settings; no cloud agents, Bugbot, Origin or third-party models |
+| [Plus](https://cursor.com/help/account-and-billing/pricing) | $8 | Cursor models (Grok, Composer) at fixed settings; no cloud agents, Bugbot, Origin or third-party models |
 | [Premium](https://cursor.com/help/account-and-billing/pricing) | $30 | Adds those; third-party models separately at API list price from prepaid credit |
 | [Super](https://cursor.com/help/account-and-billing/pricing) | $100 | Higher usage |
 | [Ultra](https://cursor.com/help/account-and-billing/pricing) | $200 | Higher usage |
@@ -175,7 +175,7 @@ I counted public PRs created 2 to 8 November 2026 UTC on 16 November 2026. These
 
 The populations differ in scale: 167 PRs across 32 repositories against 4,758 across 750. OpenCode's publisher also matters: in October, 2,709 of its App's 3,435 PRs were in anomalyco, including 2,357 in `anomalyco/models.dev`. Outside anomalyco, October had 726 opened and 530 merged. In the November week, anomalyco accounted for 37 of 167.
 
-Draft now overlaps the state columns: Cursor's 3,601 flagged records include 363 closed unmerged and 36 merged PRs. I did not establish why merged records retained the flag, or the default at creation. Among the 1,157 not flagged draft, 892 were merged. I covered this filter effect in [Devin vs Cursor](/blog/devin-vs-cursor/); November shows the same pattern, with 19.5% merged overall versus October's 19.2% there. The creation windows and observation dates differ, giving unequal follow-up periods.
+Draft now overlaps the state columns: Cursor's 3,601 flagged records include 363 closed unmerged and 36 merged PRs. I did not establish why merged records retained the flag, or the default at creation. Of all 4,758, 19.5% were merged; among the 1,157 not flagged draft, 892 (77.1%) were. [Devin vs Cursor](/blog/devin-vs-cursor/) found the same gap for October: 19.2% of all `cursor[bot]` PRs merged, 73.0% of those not flagged draft. The creation windows and observation dates differ, giving unequal follow-up periods.
 
 I also read `merged_by`: all 119 merged OpenCode App PRs had 87 user-account merges and 32 bot merges, including 28 by `github-actions[bot]` and 4 by `opencode-agent[bot]`. Among 150 randomly sampled merged Cursor PRs, 101 were merged by users and 49 by bots, including 43 by `cursor[bot]`. The field does not say who requested the merge.
 
@@ -193,8 +193,8 @@ Replace `OWNER/REPO`, the App slug (`cursor` or `opencode-agent`) and dates; dro
 
 ## Which one I'd pick, and what I'd check first
 
-- For an [editor with completions and a subscription bill](https://cursor.com/help/account-and-billing/pricing), Cursor. I have not compared the editors hands-on.
-- To choose the [provider](https://opencode.ai/docs/providers/), use my own [machine or CI runner](https://opencode.ai/v1/docs/github/), or [read the source](https://github.com/anomalyco/opencode), OpenCode.
+- Choose Cursor for an [editor with completions and a subscription bill](https://cursor.com/help/account-and-billing/pricing). I have not compared the editors hands-on.
+- Choose OpenCode to pick your own [provider](https://opencode.ai/docs/providers/), run on your own [machine or CI runner](https://opencode.ai/v1/docs/github/), or [read the source](https://github.com/anomalyco/opencode).
 - For unattended Cursor runs, supply [`CURSOR_API_KEY`](https://cursor.com/docs/cli/reference/authentication) and [access to Cursor's API](https://cursor.com/docs/cli/github-actions). [Cloud agents and third-party models start at Premium](https://cursor.com/help/account-and-billing/pricing).
 - For unattended OpenCode runs, pin `-m`, set `OPENCODE_DISABLE_FREE_MODELS=1`, add permission rules and verify results yourself.
 - Before buying seats, I'd run the same real tickets through both on copies of my repository for a week and count what merged.
