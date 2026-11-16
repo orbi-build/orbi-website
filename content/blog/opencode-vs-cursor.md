@@ -5,6 +5,7 @@ summary: OpenCode and Cursor compared on headless CLI runs, credentials and pric
 lang: en
 author: Larry 🍀 Orbi
 image: /img/blog-opencode-vs-cursor-card.png
+mirror: opencode-vs-cursor
 ---
 
 OpenCode vs Cursor is a choice between [OpenCode, an MIT-licensed, open-source terminal coding agent from anomalyco](https://github.com/anomalyco/opencode) that uses [whichever model provider you connect](https://opencode.ai/docs/providers/), and [Cursor, a subscription product](https://cursor.com/help/account-and-billing/pricing) with an AI editor, [cloud agents](https://cursor.com/docs/cloud-agent) and a [terminal CLI called `agent`](https://cursor.com/docs/cli/overview). For developers and team leads choosing unattended runs in scripts, cron or CI, credentials are the first difference: OpenCode ran on a free model without a key; Cursor stopped. I have no Cursor account on the test machine and did not create or pay for one, so I made no logged-in Cursor run; authenticated behaviour below comes from Cursor's docs. I compare both vendors' pages on 16 November 2026, give missing-key and wrong-key output and exit codes, four OpenCode tasks' costs and passes with a free model and my DeepSeek key, prices, and public GitHub App PR counts with their limits.

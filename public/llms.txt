@@ -258,6 +258,8 @@ feed of the English posts: https://orbi.build/blog/feed.xml
 
 - OpenCode vs Cursor: CLI, pricing and unattended runs (English):
   https://orbi.build/blog/opencode-vs-cursor/
+- OpenCode vs Cursor：命令行、价格与无人值守运行 (Chinese):
+  https://orbi.build/zh/blog/opencode-vs-cursor/
 - Devin vs Cursor: what happens to the PRs they open (English):
   https://orbi.build/blog/devin-vs-cursor/
 - Devin vs Cursor：它们开出的 PR 后来怎么样了 (Chinese):

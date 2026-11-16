@@ -3,8 +3,8 @@
     "slug": "opencode-vs-cursor",
     "title": "OpenCode vs Cursor: CLI, pricing and unattended runs",
     "summary": "OpenCode and Cursor compared on headless CLI runs, credentials and prices, with real command output and counts of the public PRs their GitHub Apps opened.",
-    "zhSlug": null,
-    "zhTitle": null,
+    "zhSlug": "opencode-vs-cursor",
+    "zhTitle": "OpenCode vs Cursor：命令行、价格与无人值守运行",
     "related": []
   },
   {
