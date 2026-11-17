@@ -1,7 +1,8 @@
 ---
 title: Pi extensions in production: isolate, then write one
 date: 2026-10-30
-summary: How Orbi runs Pi coding agent extensions unattended: a declared --no-extensions allowlist, the D-Bus hang behind it, and two extensions we wrote ourselves.
+updated: 2026-11-17
+summary: How Orbi runs Pi extensions and Pi agent skills unattended: a --no-extensions allowlist, where Pi looks for skills, and the flags that limit each session.
 lang: en
 author: Larry 🍀 Orbi
 image: /img/blog-pi-extensions-card.png
@@ -10,7 +11,7 @@ series: pi
 
 Pi extensions are TypeScript (or JavaScript) modules that the [Pi coding agent](https://pi.dev) loads at startup: each one exports a function that receives the extension API, and with it the module can register tools the model may call, add commands, and subscribe to session events. Pi has several ways of finding Pi extensions, and on a laptop every one of them is convenient. In a service that runs Pi with nobody watching, the two automatic ones are also a way for code you did not choose to end up inside the session.
 
-I'm Larry 🍀 Orbi, the creator of Orbi. Orbi runs Pi unattended: it takes a GitHub issue, starts Pi to write the change, starts another Pi to review it, and merges when the review and CI pass. The [Pi hub](/guides/pi-coding-agent/) describes the runner around those sessions and [the first post of this series](/blog/orbi-on-pi-coding-agent/) walks one issue through them. This post is about Pi extensions only: how Orbi loads them, what went wrong before it did it this way, and two extensions we ended up writing ourselves. The commands below, and the shape of the config, are what runs today on Pi 1.2.0; the Orbi version numbers are the open-source engine's releases.
+I'm Larry 🍀 Orbi, the creator of Orbi. Orbi runs Pi unattended: it takes a GitHub issue, starts Pi to write the change, starts another Pi to review it, and merges when the review and CI pass. The [Pi hub](/guides/pi-coding-agent/) describes the runner around those sessions and [the first post of this series](/blog/orbi-on-pi-coding-agent/) walks one issue through them. This post covers how Orbi loads Pi extensions, what went wrong before it did it this way, and two extensions we ended up writing ourselves. One section covers [Pi coding agent skills](#pi-agent-skills-where-pi-finds-them-and-how-to-turn-them-off): directories, installation and explicit loading. The extension commands below, and the shape of the config, are what runs today on Pi 1.2.0; I tested the skills section on Pi 1.5.2 and 1.2.0. The Orbi version numbers are the open-source engine's releases.
 
 ## What Pi extensions are, and the three ways Pi loads them
 
@@ -96,7 +97,85 @@ Not every Orbi session uses that list, though. These are the three shapes, and e
 | the repository-summary session of `orbi suggest` (the command that reads a repository and proposes tasks) | `--no-extensions` with no `--extension` at all; its other flags are `--tools read,ls,find --no-skills --no-context-files` | it only reads; it does not need even the configured extensions |
 | the clarification gate (`clarify_thin_tickets = true` in the repository's `.github/orbi.toml`) | `--no-builtin-tools --no-extensions --extension <clarify_verdict.ts>` | exactly one tool, shipped with the engine; nothing else callable |
 
-The first row was not always complete. Until 5 October the `ticket` role was started with no extension flags at all, so a user's installed extensions could load into the sessions that write issue comments. [Issue #1558](https://github.com/orbi-build/orbi/issues/1558) fixed it in Orbi v0.6.2 that day. Skills are the other half of the same picture. A skill is a directory with a `SKILL.md` of instructions; at startup Pi puts each skill's name and description into the prompt and reads the file when the model asks for it, and it discovers skills much as it discovers extensions, except recursively. There the isolation is still partial: the implementer, the reviewer, and the `ticket` role get Orbi's own `--skill` entries but not `--no-skills`, so skills the OS user installed can load into them. Among the runner's sessions, only `orbi suggest` passes `--no-skills`, in both of its sessions (the one that writes the suggestions and the one that writes the repository summary). The clarification gate below is a `ticket` session whose extension flags differ (the single `--extension` instead of the configured list), so its skills are the `ticket` role's too.
+The first row was not always complete. Until 5 October the `ticket` role was started with no extension flags at all, so a user's installed extensions could load into the sessions that write issue comments. [Issue #1558](https://github.com/orbi-build/orbi/issues/1558) fixed it in Orbi v0.6.2 that day. Skills have their own discovery rules and tool requirements, covered in the next section.
+
+## Pi agent skills: where Pi finds them, and how to turn them off
+
+A skill is a directory with a `SKILL.md`: front matter gives its `name` and `description`, followed by instructions; Pi puts the name, description and file path into the system prompt, and the model reads the file when a task matches.
+
+I used a local stand-in for the model API to record Pi's first request, with a throwaway `HOME` per case. I tested Pi 1.5.2 (the current npm release) and 1.2.0; cases run on both gave the same results. Every result below is what showed up in the system prompt Pi actually sent.
+
+### Where Pi looks
+
+| Location | Loads when | Notes |
+|---|---|---|
+| `~/.pi/agent/skills/` | Always, at user level | Recursive: a `SKILL.md` two directories down loaded. |
+| `~/.agents/skills/` | Always, at user level | The Agent Skills location, resolved from `HOME`. |
+| `.pi/skills/` | Project trusted | Only in the working directory: from `app/`, Pi loaded `app/.pi/skills/`, not the repository root's `.pi/skills/`. |
+| `.agents/skills/` | Project trusted | Working directory and each parent through the git repository root; nothing above it. |
+| `~/.pi/agent/settings.json` → `"skills"` | Configured | Array of files or directories; an absolute path loaded. |
+| Installed packages | Installed and exposing skills | A `skills/` directory, or skills declared in `package.json`'s `"pi"` manifest. |
+
+Print mode (`pi -p`), JSON and RPC modes have no trust prompt. Project skills are skipped unless you pass `--approve` (`-a`), have a saved `/trust` decision, or set `"defaultProjectTrust": "always"` in `settings.json`. Tests with either override loaded them; without either, none loaded.
+
+For installation, list paths in the `"skills"` array of `~/.pi/agent/settings.json`, or use `pi install <source>` with npm, git or a local path. Installation records the source under `"packages"` in that file. A local package containing `skills/pack-skill/SKILL.md` loaded after:
+
+```bash
+pi install ./my-skill-pack
+```
+
+There is a catch with `badlogic/pi-skills`, the collection Pi's skills documentation points to. At tested commit `90bb51c`, its eight skill directories sit at the repository top level, with no `skills/` or `package.json`. `pi list` confirms installation, not what reached the model:
+
+```bash
+pi install git:github.com/badlogic/pi-skills   # succeeds, pi list shows it, loads 0 skills
+git clone https://github.com/badlogic/pi-skills ~/.pi/agent/skills/pi-skills   # 8 skills load
+```
+
+Its README recommends that clone location, or `.pi/skills/pi-skills` for a project.
+
+Two lines from `pi --help`:
+
+```text
+--skill <path>                 Load a skill file or directory (can be used multiple times)
+--no-skills, -ns               Disable skills discovery and loading
+```
+
+`--no-skills` removed both user directories, trusted project directories, settings entries and installed packages from the prompt. Explicit `--skill` paths still work with it; without it, they add to discovery. A duplicate name kept one copy (`~/.pi/agent/skills/` won in my test); a missing description excluded the skill. Neither printed anything in `pi -p` output; Pi's docs say a collision produces a warning, and I did not see one in print mode.
+
+This is the shape I would use unattended, not a tested Orbi command:
+
+```bash
+pi -p --no-skills --skill ./skills/tdd-dev --skill ./skills/code-review/SKILL.md "..."
+```
+
+The test behind it passed two explicit skills, one as a directory and one as a `SKILL.md` path, with skills installed in both user directories: only the two explicit ones reached the prompt.
+
+Skills only reach the model when the session has `read` or `bash`. Tests with `--no-tools`, `--no-builtin-tools` or `--tools ls` saw none even with `--skill`; `--tools bash` saw it. This explains the empty sessions below.
+
+`PI_CODING_AGENT_DIR` moves Pi's agent directory: pointing it at an empty directory stopped `~/.pi/agent/skills/` loading. `~/.agents/skills/` still loaded from `HOME`.
+
+### How Orbi passes skills to each session
+
+I read Orbi's source at `b5bf8d00`, after v0.7.45, including the [Pi command builder](https://github.com/orbi-build/orbi/blob/b5bf8d00/src/orbi/pi_command.py). `orbi draft`, introduced in v0.7.32, turns a sentence into issues. Configured skills means the `skills` paths in `orbi.toml`. User skills means `~/.agents/skills/` always, plus `~/.pi/agent/skills/` when `orbi.toml` sets no `pi_providers` file. Setting that key redirects `PI_CODING_AGENT_DIR` to the per-run directory:
+
+```text
+<worktree>/.orbi/pi-agent/
+```
+
+Project skills require the runner account's Pi settings to trust the project; Orbi does not pass `--approve`.
+
+| Session | Tools | Skill flags | What the model sees |
+|---|---|---|---|
+| Implementer | Default `read`, `bash`, `edit`, `write` | One `--skill` per configured path except `review-fix-loop`; no `--no-skills` | Configured, user and trusted project skills |
+| Reviewer | Same defaults | Same, also excluding `tdd-dev` | Configured skills after exclusions, user and trusted project skills |
+| Comment-writing `ticket` role | `--no-tools` | Configured `--skill` entries except `review-fix-loop`; no `--no-skills` | None |
+| Clarification gate | `--no-builtin-tools`, one extension | Same skill flags as `ticket` | None |
+| `orbi suggest`: suggestions | `read`, `grep`, `find`, `ls` | `--no-skills`, one `--skill` for `suggest-ai-ready-issues` | Only that skill |
+| `orbi suggest`: repository summary | `read`, `ls`, `find` | `--no-skills`, no `--skill` | None |
+| `orbi draft`: drafting | `read`, `grep`, `find`, `ls`, `write_draft`, `ask_user_question` and its own answer tools | `--no-skills`, no `--skill` | None |
+| `orbi draft`: fidelity pass | `--no-tools` | `--no-skills`, no `--skill` | None |
+
+The remaining isolation gap is the implementer and reviewer: user skills can still reach them. An earlier version of this post said the ticket role could pick up installed skills; it loads them, but with no read or bash tool Pi leaves them out of the prompt. The clarification gate sees none for the same reason.
 
 ## Writing a Pi extension with one accepted output channel
 
@@ -191,13 +270,14 @@ The tool's name and parameter shape came from a community extension, `@juiceshar
 
 ## What to copy for your own Pi extensions
 
-If you run Pi without a person at the keyboard, the short version of this post is three habits:
+If you run Pi without a person at the keyboard, the short version of this post is four habits:
 
 1. Start every unattended Pi with `--no-extensions`, then add back exactly the Pi extensions you mean to load with `-e`. Keep the list in config, pin npm packages to a version, give git sources at least an `@ref` (a tag or a branch passes validation) and pin a commit SHA when two sessions must run identical code, and reject the config when a pin is missing; remember that for git sources Orbi's validation only checks that something follows an `@`, not whether the ref can move.
 2. When you need a structured answer from the model, give it one tool with a schema and `terminate: true`, write the result to a file, and treat anything else as no answer. Do not parse stdout.
 3. When the model must produce an artifact, make the extension tool the only write path and leave the general write tools out of `--tools`.
+4. Start unattended Pi with `--no-skills`, then add each skill with `--skill`. A session without `read` or `bash` never sees skills in its prompt, even when passed explicitly.
 
-One gap is still open on our side: skills do not get the same treatment yet, so skills installed by the user account that runs the runner can still load into every Orbi runner session except the two `orbi suggest` ones (Orbi Cloud's drafting sessions pass `--no-skills` themselves).
+Orbi still leaves skill discovery enabled for the implementer and reviewer: they can see user skills from `~/.agents/skills/` and, when `orbi.toml` sets no `pi_providers` file, `~/.pi/agent/skills/`. The comment-writing ticket role and clarification gate see none because they have no `read` or `bash` tool. Both `orbi suggest` and `orbi draft` pass `--no-skills`.
 
 ## Related
 
