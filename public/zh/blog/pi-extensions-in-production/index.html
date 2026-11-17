@@ -278,7 +278,7 @@ source = &quot;extensions/local-check.ts&quot;
 </tbody></table></div>
 <p>第一行不是一直这么完整。2026 年 10 月 5 日之前，<code class="post-code--single">ticket</code> 角色启动时完全不带扩展参数，用户装的扩展可以加载进写 Issue 评论的会话。<a href="https://github.com/orbi-build/orbi/issues/1558">Issue #1558</a> 当天在 Orbi v0.6.2 修了。技能有自己的查找规则和工具要求，见<a href="#pi-agent-skills-%E6%8A%80%E8%83%BD-pi-%E5%8E%BB%E5%93%AA%E6%89%BE-%E6%80%8E%E4%B9%88%E5%85%B3%E6%8E%89">下一节</a>。</p>
 <h2 id="pi-agent-skills-技能-pi-去哪找-怎么关掉">Pi agent skills（技能）：Pi 去哪找、怎么关掉</h2>
-<p>一个技能就是一个带 <code class="post-code--single">SKILL.md</code> 的目录。文件开头的 front matter 写 <code class="post-code--single">name</code> 和 <code class="post-code--single">description</code>，后面是指令。Pi 把名称、描述和文件路径放进系统提示词，任务匹配时，模型再读文件。</p>
+<p>Pi 的技能（Pi coding agent skills）沿用 <a href="https://agentskills.io/specification">Agent Skills</a> 格式：一个技能就是一个带 <code class="post-code--single">SKILL.md</code> 的目录。文件开头的 front matter 写 <code class="post-code--single">name</code> 和 <code class="post-code--single">description</code>，后面是指令。Pi 把名称、描述和文件路径放进系统提示词，任务匹配时，模型再读文件。</p>
 <p>我用本地服务代替模型 API，记录 Pi 发出的第一个请求，每个用例都用一个临时 <code class="post-code--single">HOME</code>。测的是 Pi 1.5.2（当时 npm 上的当前版本）和 1.2.0。两个版本都跑过的用例，结果相同。下面记录的都是 Pi 实际发出的系统提示词里出现了什么。</p>
 <h3 id="pi-去哪找">Pi 去哪找</h3>
 <p class="post-table-hint" hidden>左右滑动查看所有列。</p><div class="post-table-scroll" tabindex="0" role="region" aria-label="左右滑动查看所有列。"><table class="table-comparison">
@@ -324,7 +324,7 @@ source = &quot;extensions/local-check.ts&quot;
 <p>安装时，可以把路径列进 <code class="post-code--single">~/.pi/agent/settings.json</code> 的 <code class="post-code--single">&quot;skills&quot;</code> 数组，也可以用 <code class="post-code--spaced">pi install &lt;source&gt;</code> 安装 npm 包、git 来源或本地路径。安装会把来源记进同一个文件的 <code class="post-code--single">&quot;packages&quot;</code>。一个含有 <code class="post-code--single">skills/pack-skill/SKILL.md</code> 的本地包，运行下面这条后就能加载：</p>
 <div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="已复制">复制</button><pre><code class="language-bash" data-copy-source>pi install ./my-skill-pack
 </code></pre></div>
-<p>Pi 技能文档指向的技能合集 <code class="post-code--single">badlogic/pi-skills</code> 有个坑。我测的提交是 <code class="post-code--single">90bb51c</code>，它的八个技能目录直接放在仓库顶层，没有 <code class="post-code--single">skills/</code>，也没有 <code class="post-code--single">package.json</code>。<code class="post-code--spaced">pi list</code> 只能证明装上了，不能证明模型收到了技能：</p>
+<p><a href="https://pi.dev/docs/latest/skills">Pi 技能文档</a>指向的技能合集 <a href="https://github.com/badlogic/pi-skills"><code class="post-code--single">badlogic/pi-skills</code></a> 有个坑。我测的提交是 <code class="post-code--single">90bb51c</code>，它的八个技能目录直接放在仓库顶层，没有 <code class="post-code--single">skills/</code>，也没有 <code class="post-code--single">package.json</code>。<code class="post-code--spaced">pi list</code> 只能证明装上了，不能证明模型收到了技能：</p>
 <div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="已复制">复制</button><pre><code class="language-bash" data-copy-source>pi install git:github.com/badlogic/pi-skills   # 安装成功，pi list 也列出来了，但一个技能都没加载
 git clone https://github.com/badlogic/pi-skills ~/.pi/agent/skills/pi-skills   # 8 个技能都加载
 </code></pre></div>

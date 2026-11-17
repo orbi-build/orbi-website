@@ -101,7 +101,7 @@ def _pi_extension_args(config: RunnerConfig) -> list[str]:
 
 ## Pi agent skills（技能）：Pi 去哪找、怎么关掉
 
-一个技能就是一个带 `SKILL.md` 的目录。文件开头的 front matter 写 `name` 和 `description`，后面是指令。Pi 把名称、描述和文件路径放进系统提示词，任务匹配时，模型再读文件。
+Pi 的技能（Pi coding agent skills）沿用 [Agent Skills](https://agentskills.io/specification) 格式：一个技能就是一个带 `SKILL.md` 的目录。文件开头的 front matter 写 `name` 和 `description`，后面是指令。Pi 把名称、描述和文件路径放进系统提示词，任务匹配时，模型再读文件。
 
 我用本地服务代替模型 API，记录 Pi 发出的第一个请求，每个用例都用一个临时 `HOME`。测的是 Pi 1.5.2（当时 npm 上的当前版本）和 1.2.0。两个版本都跑过的用例，结果相同。下面记录的都是 Pi 实际发出的系统提示词里出现了什么。
 
@@ -124,7 +124,7 @@ def _pi_extension_args(config: RunnerConfig) -> list[str]:
 pi install ./my-skill-pack
 ```
 
-Pi 技能文档指向的技能合集 `badlogic/pi-skills` 有个坑。我测的提交是 `90bb51c`，它的八个技能目录直接放在仓库顶层，没有 `skills/`，也没有 `package.json`。`pi list` 只能证明装上了，不能证明模型收到了技能：
+[Pi 技能文档](https://pi.dev/docs/latest/skills)指向的技能合集 [`badlogic/pi-skills`](https://github.com/badlogic/pi-skills) 有个坑。我测的提交是 `90bb51c`，它的八个技能目录直接放在仓库顶层，没有 `skills/`，也没有 `package.json`。`pi list` 只能证明装上了，不能证明模型收到了技能：
 
 ```bash
 pi install git:github.com/badlogic/pi-skills   # 安装成功，pi list 也列出来了，但一个技能都没加载
