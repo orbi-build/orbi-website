@@ -101,7 +101,7 @@ The first row was not always complete. Until 5 October the `ticket` role was sta
 
 ## Pi agent skills: where Pi finds them, and how to turn them off
 
-A skill is a directory with a `SKILL.md`: front matter gives its `name` and `description`, followed by instructions; Pi puts the name, description and file path into the system prompt, and the model reads the file when a task matches.
+Pi coding agent skills follow the [Agent Skills](https://agentskills.io/specification) format. A skill is a directory with a `SKILL.md`: front matter gives its `name` and `description`, followed by instructions; Pi puts the name, description and file path into the system prompt, and the model reads the file when a task matches.
 
 I used a local stand-in for the model API to record Pi's first request, with a throwaway `HOME` per case. I tested Pi 1.5.2 (the current npm release) and 1.2.0; cases run on both gave the same results. Every result below is what showed up in the system prompt Pi actually sent.
 
@@ -124,7 +124,7 @@ For installation, list paths in the `"skills"` array of `~/.pi/agent/settings.js
 pi install ./my-skill-pack
 ```
 
-There is a catch with `badlogic/pi-skills`, the collection Pi's skills documentation points to. At tested commit `90bb51c`, its eight skill directories sit at the repository top level, with no `skills/` or `package.json`. `pi list` confirms installation, not what reached the model:
+There is a catch with [`badlogic/pi-skills`](https://github.com/badlogic/pi-skills), the collection [Pi's skills documentation](https://pi.dev/docs/latest/skills) points to. At tested commit `90bb51c`, its eight skill directories sit at the repository top level, with no `skills/` or `package.json`. `pi list` confirms installation, not what reached the model:
 
 ```bash
 pi install git:github.com/badlogic/pi-skills   # succeeds, pi list shows it, loads 0 skills
