@@ -302,7 +302,7 @@ feed of the English posts: https://orbi.build/blog/feed.xml
   https://orbi.build/zh/blog/pi-coding-agent-vs-claude-code/
 - Pi extensions in production: isolate, then write one (English):
   https://orbi.build/blog/pi-extensions-in-production/
-- Pi 扩展在生产环境里怎么用：隔离加载，两个自写扩展 (Chinese):
+- Orbi 怎么在生产里隔离加载 Pi 扩展和技能，又自己写了哪两个扩展 (Chinese):
   https://orbi.build/zh/blog/pi-extensions-in-production/
 - Pi coding agent worktree: a failed recovery (English):
   https://orbi.build/blog/pi-coding-agent-worktree/
