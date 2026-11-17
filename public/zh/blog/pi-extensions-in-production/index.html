@@ -334,11 +334,11 @@ git clone https://github.com/badlogic/pi-skills ~/.pi/agent/skills/pi-skills   #
 --no-skills, -ns               Disable skills discovery and loading
 </code></pre></div>
 <p>实测加上 <code class="post-code--single">--no-skills</code>，两个用户目录、受信任的项目目录、设置里的条目和已安装包的技能，都从提示词里消失了。显式给出的 <code class="post-code--single">--skill</code> 路径仍然有效；不加 <code class="post-code--single">--no-skills</code> 时，它们会和自动找到的技能一起加载。技能重名时只留一份，我测到留下的是 <code class="post-code--single">~/.pi/agent/skills/</code> 里的那份；缺少描述的技能则被排除。这两种情况在 <code class="post-code--spaced">pi -p</code> 的输出里都没有提示。Pi 文档说重名会警告，但我在打印模式里没看到。</p>
-<p>无人值守时，我会用下面这种命令形状；这不是一条已经测过的 Orbi 命令：</p>
+<p>这不是 Orbi 的命令，但无人值守时我会用这种形状，而且实测过：</p>
 <div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="已复制">复制</button><pre><code class="language-bash" data-copy-source>pi -p --no-skills --skill ./skills/tdd-dev --skill ./skills/code-review/SKILL.md &quot;...&quot;
 </code></pre></div>
 <p>对应的测试显式传了两个技能，一个给目录，一个给 <code class="post-code--single">SKILL.md</code> 路径。两个用户目录里也都装了技能，最后只有显式指定的这两个进了提示词。</p>
-<p>只有会话带 <code class="post-code--single">read</code> 或 <code class="post-code--single">bash</code> 时，Pi 才把技能清单放进系统提示词。实测用 <code class="post-code--single">--no-tools</code>、<code class="post-code--single">--no-builtin-tools</code> 或 <code class="post-code--spaced">--tools ls</code>，即使传了 <code class="post-code--single">--skill</code> 也没有清单；用 <code class="post-code--spaced">--tools bash</code> 则有。但技能不只从清单这条路进来。提示词以 <code class="post-code--single">/skill:&lt;name&gt;</code> 开头时，Pi 会自己读那个技能文件，把全文贴进用户消息。我传了 <code class="post-code--spaced">--no-tools --skill ./extra/tdd</code>，提示词用 <code class="post-code--spaced">/skill:tdd add a test</code>，发出的请求里仍然带着整份 <code class="post-code--single">SKILL.md</code> 正文。关工具会隐藏清单，拦不住 <code class="post-code--single">/skill:</code> 提示词。</p>
+<p>只有会话带 <code class="post-code--single">read</code> 或 <code class="post-code--single">bash</code> 时，Pi 才把技能清单放进系统提示词。实测用 <code class="post-code--single">--no-tools</code>、<code class="post-code--single">--no-builtin-tools</code> 或 <code class="post-code--spaced">--tools ls</code>，即使传了 <code class="post-code--single">--skill</code> 也没有清单；用 <code class="post-code--spaced">--tools bash</code> 则有。但技能不只从清单这条路进来。提示词以 <code class="post-code--single">/skill:&lt;name&gt;</code> 开头时，Pi 会自己读那个技能文件，把全文贴进用户消息。我传了 <code class="post-code--spaced">--no-tools --skill ./extra/tdd</code>，提示词用 <code class="post-code--spaced">/skill:tdd add a test</code>，发出的请求里仍然带着整份 <code class="post-code--single">SKILL.md</code> 正文。这条路有两个限制，我都测过：<code class="post-code--single">/skill:</code> 只展开 Pi 已经加载的技能，加了 <code class="post-code--single">--no-skills</code> 后，只放在 <code class="post-code--single">~/.agents/skills/</code> 里的技能就进不来；而且只有提示词正文本身以它开头才生效。用 <code class="post-code--single">@文件</code> 传进去的提示词会被 Pi 包进一个 <code class="post-code--single">&lt;file&gt;</code> 标签，一个以 <code class="post-code--single">/skill:usr</code> 开头的文件没有被展开。</p>
 <p><code class="post-code--single">PI_CODING_AGENT_DIR</code> 可以改 Pi 的 agent 目录。我把它指向空目录后，<code class="post-code--single">~/.pi/agent/skills/</code> 就不再加载了；<code class="post-code--single">~/.agents/skills/</code> 仍按 <code class="post-code--single">HOME</code> 加载。</p>
 <h3 id="orbi-怎么给每个会话传技能">Orbi 怎么给每个会话传技能</h3>
 <p>我读的是 v0.7.45 之后、<code class="post-code--single">b5bf8d00</code> 这次提交的 Orbi 源码，包括 <a href="https://github.com/orbi-build/orbi/blob/b5bf8d00/src/orbi/pi_command.py">Pi 命令构造器</a>。<code class="post-code--spaced">orbi draft</code> 从 v0.7.32 加入，把一句话变成 Issue。下表里「配置的技能」指 <code class="post-code--single">orbi.toml</code> 中 <code class="post-code--single">skills</code> 列出的路径。「用户技能」包括始终会找的 <code class="post-code--single">~/.agents/skills/</code>，以及 <code class="post-code--single">orbi.toml</code> 没有设置 <code class="post-code--single">pi_providers</code> 文件时的 <code class="post-code--single">~/.pi/agent/skills/</code>，还包括 Pi 设置里 <code class="post-code--single">&quot;skills&quot;</code> 列出的条目和已安装包提供的技能。</p>
@@ -346,7 +346,7 @@ git clone https://github.com/badlogic/pi-skills ~/.pi/agent/skills/pi-skills   #
 <div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="已复制">复制</button><pre><code class="language-text" data-copy-source>&lt;worktree&gt;/.orbi/pi-agent/
 </code></pre></div>
 <p>Orbi 根据用户自己的设置生成这个目录下的 <code class="post-code--single">settings.json</code>。设置里的技能和包的技能能不能继续从这里加载，我没有测过。</p>
-<p>项目技能需要 runner 账号的 Pi 设置已经信任项目；Orbi 不传 <code class="post-code--single">--approve</code>。</p>
+<p>Orbi 不传 <code class="post-code--single">--approve</code>，所以仓库自带的技能只在两种情况下加载：runner 账号的 Pi 设置里写了 <code class="post-code--spaced">&quot;defaultProjectTrust&quot;: &quot;always&quot;</code>；或者没设 <code class="post-code--single">pi_providers</code>、并且保存过 <code class="post-code--single">/trust</code> 决定（这些决定存在 agent 目录里，设了 <code class="post-code--single">pi_providers</code> 就换成了每次运行的新目录）。表里的「排除」只是不传 <code class="post-code--single">orbi.toml</code> 里的那条路径；用户目录里有同名技能的话，照样会加载。</p>
 <p class="post-table-hint" hidden>左右滑动查看所有列。</p><div class="post-table-scroll" tabindex="0" role="region" aria-label="左右滑动查看所有列。"><table class="table-comparison">
 <thead>
 <tr>
@@ -405,7 +405,7 @@ git clone https://github.com/badlogic/pi-skills ~/.pi/agent/skills/pi-skills   #
 <td>没有</td>
 </tr>
 </tbody></table></div>
-<p>还没隔离完整的是实现者和评审者，用户技能仍能进这两个会话。本文旧版说 <code class="post-code--single">ticket</code> 角色也可能拿到已安装的技能。Pi 确实会找到它们，但这个角色带 <code class="post-code--single">--no-tools</code>，Pi 不会把技能列进提示词；Orbi 的提示词又来自文件，不会以 <code class="post-code--single">/skill:</code> 开头。澄清门禁也因此看不到技能。</p>
+<p>还没隔离完整的是实现者和评审者，用户技能仍能进这两个会话。本文旧版说 <code class="post-code--single">ticket</code> 角色也可能拿到已安装的技能。Pi 确实会找到它们，但这个角色带 <code class="post-code--single">--no-tools</code>，Pi 不会把技能列进提示词；Orbi 又把每条提示词都用 <code class="post-code--single">@文件</code> 传给 Pi，开头不会是 <code class="post-code--single">/skill:</code>。澄清门禁也因此看不到技能。</p>
 <h2 id="用一个扩展工具拿结构化裁决">用一个扩展工具拿结构化裁决</h2>
 <p>如果你想写一个 Pi 扩展又不知道拿来干什么，我最先会指给你看的是澄清门禁，因为它解决的问题和 MCP、工具链都没关系：怎么稳定地从模型那里拿到一个结构化的答案。</p>
 <p>仓库开了它（<code class="post-code--spaced">clarify_thin_tickets = true</code>）以后，门禁在 Orbi 开始交付之前跑。一个 Pi 会话把 Issue 正文当提示词读进来，按三条检查判断：有没有写清可观察的结果、验收条件，是不是单一结果。票面太薄时，Orbi 停下这次尝试，把 Issue 的标签换成 <code class="post-code--single">ai-needs-detail</code>，并留一条评论（下文叫它拦票评论），列出缺什么；模型能提出修法时，评论里还会给出来：拆成这几张票，或者补上这几行验收。到 Orbi v0.7.20 为止，门禁让模型用自由文本回 JSON，引擎解析 stdout。在 Orbi Cloud 的测试环境上，门禁把提议全丢了：模型把 <code class="post-code--single">kind</code> 和 <code class="post-code--single">items</code> 放在顶层、和 <code class="post-code--single">missing</code> 并列，解析器只读 <code class="post-code--single">suggestion</code>，拦票评论里从来没出现过提议；同一段提示词发给 DeepSeek 三次，三次都返回了可用的拆分方案，只是放错了层级（<a href="https://github.com/orbi-build/orbi/issues/1955">Issue #1955</a>）。</p>
@@ -477,11 +477,11 @@ cat &quot;$out&quot;
 </code></pre></div>
 <p>白名单那条规矩在这里也成立。<code class="post-code--single">--tools</code> 本身也是白名单：它替换掉 Pi 默认启用的那组工具，所以这个会话里 <code class="post-code--single">bash</code>、<code class="post-code--single">edit</code>、<code class="post-code--single">write</code> 都调不到。扩展 <a href="https://github.com/orbi-build/orbi/blob/b5bf8d00/src/orbi/extensions/draft_tools.ts"><code class="post-code--single">draft_tools.ts</code></a> 注册列表末尾的三个工具。每个工具都把校验过的参数写进 <code class="post-code--single">ORBI_DRAFT_OUT</code> 指定的文件，再用 <code class="post-code--spaced">terminate: true</code> 结束运行，和澄清门禁一样：</p>
 <ul>
-<li><code class="post-code--single">write_draft</code> 接收一句说明要改什么的 <code class="post-code--single">reply</code>，以及起草的各张 Issue。每张都有标题和正文。要等同一份草稿里排在前面的 Issue 完成，还可以填上那张 Issue 在草稿里的编号。引擎只认那个文件是草稿，模型打在屏幕上的内容不会变成草稿。会话没有通用的写入或编辑工具，也就改不了仓库文件。</li>
+<li><code class="post-code--single">write_draft</code> 接收一句说明要改什么的 <code class="post-code--single">reply</code>，以及起草的各张 Issue。每张都有标题和正文。还有一个可选的 <code class="post-code--single">after</code>：填同一份草稿里排在前面某张 Issue 的序号（从 1 数起），建票时这张会被记为被那张阻塞（blocked by）。引擎只认那个文件是草稿，模型打在屏幕上的内容不会变成草稿。会话没有通用的写入或编辑工具，也就改不了仓库文件。</li>
 <li><code class="post-code--single">ask_user</code> 用在请求没说清要做什么的时候。模型给一句 <code class="post-code--single">reply</code>，再问最多三个问题。每题可以带两到四个选项，合理的默认项在标签末尾加 <code class="post-code--single">(Recommended)</code>。有推荐项，引擎就自己选，然后继续同一个会话；一轮最多启动三个起草会话，超过就算这一轮失败。只有没有推荐项的问题才会结束这一轮，等用户回答。用户在页面上答了，下一轮就在同一个会话目录上用 <code class="post-code--single">--continue</code> 启动 Pi。对话能接上，两轮之间不需要常驻进程。</li>
 <li><code class="post-code--single">reply</code> 用在不要求改代码的请求上，比如「只评审一下，告诉我结果」。它只回复，不起草 Issue。</li>
 </ul>
-<p>草稿出来后还有两个检查环节。先另起一个独立的 Pi 会话做校对（fidelity pass），把请求和草稿作为文本交给它，检查草稿是否恰好表达了用户的要求。它可以改标题和正文，不能改 Issue 的数量或顺序。这个会话带 <code class="post-code--spaced">--no-tools --no-skills --no-extensions</code>，把答案写到 stdout。这里能用 stdout，是因为这一步可选：回答为空或不可用，就保留起草者的版本。然后引擎跑领票时用的那道开工前预检。没过的草稿退回起草会话，用 <code class="post-code--single">--continue</code> 再走一轮，只退回一次。</p>
+<p>草稿出来后还有两个检查环节。先另起一个独立的 Pi 会话做校对（fidelity pass），把请求和草稿作为文本交给它，检查草稿是否恰好表达了用户的要求。它可以改标题和正文，不能改 Issue 的数量或顺序。这个会话带 <code class="post-code--spaced">--no-tools --no-skills --no-extensions</code>，把答案写到 stdout。这里能用 stdout，是因为这一步可选：回答为空或不可用，就保留起草者的版本。然后引擎跑澄清门禁的那道检查，也就是领票时判定 Issue 的同一个函数。没过的草稿退回起草会话，用 <code class="post-code--single">--continue</code> 再走一轮，只退回一次。</p>
 <p>早期放在 Cloud 侧的版本把提问工具叫 <code class="post-code--single">ask_user_question</code>，名字来自社区扩展 <code class="post-code--single">@juicesharp/rpiv-ask-user-question</code>，后者在终端里问问题。我们没有依赖那个包：在 <code class="post-code--spaced">pi -p</code>（Orbi 一直用的非交互模式）下，它会把工具整个撤掉，因为终端前没有人回答。</p>
 <h2 id="自己写-pi-扩展时可以照抄的">自己写 Pi 扩展时可以照抄的</h2>
 <p>无人值守地跑 Pi，可以照这四条做：</p>
@@ -489,7 +489,7 @@ cat &quot;$out&quot;
 <li>每个无人值守的 Pi 都用 <code class="post-code--single">--no-extensions</code> 启动，再用 <code class="post-code--single">-e</code> 把你确实要的那几个扩展加回来。清单写在配置里，npm 钉版本号；git 至少写 <code class="post-code--single">@ref</code>（tag、分支都能过校验），要两个会话跑的代码一字不差再钉 commit SHA；缺了钉子就拒绝整份配置；记住对 git 来源，Orbi 的校验只查「<code class="post-code--single">@</code> 后面有没有东西」，不查那个 ref 会不会动。</li>
 <li>要从模型拿结构化答案时，给它一个带 schema、带 <code class="post-code--spaced">terminate: true</code> 的工具，结果写进文件，其他一律当没有回答。不要解析 stdout。</li>
 <li>模型必须产出一份东西时，让扩展里的那个工具成为唯一的写入口，通用的写工具别放进 <code class="post-code--single">--tools</code>。</li>
-<li>无人值守的 Pi 用 <code class="post-code--single">--no-skills</code> 启动，再用 <code class="post-code--single">--skill</code> 逐个加回技能。会话没有 <code class="post-code--single">read</code> 或 <code class="post-code--single">bash</code> 时，系统提示词里不会有技能清单，但以 <code class="post-code--single">/skill:&lt;name&gt;</code> 开头的提示词仍会带进那个技能的全文，所以别让不可信文本成为提示词的开头。</li>
+<li>无人值守的 Pi 用 <code class="post-code--single">--no-skills</code> 启动，再用 <code class="post-code--single">--skill</code> 逐个加回技能。会话没有 <code class="post-code--single">read</code> 或 <code class="post-code--single">bash</code> 时，系统提示词里不会有技能清单，但以 <code class="post-code--single">/skill:&lt;name&gt;</code> 开头的提示词仍会带进已加载技能的全文，所以不可信的文本要用 <code class="post-code--single">@文件</code> 传，别直接当提示词。</li>
 </ol>
 <p>在 Orbi 里，实现者和评审者是仍然开着技能自动发现的两个会话；每个会话具体能看到什么，见技能一节的表。</p>
 <aside class="post-cta">

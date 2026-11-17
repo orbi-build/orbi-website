@@ -142,7 +142,7 @@ git clone https://github.com/badlogic/pi-skills ~/.pi/agent/skills/pi-skills   #
 
 实测加上 `--no-skills`，两个用户目录、受信任的项目目录、设置里的条目和已安装包的技能，都从提示词里消失了。显式给出的 `--skill` 路径仍然有效；不加 `--no-skills` 时，它们会和自动找到的技能一起加载。技能重名时只留一份，我测到留下的是 `~/.pi/agent/skills/` 里的那份；缺少描述的技能则被排除。这两种情况在 `pi -p` 的输出里都没有提示。Pi 文档说重名会警告，但我在打印模式里没看到。
 
-无人值守时，我会用下面这种命令形状；这不是一条已经测过的 Orbi 命令：
+这不是 Orbi 的命令，但无人值守时我会用这种形状，而且实测过：
 
 ```bash
 pi -p --no-skills --skill ./skills/tdd-dev --skill ./skills/code-review/SKILL.md "..."
@@ -150,7 +150,7 @@ pi -p --no-skills --skill ./skills/tdd-dev --skill ./skills/code-review/SKILL.md
 
 对应的测试显式传了两个技能，一个给目录，一个给 `SKILL.md` 路径。两个用户目录里也都装了技能，最后只有显式指定的这两个进了提示词。
 
-只有会话带 `read` 或 `bash` 时，Pi 才把技能清单放进系统提示词。实测用 `--no-tools`、`--no-builtin-tools` 或 `--tools ls`，即使传了 `--skill` 也没有清单；用 `--tools bash` 则有。但技能不只从清单这条路进来。提示词以 `/skill:<name>` 开头时，Pi 会自己读那个技能文件，把全文贴进用户消息。我传了 `--no-tools --skill ./extra/tdd`，提示词用 `/skill:tdd add a test`，发出的请求里仍然带着整份 `SKILL.md` 正文。关工具会隐藏清单，拦不住 `/skill:` 提示词。
+只有会话带 `read` 或 `bash` 时，Pi 才把技能清单放进系统提示词。实测用 `--no-tools`、`--no-builtin-tools` 或 `--tools ls`，即使传了 `--skill` 也没有清单；用 `--tools bash` 则有。但技能不只从清单这条路进来。提示词以 `/skill:<name>` 开头时，Pi 会自己读那个技能文件，把全文贴进用户消息。我传了 `--no-tools --skill ./extra/tdd`，提示词用 `/skill:tdd add a test`，发出的请求里仍然带着整份 `SKILL.md` 正文。这条路有两个限制，我都测过：`/skill:` 只展开 Pi 已经加载的技能，加了 `--no-skills` 后，只放在 `~/.agents/skills/` 里的技能就进不来；而且只有提示词正文本身以它开头才生效。用 `@文件` 传进去的提示词会被 Pi 包进一个 `<file>` 标签，一个以 `/skill:usr` 开头的文件没有被展开。
 
 `PI_CODING_AGENT_DIR` 可以改 Pi 的 agent 目录。我把它指向空目录后，`~/.pi/agent/skills/` 就不再加载了；`~/.agents/skills/` 仍按 `HOME` 加载。
 
@@ -166,7 +166,7 @@ pi -p --no-skills --skill ./skills/tdd-dev --skill ./skills/code-review/SKILL.md
 
 Orbi 根据用户自己的设置生成这个目录下的 `settings.json`。设置里的技能和包的技能能不能继续从这里加载，我没有测过。
 
-项目技能需要 runner 账号的 Pi 设置已经信任项目；Orbi 不传 `--approve`。
+Orbi 不传 `--approve`，所以仓库自带的技能只在两种情况下加载：runner 账号的 Pi 设置里写了 `"defaultProjectTrust": "always"`；或者没设 `pi_providers`、并且保存过 `/trust` 决定（这些决定存在 agent 目录里，设了 `pi_providers` 就换成了每次运行的新目录）。表里的「排除」只是不传 `orbi.toml` 里的那条路径；用户目录里有同名技能的话，照样会加载。
 
 | 会话 | 工具 | 技能参数 | 模型能看到什么 |
 |---|---|---|---|
@@ -179,7 +179,7 @@ Orbi 根据用户自己的设置生成这个目录下的 `settings.json`。设�
 | `orbi draft`：起草 | `read`、`grep`、`find`、`ls`、`write_draft`、`ask_user`、`reply` | `--no-skills`，不传 `--skill` | 没有 |
 | `orbi draft`：校对 | `--no-tools` | `--no-skills`，不传 `--skill` | 没有 |
 
-还没隔离完整的是实现者和评审者，用户技能仍能进这两个会话。本文旧版说 `ticket` 角色也可能拿到已安装的技能。Pi 确实会找到它们，但这个角色带 `--no-tools`，Pi 不会把技能列进提示词；Orbi 的提示词又来自文件，不会以 `/skill:` 开头。澄清门禁也因此看不到技能。
+还没隔离完整的是实现者和评审者，用户技能仍能进这两个会话。本文旧版说 `ticket` 角色也可能拿到已安装的技能。Pi 确实会找到它们，但这个角色带 `--no-tools`，Pi 不会把技能列进提示词；Orbi 又把每条提示词都用 `@文件` 传给 Pi，开头不会是 `/skill:`。澄清门禁也因此看不到技能。
 
 ## 用一个扩展工具拿结构化裁决
 
@@ -268,11 +268,11 @@ pi --tools read,grep,find,ls,write_draft,ask_user,reply \
 
 白名单那条规矩在这里也成立。`--tools` 本身也是白名单：它替换掉 Pi 默认启用的那组工具，所以这个会话里 `bash`、`edit`、`write` 都调不到。扩展 [`draft_tools.ts`](https://github.com/orbi-build/orbi/blob/b5bf8d00/src/orbi/extensions/draft_tools.ts) 注册列表末尾的三个工具。每个工具都把校验过的参数写进 `ORBI_DRAFT_OUT` 指定的文件，再用 `terminate: true` 结束运行，和澄清门禁一样：
 
-- `write_draft` 接收一句说明要改什么的 `reply`，以及起草的各张 Issue。每张都有标题和正文。要等同一份草稿里排在前面的 Issue 完成，还可以填上那张 Issue 在草稿里的编号。引擎只认那个文件是草稿，模型打在屏幕上的内容不会变成草稿。会话没有通用的写入或编辑工具，也就改不了仓库文件。
+- `write_draft` 接收一句说明要改什么的 `reply`，以及起草的各张 Issue。每张都有标题和正文。还有一个可选的 `after`：填同一份草稿里排在前面某张 Issue 的序号（从 1 数起），建票时这张会被记为被那张阻塞（blocked by）。引擎只认那个文件是草稿，模型打在屏幕上的内容不会变成草稿。会话没有通用的写入或编辑工具，也就改不了仓库文件。
 - `ask_user` 用在请求没说清要做什么的时候。模型给一句 `reply`，再问最多三个问题。每题可以带两到四个选项，合理的默认项在标签末尾加 `(Recommended)`。有推荐项，引擎就自己选，然后继续同一个会话；一轮最多启动三个起草会话，超过就算这一轮失败。只有没有推荐项的问题才会结束这一轮，等用户回答。用户在页面上答了，下一轮就在同一个会话目录上用 `--continue` 启动 Pi。对话能接上，两轮之间不需要常驻进程。
 - `reply` 用在不要求改代码的请求上，比如「只评审一下，告诉我结果」。它只回复，不起草 Issue。
 
-草稿出来后还有两个检查环节。先另起一个独立的 Pi 会话做校对（fidelity pass），把请求和草稿作为文本交给它，检查草稿是否恰好表达了用户的要求。它可以改标题和正文，不能改 Issue 的数量或顺序。这个会话带 `--no-tools --no-skills --no-extensions`，把答案写到 stdout。这里能用 stdout，是因为这一步可选：回答为空或不可用，就保留起草者的版本。然后引擎跑领票时用的那道开工前预检。没过的草稿退回起草会话，用 `--continue` 再走一轮，只退回一次。
+草稿出来后还有两个检查环节。先另起一个独立的 Pi 会话做校对（fidelity pass），把请求和草稿作为文本交给它，检查草稿是否恰好表达了用户的要求。它可以改标题和正文，不能改 Issue 的数量或顺序。这个会话带 `--no-tools --no-skills --no-extensions`，把答案写到 stdout。这里能用 stdout，是因为这一步可选：回答为空或不可用，就保留起草者的版本。然后引擎跑澄清门禁的那道检查，也就是领票时判定 Issue 的同一个函数。没过的草稿退回起草会话，用 `--continue` 再走一轮，只退回一次。
 
 早期放在 Cloud 侧的版本把提问工具叫 `ask_user_question`，名字来自社区扩展 `@juicesharp/rpiv-ask-user-question`，后者在终端里问问题。我们没有依赖那个包：在 `pi -p`（Orbi 一直用的非交互模式）下，它会把工具整个撤掉，因为终端前没有人回答。
 
@@ -283,7 +283,7 @@ pi --tools read,grep,find,ls,write_draft,ask_user,reply \
 1. 每个无人值守的 Pi 都用 `--no-extensions` 启动，再用 `-e` 把你确实要的那几个扩展加回来。清单写在配置里，npm 钉版本号；git 至少写 `@ref`（tag、分支都能过校验），要两个会话跑的代码一字不差再钉 commit SHA；缺了钉子就拒绝整份配置；记住对 git 来源，Orbi 的校验只查「`@` 后面有没有东西」，不查那个 ref 会不会动。
 2. 要从模型拿结构化答案时，给它一个带 schema、带 `terminate: true` 的工具，结果写进文件，其他一律当没有回答。不要解析 stdout。
 3. 模型必须产出一份东西时，让扩展里的那个工具成为唯一的写入口，通用的写工具别放进 `--tools`。
-4. 无人值守的 Pi 用 `--no-skills` 启动，再用 `--skill` 逐个加回技能。会话没有 `read` 或 `bash` 时，系统提示词里不会有技能清单，但以 `/skill:<name>` 开头的提示词仍会带进那个技能的全文，所以别让不可信文本成为提示词的开头。
+4. 无人值守的 Pi 用 `--no-skills` 启动，再用 `--skill` 逐个加回技能。会话没有 `read` 或 `bash` 时，系统提示词里不会有技能清单，但以 `/skill:<name>` 开头的提示词仍会带进已加载技能的全文，所以不可信的文本要用 `@文件` 传，别直接当提示词。
 
 在 Orbi 里，实现者和评审者是仍然开着技能自动发现的两个会话；每个会话具体能看到什么，见技能一节的表。
 

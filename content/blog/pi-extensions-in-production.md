@@ -142,7 +142,7 @@ Two lines from `pi --help`:
 
 `--no-skills` removed both user directories, trusted project directories, settings entries and installed packages from the prompt. Explicit `--skill` paths still work with it; without it, they add to discovery. A duplicate name kept one copy (`~/.pi/agent/skills/` won in my test); a missing description excluded the skill. Neither printed anything in `pi -p` output; Pi's docs say a collision produces a warning, and I did not see one in print mode.
 
-This is the shape I would use unattended, not a tested Orbi command:
+This is not an Orbi command, but it is the shape I would use unattended, and I tested it:
 
 ```bash
 pi -p --no-skills --skill ./skills/tdd-dev --skill ./skills/code-review/SKILL.md "..."
@@ -150,7 +150,7 @@ pi -p --no-skills --skill ./skills/tdd-dev --skill ./skills/code-review/SKILL.md
 
 The test behind it passed two explicit skills, one as a directory and one as a `SKILL.md` path, with skills installed in both user directories: only the two explicit ones reached the prompt.
 
-Pi only lists skills in the system prompt when the session has `read` or `bash`. Tests with `--no-tools`, `--no-builtin-tools` or `--tools ls` got no skill list even with `--skill`; `--tools bash` got it. That list is not the only way in, though: a prompt that starts with `/skill:<name>` makes Pi read that skill's file itself and paste its text into the user message. With `--no-tools --skill ./extra/tdd` and the prompt `/skill:tdd add a test`, the request carried the whole `SKILL.md` body.
+Pi only lists skills in the system prompt when the session has `read` or `bash`. Tests with `--no-tools`, `--no-builtin-tools` or `--tools ls` got no skill list even with `--skill`; `--tools bash` got it. That list is not the only way in, though: a prompt that starts with `/skill:<name>` makes Pi read that skill's file itself and paste its text into the user message. With `--no-tools --skill ./extra/tdd` and the prompt `/skill:tdd add a test`, the request carried the whole `SKILL.md` body. Two limits, both tested: `/skill:` only expands a skill Pi has loaded, so under `--no-skills` a skill that sits only in `~/.agents/skills/` stayed out; and it only works when the prompt text itself starts with it. A prompt passed as `@file` arrives wrapped in a `<file>` tag, and a file starting with `/skill:usr` was not expanded.
 
 `PI_CODING_AGENT_DIR` moves Pi's agent directory: pointing it at an empty directory stopped `~/.pi/agent/skills/` loading. `~/.agents/skills/` still loaded from `HOME`.
 
@@ -162,7 +162,7 @@ I read Orbi's source at `b5bf8d00`, after v0.7.45, including the [Pi command bui
 <worktree>/.orbi/pi-agent/
 ```
 
-Project skills require the runner account's Pi settings to trust the project; Orbi does not pass `--approve`.
+Orbi does not pass `--approve`, so a repository's own skills load only if the runner account's Pi settings set `"defaultProjectTrust": "always"`, or, without `pi_providers`, if a `/trust` decision is saved (Pi keeps those in the agent directory, which `pi_providers` replaces). The exclusions in the table only drop paths from `orbi.toml`; a skill with the same name in a user directory still loads.
 
 | Session | Tools | Skill flags | What the model sees |
 |---|---|---|---|
@@ -175,7 +175,7 @@ Project skills require the runner account's Pi settings to trust the project; Or
 | `orbi draft`: drafting | `read`, `grep`, `find`, `ls`, `write_draft`, `ask_user`, `reply` | `--no-skills`, no `--skill` | None |
 | `orbi draft`: fidelity pass | `--no-tools` | `--no-skills`, no `--skill` | None |
 
-The remaining isolation gap is the implementer and reviewer: user skills can still reach them. An earlier version of this post said the ticket role could pick up installed skills. Pi does find them, but the role runs with `--no-tools`, so Pi never lists them in its prompt, and Orbi's prompt comes from a file and never starts with `/skill:`. The clarification gate sees none for the same reason.
+The remaining isolation gap is the implementer and reviewer: user skills can still reach them. An earlier version of this post said the ticket role could pick up installed skills. Pi does find them, but the role runs with `--no-tools`, so Pi never lists them in its prompt, and Orbi passes every prompt as an `@file`, so it never starts with `/skill:`. The clarification gate sees none for the same reason.
 
 ## Writing a Pi extension with one accepted output channel
 
@@ -264,11 +264,11 @@ pi --tools read,grep,find,ls,write_draft,ask_user,reply \
 
 so the allowlist rule holds here too. `--tools` is itself an allowlist: it replaces Pi's default tool selection, so `bash`, `edit` and `write` are not callable in this session. The extension, [`draft_tools.ts`](https://github.com/orbi-build/orbi/blob/b5bf8d00/src/orbi/extensions/draft_tools.ts), registers the last three tools on that list, and each one writes its validated arguments to the file named in `ORBI_DRAFT_OUT` and ends the run with `terminate: true`, the same pattern as the clarification gate:
 
-- `write_draft` takes a one-sentence `reply` saying what will change, and the drafted issues, each a title, a body and optionally the number of an earlier issue in the same draft that it waits for. That file is the only thing the engine accepts as a draft, so whatever the model prints to the screen never becomes one, and with no general write or edit tool the session cannot change files in the repository.
+- `write_draft` takes a one-sentence `reply` saying what will change, and the drafted issues, each a title, a body and optionally `after`, the 1-based position of an earlier issue in the same draft; when the issues are created, that one is recorded as blocked by the earlier one. That file is the only thing the engine accepts as a draft, so whatever the model prints to the screen never becomes one, and with no general write or edit tool the session cannot change files in the repository.
 - `ask_user` is for the case where the request does not say what to build. The model sends a one-sentence `reply` and up to three questions; a question can carry two to four options, and the reasonable default's label ends with `(Recommended)`. The engine takes a recommended option itself and starts Pi again on the same session with `--continue`; after three such drafting runs in one round it gives up and the round fails; only questions without one end the round and wait for the person. When the person answers on the page, the next round starts Pi with `--continue` on the same session directory, so the conversation carries over without a resident process.
 - `reply` is for a request that asks for no code change ("just review it and tell me"): the answer is a reply and no issue is drafted.
 
-Two checks follow a draft. A second, independent Pi session, the fidelity pass, gets the request and the draft as text and checks that the draft asks for exactly what the person asked, and may reword titles and bodies (never the number of issues or their order); it runs with `--no-tools --no-skills --no-extensions` and answers in stdout, which is safe here only because it is optional: an empty or unusable answer keeps the drafter's version. Then the engine runs the same pre-work check that judges an issue at claim time; a draft that fails goes back to the drafting session exactly once, as one more `--continue` turn.
+Two checks follow a draft. A second, independent Pi session, the fidelity pass, gets the request and the draft as text and checks that the draft asks for exactly what the person asked, and may reword titles and bodies (never the number of issues or their order); it runs with `--no-tools --no-skills --no-extensions` and answers in stdout, which is safe here only because it is optional: an empty or unusable answer keeps the drafter's version. Then the engine runs the clarification gate's check, the same function that judges an issue at claim time; a draft that fails goes back to the drafting session exactly once, as one more `--continue` turn.
 
 An earlier Cloud-side version of this tool named its question tool `ask_user_question`, after a community extension, `@juicesharp/rpiv-ask-user-question`, which asks the questions in the terminal. We did not take that package as a dependency: in `pi -p`, the non-interactive mode Orbi always uses, it withdraws its tool entirely, because there is nobody at a terminal to answer.
 
@@ -279,7 +279,7 @@ If you run Pi without a person at the keyboard, the short version of this post i
 1. Start every unattended Pi with `--no-extensions`, then add back exactly the extensions you mean to load with `-e`. Keep the list in config, pin npm packages to a version and git sources to a commit SHA, and reject the config when a pin is missing. Orbi's own check accepts any git `@ref`, including a branch that moves.
 2. When you need a structured answer from the model, give it one tool with a schema and `terminate: true`, write the result to a file, and treat anything else as no answer. Do not parse stdout.
 3. When the model must produce an artifact, make the extension tool the only write path and leave the general write tools out of `--tools`.
-4. Start unattended Pi with `--no-skills`, then add each skill with `--skill`. A session without `read` or `bash` gets no skill list in its system prompt, but a prompt starting with `/skill:<name>` still pulls that skill's text in, so do not let untrusted text become the start of the prompt.
+4. Start unattended Pi with `--no-skills`, then add each skill with `--skill`. A session without `read` or `bash` gets no skill list in its system prompt, but a prompt starting with `/skill:<name>` still pulls a loaded skill's text in, so pass untrusted text as an `@file` rather than as the prompt itself.
 
 In Orbi, the implementer and the reviewer are the two sessions where skill discovery is still on; the table in the skills section lists what each session sees.
 
