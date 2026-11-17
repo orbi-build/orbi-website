@@ -1,8 +1,8 @@
 ---
-title: Pi 扩展在生产环境里怎么用：隔离加载，两个自写扩展
+title: Orbi 怎么在生产里隔离加载 Pi 扩展和技能，又自己写了哪两个扩展
 date: 2026-10-30
 updated: 2026-11-17
-summary: Orbi 无人值守跑 Pi 时怎么加载扩展和技能（skills）：扩展白名单、技能查找位置，以及限制每个会话的参数。
+summary: Orbi 无人值守跑 Pi 时怎么加载扩展和技能（skills）：扩展白名单、Pi 去哪找技能、怎么按会话关掉，以及我们自己写的两个扩展。
 lang: zh
 author: Larry 🍀 Orbi
 image: /img/blog-pi-extensions-card.png
@@ -11,7 +11,7 @@ series: pi
 
 Pi 扩展（extension）是 [Pi 编程 agent](https://pi.dev) 启动时加载的 TypeScript（或 JavaScript）模块：每个扩展导出一个函数，拿到扩展 API，就能注册模型可以调用的工具、加命令、订阅会话事件。Pi 找扩展有好几条路，在自己的笔记本上每一条都方便。在一个没人盯着的服务里，其中两条自动的路也可能把你没选过的代码带进会话。
 
-我是 Larry 🍀 Orbi，Orbi 的创始人。Orbi 无人值守地跑 Pi：接一张 GitHub Issue，起一个 Pi 写改动，再起另一个 Pi 评审，评审和 CI 都过了才合并。[Pi 专题页](/zh/guides/pi-coding-agent/)讲的是这些会话外面那层 runner（Orbi 里负责领票、起 Pi、合并的那个常驻程序），[系列第一篇](/zh/blog/orbi-on-pi-coding-agent/)跟着一张 Issue 走完全程。这一篇讲 Pi 扩展：Orbi 怎么加载，改成这样之前出过什么事，以及我们自己最后写了哪两个扩展。另有一节讲 [Pi agent skills（技能）](#pi-agent-skills-技能-pi-去哪找-怎么关掉)，说清目录、安装和显式加载。下面的扩展命令和配置就是今天在 Pi 1.2.0 上跑的；技能一节我在 Pi 1.5.2 和 1.2.0 上都实测过。文中的 Orbi 版本号都是开源引擎的发布版本。
+我是 Larry 🍀 Orbi，Orbi 的创始人。Orbi 无人值守地跑 Pi：接一张 GitHub Issue，起一个 Pi 写改动，再起另一个 Pi 评审，评审和 CI 都过了才合并。[Pi 专题页](/zh/guides/pi-coding-agent/)讲的是这些会话外面那层 runner（Orbi 里负责领票、起 Pi、合并的那个常驻程序），[系列第一篇](/zh/blog/orbi-on-pi-coding-agent/)跟着一张 Issue 走完全程。这一篇讲 Pi 扩展：Orbi 怎么加载，改成这样之前出过什么事，以及我们自己最后写了哪两个扩展。另有一节讲 [Pi agent skills（技能）](#pi-agent-skills-技能-pi-去哪找-怎么关掉)，说清目录、安装和显式加载。下面的扩展命令和配置就是今天在 Pi 1.2.0 上跑的；技能一节在 Pi 1.5.2 上实测，主要的查找用例也在 1.2.0 上跑过一遍。文中的 Orbi 版本号都是开源引擎的发布版本。
 
 ## Pi 扩展是什么，Pi 从哪三个地方加载它
 
@@ -29,7 +29,7 @@ export default function (pi: ExtensionAPI) {
 
 工具和命令也在这个函数里注册（`pi.registerTool`、`pi.registerCommand`），完整的工具例子在后面。扩展也可以是一个带 `index.ts` 或 `index.js` 的目录，或者一个在 `package.json` 里声明入口的包。
 
-Pi 从三个地方加载扩展，后面说的一切都建立在这三者的区别上：
+Pi 从三个地方加载扩展：
 
 1. **自动发现。** `~/.pi/agent/extensions/`（全局）和 `.pi/extensions/`（项目内）下的 `*.ts`、`*.js` 文件、带 `index.ts` 或 `index.js` 的目录、带清单的包，都会自动加载。只找一层深。项目内的扩展，要等你在 Pi 第一次打开这个项目时回答「信任」之后才会加载。
 2. **设置文件。** `pi install <来源>` 把一个 npm 或 git 包记进 `~/.pi/agent/settings.json`，以后每次启动都加载。`pi list` 看装了什么。
@@ -43,7 +43,7 @@ Pi 从三个地方加载扩展，后面说的一切都建立在这三者的区�
 --no-builtin-tools, -nbt Disable built-in tools by default but keep extension/custom tools enabled
 ```
 
-`--no-extensions` 关掉自动发现、`settings.json` 里的包，以及 Pi 自带的内置扩展（比如 MCP 支持）；[命令行文档](https://pi.dev/docs/latest/cli)的原话是关掉「discovered, configured, and built-in extensions」。显式的 `-e` 照样加载，内置扩展也可以用 `-e builtin:<名字>` 单独点名：`pi -ne -e builtin:mcp` 就是一个只有 MCP 这一个扩展的会话，把 `builtin:mcp` 换成你自己的扩展文件，就是只有你那个扩展的会话。要注意这个开关不管内置工具。默认开着的四个（`read`、`bash`、`edit`、`write`）还在；`ls`、`find`、`grep` 也是内置工具，只是默认不开，下面几处 `--tools` 清单里的名字就是从这儿来的。关内置工具是另一个开关 `--no-builtin-tools`，下面的澄清门禁两个都用。
+`--no-extensions` 关掉自动发现、`settings.json` 里的包，以及 Pi 自带的内置扩展；[命令行文档](https://pi.dev/docs/latest/cli)的原话是关掉「discovered, configured, and built-in extensions」。显式的 `-e` 照样加载，内置扩展也可以用 `-e builtin:<名字>` 单独点名：`pi -ne -e builtin:mcp` 就是一个只有 MCP 这一个扩展的会话，把 `builtin:mcp` 换成你自己的扩展文件，就是只有你那个扩展的会话。要注意这个开关不管内置工具。默认开着的四个（`read`、`bash`、`edit`、`write`）还在；`ls`、`find`、`grep` 也是内置工具，只是默认不开，下面几处 `--tools` 清单里的名字就是从这儿来的。关内置工具是另一个开关 `--no-builtin-tools`，下面的澄清门禁两个都用。
 
 ## 一次 D-Bus 卡死，让 Orbi 不再信任 Pi 的默认加载
 
@@ -51,7 +51,7 @@ Pi 从三个地方加载扩展，后面说的一切都建立在这三者的区�
 
 runner 的 Pi 加载了我自己 `~/.pi/agent/settings.json` 里声明的包，其中一个是 `pi-mcp-adapter`。这个插件启动时初始化 `@napi-rs/keyring`，后者会通过 D-Bus 调一次 Secret Service。在 `systemd --user` 的服务上下文里，这个调用会卡住（那天晚上好几次运行都卡在这里；同样的配置手动启动每次都正常），node 就在第一个模型请求发出之前一直等着。这次运行里没有任何东西要用 MCP。插件在那儿，是因为我交互使用时装了它，Pi 的默认加载（会读 `settings.json`）又把它交给了无人值守的会话。把它从 `settings.json` 里拿掉，那次运行就好了：同一个运行重跑，15 秒内写出了会话文件、拿到了第一个模型响应。
 
-就这一晚的事故，但一次就够了：跑 runner 的那个用户账号（在我机器上就是我）为交互使用装的一个包，停掉了一次无人值守的运行，而 Orbi 的配置里没有任何一行说它可以进来。针对它的修法是 [Issue #249](https://github.com/orbi-build/orbi/issues/249)，9 月 7 日（UTC）合并：Orbi 自己声明一次运行可以有哪些扩展，实现者和评审者两个会话都带 `--no-extensions` 启动。第三个角色 `ticket`（写 Issue 评论的那个会话）晚了一个月才补上，见下面的表。
+那个包是我为交互使用装的，装在 runner 也在用的同一个用户账号下；Orbi 的配置里没有任何一行允许它进来。针对它的修法是 [Issue #249](https://github.com/orbi-build/orbi/issues/249)，9 月 7 日（UTC）合并：Orbi 自己声明一次运行可以有哪些扩展，实现者和评审者两个会话都带 `--no-extensions` 启动。第三个角色 `ticket`（写 Issue 评论的那个会话）晚了一个月才补上，见下面的表。
 
 ## Orbi 用 `--no-extensions` 加白名单加载 Pi 扩展
 
@@ -89,7 +89,7 @@ def _pi_extension_args(config: RunnerConfig) -> list[str]:
 
 实现者、评审者、`ticket` 角色，以及 `orbi suggest` 里写建议的那个会话，拿到 `--no-extensions`，再按启用的条目各加一个 `--extension`。白名单靠的是这两样合在一起：`--no-extensions` 拒掉自动发现、设置文件和内置扩展，显式给出的条目就是会话能有的全部扩展。`-e` 接的不只是路径：帮助文本写的是「文件或 `builtin:<名字>`」，但在 Pi 1.2.0 上 `pi -ne -e npm:<包>@<版本>` 会真的去 npm 仓库取包（写错名字会收到 npm 自己的 404），`-e` 接 `git:<主机>/<owner>/<repo>@<ref>` 会去克隆，Orbi 配置里的 `npm:`、`git:` 来源就是这样原样交给 Pi 的。`pi_extensions` 为空，Pi 就一个扩展都没有，这是 Orbi 的默认。
 
-不过不是每个 Orbi 会话都用这份清单。下面是三种形状，每一种都是对「这个会话该能做什么」的不同回答：
+不过不是每个 Orbi 会话都用这份清单。不同会话的扩展参数不一样，一共三种：
 
 | 会话 | 扩展参数 | 为什么 |
 |---|---|---|
@@ -240,7 +240,7 @@ export default function (pi: ExtensionAPI) {
 
 起作用的有三处。`parameters` 是一个每一层都带 `additionalProperties: false` 的 TypeBox schema，Pi 在跑 `execute` 之前就按它校验模型给的参数，所以顶层的 `kind`、不认识的检查 id、（完整文件里）只有一项的 split，都到不了文件。`execute` 把校验过的参数写到引擎放在 `ORBI_CLARIFY_OUT` 里的那个路径，引擎读文件，不读 stdout。`terminate: true` 让这次运行在这次调用之后就结束，不再为下一轮付钱；Pi 只在这一轮的每个工具调用都返回了它时才这样做，一次有效裁决和一次失败的调用混在同一轮里，运行还会继续。会话用 `--no-builtin-tools --no-extensions --extension <这个文件>` 启动：内置工具关、自动发现关、只开这一个扩展。
 
-schema 防的是畸形的裁决，不是缺失的裁决。一次调用被 schema 拒掉只是那一次失败，模型可以再试。整轮结束仍然没有文件（模型用散文回答，或者一次都没通过校验），引擎才把这当成模型不可用来处理：门禁放行，交付不经过这道检查就开始。薄票于是像门禁出现之前那样照常进来；不再发生的，是提议丢了却没有痕迹：引擎读到的每条提议仍要过一道检查（比如空行会被拒掉），丢掉时会把原因写进日志。
+schema 防的是畸形的裁决，不是缺失的裁决。一次调用被 schema 拒掉只是那一次失败，模型可以再试。整轮结束仍然没有文件（模型用散文回答，或者一次都没通过校验），引擎才把这当成模型不可用来处理：门禁放行，交付不经过这道检查就开始。薄票于是像门禁出现之前那样照常进来；区别在于提议不会再无声无息地丢掉：引擎读到的每条提议仍要过一道检查（比如空行会被拒掉），丢掉时会把原因写进日志。
 
 Pi 加载扩展时会把 `typebox` 指向它自己钉死的那份，所以这样的文件不需要自己的 `package.json`。想自己试一下这个形状，把上面的代码存成 `verdict.ts`，然后：
 
@@ -254,7 +254,7 @@ cat "$out"
 
 几种出错长得不一样。Pi 没报错、`cat` 说文件不存在：模型根本没调工具。Pi 报参数校验错误：参数不合 schema。工具抛异常：`ORBI_CLARIFY_OUT` 没设，或者那个路径写不了。
 
-## Orbi 的起草工具：扩展是唯一的写入口
+## 起草 Issue 的扩展
 
 第二个扩展用来起草 Issue。Orbi Cloud 托管同一套 runner，有个页面让你用对话说想改什么，由 Orbi 起草 Issue。从 Orbi v0.7.32 起，起草由引擎里的 `orbi draft` 负责，Cloud 在租户沙箱里调用它。每轮先启动一个起草用的 Pi 会话，引擎拼出的命令是这个形状：
 
@@ -278,14 +278,14 @@ pi --tools read,grep,find,ls,write_draft,ask_user,reply \
 
 ## 自己写 Pi 扩展时可以照抄的
 
-如果你跑 Pi 时键盘前没有人，这篇的短版是四个习惯：
+无人值守地跑 Pi，可以照这四条做：
 
 1. 每个无人值守的 Pi 都用 `--no-extensions` 启动，再用 `-e` 把你确实要的那几个扩展加回来。清单写在配置里，npm 钉版本号；git 至少写 `@ref`（tag、分支都能过校验），要两个会话跑的代码一字不差再钉 commit SHA；缺了钉子就拒绝整份配置；记住对 git 来源，Orbi 的校验只查「`@` 后面有没有东西」，不查那个 ref 会不会动。
 2. 要从模型拿结构化答案时，给它一个带 schema、带 `terminate: true` 的工具，结果写进文件，其他一律当没有回答。不要解析 stdout。
 3. 模型必须产出一份东西时，让扩展里的那个工具成为唯一的写入口，通用的写工具别放进 `--tools`。
 4. 无人值守的 Pi 用 `--no-skills` 启动，再用 `--skill` 逐个加回技能。会话没有 `read` 或 `bash` 时，系统提示词里不会有技能清单，但以 `/skill:<name>` 开头的提示词仍会带进那个技能的全文，所以别让不可信文本成为提示词的开头。
 
-Orbi 还给实现者和评审者开着技能自动发现。它们能看到 `~/.agents/skills/` 里的用户技能；`orbi.toml` 没设 `pi_providers` 文件时，也能看到 `~/.pi/agent/skills/` 里的技能。另外还有 Pi 设置里 `"skills"` 列出的条目和已安装包提供的技能。写评论的 `ticket` 角色和澄清门禁没有 `read`、`bash` 工具，所以看不到技能。`orbi suggest` 和 `orbi draft` 都传了 `--no-skills`。
+在 Orbi 里，实现者和评审者是仍然开着技能自动发现的两个会话；每个会话具体能看到什么，见技能一节的表。
 
 ## 相关
 
