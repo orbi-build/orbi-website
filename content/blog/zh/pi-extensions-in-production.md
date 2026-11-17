@@ -1,7 +1,8 @@
 ---
 title: Pi 扩展在生产环境里怎么用：隔离加载，两个自写扩展
 date: 2026-10-30
-summary: Orbi 无人值守跑 Pi 时怎么处理扩展：--no-extensions 加一份显式的白名单，一次 D-Bus 卡死逼出来的做法，以及我们自己写的两个扩展。
+updated: 2026-11-17
+summary: Orbi 无人值守跑 Pi 时怎么加载扩展和技能（skills）：扩展白名单、技能查找位置，以及限制每个会话的参数。
 lang: zh
 author: Larry 🍀 Orbi
 image: /img/blog-pi-extensions-card.png
@@ -10,7 +11,7 @@ series: pi
 
 Pi 扩展（extension）是 [Pi 编程 agent](https://pi.dev) 启动时加载的 TypeScript（或 JavaScript）模块：每个扩展导出一个函数，拿到扩展 API，就能注册模型可以调用的工具、加命令、订阅会话事件。Pi 找扩展有好几条路，在自己的笔记本上每一条都方便。在一个没人盯着的服务里，其中两条自动的路也可能把你没选过的代码带进会话。
 
-我是 Larry 🍀 Orbi，Orbi 的创始人。Orbi 无人值守地跑 Pi：接一张 GitHub Issue，起一个 Pi 写改动，再起另一个 Pi 评审，评审和 CI 都过了才合并。[Pi 专题页](/zh/guides/pi-coding-agent/)讲的是这些会话外面那层 runner（Orbi 里负责领票、起 Pi、合并的那个常驻程序），[系列第一篇](/zh/blog/orbi-on-pi-coding-agent/)跟着一张 Issue 走完全程。这一篇只讲 Pi 扩展：Orbi 怎么加载，改成这样之前出过什么事，以及我们自己最后写了哪两个扩展。下面的命令、以及这份配置的样子，就是今天在跑的，Pi 版本 1.2.0；文中的 Orbi 版本号都是开源引擎的发布版本。
+我是 Larry 🍀 Orbi，Orbi 的创始人。Orbi 无人值守地跑 Pi：接一张 GitHub Issue，起一个 Pi 写改动，再起另一个 Pi 评审，评审和 CI 都过了才合并。[Pi 专题页](/zh/guides/pi-coding-agent/)讲的是这些会话外面那层 runner（Orbi 里负责领票、起 Pi、合并的那个常驻程序），[系列第一篇](/zh/blog/orbi-on-pi-coding-agent/)跟着一张 Issue 走完全程。这一篇讲 Pi 扩展：Orbi 怎么加载，改成这样之前出过什么事，以及我们自己最后写了哪两个扩展。另有一节讲 [Pi agent skills（技能）](#pi-agent-skills-技能-pi-去哪找-怎么关掉)，说清目录、安装和显式加载。下面的扩展命令和配置就是今天在 Pi 1.2.0 上跑的；技能一节我在 Pi 1.5.2 和 1.2.0 上都实测过。文中的 Orbi 版本号都是开源引擎的发布版本。
 
 ## Pi 扩展是什么，Pi 从哪三个地方加载它
 
@@ -96,7 +97,89 @@ def _pi_extension_args(config: RunnerConfig) -> list[str]:
 | `orbi suggest`（读仓库、提任务建议的命令）的仓库摘要会话 | `--no-extensions`，不带任何 `--extension`；其他参数是 `--tools read,ls,find --no-skills --no-context-files` | 它只读，连配置里的扩展都不需要 |
 | 澄清门禁（仓库的 `.github/orbi.toml` 里 `clarify_thin_tickets = true`） | `--no-builtin-tools --no-extensions --extension <clarify_verdict.ts>` | 只有一个工具，随引擎一起发布；别的都调不到 |
 
-第一行不是一直这么完整。2026 年 10 月 5 日之前，`ticket` 角色启动时完全不带扩展参数，用户装的扩展可以加载进写 Issue 评论的会话。[Issue #1558](https://github.com/orbi-build/orbi/issues/1558) 当天在 Orbi v0.6.2 修了。skill 是同一件事的另一半。skill 是一个含 `SKILL.md` 指令文件的目录；Pi 启动时只把每个 skill 的名字和描述放进提示词，模型要用时才读全文，找 skill 的路数和找扩展差不多，只是会递归找。那边的隔离还不完整：实现者、评审者和 `ticket` 角色拿到 Orbi 自己的 `--skill`，但没有 `--no-skills`，所以系统用户装的 skill 可能加载进去。runner 的这些会话里，只有 `orbi suggest` 传了 `--no-skills`，它的两个会话（写建议的那个和写仓库摘要的那个）都传。下面的澄清门禁是一个 `ticket` 会话，扩展参数不同（单独那一个 `--extension`，而不是配置里的清单），skill 的设置和 `ticket` 角色一样。
+第一行不是一直这么完整。2026 年 10 月 5 日之前，`ticket` 角色启动时完全不带扩展参数，用户装的扩展可以加载进写 Issue 评论的会话。[Issue #1558](https://github.com/orbi-build/orbi/issues/1558) 当天在 Orbi v0.6.2 修了。技能有自己的查找规则和工具要求，见[下一节](#pi-agent-skills-技能-pi-去哪找-怎么关掉)。
+
+## Pi agent skills（技能）：Pi 去哪找、怎么关掉
+
+一个技能就是一个带 `SKILL.md` 的目录。文件开头的 front matter 写 `name` 和 `description`，后面是指令。Pi 把名称、描述和文件路径放进系统提示词，任务匹配时，模型再读文件。
+
+我用本地服务代替模型 API，记录 Pi 发出的第一个请求，每个用例都用一个临时 `HOME`。测的是 Pi 1.5.2（当时 npm 上的当前版本）和 1.2.0。两个版本都跑过的用例，结果相同。下面记录的都是 Pi 实际发出的系统提示词里出现了什么。
+
+### Pi 去哪找
+
+| 位置 | 什么时候加载 | 说明 |
+|---|---|---|
+| `~/.pi/agent/skills/` | 用户级，始终查找 | 递归查找：放在两层子目录里的 `SKILL.md` 也加载了。 |
+| `~/.agents/skills/` | 用户级，始终查找 | Agent Skills 的目录，按 `HOME` 解析。 |
+| `.pi/skills/` | 项目受信任时 | 只找工作目录：从 `app/` 启动时，加载的是 `app/.pi/skills/`，不是仓库根目录下的 `.pi/skills/`。 |
+| `.agents/skills/` | 项目受信任时 | 从工作目录逐级往上找，到 git 仓库根目录为止，不再往上；不在 git 仓库里时，一直找到文件系统根目录。 |
+| `~/.pi/agent/settings.json` → `"skills"` | 已配置时 | 文件或目录的路径数组；实测绝对路径能加载。 |
+| 已安装的包 | 已安装，且提供技能时 | 包里的 `skills/` 目录，或 `package.json` 的 `"pi"` 清单里声明的技能。 |
+
+打印模式（`pi -p`）、JSON 和 RPC 模式都不会弹出信任提示。项目技能默认跳过，除非传了 `--approve`（`-a`）、已有保存的 `/trust` 决定，或在 `settings.json` 里设了 `"defaultProjectTrust": "always"`。实测传 `--approve` 或改这个设置都能加载；两者都不加时，没有项目技能加载。
+
+安装时，可以把路径列进 `~/.pi/agent/settings.json` 的 `"skills"` 数组，也可以用 `pi install <source>` 安装 npm 包、git 来源或本地路径。安装会把来源记进同一个文件的 `"packages"`。一个含有 `skills/pack-skill/SKILL.md` 的本地包，运行下面这条后就能加载：
+
+```bash
+pi install ./my-skill-pack
+```
+
+Pi 技能文档指向的技能合集 `badlogic/pi-skills` 有个坑。我测的提交是 `90bb51c`，它的八个技能目录直接放在仓库顶层，没有 `skills/`，也没有 `package.json`。`pi list` 只能证明装上了，不能证明模型收到了技能：
+
+```bash
+pi install git:github.com/badlogic/pi-skills   # 安装成功，pi list 也列出来了，但一个技能都没加载
+git clone https://github.com/badlogic/pi-skills ~/.pi/agent/skills/pi-skills   # 8 个技能都加载
+```
+
+它的 README 推荐的就是上面这个克隆位置；项目内则用 `.pi/skills/pi-skills`。
+
+`pi --help` 里的两行原文：
+
+```text
+--skill <path>                 Load a skill file or directory (can be used multiple times)
+--no-skills, -ns               Disable skills discovery and loading
+```
+
+实测加上 `--no-skills`，两个用户目录、受信任的项目目录、设置里的条目和已安装包的技能，都从提示词里消失了。显式给出的 `--skill` 路径仍然有效；不加 `--no-skills` 时，它们会和自动找到的技能一起加载。技能重名时只留一份，我测到留下的是 `~/.pi/agent/skills/` 里的那份；缺少描述的技能则被排除。这两种情况在 `pi -p` 的输出里都没有提示。Pi 文档说重名会警告，但我在打印模式里没看到。
+
+无人值守时，我会用下面这种命令形状；这不是一条已经测过的 Orbi 命令：
+
+```bash
+pi -p --no-skills --skill ./skills/tdd-dev --skill ./skills/code-review/SKILL.md "..."
+```
+
+对应的测试显式传了两个技能，一个给目录，一个给 `SKILL.md` 路径。两个用户目录里也都装了技能，最后只有显式指定的这两个进了提示词。
+
+只有会话带 `read` 或 `bash` 时，Pi 才把技能清单放进系统提示词。实测用 `--no-tools`、`--no-builtin-tools` 或 `--tools ls`，即使传了 `--skill` 也没有清单；用 `--tools bash` 则有。但技能不只从清单这条路进来。提示词以 `/skill:<name>` 开头时，Pi 会自己读那个技能文件，把全文贴进用户消息。我传了 `--no-tools --skill ./extra/tdd`，提示词用 `/skill:tdd add a test`，发出的请求里仍然带着整份 `SKILL.md` 正文。关工具会隐藏清单，拦不住 `/skill:` 提示词。
+
+`PI_CODING_AGENT_DIR` 可以改 Pi 的 agent 目录。我把它指向空目录后，`~/.pi/agent/skills/` 就不再加载了；`~/.agents/skills/` 仍按 `HOME` 加载。
+
+### Orbi 怎么给每个会话传技能
+
+我读的是 v0.7.45 之后、`b5bf8d00` 这次提交的 Orbi 源码，包括 [Pi 命令构造器](https://github.com/orbi-build/orbi/blob/b5bf8d00/src/orbi/pi_command.py)。`orbi draft` 从 v0.7.32 加入，把一句话变成 Issue。下表里「配置的技能」指 `orbi.toml` 中 `skills` 列出的路径。「用户技能」包括始终会找的 `~/.agents/skills/`，以及 `orbi.toml` 没有设置 `pi_providers` 文件时的 `~/.pi/agent/skills/`，还包括 Pi 设置里 `"skills"` 列出的条目和已安装包提供的技能。
+
+设置 `pi_providers` 后，`PI_CODING_AGENT_DIR` 会指向每次运行各自的目录：
+
+```text
+<worktree>/.orbi/pi-agent/
+```
+
+Orbi 根据用户自己的设置生成这个目录下的 `settings.json`。设置里的技能和包的技能能不能继续从这里加载，我没有测过。
+
+项目技能需要 runner 账号的 Pi 设置已经信任项目；Orbi 不传 `--approve`。
+
+| 会话 | 工具 | 技能参数 | 模型能看到什么 |
+|---|---|---|---|
+| 实现者 | 默认的 `read`、`bash`、`edit`、`write` | 每个配置路径各传一个 `--skill`，排除 `review-fix-loop`；不传 `--no-skills` | 配置的技能、用户技能和受信任项目的技能 |
+| 评审者 | 同样的默认工具 | 同上，另排除 `tdd-dev` | 排除后的配置技能、用户技能和受信任项目的技能 |
+| 写评论的 `ticket` 角色 | `--no-tools` | 传配置里的 `--skill`，排除 `review-fix-loop`；不传 `--no-skills` | 没有 |
+| 澄清门禁 | `--no-builtin-tools`，一个扩展 | 与 `ticket` 相同 | 没有 |
+| `orbi suggest`：写建议 | `read`、`grep`、`find`、`ls` | `--no-skills`，用一个 `--skill` 加载 `suggest-ai-ready-issues` | 只有这个技能 |
+| `orbi suggest`：仓库摘要 | `read`、`ls`、`find` | `--no-skills`，不传 `--skill` | 没有 |
+| `orbi draft`：起草 | `read`、`grep`、`find`、`ls`、`write_draft`、`ask_user`、`reply` | `--no-skills`，不传 `--skill` | 没有 |
+| `orbi draft`：校对 | `--no-tools` | `--no-skills`，不传 `--skill` | 没有 |
+
+还没隔离完整的是实现者和评审者，用户技能仍能进这两个会话。本文旧版说 `ticket` 角色也可能拿到已安装的技能。Pi 确实会找到它们，但这个角色带 `--no-tools`，Pi 不会把技能列进提示词；Orbi 的提示词又来自文件，不会以 `/skill:` 开头。澄清门禁也因此看不到技能。
 
 ## 用一个扩展工具拿结构化裁决
 
@@ -171,33 +254,38 @@ cat "$out"
 
 几种出错长得不一样。Pi 没报错、`cat` 说文件不存在：模型根本没调工具。Pi 报参数校验错误：参数不合 schema。工具抛异常：`ORBI_CLARIFY_OUT` 没设，或者那个路径写不了。
 
-## Orbi Cloud 起草 Issue 用的扩展
+## Orbi 的起草工具：扩展是唯一的写入口
 
-第二个扩展在 Orbi Cloud 里。Cloud 托管同一套 runner，另外加了一个页面：你用对话说想改什么，Orbi 替你起草 Issue。那次起草是租户沙箱（每个租户仓库一个独立的 Linux 用户）里的一个 Pi 会话，这样启动：
+第二个扩展用来起草 Issue。Orbi Cloud 托管同一套 runner，有个页面让你用对话说想改什么，由 Orbi 起草 Issue。从 Orbi v0.7.32 起，起草由引擎里的 `orbi draft` 负责，Cloud 在租户沙箱里调用它。每轮先启动一个起草用的 Pi 会话，引擎拼出的命令是这个形状：
 
 ```bash
-pi --no-extensions --no-context-files --no-skills -e <起草扩展> \
-   --tools read,grep,find,ls,write_draft,ask_user_question \
-   --session-dir <目录> --session-id <id>
-# 请求从标准输入喂进去；标准输入不是终端时，pi 非交互地跑完就退出
+pi --tools read,grep,find,ls,write_draft,ask_user,reply \
+   --no-skills --no-context-files \
+   --no-extensions --extension <draft_tools.ts> \
+   --print --session-dir <dir> --system-prompt <file> @<context file>
+# 之后几轮加 --continue，沿用同一个 --session-dir
 ```
 
-白名单那条规矩在这里也成立。`--tools` 本身也是白名单：它替换掉 Pi 默认启用的那组工具，所以这个会话里 `bash`、`edit`、`write` 都调不到。扩展注册的就是列表末尾那两个工具：
+白名单那条规矩在这里也成立。`--tools` 本身也是白名单：它替换掉 Pi 默认启用的那组工具，所以这个会话里 `bash`、`edit`、`write` 都调不到。扩展 [`draft_tools.ts`](https://github.com/orbi-build/orbi/blob/b5bf8d00/src/orbi/extensions/draft_tools.ts) 注册列表末尾的三个工具。每个工具都把校验过的参数写进 `ORBI_DRAFT_OUT` 指定的文件，再用 `terminate: true` 结束运行，和澄清门禁一样：
 
-- `write_draft` 接收完整的草稿和它的 Issue 标题，写到固定的文件里。页面只认这些文件是草稿，所以模型打在屏幕上的东西永远不会变成草稿。这套工具里没有通用的 write、edit，会话改不了仓库里的文件。之后另起一个 Pi 会话，拿用户的原话和草稿当输入文本，对照检查；它加载同一个扩展，但工具只有 `write_draft`，检查完的草稿也从这条路交回来。
-- `ask_user_question` 用在需求说得不够清楚的时候。模型问一到四个问题，每个两到四个选项，推荐项放第一个。问题写到草稿旁边的一个文件里，这一轮就此结束。这次起草会话存成文件，起草运行用 `--session-dir` 和 `--session-id` 指定它；用户在页面上答了，下一轮在同一个会话文件上重新起 Pi，带上回答（还有当前的草稿，中间改过的地方不会丢）；两轮之间没有常驻进程，每次模型调用仍各有自己的超时。
+- `write_draft` 接收一句说明要改什么的 `reply`，以及起草的各张 Issue。每张都有标题和正文。要等同一份草稿里排在前面的 Issue 完成，还可以填上那张 Issue 在草稿里的编号。引擎只认那个文件是草稿，模型打在屏幕上的内容不会变成草稿。会话没有通用的写入或编辑工具，也就改不了仓库文件。
+- `ask_user` 用在请求没说清要做什么的时候。模型给一句 `reply`，再问最多三个问题。每题可以带两到四个选项，合理的默认项在标签末尾加 `(Recommended)`。有推荐项，引擎就自己选，然后继续同一个会话；一轮最多启动三个起草会话，超过就算这一轮失败。只有没有推荐项的问题才会结束这一轮，等用户回答。用户在页面上答了，下一轮就在同一个会话目录上用 `--continue` 启动 Pi。对话能接上，两轮之间不需要常驻进程。
+- `reply` 用在不要求改代码的请求上，比如「只评审一下，告诉我结果」。它只回复，不起草 Issue。
 
-工具的名字和参数形状来自一个社区扩展 `@juicesharp/rpiv-ask-user-question`，它是在终端里问问题的。我们没有把它当依赖：在 `pi -p`（Orbi 一直用的非交互模式）下，那个包会把工具整个撤掉，因为终端前没有人回答。我们只借了它的工具名和参数形状，自己写了一个。
+草稿出来后还有两个检查环节。先另起一个独立的 Pi 会话做校对（fidelity pass），把请求和草稿作为文本交给它，检查草稿是否恰好表达了用户的要求。它可以改标题和正文，不能改 Issue 的数量或顺序。这个会话带 `--no-tools --no-skills --no-extensions`，把答案写到 stdout。这里能用 stdout，是因为这一步可选：回答为空或不可用，就保留起草者的版本。然后引擎跑领票时用的那道开工前预检。没过的草稿退回起草会话，用 `--continue` 再走一轮，只退回一次。
+
+早期放在 Cloud 侧的版本把提问工具叫 `ask_user_question`，名字来自社区扩展 `@juicesharp/rpiv-ask-user-question`，后者在终端里问问题。我们没有依赖那个包：在 `pi -p`（Orbi 一直用的非交互模式）下，它会把工具整个撤掉，因为终端前没有人回答。
 
 ## 自己写 Pi 扩展时可以照抄的
 
-如果你跑 Pi 时键盘前没有人，这篇的短版是三个习惯：
+如果你跑 Pi 时键盘前没有人，这篇的短版是四个习惯：
 
 1. 每个无人值守的 Pi 都用 `--no-extensions` 启动，再用 `-e` 把你确实要的那几个扩展加回来。清单写在配置里，npm 钉版本号；git 至少写 `@ref`（tag、分支都能过校验），要两个会话跑的代码一字不差再钉 commit SHA；缺了钉子就拒绝整份配置；记住对 git 来源，Orbi 的校验只查「`@` 后面有没有东西」，不查那个 ref 会不会动。
 2. 要从模型拿结构化答案时，给它一个带 schema、带 `terminate: true` 的工具，结果写进文件，其他一律当没有回答。不要解析 stdout。
 3. 模型必须产出一份东西时，让扩展里的那个工具成为唯一的写入口，通用的写工具别放进 `--tools`。
+4. 无人值守的 Pi 用 `--no-skills` 启动，再用 `--skill` 逐个加回技能。会话没有 `read` 或 `bash` 时，系统提示词里不会有技能清单，但以 `/skill:<name>` 开头的提示词仍会带进那个技能的全文，所以别让不可信文本成为提示词的开头。
 
-我们这边还有一个口子没堵：skill 还没有同样的待遇，跑 runner 的那个用户账号装的 skill，除了 `orbi suggest` 的两个会话，仍然可能加载进 Orbi runner 的每一个会话（Orbi Cloud 的起草会话自己传了 `--no-skills`）。
+Orbi 还给实现者和评审者开着技能自动发现。它们能看到 `~/.agents/skills/` 里的用户技能；`orbi.toml` 没设 `pi_providers` 文件时，也能看到 `~/.pi/agent/skills/` 里的技能。另外还有 Pi 设置里 `"skills"` 列出的条目和已安装包提供的技能。写评论的 `ticket` 角色和澄清门禁没有 `read`、`bash` 工具，所以看不到技能。`orbi suggest` 和 `orbi draft` 都传了 `--no-skills`。
 
 ## 相关
 
