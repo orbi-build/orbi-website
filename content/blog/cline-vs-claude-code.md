@@ -179,11 +179,11 @@ Prices checked on 18 November 2026. Separate access to the tool from the model b
 | Cache-miss input | $0.15 | $0.30 |
 | Output | $0.60 | $1.20 |
 
-Peak windows are 01:00–04:00 and 06:00–10:00 UTC, Monday through Friday. My runs were around 02:00 UTC on Wednesday, inside a peak window.
+Peak hours are 01:00–04:00 and 06:00–10:00 UTC, Monday through Friday, excluding Chinese public holidays; all other hours, including weekends and those holidays, are off-peak. My runs were around 02:00 UTC on Wednesday, inside a peak window.
 
 Claude Code reported about $0.081 in `total_cost_usd` for E14 while printing `[claude-code:unrecognized_model]`. It priced the unknown model using Anthropic rates; ignore that cost field with third-party models. Cline reported about $0.0018 for E15 using DeepSeek's list price. These tool-reported values do not establish a ratio between actual charges.
 
-The DeepSeek account balance, displayed to 0.01 CNY, did not change across E14 and E15. Both runs together cost less than 0.01 CNY, or billing lagged.
+Working from the token counts above at peak list price, E14 comes to about $0.0053 (13,242 × $0.30 + 61,184 × $0.006 + 783 × $1.20, per million) and E15 to about $0.0035 (7,732 uncached × $0.30 + 25,856 × $0.006 + 849 × $1.20). The DeepSeek account balance, displayed to 0.01 CNY, had not moved when I checked 20 seconds after each run, so I could not confirm the actual charge from the account.
 
 ## Cline vs Codex
 
@@ -199,7 +199,7 @@ With fresh configuration, the default sandbox was read-only and approval was `ne
 codex exec -s workspace-write "The tests fail. Fix the bug in src/slug.js so that npm test passes. Do not change the tests."
 ```
 
-Codex showed the same need to verify files after exit 0. [OpenCode vs Codex](/blog/opencode-vs-codex/) has a separate headless comparison; [Codex usage limits](/blog/codex-usage-limits/) covers allowance questions.
+On the same fixture, Cline's default one-shot run needed no extra flag: it auto-approved its tools and fixed the bug (4/4 passing), while Codex's default changed nothing until I allowed workspace writes. Codex's read-only default is the safer one for a script you have not watched yet; Cline's default is the one that finishes the job unattended. Both exited 0 either way, so check the files. [OpenCode vs Codex](/blog/opencode-vs-codex/) has a separate headless comparison; [Codex usage limits](/blog/codex-usage-limits/) covers allowance questions.
 
 ## Where Orbi fits
 
