@@ -10,16 +10,16 @@ mirror: cline-vs-claude-code
 
 Cline 是[采用 Apache-2.0 许可的开源编程 agent](https://github.com/cline/cline/blob/main/LICENSE)，有 VS Code 扩展和命令行；Claude Code 是 [Anthropic 的终端编程 agent](https://code.claude.com/docs/en/headless)。这次 Cline vs Claude Code 实测中，我让两者接入同一个 DeepSeek 模型，修复同一份测试失败的代码。你若准备在脚本里调用它们，或让它们无人值守运行，可以用下面的命令复现这个任务。这里测的是无头运行，也就是不开交互界面。
 
-我是 Larry 🍀 Orbi，Orbi 的创始人。Orbi 用的开源 agent 是 Pi：从 GitHub Issue 开始实现任务，再经过评审、合并 PR。它不运行 Cline 或 Claude Code。
+我是 Larry 🍀 Orbi，Orbi 的创始人。Orbi 用开源 agent Pi 从 GitHub Issue 开始实现任务，之后经过独立评审再合并 PR。它不运行 Cline 或 Claude Code。
 
-## Cline vs Claude Code：按工作方式怎么选
+## Cline vs Claude Code 一览
 
 | 你的需求 | 先看哪款 | 要确认什么 |
 |---|---|---|
 | 在 VS Code 和命令行里使用开源 agent | Cline | 模型服务商配置和工具审批 |
 | 使用 Claude 套餐包含的终端 agent | Claude Code | 套餐是否支持、用量额度是多少 |
 | 默认自动批准工具调用 | Cline CLI | 单次运行会自动批准工具 |
-| 按本次测过的配置，逐项放行工具调用 | Claude Code | 设置权限模式，放行任务需要的工具 |
+| 需要逐项放行工具调用 | Claude Code | 设置权限模式，放行任务需要的工具 |
 | 让脚本验证修复结果 | 两者都可以 | 检查 diff，并独立跑测试 |
 
 下文的实测走 DeepSeek API 计费，不使用 Claude 订阅提供的模型和额度。在这一个小任务上，只要权限允许，两者都修好了 bug。要比较编辑器，可以看 [Cursor vs Claude Code](/zh/blog/cursor-vs-claude-code/)。
@@ -95,9 +95,9 @@ git status --short && npm test && git diff --name-only
 
 预期只有 `src/slug.js` 改动，测试文件没动，四项测试全部通过。退出码 0 本身不能证明修复已经写进文件。
 
-## Claude Code vs Cline：默认权限与无人值守运行
+## 没人审批时的默认权限
 
-[Claude Code 权限文档](https://code.claude.com/docs/en/permission-modes)写明，从 `v2.1.302` 起，`claude -p` 不指定权限模式时会进入 Manual 模式。需要审批的调用会被拒绝，除非另有机制放行。
+在脚本里比较 Claude Code vs Cline，我这几次运行里差别最大的是默认权限。[Claude Code 权限文档](https://code.claude.com/docs/en/permission-modes)写明，从 `v2.1.302` 起，`claude -p` 不指定权限模式时会进入 Manual 模式。需要审批的调用会被拒绝，除非另有机制放行。
 
 [Cline CLI README](https://github.com/cline/cline/blob/main/apps/cli/README.md)则说，单次运行使用 yolo 模式，默认自动批准工具调用。无人值守运行时没人处理审批提示，这些默认设置会影响工具能不能调用、任务能不能完成。
 
@@ -141,7 +141,7 @@ claude -p "The tests fail. Fix the bug in src/slug.js so that npm test passes. D
 | Claude Code | `Failed to authenticate. API Error: 401` | 178.5s，包含重试 | 1 |
 | Cline | `Authentication Fails` | 1.2s | 1 |
 
-脚本要自行判断是否超时：这两次运行的重试等待时间差得很大。
+脚本要自行判断是否超时：这两次失败的耗时差得很大。
 
 ## 同一模型下的 token 用量
 
@@ -156,7 +156,7 @@ Claude Code 的输入总量是我把 `input_tokens` 和缓存读取 token 相加
 
 在同样的隔离环境里，提示词只有 `reply ok` 时，Claude Code 用了 11,162 个输入 token，Cline 用了 5,325 个。请求本身很短，agent 仍会带上自己的上下文。Cline 在这次测试里的输入用量较少；换成大仓库，需要重新测。
 
-## Cline vs Claude Code：价格与模型账单
+## 价格与模型账单
 
 我在 2026 年 11 月 18 日核对了这些价格。比较时，要分清工具怎么收费、调用模型又花多少。
 
@@ -182,7 +182,7 @@ Claude Code 的输入总量是我把 `input_tokens` 和缓存读取 token 相加
 
 高峰时段为周一至周五的 UTC 01:00–04:00 和 06:00–10:00，中国法定节假日除外；其余时间，包括周末和这些节假日，都是非高峰。我运行的时间约为周三 UTC 02:00，处在高峰时段。
 
-Claude Code 在 E14 的 `total_cost_usd` 里报了约 $0.081，同时输出 `[claude-code:unrecognized_model]`。它按 Anthropic 价格计算这个未识别的模型，用第三方模型时应忽略这个费用字段。Cline 按 DeepSeek 标价给 E15 报了约 $0.0018。两者自报费用的计价口径不同，没法据此算出实际扣款的比例。
+Claude Code 在 E14 的 `total_cost_usd` 里报了约 $0.081，同时输出 `[claude-code:unrecognized_model]`。它按 Anthropic 价格计算这个未识别的模型，用第三方模型时应忽略这个费用字段。Cline 给 E15 报了约 $0.0018，和按 DeepSeek 非高峰标价算出的数一致。两者自报费用的计价口径不同，没法据此算出实际扣款的比例。
 
 按上面的 token 数和高峰标价计算，E14 约 $0.0053（13,242 × $0.30 + 61,184 × $0.006 + 783 × $1.20，再除以一百万），E15 约 $0.0035（7,732 个未缓存输入 × $0.30 + 25,856 × $0.006 + 849 × $1.20，再除以一百万）。DeepSeek 账户余额显示到 0.01 CNY，我在每次运行结束 20 秒后检查，余额都没有变化，因此没能从账户确认实际扣款。
 
@@ -200,7 +200,7 @@ codex exec "The tests fail. Fix the bug in src/slug.js so that npm test passes. 
 codex exec -s workspace-write "The tests fail. Fix the bug in src/slug.js so that npm test passes. Do not change the tests."
 ```
 
-同一个任务，Cline 的默认单次运行不用加额外参数，自动批准工具后就修好了 bug，4/4 通过；Codex 默认没有改动，直到我允许写入工作区才完成修复。在亲自看过脚本的执行过程之前，我会先用 Codex 更安全的只读默认设置。Cline 的默认设置则在这次测试中直接完成了无人值守修复。两者在没有改动文件时也返回过 0，脚本还得检查文件。[OpenCode vs Codex](/zh/blog/opencode-vs-codex/)是另一组无头运行对比；额度问题见 [Codex 用量限制](/zh/blog/codex-usage-limits/)。
+同一个任务，Cline 的默认单次运行不用加额外参数，自动批准工具后就修好了 bug，4/4 通过；Codex 默认没有改动，直到我允许写入工作区才完成修复。还没亲眼看过脚本怎么跑之前，Codex 的只读默认设置更稳妥。两者在没有改动文件时也返回过 0，脚本还得检查文件。[OpenCode vs Codex](/zh/blog/opencode-vs-codex/)是另一组无头运行对比；额度问题见 [Codex 用量限制](/zh/blog/codex-usage-limits/)。
 
 ## Orbi 能接哪部分工作
 
@@ -216,7 +216,7 @@ Cline 这边，我验证了下面的 skill 安装命令：
 cline skill add orbi-build/orbi --skill write-ai-ready-issue -y
 ```
 
-它把 `write-ai-ready-issue` 复制到 `./.agents/skills/write-ai-ready-issue`，这是 skills CLI 安装 Cline skill 时使用的目录。装好后，可以让 Cline 用它把任务写成 Issue。我只检查了安装是否成功，没有测试完整的 Cline 到 Orbi 交付流程。这份 skill 也能在 Codex、Copilot 和 Cursor 中加载；`/orbi:` 命令则只在 Claude Code 和 Cursor 中加载。[Orbi 对比 Claude Code](/zh/compare/claude-code/)介绍了交接方式；想让 agent 实时陪你写代码时，Orbi 并不适合。
+它把 `write-ai-ready-issue` 复制到 `./.agents/skills/write-ai-ready-issue`，这是 skills CLI 安装 Cline skill 时使用的目录。装好后，可以让 Cline 用它把任务写成 Issue。我只检查了安装是否成功，没有测试完整的 Cline 到 Orbi 交付流程。按插件说明，这份 skill 也能在 Codex、Copilot 和 Cursor 中加载；`/orbi:` 命令则只在 Claude Code 和 Cursor 中加载。[Orbi 对比 Claude Code](/zh/compare/claude-code/)介绍了交接方式；想让 agent 实时陪你写代码时，Orbi 并不适合。
 
 ## 相关
 

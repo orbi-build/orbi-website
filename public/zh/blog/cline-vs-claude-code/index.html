@@ -164,18 +164,18 @@
         <nav class="post-toc" aria-label="本页目录">
           <h2>本页目录</h2>
           <ol>
-          <li><a class="post-toc-link" href="#cline-vs-claude-code-按工作方式怎么选">Cline vs Claude Code：按工作方式怎么选</a></li>
+          <li><a class="post-toc-link" href="#cline-vs-claude-code-一览">Cline vs Claude Code 一览</a></li>
           <li><a class="post-toc-link" href="#测试任务与复现命令">测试任务与复现命令</a>
             <ol>
               <li><a class="post-toc-link" href="#claude-code-接入-deepseek">Claude Code 接入 DeepSeek</a></li>
               <li><a class="post-toc-link" href="#cline-cli-接入-deepseek">Cline CLI 接入 DeepSeek</a></li>
             </ol></li>
-          <li><a class="post-toc-link" href="#claude-code-vs-cline-默认权限与无人值守运行">Claude Code vs Cline：默认权限与无人值守运行</a>
+          <li><a class="post-toc-link" href="#没人审批时的默认权限">没人审批时的默认权限</a>
             <ol>
               <li><a class="post-toc-link" href="#密钥错误时-失败耗时不同">密钥错误时，失败耗时不同</a></li>
             </ol></li>
           <li><a class="post-toc-link" href="#同一模型下的-token-用量">同一模型下的 token 用量</a></li>
-          <li><a class="post-toc-link" href="#cline-vs-claude-code-价格与模型账单">Cline vs Claude Code：价格与模型账单</a></li>
+          <li><a class="post-toc-link" href="#价格与模型账单">价格与模型账单</a></li>
           <li><a class="post-toc-link" href="#cline-vs-codex">Cline vs Codex</a></li>
           <li><a class="post-toc-link" href="#orbi-能接哪部分工作">Orbi 能接哪部分工作</a></li>
           <li><a class="post-toc-link" href="#相关">相关</a></li>
@@ -185,26 +185,26 @@
         <details class="post-toc-inline">
           <summary>本页目录 · 8 节</summary>
           <ol>
-          <li><a class="post-toc-link" href="#cline-vs-claude-code-按工作方式怎么选">Cline vs Claude Code：按工作方式怎么选</a></li>
+          <li><a class="post-toc-link" href="#cline-vs-claude-code-一览">Cline vs Claude Code 一览</a></li>
           <li><a class="post-toc-link" href="#测试任务与复现命令">测试任务与复现命令</a>
             <ol>
               <li><a class="post-toc-link" href="#claude-code-接入-deepseek">Claude Code 接入 DeepSeek</a></li>
               <li><a class="post-toc-link" href="#cline-cli-接入-deepseek">Cline CLI 接入 DeepSeek</a></li>
             </ol></li>
-          <li><a class="post-toc-link" href="#claude-code-vs-cline-默认权限与无人值守运行">Claude Code vs Cline：默认权限与无人值守运行</a>
+          <li><a class="post-toc-link" href="#没人审批时的默认权限">没人审批时的默认权限</a>
             <ol>
               <li><a class="post-toc-link" href="#密钥错误时-失败耗时不同">密钥错误时，失败耗时不同</a></li>
             </ol></li>
           <li><a class="post-toc-link" href="#同一模型下的-token-用量">同一模型下的 token 用量</a></li>
-          <li><a class="post-toc-link" href="#cline-vs-claude-code-价格与模型账单">Cline vs Claude Code：价格与模型账单</a></li>
+          <li><a class="post-toc-link" href="#价格与模型账单">价格与模型账单</a></li>
           <li><a class="post-toc-link" href="#cline-vs-codex">Cline vs Codex</a></li>
           <li><a class="post-toc-link" href="#orbi-能接哪部分工作">Orbi 能接哪部分工作</a></li>
           <li><a class="post-toc-link" href="#相关">相关</a></li>
           </ol>
         </details>
 <p>Cline 是<a href="https://github.com/cline/cline/blob/main/LICENSE">采用 Apache-2.0 许可的开源编程 agent</a>，有 VS Code 扩展和命令行；Claude Code 是 <a href="https://code.claude.com/docs/en/headless">Anthropic 的终端编程 agent</a>。这次 Cline vs Claude Code 实测中，我让两者接入同一个 DeepSeek 模型，修复同一份测试失败的代码。你若准备在脚本里调用它们，或让它们无人值守运行，可以用下面的命令复现这个任务。这里测的是无头运行，也就是不开交互界面。</p>
-<p>我是 Larry 🍀 Orbi，Orbi 的创始人。Orbi 用的开源 agent 是 Pi：从 GitHub Issue 开始实现任务，再经过评审、合并 PR。它不运行 Cline 或 Claude Code。</p><aside class="post-cta-inline"><span>Orbi 把你的 Issue 一路做到发版。</span><a class="button button-signal" data-cta="post-inline-start" href="/zh/cloud/login">免费试用 Orbi Cloud →</a></aside>
-<h2 id="cline-vs-claude-code-按工作方式怎么选">Cline vs Claude Code：按工作方式怎么选</h2>
+<p>我是 Larry 🍀 Orbi，Orbi 的创始人。Orbi 用开源 agent Pi 从 GitHub Issue 开始实现任务，之后经过独立评审再合并 PR。它不运行 Cline 或 Claude Code。</p><aside class="post-cta-inline"><span>Orbi 把你的 Issue 一路做到发版。</span><a class="button button-signal" data-cta="post-inline-start" href="/zh/cloud/login">免费试用 Orbi Cloud →</a></aside>
+<h2 id="cline-vs-claude-code-一览">Cline vs Claude Code 一览</h2>
 <p class="post-table-hint" hidden>左右滑动查看所有列。</p><div class="post-table-scroll" tabindex="0" role="region" aria-label="左右滑动查看所有列。"><table class="table-comparison">
 <thead>
 <tr>
@@ -229,7 +229,7 @@
 <td>单次运行会自动批准工具</td>
 </tr>
 <tr>
-<th scope="row">按本次测过的配置，逐项放行工具调用</th>
+<th scope="row">需要逐项放行工具调用</th>
 <td>Claude Code</td>
 <td>设置权限模式，放行任务需要的工具</td>
 </tr>
@@ -285,8 +285,8 @@ cline -P deepseek -k &quot;$DEEPSEEK_API_KEY&quot; -m deepseek-flash --json \
 <div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="已复制">复制</button><pre><code class="language-bash" data-copy-source>git status --short &amp;&amp; npm test &amp;&amp; git diff --name-only
 </code></pre></div>
 <p>预期只有 <code class="post-code--single">src/slug.js</code> 改动，测试文件没动，四项测试全部通过。退出码 0 本身不能证明修复已经写进文件。</p>
-<h2 id="claude-code-vs-cline-默认权限与无人值守运行">Claude Code vs Cline：默认权限与无人值守运行</h2>
-<p><a href="https://code.claude.com/docs/en/permission-modes">Claude Code 权限文档</a>写明，从 <code class="post-code--single">v2.1.302</code> 起，<code class="post-code--spaced">claude -p</code> 不指定权限模式时会进入 Manual 模式。需要审批的调用会被拒绝，除非另有机制放行。</p>
+<h2 id="没人审批时的默认权限">没人审批时的默认权限</h2>
+<p>在脚本里比较 Claude Code vs Cline，我这几次运行里差别最大的是默认权限。<a href="https://code.claude.com/docs/en/permission-modes">Claude Code 权限文档</a>写明，从 <code class="post-code--single">v2.1.302</code> 起，<code class="post-code--spaced">claude -p</code> 不指定权限模式时会进入 Manual 模式。需要审批的调用会被拒绝，除非另有机制放行。</p>
 <p><a href="https://github.com/cline/cline/blob/main/apps/cli/README.md">Cline CLI README</a>则说，单次运行使用 yolo 模式，默认自动批准工具调用。无人值守运行时没人处理审批提示，这些默认设置会影响工具能不能调用、任务能不能完成。</p>
 <p>下表全部使用上面的修复提示词。耗时是从启动到结束的实际时间，编号表示不同次尝试。</p>
 <p class="post-table-hint" hidden>左右滑动查看所有列。</p><div class="post-table-scroll" tabindex="0" role="region" aria-label="左右滑动查看所有列。"><table class="table-comparison">
@@ -371,7 +371,7 @@ Cline E5: &quot;type&quot;: &quot;run_result&quot;, &quot;finishReason&quot;: &q
 <td>1</td>
 </tr>
 </tbody></table></div>
-<p>脚本要自行判断是否超时：这两次运行的重试等待时间差得很大。</p>
+<p>脚本要自行判断是否超时：这两次失败的耗时差得很大。</p>
 <h2 id="同一模型下的-token-用量">同一模型下的 token 用量</h2>
 <p>这里统计的只是同一个小任务：Cline 使用默认设置成功运行了三次，Claude Code 使用 <code class="post-code--single">acceptEdits</code> 成功运行了两次，样本不足以作为基准测试。</p>
 <p class="post-table-hint" hidden>左右滑动查看所有列。</p><div class="post-table-scroll" tabindex="0" role="region" aria-label="左右滑动查看所有列。"><table class="table-comparison">
@@ -398,7 +398,7 @@ Cline E5: &quot;type&quot;: &quot;run_result&quot;, &quot;finishReason&quot;: &q
 </tbody></table></div>
 <p>Claude Code 的输入总量是我把 <code class="post-code--single">input_tokens</code> 和缓存读取 token 相加得到的：E3 为 12,734 + 46,976，E14 为 13,242 + 61,184。Cline 的 <code class="post-code--single">inputTokens</code> 已经包含缓存读取，再加一次会重复计算。</p>
 <p>在同样的隔离环境里，提示词只有 <code class="post-code--spaced">reply ok</code> 时，Claude Code 用了 11,162 个输入 token，Cline 用了 5,325 个。请求本身很短，agent 仍会带上自己的上下文。Cline 在这次测试里的输入用量较少；换成大仓库，需要重新测。</p>
-<h2 id="cline-vs-claude-code-价格与模型账单">Cline vs Claude Code：价格与模型账单</h2>
+<h2 id="价格与模型账单">价格与模型账单</h2>
 <p>我在 2026 年 11 月 18 日核对了这些价格。比较时，要分清工具怎么收费、调用模型又花多少。</p>
 <p class="post-table-hint" hidden>左右滑动查看所有列。</p><div class="post-table-scroll" tabindex="0" role="region" aria-label="左右滑动查看所有列。"><table class="table-comparison">
 <thead>
@@ -463,7 +463,7 @@ Cline E5: &quot;type&quot;: &quot;run_result&quot;, &quot;finishReason&quot;: &q
 </tr>
 </tbody></table></div>
 <p>高峰时段为周一至周五的 UTC 01:00–04:00 和 06:00–10:00，中国法定节假日除外；其余时间，包括周末和这些节假日，都是非高峰。我运行的时间约为周三 UTC 02:00，处在高峰时段。</p>
-<p>Claude Code 在 E14 的 <code class="post-code--single">total_cost_usd</code> 里报了约 $0.081，同时输出 <code class="post-code--single">[claude-code:unrecognized_model]</code>。它按 Anthropic 价格计算这个未识别的模型，用第三方模型时应忽略这个费用字段。Cline 按 DeepSeek 标价给 E15 报了约 $0.0018。两者自报费用的计价口径不同，没法据此算出实际扣款的比例。</p>
+<p>Claude Code 在 E14 的 <code class="post-code--single">total_cost_usd</code> 里报了约 $0.081，同时输出 <code class="post-code--single">[claude-code:unrecognized_model]</code>。它按 Anthropic 价格计算这个未识别的模型，用第三方模型时应忽略这个费用字段。Cline 给 E15 报了约 $0.0018，和按 DeepSeek 非高峰标价算出的数一致。两者自报费用的计价口径不同，没法据此算出实际扣款的比例。</p>
 <p>按上面的 token 数和高峰标价计算，E14 约 $0.0053（13,242 × $0.30 + 61,184 × $0.006 + 783 × $1.20，再除以一百万），E15 约 $0.0035（7,732 个未缓存输入 × $0.30 + 25,856 × $0.006 + 849 × $1.20，再除以一百万）。DeepSeek 账户余额显示到 0.01 CNY，我在每次运行结束 20 秒后检查，余额都没有变化，因此没能从账户确认实际扣款。</p>
 <h2 id="cline-vs-codex">Cline vs Codex</h2>
 <p>我还在同一份测试代码上跑了 Codex CLI <code class="post-code--single">0.167.0</code>，通过 ChatGPT 登录，使用它默认的 <code class="post-code--single">gpt-6.2-sol</code>。模型不同，这里不比较 token 用量。</p>
@@ -472,7 +472,7 @@ Cline E5: &quot;type&quot;: &quot;run_result&quot;, &quot;finishReason&quot;: &q
 <p>全新配置下，默认沙箱是只读，审批策略为 <code class="post-code--single">never</code>。这次没改任何文件，耗时 28 秒，退出码 0。允许写入工作区后，15 秒修好了源码，四项测试全部通过：</p>
 <div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="已复制">复制</button><pre><code class="language-bash" data-copy-source>codex exec -s workspace-write &quot;The tests fail. Fix the bug in src/slug.js so that npm test passes. Do not change the tests.&quot;
 </code></pre></div>
-<p>同一个任务，Cline 的默认单次运行不用加额外参数，自动批准工具后就修好了 bug，4/4 通过；Codex 默认没有改动，直到我允许写入工作区才完成修复。在亲自看过脚本的执行过程之前，我会先用 Codex 更安全的只读默认设置。Cline 的默认设置则在这次测试中直接完成了无人值守修复。两者在没有改动文件时也返回过 0，脚本还得检查文件。<a href="/zh/blog/opencode-vs-codex/">OpenCode vs Codex</a>是另一组无头运行对比；额度问题见 <a href="/zh/blog/codex-usage-limits/">Codex 用量限制</a>。</p>
+<p>同一个任务，Cline 的默认单次运行不用加额外参数，自动批准工具后就修好了 bug，4/4 通过；Codex 默认没有改动，直到我允许写入工作区才完成修复。还没亲眼看过脚本怎么跑之前，Codex 的只读默认设置更稳妥。两者在没有改动文件时也返回过 0，脚本还得检查文件。<a href="/zh/blog/opencode-vs-codex/">OpenCode vs Codex</a>是另一组无头运行对比；额度问题见 <a href="/zh/blog/codex-usage-limits/">Codex 用量限制</a>。</p>
 <h2 id="orbi-能接哪部分工作">Orbi 能接哪部分工作</h2>
 <p>Cline 和 Claude Code 都能在你写代码时帮忙，也能放进你自己配置的自动化里。例如 <a href="https://github.com/cline/cline/blob/main/apps/cli/README.md">Cline 支持定时运行</a>，命令是 <code class="post-code--spaced">cline schedule create ... --cron</code>。PR 由谁评审、谁合并，仍要自己配置。</p>
 <p>Orbi 从打了 <code class="post-code--single">ai-ready</code> 标签的 GitHub Issue 开始，用 Pi 实现，由独立会话评审，评审通过且 CI 全绿后合并。</p>
@@ -480,7 +480,7 @@ Cline E5: &quot;type&quot;: &quot;run_result&quot;, &quot;finishReason&quot;: &q
 <p>Cline 这边，我验证了下面的 skill 安装命令：</p>
 <div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="已复制">复制</button><pre><code class="language-bash" data-copy-source>cline skill add orbi-build/orbi --skill write-ai-ready-issue -y
 </code></pre></div>
-<p>它把 <code class="post-code--single">write-ai-ready-issue</code> 复制到 <code class="post-code--single">./.agents/skills/write-ai-ready-issue</code>，这是 skills CLI 安装 Cline skill 时使用的目录。装好后，可以让 Cline 用它把任务写成 Issue。我只检查了安装是否成功，没有测试完整的 Cline 到 Orbi 交付流程。这份 skill 也能在 Codex、Copilot 和 Cursor 中加载；<code class="post-code--single">/orbi:</code> 命令则只在 Claude Code 和 Cursor 中加载。<a href="/zh/compare/claude-code/">Orbi 对比 Claude Code</a>介绍了交接方式；想让 agent 实时陪你写代码时，Orbi 并不适合。</p>
+<p>它把 <code class="post-code--single">write-ai-ready-issue</code> 复制到 <code class="post-code--single">./.agents/skills/write-ai-ready-issue</code>，这是 skills CLI 安装 Cline skill 时使用的目录。装好后，可以让 Cline 用它把任务写成 Issue。我只检查了安装是否成功，没有测试完整的 Cline 到 Orbi 交付流程。按插件说明，这份 skill 也能在 Codex、Copilot 和 Cursor 中加载；<code class="post-code--single">/orbi:</code> 命令则只在 Claude Code 和 Cursor 中加载。<a href="/zh/compare/claude-code/">Orbi 对比 Claude Code</a>介绍了交接方式；想让 agent 实时陪你写代码时，Orbi 并不适合。</p>
 <aside class="post-cta">
   <h2>Orbi 把你的 Issue 一路做到发版。</h2>
   <a class="button button-signal" data-cta="post-start" href="/zh/cloud/login">免费试用 Orbi Cloud →</a>
