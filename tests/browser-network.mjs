@@ -209,6 +209,15 @@ export const BADGE_PLACEHOLDER_SIZES = [
   // DevTool.io's official free-listing snippet is a styled text link with no
   // image, so it does not need a placeholder size here.
   { host: "hokai.io", width: 172, height: 40 },
+  // 2026-11-18 Launch List live badge, measured on the live URL:
+  // launch-list.org / www.launch-list.org 260x85 (SVG, 12008 bytes, width/height
+  // and viewBox 0 0 260 85). The official Copy-code snippet on
+  // /my-products/launch/{slug} (and the public /product/orbi/badges gallery)
+  // styles the image at height 50px and does not declare width/height
+  // attributes, so the source file decides the placeholder box. The snippet
+  // uses the apex host; it redirects to www, so both hostnames are listed.
+  { host: "launch-list.org", width: 260, height: 85 },
+  { host: "www.launch-list.org", width: 260, height: 85 },
 ];
 const FALLBACK_PLACEHOLDER_SIZE = { width: 1, height: 1 };
 
