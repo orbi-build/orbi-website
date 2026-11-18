@@ -1,14 +1,14 @@
 ---
 title: Cline vs Claude Code: same model, headless test
 date: 2026-11-18
-summary: Cline vs Claude Code on the same DeepSeek model: headless commands, permission defaults, exit codes, token use and pricing for unattended coding runs.
+summary: Cline vs Claude Code tested on the same DeepSeek model, with commands, permission settings, exit codes, token counts and prices for unattended coding runs.
 lang: en
 author: Larry 🍀 Orbi
 image: /img/blog-cline-vs-claude-code-card.png
 mirror: cline-vs-claude-code
 ---
 
-Cline is an [Apache-2.0 open-source coding agent](https://github.com/cline/cline/blob/main/LICENSE) with a VS Code extension and a CLI; Claude Code is [Anthropic's terminal coding agent](https://code.claude.com/docs/en/headless). This Cline vs Claude Code comparison is for developers choosing between them, especially for scripted or unattended runs. I ran both on the same DeepSeek model and the same failing test fixture; below are the results and commands to repeat it.
+Cline is an [Apache-2.0 open-source coding agent](https://github.com/cline/cline/blob/main/LICENSE) with a VS Code extension and a CLI; Claude Code is [Anthropic's terminal coding agent](https://code.claude.com/docs/en/headless). For this Cline vs Claude Code comparison, I ran both on the same DeepSeek model and the same failing test fixture. Developers choosing an agent for scripts or unattended work can compare the results below and repeat the test with the commands provided.
 
 I'm Larry 🍀 Orbi, the creator of Orbi. Orbi turns GitHub Issues into reviewed, merged PRs using Pi, a different open-source agent; it does not run Cline or Claude Code.
 
@@ -26,11 +26,11 @@ The measurements below use DeepSeek API billing, outside Claude subscription mod
 
 ## The task and commands to repeat it
 
-I tested on 18 November 2026 on Linux with Node `v22.23.1`, Claude Code `2.1.322` and Cline CLI `3.0.74`. Both used `deepseek-flash`, identified by DeepSeek as DeepSeek-V4.1-Flash. Runs used an isolated HOME and fresh configuration directories to avoid existing instructions and permission settings.
+I tested on 18 November 2026 on Linux with Node `v22.23.1`, Claude Code `2.1.322` and Cline CLI `3.0.74`. Both used `deepseek-flash`, identified by DeepSeek as DeepSeek-V4.1-Flash. I used an isolated HOME and fresh configuration directories for each run so existing instructions and permission settings would not affect the results.
 
 The fixture was a three-file Node repository. `npm test` ran `node --test`; two of four tests initially failed. The function replaced each separator individually and left hyphens at the edges.
 
-To reproduce the task, save these files in a throwaway checkout and commit the failing baseline. Start each attempt there. The short commands below use your installed versions and user settings; comparing defaults requires the tested versions and fresh settings described above.
+Save the files below in a throwaway checkout and commit the failing version. Start each attempt from that version. These short commands use your installed versions and user settings; to compare defaults, use the tested versions and fresh settings described above.
 
 `package.json`:
 
@@ -114,14 +114,14 @@ All rows below used the fix prompt printed above. Times are wall time; run IDs i
 
 Claude Code's default runs recorded 9 and 16 permission denials. Every attempted Edit, Write or Bash call was denied. It printed the correct fix in its answer, but the file stayed unchanged, and its JSON reported `is_error: false`.
 
-Cline with auto-approval disabled reported that tools required approval in a TTY session, meaning an interactive terminal. It tried asking a question nobody could answer. Selected result fields from these failed attempts:
+With auto-approval disabled, Cline said its tools needed approval in a TTY session, or interactive terminal. It then asked a question that nobody was there to answer. These fields came from the failed attempts:
 
 ```text
 Claude Code E1a: "is_error": false
 Cline E5: "type": "run_result", "finishReason": "aborted"
 ```
 
-The first command uses `acceptEdits` to allow file edits and separately approves the test command. For CI, I would use the documented `dontAsk` mode with an explicit tool list; calls needing ungranted approval are denied. This also passed:
+The Claude Code command above uses `acceptEdits` to allow file edits and separately approves the test command. For CI, I would use the documented `dontAsk` mode and list the allowed tools explicitly; any call that still needs approval is denied. This command also passed:
 
 ```bash
 claude -p "The tests fail. Fix the bug in src/slug.js so that npm test passes. Do not change the tests." \
@@ -141,11 +141,11 @@ I also asked, "Why does npm test fail in this repo?" Neither default agent edite
 | Claude Code | `Failed to authenticate. API Error: 401` | 178.5s, including retries | 1 |
 | Cline | `Authentication Fails` | 1.2s | 1 |
 
-A script should check its own deadline: the retry delay differed substantially in these runs.
+Keep track of the time limit in your script: retry delays differed substantially in these runs.
 
 ## Token use on the same model
 
-These ranges cover three successful default Cline runs and two successful Claude Code `acceptEdits` runs on one small task. This is not a benchmark.
+The token ranges below come from one small task: three successful Cline runs with default approvals and two successful Claude Code `acceptEdits` runs. They are too limited to serve as a benchmark.
 
 | Agent | Input tokens, including cache reads | Cached input subset | Output tokens |
 |---|---|---|---|
@@ -154,11 +154,11 @@ These ranges cover three successful default Cline runs and two successful Claude
 
 For Claude Code, I added `input_tokens` and cache-read tokens: E3 was 12,734 + 46,976; E14 was 13,242 + 61,184. Cline's `inputTokens` already includes cache reads, so adding them again would double-count them.
 
-With the minimal prompt `reply ok` in the isolated setup, Claude Code used 11,162 input tokens and Cline used 5,325. Even a tiny request carries agent context. Cline used fewer input tokens here; a larger repository needs its own measurement.
+With the minimal prompt `reply ok` in the isolated setup, Claude Code used 11,162 input tokens and Cline used 5,325. The input includes the agent's context even for a prompt this short. Cline used fewer input tokens in this setup; a larger repository still needs its own measurement.
 
-## Cline vs Claude Code pricing
+## Cline vs Claude Code: what do they cost?
 
-Prices checked on 18 November 2026. Separate access to the tool from the model bill.
+I checked these prices on 18 November 2026. Compare tool access separately from the model bill.
 
 | Route | Price and access |
 |---|---|
@@ -180,7 +180,7 @@ Prices checked on 18 November 2026. Separate access to the tool from the model b
 | Cache-miss input | $0.15 | $0.30 |
 | Output | $0.60 | $1.20 |
 
-Peak hours are 01:00–04:00 and 06:00–10:00 UTC, Monday through Friday, excluding Chinese public holidays; all other hours, including weekends and those holidays, are off-peak. My runs were around 02:00 UTC on Wednesday, inside a peak window.
+Peak hours are 01:00 to 04:00 and 06:00 to 10:00 UTC, Monday through Friday, excluding Chinese public holidays; all other hours, including weekends and those holidays, are off-peak. My runs were around 02:00 UTC on Wednesday, inside a peak window.
 
 Claude Code reported about $0.081 in `total_cost_usd` for E14 while printing `[claude-code:unrecognized_model]`. It priced the unknown model using Anthropic rates; ignore that cost field with third-party models. Cline reported about $0.0018 for E15 using DeepSeek's list price. These tool-reported values do not establish a ratio between actual charges.
 
@@ -200,11 +200,11 @@ With fresh configuration, the default sandbox was read-only and approval was `ne
 codex exec -s workspace-write "The tests fail. Fix the bug in src/slug.js so that npm test passes. Do not change the tests."
 ```
 
-On the same fixture, Cline's default one-shot run needed no extra flag: it auto-approved its tools and fixed the bug (4/4 passing), while Codex's default changed nothing until I allowed workspace writes. Codex's read-only default is the safer one for a script you have not watched yet; Cline's default is the one that finishes the job unattended. Both exited 0 either way, so check the files. [OpenCode vs Codex](/blog/opencode-vs-codex/) has a separate headless comparison; [Codex usage limits](/blog/codex-usage-limits/) covers allowance questions.
+On the same fixture, Cline's default one-shot run needed no extra flag: it auto-approved its tools and fixed the bug (4/4 passing), while Codex's default changed nothing until I allowed workspace writes. Until I have watched a script run, I would use Codex's safer read-only default. Cline's default let it complete this task unattended. Since both returned 0 even when they made no changes, the script also needs to check the files. [OpenCode vs Codex](/blog/opencode-vs-codex/) has a separate headless comparison; [Codex usage limits](/blog/codex-usage-limits/) covers allowance questions.
 
 ## Where Orbi fits
 
-Both tools help while you are at the keyboard or in automation you configure, including [Cline's scheduled runs](https://github.com/cline/cline/blob/main/apps/cli/README.md) via `cline schedule create ... --cron`. For either tool, you still configure who reviews and merges the PR.
+You can use Cline and Claude Code while coding or run them through automation you configure, including [Cline's scheduled runs](https://github.com/cline/cline/blob/main/apps/cli/README.md) via `cline schedule create ... --cron`. You still need to configure PR review and merging.
 
 Orbi starts from a GitHub Issue labelled `ai-ready`, implements with Pi, has a separate session review the work, and merges when review passes and CI is green.
 
@@ -216,7 +216,7 @@ For Cline, I verified this skill installation:
 cline skill add orbi-build/orbi --skill write-ai-ready-issue -y
 ```
 
-It copied `write-ai-ready-issue` into `./.agents/skills/write-ai-ready-issue`, the folder the skills CLI uses for Cline. From there you can ask Cline to write the task as an Issue with it. I verified the installation, not a full Cline-to-Orbi delivery. The skill also loads in Codex, Copilot and Cursor; the `/orbi:` commands load only in Claude Code and Cursor. [Orbi compared with Claude Code](/compare/claude-code/) describes the handoff. Skip Orbi if you want an agent pairing with you live.
+It copied `write-ai-ready-issue` into `./.agents/skills/write-ai-ready-issue`, the folder the skills CLI uses for Cline. Once installed, the skill lets you ask Cline to write the task as an Issue. I verified that the skill installed; I did not test a full Cline-to-Orbi delivery. The skill also loads in Codex, Copilot and Cursor; the `/orbi:` commands load only in Claude Code and Cursor. [Orbi compared with Claude Code](/compare/claude-code/) explains the handoff; Orbi is a poor fit when you want an agent to pair with you live.
 
 ## Related
 

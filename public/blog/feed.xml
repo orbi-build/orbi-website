@@ -10,7 +10,7 @@
       <link>https://orbi.build/blog/cline-vs-claude-code/</link>
       <guid isPermaLink="true">https://orbi.build/blog/cline-vs-claude-code/</guid>
       <pubDate>Wed, 18 Nov 2026 00:00:00 GMT</pubDate>
-      <description>Cline vs Claude Code on the same DeepSeek model: headless commands, permission defaults, exit codes, token use and pricing for unattended coding runs.</description>
+      <description>Cline vs Claude Code tested on the same DeepSeek model, with commands, permission settings, exit codes, token counts and prices for unattended coding runs.</description>
     </item>
     <item>
       <title>OpenCode vs Cursor: CLI, pricing and unattended runs</title>

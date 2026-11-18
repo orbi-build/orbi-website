@@ -4,19 +4,19 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Cline vs Claude Code: same model, headless test | Orbi</title>
-  <meta name="description" content="Cline vs Claude Code on the same DeepSeek model: headless commands, permission defaults, exit codes, token use and pricing for unattended coding runs.">
+  <meta name="description" content="Cline vs Claude Code tested on the same DeepSeek model, with commands, permission settings, exit codes, token counts and prices for unattended coding runs.">
   <link rel="canonical" href="https://orbi.build/blog/cline-vs-claude-code/">
   <link rel="alternate" hreflang="en" href="https://orbi.build/blog/cline-vs-claude-code/">
   <link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/blog/cline-vs-claude-code/">
   <link rel="alternate" hreflang="x-default" href="https://orbi.build/blog/cline-vs-claude-code/">
   <meta property="og:type" content="article">
   <meta property="og:title" content="Cline vs Claude Code: same model, headless test">
-  <meta property="og:description" content="Cline vs Claude Code on the same DeepSeek model: headless commands, permission defaults, exit codes, token use and pricing for unattended coding runs.">
+  <meta property="og:description" content="Cline vs Claude Code tested on the same DeepSeek model, with commands, permission settings, exit codes, token counts and prices for unattended coding runs.">
   <meta property="og:url" content="https://orbi.build/blog/cline-vs-claude-code/">
   <meta property="og:image" content="https://orbi.build/img/blog-cline-vs-claude-code-card.png">
   <meta property="og:image:alt" content="Cline vs Claude Code: same model, headless test">
   <meta property="article:published_time" content="2026-11-18">
-  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"Cline vs Claude Code: same model, headless test","datePublished":"2026-11-18","author":{"@type":"Person","name":"Larry 🍀 Orbi","url":"https://orbi.build/about/larry-orbi/","sameAs":["https://github.com/xqliu","https://x.com/xqliu"]},"publisher":{"@type":"Organization","name":"Orbi","url":"https://orbi.build/","logo":{"@type":"ImageObject","url":"https://orbi.build/logo-mark.svg"}},"mainEntityOfPage":"https://orbi.build/blog/cline-vs-claude-code/","image":"https://orbi.build/img/blog-cline-vs-claude-code-card.png","inLanguage":"en","description":"Cline vs Claude Code on the same DeepSeek model: headless commands, permission defaults, exit codes, token use and pricing for unattended coding runs.","url":"https://orbi.build/blog/cline-vs-claude-code/"}</script>
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"Cline vs Claude Code: same model, headless test","datePublished":"2026-11-18","author":{"@type":"Person","name":"Larry 🍀 Orbi","url":"https://orbi.build/about/larry-orbi/","sameAs":["https://github.com/xqliu","https://x.com/xqliu"]},"publisher":{"@type":"Organization","name":"Orbi","url":"https://orbi.build/","logo":{"@type":"ImageObject","url":"https://orbi.build/logo-mark.svg"}},"mainEntityOfPage":"https://orbi.build/blog/cline-vs-claude-code/","image":"https://orbi.build/img/blog-cline-vs-claude-code-card.png","inLanguage":"en","description":"Cline vs Claude Code tested on the same DeepSeek model, with commands, permission settings, exit codes, token counts and prices for unattended coding runs.","url":"https://orbi.build/blog/cline-vs-claude-code/"}</script>
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <meta name="theme-color" content="#06151b">
 
@@ -155,7 +155,7 @@
           <h1 id="post-title">Cline vs Claude Code: same model, headless test</h1>
           <p class="post-byline"><a href="/about/larry-orbi/">Larry 🍀 Orbi</a> · <time datetime="2026-11-18">2026-11-18</time></p>
 
-          <p class="hero-lede">Cline vs Claude Code on the same DeepSeek model: headless commands, permission defaults, exit codes, token use and pricing for unattended coding runs.</p>
+          <p class="hero-lede">Cline vs Claude Code tested on the same DeepSeek model, with commands, permission settings, exit codes, token counts and prices for unattended coding runs.</p>
         </section>
       </div>
     </div>
@@ -175,7 +175,7 @@
               <li><a class="post-toc-link" href="#bad-credentials-fail-differently">Bad credentials fail differently</a></li>
             </ol></li>
           <li><a class="post-toc-link" href="#token-use-on-the-same-model">Token use on the same model</a></li>
-          <li><a class="post-toc-link" href="#cline-vs-claude-code-pricing">Cline vs Claude Code pricing</a></li>
+          <li><a class="post-toc-link" href="#cline-vs-claude-code-what-do-they-cost">Cline vs Claude Code: what do they cost?</a></li>
           <li><a class="post-toc-link" href="#cline-vs-codex">Cline vs Codex</a></li>
           <li><a class="post-toc-link" href="#where-orbi-fits">Where Orbi fits</a></li>
           <li><a class="post-toc-link" href="#related">Related</a></li>
@@ -196,13 +196,13 @@
               <li><a class="post-toc-link" href="#bad-credentials-fail-differently">Bad credentials fail differently</a></li>
             </ol></li>
           <li><a class="post-toc-link" href="#token-use-on-the-same-model">Token use on the same model</a></li>
-          <li><a class="post-toc-link" href="#cline-vs-claude-code-pricing">Cline vs Claude Code pricing</a></li>
+          <li><a class="post-toc-link" href="#cline-vs-claude-code-what-do-they-cost">Cline vs Claude Code: what do they cost?</a></li>
           <li><a class="post-toc-link" href="#cline-vs-codex">Cline vs Codex</a></li>
           <li><a class="post-toc-link" href="#where-orbi-fits">Where Orbi fits</a></li>
           <li><a class="post-toc-link" href="#related">Related</a></li>
           </ol>
         </details>
-<p>Cline is an <a href="https://github.com/cline/cline/blob/main/LICENSE">Apache-2.0 open-source coding agent</a> with a VS Code extension and a CLI; Claude Code is <a href="https://code.claude.com/docs/en/headless">Anthropic&#39;s terminal coding agent</a>. This Cline vs Claude Code comparison is for developers choosing between them, especially for scripted or unattended runs. I ran both on the same DeepSeek model and the same failing test fixture; below are the results and commands to repeat it.</p>
+<p>Cline is an <a href="https://github.com/cline/cline/blob/main/LICENSE">Apache-2.0 open-source coding agent</a> with a VS Code extension and a CLI; Claude Code is <a href="https://code.claude.com/docs/en/headless">Anthropic&#39;s terminal coding agent</a>. For this Cline vs Claude Code comparison, I ran both on the same DeepSeek model and the same failing test fixture. Developers choosing an agent for scripts or unattended work can compare the results below and repeat the test with the commands provided.</p>
 <p>I&#39;m Larry 🍀 Orbi, the creator of Orbi. Orbi turns GitHub Issues into reviewed, merged PRs using Pi, a different open-source agent; it does not run Cline or Claude Code.</p><aside class="post-cta-inline"><span>Orbi takes your Issues all the way to a release.</span><a class="button button-signal" data-cta="post-inline-start" href="/cloud/login">Try Orbi Cloud free →</a></aside>
 <h2 id="cline-vs-claude-code-which-fits-your-workflow">Cline vs Claude Code: which fits your workflow?</h2>
 <p class="post-table-hint" hidden>Swipe horizontally to see all columns.</p><div class="post-table-scroll" tabindex="0" role="region" aria-label="Swipe horizontally to see all columns."><table class="table-comparison">
@@ -241,9 +241,9 @@
 </tbody></table></div>
 <p>The measurements below use DeepSeek API billing, outside Claude subscription models and allowances. On one small task, both fixed the bug once permissions allowed it. For an editor comparison, see <a href="/blog/cursor-vs-claude-code/">Cursor vs Claude Code</a>.</p>
 <h2 id="the-task-and-commands-to-repeat-it">The task and commands to repeat it</h2>
-<p>I tested on 18 November 2026 on Linux with Node <code class="post-code--single">v22.23.1</code>, Claude Code <code class="post-code--single">2.1.322</code> and Cline CLI <code class="post-code--single">3.0.74</code>. Both used <code class="post-code--single">deepseek-flash</code>, identified by DeepSeek as DeepSeek-V4.1-Flash. Runs used an isolated HOME and fresh configuration directories to avoid existing instructions and permission settings.</p>
+<p>I tested on 18 November 2026 on Linux with Node <code class="post-code--single">v22.23.1</code>, Claude Code <code class="post-code--single">2.1.322</code> and Cline CLI <code class="post-code--single">3.0.74</code>. Both used <code class="post-code--single">deepseek-flash</code>, identified by DeepSeek as DeepSeek-V4.1-Flash. I used an isolated HOME and fresh configuration directories for each run so existing instructions and permission settings would not affect the results.</p>
 <p>The fixture was a three-file Node repository. <code class="post-code--spaced">npm test</code> ran <code class="post-code--spaced">node --test</code>; two of four tests initially failed. The function replaced each separator individually and left hyphens at the edges.</p>
-<p>To reproduce the task, save these files in a throwaway checkout and commit the failing baseline. Start each attempt there. The short commands below use your installed versions and user settings; comparing defaults requires the tested versions and fresh settings described above.</p>
+<p>Save the files below in a throwaway checkout and commit the failing version. Start each attempt from that version. These short commands use your installed versions and user settings; to compare defaults, use the tested versions and fresh settings described above.</p>
 <p><code class="post-code--single">package.json</code>:</p>
 <div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="Copied">Copy</button><pre><code class="language-json" data-copy-source>{&quot;name&quot;:&quot;slug-fixture&quot;,&quot;version&quot;:&quot;1.0.0&quot;,&quot;type&quot;:&quot;module&quot;,&quot;scripts&quot;:{&quot;test&quot;:&quot;node --test&quot;}}
 </code></pre></div>
@@ -336,11 +336,11 @@ cline -P deepseek -k &quot;$DEEPSEEK_API_KEY&quot; -m deepseek-flash --json \
 </tr>
 </tbody></table></div>
 <p>Claude Code&#39;s default runs recorded 9 and 16 permission denials. Every attempted Edit, Write or Bash call was denied. It printed the correct fix in its answer, but the file stayed unchanged, and its JSON reported <code class="post-code--spaced">is_error: false</code>.</p>
-<p>Cline with auto-approval disabled reported that tools required approval in a TTY session, meaning an interactive terminal. It tried asking a question nobody could answer. Selected result fields from these failed attempts:</p>
+<p>With auto-approval disabled, Cline said its tools needed approval in a TTY session, or interactive terminal. It then asked a question that nobody was there to answer. These fields came from the failed attempts:</p>
 <div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="Copied">Copy</button><pre><code class="language-text" data-copy-source>Claude Code E1a: &quot;is_error&quot;: false
 Cline E5: &quot;type&quot;: &quot;run_result&quot;, &quot;finishReason&quot;: &quot;aborted&quot;
 </code></pre></div>
-<p>The first command uses <code class="post-code--single">acceptEdits</code> to allow file edits and separately approves the test command. For CI, I would use the documented <code class="post-code--single">dontAsk</code> mode with an explicit tool list; calls needing ungranted approval are denied. This also passed:</p>
+<p>The Claude Code command above uses <code class="post-code--single">acceptEdits</code> to allow file edits and separately approves the test command. For CI, I would use the documented <code class="post-code--single">dontAsk</code> mode and list the allowed tools explicitly; any call that still needs approval is denied. This command also passed:</p>
 <div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="Copied">Copy</button><pre><code class="language-bash" data-copy-source>claude -p &quot;The tests fail. Fix the bug in src/slug.js so that npm test passes. Do not change the tests.&quot; \
   --permission-mode dontAsk \
   --allowedTools &quot;Read,Edit,Bash(npm test)&quot; \
@@ -371,9 +371,9 @@ Cline E5: &quot;type&quot;: &quot;run_result&quot;, &quot;finishReason&quot;: &q
 <td>1</td>
 </tr>
 </tbody></table></div>
-<p>A script should check its own deadline: the retry delay differed substantially in these runs.</p>
+<p>Keep track of the time limit in your script: retry delays differed substantially in these runs.</p>
 <h2 id="token-use-on-the-same-model">Token use on the same model</h2>
-<p>These ranges cover three successful default Cline runs and two successful Claude Code <code class="post-code--single">acceptEdits</code> runs on one small task. This is not a benchmark.</p>
+<p>The token ranges below come from one small task: three successful Cline runs with default approvals and two successful Claude Code <code class="post-code--single">acceptEdits</code> runs. They are too limited to serve as a benchmark.</p>
 <p class="post-table-hint" hidden>Swipe horizontally to see all columns.</p><div class="post-table-scroll" tabindex="0" role="region" aria-label="Swipe horizontally to see all columns."><table class="table-comparison">
 <thead>
 <tr>
@@ -397,9 +397,9 @@ Cline E5: &quot;type&quot;: &quot;run_result&quot;, &quot;finishReason&quot;: &q
 </tr>
 </tbody></table></div>
 <p>For Claude Code, I added <code class="post-code--single">input_tokens</code> and cache-read tokens: E3 was 12,734 + 46,976; E14 was 13,242 + 61,184. Cline&#39;s <code class="post-code--single">inputTokens</code> already includes cache reads, so adding them again would double-count them.</p>
-<p>With the minimal prompt <code class="post-code--spaced">reply ok</code> in the isolated setup, Claude Code used 11,162 input tokens and Cline used 5,325. Even a tiny request carries agent context. Cline used fewer input tokens here; a larger repository needs its own measurement.</p>
-<h2 id="cline-vs-claude-code-pricing">Cline vs Claude Code pricing</h2>
-<p>Prices checked on 18 November 2026. Separate access to the tool from the model bill.</p>
+<p>With the minimal prompt <code class="post-code--spaced">reply ok</code> in the isolated setup, Claude Code used 11,162 input tokens and Cline used 5,325. The input includes the agent&#39;s context even for a prompt this short. Cline used fewer input tokens in this setup; a larger repository still needs its own measurement.</p>
+<h2 id="cline-vs-claude-code-what-do-they-cost">Cline vs Claude Code: what do they cost?</h2>
+<p>I checked these prices on 18 November 2026. Compare tool access separately from the model bill.</p>
 <p class="post-table-hint" hidden>Swipe horizontally to see all columns.</p><div class="post-table-scroll" tabindex="0" role="region" aria-label="Swipe horizontally to see all columns."><table class="table-comparison">
 <thead>
 <tr>
@@ -462,7 +462,7 @@ Cline E5: &quot;type&quot;: &quot;run_result&quot;, &quot;finishReason&quot;: &q
 <td>$1.20</td>
 </tr>
 </tbody></table></div>
-<p>Peak hours are 01:00–04:00 and 06:00–10:00 UTC, Monday through Friday, excluding Chinese public holidays; all other hours, including weekends and those holidays, are off-peak. My runs were around 02:00 UTC on Wednesday, inside a peak window.</p>
+<p>Peak hours are 01:00 to 04:00 and 06:00 to 10:00 UTC, Monday through Friday, excluding Chinese public holidays; all other hours, including weekends and those holidays, are off-peak. My runs were around 02:00 UTC on Wednesday, inside a peak window.</p>
 <p>Claude Code reported about $0.081 in <code class="post-code--single">total_cost_usd</code> for E14 while printing <code class="post-code--single">[claude-code:unrecognized_model]</code>. It priced the unknown model using Anthropic rates; ignore that cost field with third-party models. Cline reported about $0.0018 for E15 using DeepSeek&#39;s list price. These tool-reported values do not establish a ratio between actual charges.</p>
 <p>Working from the token counts above at peak list price, E14 comes to about $0.0053 (13,242 × $0.30 + 61,184 × $0.006 + 783 × $1.20, per million) and E15 to about $0.0035 (7,732 uncached × $0.30 + 25,856 × $0.006 + 849 × $1.20). The DeepSeek account balance, displayed to 0.01 CNY, had not moved when I checked 20 seconds after each run, so I could not confirm the actual charge from the account.</p>
 <h2 id="cline-vs-codex">Cline vs Codex</h2>
@@ -472,15 +472,15 @@ Cline E5: &quot;type&quot;: &quot;run_result&quot;, &quot;finishReason&quot;: &q
 <p>With fresh configuration, the default sandbox was read-only and approval was <code class="post-code--single">never</code>. It changed nothing, exited 0 and took 28 seconds. Allowing workspace writes fixed the source and passed all four tests in 15 seconds:</p>
 <div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="Copied">Copy</button><pre><code class="language-bash" data-copy-source>codex exec -s workspace-write &quot;The tests fail. Fix the bug in src/slug.js so that npm test passes. Do not change the tests.&quot;
 </code></pre></div>
-<p>On the same fixture, Cline&#39;s default one-shot run needed no extra flag: it auto-approved its tools and fixed the bug (4/4 passing), while Codex&#39;s default changed nothing until I allowed workspace writes. Codex&#39;s read-only default is the safer one for a script you have not watched yet; Cline&#39;s default is the one that finishes the job unattended. Both exited 0 either way, so check the files. <a href="/blog/opencode-vs-codex/">OpenCode vs Codex</a> has a separate headless comparison; <a href="/blog/codex-usage-limits/">Codex usage limits</a> covers allowance questions.</p>
+<p>On the same fixture, Cline&#39;s default one-shot run needed no extra flag: it auto-approved its tools and fixed the bug (4/4 passing), while Codex&#39;s default changed nothing until I allowed workspace writes. Until I have watched a script run, I would use Codex&#39;s safer read-only default. Cline&#39;s default let it complete this task unattended. Since both returned 0 even when they made no changes, the script also needs to check the files. <a href="/blog/opencode-vs-codex/">OpenCode vs Codex</a> has a separate headless comparison; <a href="/blog/codex-usage-limits/">Codex usage limits</a> covers allowance questions.</p>
 <h2 id="where-orbi-fits">Where Orbi fits</h2>
-<p>Both tools help while you are at the keyboard or in automation you configure, including <a href="https://github.com/cline/cline/blob/main/apps/cli/README.md">Cline&#39;s scheduled runs</a> via <code class="post-code--spaced">cline schedule create ... --cron</code>. For either tool, you still configure who reviews and merges the PR.</p>
+<p>You can use Cline and Claude Code while coding or run them through automation you configure, including <a href="https://github.com/cline/cline/blob/main/apps/cli/README.md">Cline&#39;s scheduled runs</a> via <code class="post-code--spaced">cline schedule create ... --cron</code>. You still need to configure PR review and merging.</p>
 <p>Orbi starts from a GitHub Issue labelled <code class="post-code--single">ai-ready</code>, implements with Pi, has a separate session review the work, and merges when review passes and CI is green.</p>
 <p>In Claude Code, the <a href="https://github.com/orbi-build/orbi/blob/main/integrations/claude-plugin/README.md">Orbi plugin</a> provides <code class="post-code--single">/orbi:ship</code> to write the current task as an Issue. In a repository Orbi delivers, it adds <code class="post-code--single">ai-ready</code> after confirmation. <code class="post-code--single">/orbi:status</code> checks status.</p>
 <p>For Cline, I verified this skill installation:</p>
 <div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="Copied">Copy</button><pre><code class="language-bash" data-copy-source>cline skill add orbi-build/orbi --skill write-ai-ready-issue -y
 </code></pre></div>
-<p>It copied <code class="post-code--single">write-ai-ready-issue</code> into <code class="post-code--single">./.agents/skills/write-ai-ready-issue</code>, the folder the skills CLI uses for Cline. From there you can ask Cline to write the task as an Issue with it. I verified the installation, not a full Cline-to-Orbi delivery. The skill also loads in Codex, Copilot and Cursor; the <code class="post-code--single">/orbi:</code> commands load only in Claude Code and Cursor. <a href="/compare/claude-code/">Orbi compared with Claude Code</a> describes the handoff. Skip Orbi if you want an agent pairing with you live.</p>
+<p>It copied <code class="post-code--single">write-ai-ready-issue</code> into <code class="post-code--single">./.agents/skills/write-ai-ready-issue</code>, the folder the skills CLI uses for Cline. Once installed, the skill lets you ask Cline to write the task as an Issue. I verified that the skill installed; I did not test a full Cline-to-Orbi delivery. The skill also loads in Codex, Copilot and Cursor; the <code class="post-code--single">/orbi:</code> commands load only in Claude Code and Cursor. <a href="/compare/claude-code/">Orbi compared with Claude Code</a> explains the handoff; Orbi is a poor fit when you want an agent to pair with you live.</p>
 <aside class="post-cta">
   <h2>Orbi takes your Issues all the way to a release.</h2>
   <a class="button button-signal" data-cta="post-start" href="/cloud/login">Try Orbi Cloud free →</a>
