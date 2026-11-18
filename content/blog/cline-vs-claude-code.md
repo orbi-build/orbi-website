@@ -26,7 +26,7 @@ The measurements below use DeepSeek API billing, outside Claude subscription mod
 
 ## The task and commands to repeat it
 
-I tested on 18 November 2026 on Linux with Node `v22.23.1`, Claude Code `2.1.322` and Cline CLI `3.0.74`. Both used `deepseek-flash`, identified by DeepSeek as DeepSeek-V4.1-Flash. I used an isolated HOME and fresh configuration directories for each run so existing instructions and permission settings would not affect the results.
+I tested on 18 November 2026 on Linux with Node `v22.23.1`, Claude Code `2.1.322` and Cline CLI `3.0.74`. Both used `deepseek-flash`, identified by DeepSeek as DeepSeek-V4.1-Flash. I ran everything under an isolated HOME, with configuration directories created new for this test and shared by all runs of the same agent, so my own instructions and permission settings could not affect the results.
 
 The fixture was a three-file Node repository. `npm test` ran `node --test`; two of four tests initially failed. The function replaced each separator individually and left hyphens at the edges.
 
@@ -184,7 +184,7 @@ I checked these prices on 18 November 2026. Compare tool access separately from 
 
 Peak hours are 01:00 to 04:00 and 06:00 to 10:00 UTC, Monday through Friday, excluding Chinese public holidays; all other hours, including weekends and those holidays, are off-peak. My runs were around 02:00 UTC on Wednesday, inside a peak window.
 
-Claude Code reported about $0.081 in `total_cost_usd` for E14 while printing `[claude-code:unrecognized_model]`. It priced the unknown model using Anthropic rates; ignore that cost field with third-party models. Cline reported about $0.0018 for E15. That matches DeepSeek's off-peak price for its token counts, although the run fell inside a peak window, so Cline's figure appears to leave out the peak rate. These tool-reported values do not establish a ratio between actual charges.
+Claude Code reported about $0.081 in `total_cost_usd` for E14 while printing `[claude-code:unrecognized_model]`. The same JSON marks its cost basis as `unknown`, so ignore that field with third-party models. Cline reported about $0.0018 for E15. That matches DeepSeek's off-peak price for its token counts, although the run fell inside a peak window, so Cline's figure appears to leave out the peak rate. These tool-reported values do not establish a ratio between actual charges.
 
 Working from the token counts above at peak list price, E14 comes to about $0.0053 (13,242 × $0.30 + 61,184 × $0.006 + 783 × $1.20, per million) and E15 to about $0.0035 (7,732 uncached × $0.30 + 25,856 × $0.006 + 849 × $1.20). The DeepSeek account balance, displayed to 0.01 CNY, had not moved when I checked 20 seconds after each run, so I could not confirm the actual charge from the account.
 

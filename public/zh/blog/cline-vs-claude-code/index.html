@@ -241,7 +241,7 @@
 </tbody></table></div>
 <p>下文的实测走 DeepSeek API 计费，不使用 Claude 订阅提供的模型和额度。在这一个小任务上，只要权限允许，两者都修好了 bug。要比较编辑器，可以看 <a href="/zh/blog/cursor-vs-claude-code/">Cursor vs Claude Code</a>。</p>
 <h2 id="测试任务与复现命令">测试任务与复现命令</h2>
-<p>测试日期是 2026 年 11 月 18 日，环境为 Linux、Node <code class="post-code--single">v22.23.1</code>、Claude Code <code class="post-code--single">2.1.322</code> 和 Cline CLI <code class="post-code--single">3.0.74</code>。两者都使用 <code class="post-code--single">deepseek-flash</code>，DeepSeek 将它标识为 DeepSeek-V4.1-Flash。每次运行都使用隔离的 HOME 和全新的配置目录，避免已有指令和权限设置影响结果。</p>
+<p>测试日期是 2026 年 11 月 18 日，环境为 Linux、Node <code class="post-code--single">v22.23.1</code>、Claude Code <code class="post-code--single">2.1.322</code> 和 Cline CLI <code class="post-code--single">3.0.74</code>。两者都使用 <code class="post-code--single">deepseek-flash</code>，DeepSeek 将它标识为 DeepSeek-V4.1-Flash。所有运行都在隔离的 HOME 下进行，配置目录为这次测试新建、同一个 agent 的各次运行共用，避免我自己的指令和权限设置影响结果。</p>
 <p>测试用的是只有三个文件的 Node 仓库。<code class="post-code--spaced">npm test</code> 执行 <code class="post-code--spaced">node --test</code>，最初四项测试中有两项失败：函数逐个替换分隔字符，没有把连续分隔符合并，也没有去掉首尾的连字符。</p>
 <p>复现时，把下面三个文件放进临时工作副本，提交测试失败的初始版本，每次尝试都从这个版本开始。下面的命令会使用你已安装的版本和用户设置；比较默认行为时，要用上面列出的版本，并从全新设置开始。</p>
 <p><code class="post-code--single">package.json</code>：</p>
@@ -464,7 +464,7 @@ Cline E5: &quot;type&quot;: &quot;run_result&quot;, &quot;finishReason&quot;: &q
 </tr>
 </tbody></table></div>
 <p>高峰时段为周一至周五的 UTC 01:00–04:00 和 06:00–10:00，中国法定节假日除外；其余时间，包括周末和这些节假日，都是非高峰。我运行的时间约为周三 UTC 02:00，处在高峰时段。</p>
-<p>Claude Code 在 E14 的 <code class="post-code--single">total_cost_usd</code> 里报了约 $0.081，同时输出 <code class="post-code--single">[claude-code:unrecognized_model]</code>。它按 Anthropic 价格计算这个未识别的模型，用第三方模型时应忽略这个费用字段。Cline 给 E15 报了约 $0.0018，和按 DeepSeek 非高峰标价算出的数一致；可这次运行落在高峰时段，看来 Cline 的自报没有算上高峰价。两者自报费用的计价口径不同，没法据此算出实际扣款的比例。</p>
+<p>Claude Code 在 E14 的 <code class="post-code--single">total_cost_usd</code> 里报了约 $0.081，同时输出 <code class="post-code--single">[claude-code:unrecognized_model]</code>。同一份 JSON 把计价依据标为 <code class="post-code--single">unknown</code>，用第三方模型时应忽略这个费用字段。Cline 给 E15 报了约 $0.0018，和按 DeepSeek 非高峰标价算出的数一致；可这次运行落在高峰时段，看来 Cline 的自报没有算上高峰价。两者自报费用的计价口径不同，没法据此算出实际扣款的比例。</p>
 <p>按上面的 token 数和高峰标价计算，E14 约 $0.0053（13,242 × $0.30 + 61,184 × $0.006 + 783 × $1.20，再除以一百万），E15 约 $0.0035（7,732 个未缓存输入 × $0.30 + 25,856 × $0.006 + 849 × $1.20，再除以一百万）。DeepSeek 账户余额显示到 0.01 CNY，我在每次运行结束 20 秒后检查，余额都没有变化，因此没能从账户确认实际扣款。</p>
 <h2 id="cline-vs-codex">Cline vs Codex</h2>
 <p>我还在同一份测试代码上跑了 Codex CLI <code class="post-code--single">0.167.0</code>，通过 ChatGPT 登录，使用它默认的 <code class="post-code--single">gpt-6.2-sol</code>。模型不同，这里不比较 token 用量。</p>
