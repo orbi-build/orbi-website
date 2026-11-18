@@ -3,8 +3,8 @@
     "slug": "cline-vs-claude-code",
     "title": "Cline vs Claude Code: same model, headless test",
     "summary": "Cline vs Claude Code on the same DeepSeek model: headless commands, permission defaults, exit codes, token use and pricing for unattended coding runs.",
-    "zhSlug": null,
-    "zhTitle": null,
+    "zhSlug": "cline-vs-claude-code",
+    "zhTitle": "Cline vs Claude Code：同一模型下的无人值守实测",
     "related": []
   },
   {

@@ -258,6 +258,8 @@ feed of the English posts: https://orbi.build/blog/feed.xml
 
 - Cline vs Claude Code: same model, headless test (English):
   https://orbi.build/blog/cline-vs-claude-code/
+- Cline vs Claude Code：同一模型下的无人值守实测 (Chinese):
+  https://orbi.build/zh/blog/cline-vs-claude-code/
 - OpenCode vs Cursor: CLI, pricing and unattended runs (English):
   https://orbi.build/blog/opencode-vs-cursor/
 - OpenCode vs Cursor：命令行、价格与无人值守运行 (Chinese):

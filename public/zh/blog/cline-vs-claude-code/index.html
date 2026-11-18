@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Cline vs Claude Code：同一模型下的无人值守实测 | Orbi</title>
+  <meta name="description" content="Cline vs Claude Code 接入同一 DeepSeek 模型，实测无人值守命令、默认权限、退出码、token 用量与价格，附复现步骤。">
+  <link rel="canonical" href="https://orbi.build/zh/blog/cline-vs-claude-code/">
+  <link rel="alternate" hreflang="en" href="https://orbi.build/blog/cline-vs-claude-code/">
+  <link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/blog/cline-vs-claude-code/">
+  <link rel="alternate" hreflang="x-default" href="https://orbi.build/blog/cline-vs-claude-code/">
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="Cline vs Claude Code：同一模型下的无人值守实测">
+  <meta property="og:description" content="Cline vs Claude Code 接入同一 DeepSeek 模型，实测无人值守命令、默认权限、退出码、token 用量与价格，附复现步骤。">
+  <meta property="og:url" content="https://orbi.build/zh/blog/cline-vs-claude-code/">
+  <meta property="og:image" content="https://orbi.build/img/blog-cline-vs-claude-code-card.png">
+  <meta property="og:image:alt" content="Cline vs Claude Code：同一模型下的无人值守实测">
+  <meta property="article:published_time" content="2026-11-18">
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"Cline vs Claude Code：同一模型下的无人值守实测","datePublished":"2026-11-18","author":{"@type":"Person","name":"Larry 🍀 Orbi","url":"https://orbi.build/zh/about/larry-orbi/","sameAs":["https://github.com/xqliu","https://x.com/xqliu"]},"publisher":{"@type":"Organization","name":"Orbi","url":"https://orbi.build/","logo":{"@type":"ImageObject","url":"https://orbi.build/logo-mark.svg"}},"mainEntityOfPage":"https://orbi.build/zh/blog/cline-vs-claude-code/","image":"https://orbi.build/img/blog-cline-vs-claude-code-card.png","inLanguage":"zh-CN","description":"Cline vs Claude Code 接入同一 DeepSeek 模型，实测无人值守命令、默认权限、退出码、token 用量与价格，附复现步骤。","url":"https://orbi.build/zh/blog/cline-vs-claude-code/"}</script>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <meta name="theme-color" content="#06151b">
+
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="stylesheet" href="/fonts/fonts.css">
+  <link rel="stylesheet" href="/styles.css">
+
+  <style>
+    /* Blog-only layout: the shared .shell/.compare-hero rules stay unchanged. */
+    .post-grid { max-width: 52rem; margin: 0 auto; padding: 0 24px; }
+    .post-hero { padding: 84px 0 68px; }
+    /* Issue #860: the body text column is wider than --hero-copy-width, so the
+       hero fills it and the h1/lede right edge lands on the body text. */
+    .post-hero h1, .post-hero .hero-lede { max-width: none; }
+    .post-body { padding-top: 12px; padding-bottom: 30px; }
+    .post-body h2, .post-body .related-links h2 { font-family: var(--display); font-size: 1.5rem; line-height: 1.25; margin: 42px 0 10px; scroll-margin-top: 24px; }
+    .post-body .related-links { margin: 0; }
+    .post-cta {
+      margin: 42px 0 12px;
+      padding: 30px;
+      border-radius: var(--radius-card);
+      background: var(--night);
+      color: #edf5f0;
+      text-align: center;
+    }
+    .post-cta h2 { margin: 0 0 18px; color: #edf5f0; font-family: var(--display); font-size: 1.5rem; line-height: 1.25; }
+    .post-cta .button { margin: 0 auto; color: var(--night); text-decoration: none; }
+    .post-cta-note { margin: 10px 0 18px; color: #aec2bd; font-size: 0.9rem; }
+    .post-cta .post-cta-link { color: #edf5f0; font-size: 0.9rem; text-underline-offset: 3px; }
+    .post-cta .post-cta-link:hover { color: #fff; }
+    .post-cta-inline {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin: 28px 0;
+      padding: 12px 16px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-card);
+      background: var(--paper-2);
+    }
+    .post-cta-inline span { color: var(--ink); font-size: 0.95rem; }
+    .post-cta-inline .button { flex: 0 0 auto; min-height: 40px; padding: 0 14px; font-size: 0.85rem; }
+    .post-toc { position: sticky; top: 24px; max-height: calc(100vh - 48px); overflow-y: auto; align-self: start; padding-top: 26px; }
+    .post-toc h2 { margin: 0 0 10px; padding: 0; font: 500 0.75rem/1.5rem var(--mono); letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-soft); }
+    .post-toc ol { list-style: none; margin: 0; padding: 0; border-left: 1px solid var(--line); }
+    .post-toc ol ol { border-left: 0; }
+    .post-body .post-toc-inline ol { margin: 0; padding-left: 2.2em; }
+    .post-body .post-toc-inline ol ol { list-style: none; padding-left: 1em; margin-top: 0; }
+    .post-toc li { margin: 0; }
+    .post-toc-inline li { margin: 6px 0; }
+    .post-toc-link { display: block; color: var(--ink-soft); font-size: 0.92rem; line-height: 1.4; text-decoration: none; overflow-wrap: anywhere; }
+    .post-toc .post-toc-link { padding: 6px 0 6px 15px; margin-left: -1px; border-left: 1px solid transparent; font-size: 0.875rem; line-height: 1.25rem; }
+    .post-toc ol ol .post-toc-link { padding-left: 27px; }
+    .post-toc-link:hover, .post-toc-link.is-current { color: var(--ink); }
+    .post-toc .post-toc-link.is-current { border-left-color: var(--ink); color: var(--ink); font-weight: 600; }
+    .post-toc-inline { display: none; margin: 0 0 28px; border: 1px solid var(--line); border-radius: var(--radius-card); padding: 12px 16px; }
+    .post-toc-inline summary { cursor: pointer; font-weight: 600; }
+    .post-toc-inline ol { margin-top: 12px; }
+
+    .post-body h3 { font-family: var(--display); font-size: 1.13rem; line-height: 1.3; margin: 30px 0 6px; }
+    .post-body p { margin: 14px 0; }
+    /* Issue #833: this line sits on the dark .night hero, so it uses the dark-band secondary color. */
+    .post-series { margin: 10px 0 6px; color: #9aada9; font-size: 0.95rem; }
+    .post-series a { color: inherit; text-decoration: underline; text-underline-offset: 3px; }
+    /* Issue #887: the byline sits between the title and the lede on the same
+       dark hero, so it carries the dark-band secondary color and the mono
+       label type the rest of the post metadata uses. */
+    .post-byline { margin: 0 0 24px; color: #9aada9; font-family: var(--mono); font-size: 0.85rem; }
+    .post-byline a { color: inherit; text-decoration: underline; text-underline-offset: 3px; }
+    .post-byline a:hover { color: #edf5f0; }
+    .post-body ul, .post-body ol { margin: 14px 0; padding-left: 22px; }
+    .post-body li { margin: 6px 0; }
+    .post-body a { color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
+    .post-body code { font-family: var(--mono); font-size: 0.88em; background: var(--paper-2); border: 1px solid var(--line); border-radius: var(--radius-control); padding: 1px 5px; white-space: nowrap; display: inline-block; max-width: 100%; overflow-x: auto; vertical-align: bottom; }
+    .post-body code.post-code--spaced { white-space: normal; display: inline; }
+    .post-body pre { background: var(--paper-2); border: 1px solid var(--line); border-radius: var(--radius-card); padding: 14px 16px; overflow-x: auto; margin: 18px 0; }
+    .post-body pre code, .post-body pre code.post-code--spaced, .post-body pre code.post-code--single { background: none; border: none; padding: 0; font-size: 0.85rem; white-space: pre; overflow-wrap: normal; display: inline; max-width: none; overflow: visible; }
+    .post-table-scroll { overflow-x: auto; }
+    .post-body table { width: 100%; border-collapse: collapse; }
+    .post-body th, .post-body td { border: 1px solid var(--line); padding: 8px 10px; text-align: left; }
+    .post-body th { background: var(--paper-2); }
+    .post-body strong { font-weight: 600; }
+    .post-media { margin: 24px 0; }
+    .post-body svg { max-width: 100%; height: auto; }
+    .post-media img, .post-media iframe, .post-media svg { display: block; width: 100%; border: 0; border-radius: var(--radius-card); }
+    .post-media img, .post-media svg { height: auto; }
+    .post-media iframe { aspect-ratio: 16 / 9; }
+    .post-media figcaption { color: var(--muted); font-size: 0.9rem; margin-top: 8px; }
+    @media (min-width: 1200px) {
+      .post-grid { display: grid; grid-template-columns: minmax(0, 52rem) 200px; column-gap: 56px; max-width: calc(52rem + 256px); padding: 0; }
+      .post-hero, .post-body { grid-column: 1; padding-left: 16px; padding-right: 16px; }
+      .post-toc { grid-column: 2; grid-row: 1; }
+    }
+    @media (max-width: 1199px) {
+      .post-toc { display: none; }
+      .post-toc-inline { display: block; }
+    }
+    @media (max-width: 760px) {
+      .post-hero { padding-top: 64px; padding-bottom: 48px; }
+      .post-cta { padding: 24px 18px; }
+      .post-cta .button { width: 100%; }
+      .post-cta-inline { align-items: stretch; flex-direction: column; gap: 10px; }
+      .post-cta-inline .button { width: 100%; }
+    }
+  </style>
+
+</head>
+<body>
+  <a class="skip-link" href="#main-content">跳到正文</a>
+
+  <div class="night nav-shell">
+    <header class="site-header">
+      <a class="wordmark" href="/zh/" aria-label="Orbi 首页">
+        <img class="wordmark-mark" src="/logo-mark-on-dark.svg" width="28" height="28" alt="">
+        <span>Orbi</span>
+      </a>
+      <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="primary-navigation-zh" aria-label="打开导航菜单" data-label-open="打开导航菜单" data-label-close="关闭导航菜单" data-menu-toggle>
+        <span aria-hidden="true"><i></i><i></i><i></i></span>
+      </button>
+      <nav id="primary-navigation-zh" aria-label="主导航" data-primary-nav>
+        <a href="/zh/#system">产品怎么运作</a>
+        <a href="/zh/cloud/#pricing">价格</a>
+        <a href="https://cloud-docs.orbi.build/zh/?ref=nav">文档</a>
+        <a data-cta="nav-github" href="https://github.com/orbi-build/orbi">GitHub</a>
+        <a class="nav-apply" data-cta="nav-start" href="/zh/cloud/login">用 GitHub 试用 Cloud</a>
+      </nav>
+    </header>
+  </div>
+
+  <main id="main-content">
+    <div class="night">
+      <div class="post-grid">
+        <section class="post-hero" aria-labelledby="post-title">
+          <p class="eyebrow">博客</p>
+          <h1 id="post-title">Cline vs Claude Code：同一模型下的无人值守实测</h1>
+          <p class="post-byline"><a href="/zh/about/larry-orbi/">Larry 🍀 Orbi</a> · <time datetime="2026-11-18">2026-11-18</time></p>
+
+          <p class="hero-lede">Cline vs Claude Code 接入同一 DeepSeek 模型，实测无人值守命令、默认权限、退出码、token 用量与价格，附复现步骤。</p>
+        </section>
+      </div>
+    </div>
+
+    <div class="post-grid">
+        <nav class="post-toc" aria-label="本页目录">
+          <h2>本页目录</h2>
+          <ol>
+          <li><a class="post-toc-link" href="#cline-vs-claude-code-按工作方式怎么选">Cline vs Claude Code：按工作方式怎么选</a></li>
+          <li><a class="post-toc-link" href="#测试任务与复现命令">测试任务与复现命令</a>
+            <ol>
+              <li><a class="post-toc-link" href="#claude-code-接入-deepseek">Claude Code 接入 DeepSeek</a></li>
+              <li><a class="post-toc-link" href="#cline-cli-接入-deepseek">Cline CLI 接入 DeepSeek</a></li>
+            </ol></li>
+          <li><a class="post-toc-link" href="#claude-code-vs-cline-默认权限与无人值守运行">Claude Code vs Cline：默认权限与无人值守运行</a>
+            <ol>
+              <li><a class="post-toc-link" href="#密钥错误时-失败耗时不同">密钥错误时，失败耗时不同</a></li>
+            </ol></li>
+          <li><a class="post-toc-link" href="#同一模型下的-token-用量">同一模型下的 token 用量</a></li>
+          <li><a class="post-toc-link" href="#cline-vs-claude-code-价格与模型账单">Cline vs Claude Code：价格与模型账单</a></li>
+          <li><a class="post-toc-link" href="#cline-vs-codex">Cline vs Codex</a></li>
+          <li><a class="post-toc-link" href="#orbi-能接哪部分工作">Orbi 能接哪部分工作</a></li>
+          <li><a class="post-toc-link" href="#相关">相关</a></li>
+          </ol>
+        </nav>
+      <article class="post-body">
+        <details class="post-toc-inline">
+          <summary>本页目录 · 8 节</summary>
+          <ol>
+          <li><a class="post-toc-link" href="#cline-vs-claude-code-按工作方式怎么选">Cline vs Claude Code：按工作方式怎么选</a></li>
+          <li><a class="post-toc-link" href="#测试任务与复现命令">测试任务与复现命令</a>
+            <ol>
+              <li><a class="post-toc-link" href="#claude-code-接入-deepseek">Claude Code 接入 DeepSeek</a></li>
+              <li><a class="post-toc-link" href="#cline-cli-接入-deepseek">Cline CLI 接入 DeepSeek</a></li>
+            </ol></li>
+          <li><a class="post-toc-link" href="#claude-code-vs-cline-默认权限与无人值守运行">Claude Code vs Cline：默认权限与无人值守运行</a>
+            <ol>
+              <li><a class="post-toc-link" href="#密钥错误时-失败耗时不同">密钥错误时，失败耗时不同</a></li>
+            </ol></li>
+          <li><a class="post-toc-link" href="#同一模型下的-token-用量">同一模型下的 token 用量</a></li>
+          <li><a class="post-toc-link" href="#cline-vs-claude-code-价格与模型账单">Cline vs Claude Code：价格与模型账单</a></li>
+          <li><a class="post-toc-link" href="#cline-vs-codex">Cline vs Codex</a></li>
+          <li><a class="post-toc-link" href="#orbi-能接哪部分工作">Orbi 能接哪部分工作</a></li>
+          <li><a class="post-toc-link" href="#相关">相关</a></li>
+          </ol>
+        </details>
+<p>Cline 是<a href="https://github.com/cline/cline/blob/main/LICENSE">采用 Apache-2.0 许可的开源编程 agent</a>，有 VS Code 扩展和命令行；Claude Code 是 <a href="https://code.claude.com/docs/en/headless">Anthropic 的终端编程 agent</a>。这篇 Cline vs Claude Code 对比写给在两者之间做选择的开发者，重点是无头运行（不开交互界面，放进脚本或无人值守执行）。下文有两者使用同一个 DeepSeek 模型、修复同一份测试失败代码的实测结果和复现命令。</p>
+<p>我是 Larry 🍀 Orbi，Orbi 的创始人。Orbi 用另一个开源 agent Pi，把 GitHub Issue 推进到实现、评审和 PR 合并，不运行 Cline 或 Claude Code。</p><aside class="post-cta-inline"><span>Orbi 把你的 Issue 一路做到发版。</span><a class="button button-signal" data-cta="post-inline-start" href="/zh/cloud/login">免费试用 Orbi Cloud →</a></aside>
+<h2 id="cline-vs-claude-code-按工作方式怎么选">Cline vs Claude Code：按工作方式怎么选</h2>
+<p class="post-table-hint" hidden>左右滑动查看所有列。</p><div class="post-table-scroll" tabindex="0" role="region" aria-label="左右滑动查看所有列。"><table class="table-comparison">
+<thead>
+<tr>
+<th scope="col">你的需求</th>
+<th scope="col">先看哪款</th>
+<th scope="col">要确认什么</th>
+</tr>
+</thead>
+<tbody><tr>
+<th scope="row">在 VS Code 和命令行里使用开源 agent</th>
+<td>Cline</td>
+<td>模型服务商配置和工具审批</td>
+</tr>
+<tr>
+<th scope="row">使用 Claude 套餐包含的终端 agent</th>
+<td>Claude Code</td>
+<td>套餐是否支持、用量额度是多少</td>
+</tr>
+<tr>
+<th scope="row">默认自动批准工具调用</th>
+<td>Cline CLI</td>
+<td>单次运行会自动批准工具</td>
+</tr>
+<tr>
+<th scope="row">按本次测过的配置，逐项放行工具调用</th>
+<td>Claude Code</td>
+<td>设置权限模式，放行任务需要的工具</td>
+</tr>
+<tr>
+<th scope="row">让脚本验证修复结果</th>
+<td>两者都可以</td>
+<td>检查 diff，并独立跑测试</td>
+</tr>
+</tbody></table></div>
+<p>下文的实测走 DeepSeek API 计费，不使用 Claude 订阅提供的模型和额度。在这一个小任务上，只要权限允许，两者都修好了 bug。要比较编辑器，可以看 <a href="/zh/blog/cursor-vs-claude-code/">Cursor vs Claude Code</a>。</p>
+<h2 id="测试任务与复现命令">测试任务与复现命令</h2>
+<p>测试日期是 2026 年 11 月 18 日，环境为 Linux、Node <code class="post-code--single">v22.23.1</code>、Claude Code <code class="post-code--single">2.1.322</code> 和 Cline CLI <code class="post-code--single">3.0.74</code>。两者都使用 <code class="post-code--single">deepseek-flash</code>，DeepSeek 将它标识为 DeepSeek-V4.1-Flash。每次运行都使用隔离的 HOME 和全新的配置目录，避免已有指令和权限设置影响结果。</p>
+<p>测试用的是只有三个文件的 Node 仓库。<code class="post-code--spaced">npm test</code> 执行 <code class="post-code--spaced">node --test</code>，最初四项测试中有两项失败：函数逐个替换分隔字符，没有把连续分隔符合并，也没有去掉首尾的连字符。</p>
+<p>复现时，把下面三个文件放进一份临时检出的仓库，提交这个测试失败的初始版本，每次尝试都从这里开始。下面的简短命令会使用你已安装的版本和用户设置；要比较默认行为，需要用上面列出的版本和全新设置。</p>
+<p><code class="post-code--single">package.json</code>：</p>
+<div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="已复制">复制</button><pre><code class="language-json" data-copy-source>{&quot;name&quot;:&quot;slug-fixture&quot;,&quot;version&quot;:&quot;1.0.0&quot;,&quot;type&quot;:&quot;module&quot;,&quot;scripts&quot;:{&quot;test&quot;:&quot;node --test&quot;}}
+</code></pre></div>
+<p><code class="post-code--single">src/slug.js</code>：</p>
+<div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="已复制">复制</button><pre><code class="language-js" data-copy-source>export function slugify(title) {
+  return title.toLowerCase().replace(/[^a-z0-9]/g, &quot;-&quot;);
+}
+</code></pre></div>
+<p><code class="post-code--single">test/slug.test.js</code>：</p>
+<div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="已复制">复制</button><pre><code class="language-js" data-copy-source>import { test } from &quot;node:test&quot;;
+import assert from &quot;node:assert/strict&quot;;
+import { slugify } from &quot;../src/slug.js&quot;;
+
+test(&quot;basic&quot;, () =&gt; assert.equal(slugify(&quot;Hello World&quot;), &quot;hello-world&quot;));
+test(&quot;collapses runs&quot;, () =&gt; assert.equal(slugify(&quot;Cline  vs -- Claude Code&quot;), &quot;cline-vs-claude-code&quot;));
+test(&quot;trims edges&quot;, () =&gt; assert.equal(slugify(&quot;  Hi! &quot;), &quot;hi&quot;));
+test(&quot;empty&quot;, () =&gt; assert.equal(slugify(&quot;&quot;), &quot;&quot;));
+</code></pre></div>
+<h3 id="claude-code-接入-deepseek">Claude Code 接入 DeepSeek</h3>
+<p>装好 Claude Code 后，使用 <a href="https://api-docs.deepseek.com/quick_start/agent_integrations/claude_code">DeepSeek 兼容 Anthropic 的接口</a>。我用下面的设置固定模型，运行前要替换引号中的密钥占位符：</p>
+<div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="已复制">复制</button><pre><code class="language-bash" data-copy-source>export ANTHROPIC_BASE_URL=https://api.deepseek.com/anthropic
+export ANTHROPIC_AUTH_TOKEN=&quot;&lt;your DeepSeek API key&gt;&quot;
+export ANTHROPIC_MODEL=deepseek-flash
+export ANTHROPIC_DEFAULT_HAIKU_MODEL=deepseek-flash
+claude -p &quot;The tests fail. Fix the bug in src/slug.js so that npm test passes. Do not change the tests.&quot; \
+  --permission-mode acceptEdits \
+  --allowedTools &quot;Bash(npm test)&quot; \
+  --output-format json
+</code></pre></div>
+<h3 id="cline-cli-接入-deepseek">Cline CLI 接入 DeepSeek</h3>
+<p>设置同一个模型服务商的密钥，再运行：</p>
+<div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="已复制">复制</button><pre><code class="language-bash" data-copy-source>npm install -g cline
+export DEEPSEEK_API_KEY=&quot;&lt;your DeepSeek API key&gt;&quot;
+cline -P deepseek -k &quot;$DEEPSEEK_API_KEY&quot; -m deepseek-flash --json \
+  &quot;The tests fail. Fix the bug in src/slug.js so that npm test passes. Do not change the tests.&quot;
+</code></pre></div>
+<p><a href="https://docs.cline.bot/usage/cli-overview">Cline CLI 文档</a>说，传入 <code class="post-code--single">--json</code>、通过管道输入 stdin 或重定向输出，都会启用无头模式。它的 JSON 输出是事件流。</p>
+<p>无论用哪个 agent，结束后都自己运行：</p>
+<div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="已复制">复制</button><pre><code class="language-bash" data-copy-source>git status --short &amp;&amp; npm test &amp;&amp; git diff --name-only
+</code></pre></div>
+<p>预期只有 <code class="post-code--single">src/slug.js</code> 改动，测试文件没动，四项测试全部通过。退出码 0 本身不能证明修复已经写进文件。</p>
+<h2 id="claude-code-vs-cline-默认权限与无人值守运行">Claude Code vs Cline：默认权限与无人值守运行</h2>
+<p><a href="https://code.claude.com/docs/en/permission-modes">Claude Code 权限文档</a>写明，从 <code class="post-code--single">v2.1.302</code> 起，<code class="post-code--spaced">claude -p</code> 不指定权限模式时会进入 Manual 模式。需要审批的调用会被拒绝，除非另有机制放行。</p>
+<p><a href="https://github.com/cline/cline/blob/main/apps/cli/README.md">Cline CLI README</a>则说，单次运行使用 yolo 模式，默认自动批准工具调用。脚本运行时没人回答审批提示，这两个默认值就会影响任务能不能完成。</p>
+<p>下表全部使用上面的修复提示词。耗时是从启动到结束的实际时间，编号表示不同次尝试。</p>
+<p class="post-table-hint" hidden>左右滑动查看所有列。</p><div class="post-table-scroll" tabindex="0" role="region" aria-label="左右滑动查看所有列。"><table class="table-comparison">
+<thead>
+<tr>
+<th scope="col">配置</th>
+<th scope="col">运行编号与耗时</th>
+<th scope="col">进程结束后的结果</th>
+<th scope="col">退出码</th>
+</tr>
+</thead>
+<tbody><tr>
+<th scope="row">Claude Code，不指定权限模式</th>
+<td>E1a: 45.7s; E1b: 82.9s</td>
+<td>没改文件，仍有两项测试失败</td>
+<td>0</td>
+</tr>
+<tr>
+<th scope="row">Claude Code，<code class="post-code--single">acceptEdits</code>，允许 <code class="post-code--spaced">Bash(npm test)</code></th>
+<td>E3: 7.8s; E14: 10.5s</td>
+<td>只改源码，4/4 通过</td>
+<td>0</td>
+</tr>
+<tr>
+<th scope="row">Claude Code，<code class="post-code--single">dontAsk</code>，允许 <code class="post-code--spaced">Read,Edit,Bash(npm test)</code></th>
+<td>E4: 8.4s</td>
+<td>只改源码，4/4 通过</td>
+<td>0</td>
+</tr>
+<tr>
+<th scope="row">Cline，默认审批设置</th>
+<td>E2a: 10.1s; E2b: 9.8s; E15: 10.7s</td>
+<td>只改源码，4/4 通过</td>
+<td>0</td>
+</tr>
+<tr>
+<th scope="row">Cline，<code class="post-code--spaced">--auto-approve false</code></th>
+<td>E5</td>
+<td>工具被拦，测试没修好，运行中止</td>
+<td>0</td>
+</tr>
+<tr>
+<th scope="row">Cline，<code class="post-code--single">--plan</code></th>
+<td>E8</td>
+<td>没有文件改动</td>
+<td>0</td>
+</tr>
+</tbody></table></div>
+<p>Claude Code 的两次默认运行分别记录了 9 次和 16 次权限拒绝，尝试过的 Edit、Write 和 Bash 调用全部被拒绝。它在回答里写出了正确修复，但文件没有变化，JSON 仍报告 <code class="post-code--spaced">is_error: false</code>。</p>
+<p>关掉自动批准后，Cline 提示工具需要在 TTY 会话，也就是交互式终端里获得批准。它试着提问，但运行中没有人能回答。下面从 Claude Code 和 Cline 未完成修复的输出中各摘一条结果字段：</p>
+<div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="已复制">复制</button><pre><code class="language-text" data-copy-source>Claude Code E1a: &quot;is_error&quot;: false
+Cline E5: &quot;type&quot;: &quot;run_result&quot;, &quot;finishReason&quot;: &quot;aborted&quot;
+</code></pre></div>
+<p>前面的 Claude Code 命令用 <code class="post-code--single">acceptEdits</code> 放行文件编辑，再单独批准测试命令。放进 CI 时，我会用文档中的 <code class="post-code--single">dontAsk</code> 模式，明确列出允许的工具；需要审批却没有获准的调用会被拒绝。下面这条也通过了测试：</p>
+<div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="已复制">复制</button><pre><code class="language-bash" data-copy-source>claude -p &quot;The tests fail. Fix the bug in src/slug.js so that npm test passes. Do not change the tests.&quot; \
+  --permission-mode dontAsk \
+  --allowedTools &quot;Read,Edit,Bash(npm test)&quot; \
+  --output-format json
+</code></pre></div>
+<p><a href="/zh/blog/run-claude-code-unattended/">Claude Code 无人值守运行指南</a>介绍了进程怎么运行。<code class="post-code--single">bypassPermissions</code> 和 <code class="post-code--single">--dangerously-skip-permissions</code> 只留给隔离容器；权限放得更宽时意味着什么，见 <a href="/zh/blog/claude-code-yolo-mode/">Claude Code yolo mode</a>。</p>
+<p>我还问了 <code class="post-code--spaced">Why does npm test fail in this repo?</code>，也就是「这个仓库的 npm test 为什么失败？」。两者在默认设置下都没改文件。Claude Code 的三次测试调用被拒绝，靠读代码给出了诊断；Cline 则跑了测试再诊断。两者退出码都是 0。Cline 的自动批准允许编辑文件，但这条只问原因的提示词没有让它动手改。</p>
+<h3 id="密钥错误时-失败耗时不同">密钥错误时，失败耗时不同</h3>
+<p class="post-table-hint" hidden>左右滑动查看所有列。</p><div class="post-table-scroll" tabindex="0" role="region" aria-label="左右滑动查看所有列。"><table class="table-comparison">
+<thead>
+<tr>
+<th scope="col">DeepSeek 密钥写错</th>
+<th scope="col">错误</th>
+<th scope="col">实际耗时</th>
+<th scope="col">退出码</th>
+</tr>
+</thead>
+<tbody><tr>
+<th scope="row">Claude Code</th>
+<td><code class="post-code--spaced">Failed to authenticate. API Error: 401</code></td>
+<td>178.5s，包含重试</td>
+<td>1</td>
+</tr>
+<tr>
+<th scope="row">Cline</th>
+<td><code class="post-code--spaced">Authentication Fails</code></td>
+<td>1.2s</td>
+<td>1</td>
+</tr>
+</tbody></table></div>
+<p>脚本要自己检查超时：这两次运行的重试等待时间差得很大。</p>
+<h2 id="同一模型下的-token-用量">同一模型下的 token 用量</h2>
+<p>下表范围来自同一个小任务：Cline 默认设置下成功的三次运行，以及 Claude Code <code class="post-code--single">acceptEdits</code> 下成功的两次运行。这不是基准测试。</p>
+<p class="post-table-hint" hidden>左右滑动查看所有列。</p><div class="post-table-scroll" tabindex="0" role="region" aria-label="左右滑动查看所有列。"><table class="table-comparison">
+<thead>
+<tr>
+<th scope="col">Agent</th>
+<th scope="col">输入 token，包含缓存读取</th>
+<th scope="col">其中的缓存输入</th>
+<th scope="col">输出 token</th>
+</tr>
+</thead>
+<tbody><tr>
+<th scope="row">Cline，E2a/E2b/E15</th>
+<td>33,588 至 42,217</td>
+<td>25,856 至 34,304</td>
+<td>849 至 959</td>
+</tr>
+<tr>
+<th scope="row">Claude Code，E3/E14</th>
+<td>59,710 至 74,426</td>
+<td>46,976 至 61,184</td>
+<td>655 至 783</td>
+</tr>
+</tbody></table></div>
+<p>Claude Code 的输入总量是我把 <code class="post-code--single">input_tokens</code> 和缓存读取 token 相加得到的：E3 为 12,734 + 46,976，E14 为 13,242 + 61,184。Cline 的 <code class="post-code--single">inputTokens</code> 已经包含缓存读取，再加一次会重复计算。</p>
+<p>在同样的隔离环境里，提示词只有 <code class="post-code--spaced">reply ok</code> 时，Claude Code 用了 11,162 个输入 token，Cline 用了 5,325 个。再短的请求也会带上 agent 的上下文。这里 Cline 的输入用量更少，大仓库还得单独测。</p>
+<h2 id="cline-vs-claude-code-价格与模型账单">Cline vs Claude Code：价格与模型账单</h2>
+<p>价格核对日期为 2026 年 11 月 18 日。工具的使用权限和模型账单要分开看。</p>
+<p class="post-table-hint" hidden>左右滑动查看所有列。</p><div class="post-table-scroll" tabindex="0" role="region" aria-label="左右滑动查看所有列。"><table class="table-comparison">
+<thead>
+<tr>
+<th scope="col">使用方式</th>
+<th scope="col">价格与权限</th>
+</tr>
+</thead>
+<tbody><tr>
+<th scope="row"><a href="https://cline.bot/pricing">Cline 个人使用</a></th>
+<td>软件免费，模型推理按用量付费，也可用自己的模型服务商密钥</td>
+</tr>
+<tr>
+<th scope="row"><a href="https://docs.cline.bot/">ClinePass</a></th>
+<td>可选的固定订阅，每月 $9.99；本次没测</td>
+</tr>
+<tr>
+<th scope="row"><a href="https://cline.bot/pricing">Cline Enterprise</a></th>
+<td>定制报价</td>
+</tr>
+<tr>
+<th scope="row"><a href="https://claude.com/pricing">Claude Free</a></th>
+<td>不包含 Claude Code</td>
+</tr>
+<tr>
+<th scope="row"><a href="https://claude.com/pricing">Claude Pro</a></th>
+<td>月付每月 $20；年付折合每月 $17；包含 Claude Code</td>
+</tr>
+<tr>
+<th scope="row"><a href="https://claude.com/pricing">Claude Max / Ultra</a></th>
+<td>Max 每月 $100 起；Ultra 每月 $200；包含 Claude Code</td>
+</tr>
+<tr>
+<th scope="row">Claude Code 使用 API 密钥或网关</th>
+<td>由对应渠道按用量计费；本次用的是 DeepSeek</td>
+</tr>
+</tbody></table></div>
+<p><a href="/zh/blog/claude-code-pricing/">Claude Code 价格说明</a>介绍了订阅和 API 两种方式。</p>
+<p><a href="https://api-docs.deepseek.com/quick_start/pricing">DeepSeek 的 <code class="post-code--single">deepseek-flash</code> 标价</a>如下，单位是美元/百万 token：</p>
+<p class="post-table-hint" hidden>左右滑动查看所有列。</p><div class="post-table-scroll" tabindex="0" role="region" aria-label="左右滑动查看所有列。"><table class="table-comparison">
+<thead>
+<tr>
+<th scope="col">Token 类别</th>
+<th scope="col">非高峰</th>
+<th scope="col">高峰</th>
+</tr>
+</thead>
+<tbody><tr>
+<th scope="row">缓存命中输入</th>
+<td>$0.003</td>
+<td>$0.006</td>
+</tr>
+<tr>
+<th scope="row">缓存未命中输入</th>
+<td>$0.15</td>
+<td>$0.30</td>
+</tr>
+<tr>
+<th scope="row">输出</th>
+<td>$0.60</td>
+<td>$1.20</td>
+</tr>
+</tbody></table></div>
+<p>高峰时段为周一至周五的 UTC 01:00–04:00 和 06:00–10:00，中国法定节假日除外；其余时间，包括周末和这些节假日，都是非高峰。我运行的时间约为周三 UTC 02:00，处在高峰时段。</p>
+<p>Claude Code 在 E14 的 <code class="post-code--single">total_cost_usd</code> 里报了约 $0.081，同时输出 <code class="post-code--single">[claude-code:unrecognized_model]</code>。它按 Anthropic 价格计算这个未识别的模型，用第三方模型时应忽略这个费用字段。Cline 按 DeepSeek 标价给 E15 报了约 $0.0018。不能用这两个工具自报的值，计算实际扣款的比例。</p>
+<p>按上面的 token 数和高峰标价计算，E14 约 $0.0053（13,242 × $0.30 + 61,184 × $0.006 + 783 × $1.20，再除以一百万），E15 约 $0.0035（7,732 个未缓存输入 × $0.30 + 25,856 × $0.006 + 849 × $1.20，再除以一百万）。DeepSeek 账户余额显示到 0.01 CNY，我在每次运行结束 20 秒后检查，余额都没有变化，因此没能从账户确认实际扣款。</p>
+<h2 id="cline-vs-codex">Cline vs Codex</h2>
+<p>我还在同一份测试代码上跑了 Codex CLI <code class="post-code--single">0.167.0</code>，通过 ChatGPT 登录，使用它默认的 <code class="post-code--single">gpt-6.2-sol</code>。模型不同，这里不比较 token 用量。</p>
+<div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="已复制">复制</button><pre><code class="language-bash" data-copy-source>codex exec &quot;The tests fail. Fix the bug in src/slug.js so that npm test passes. Do not change the tests.&quot;
+</code></pre></div>
+<p>全新配置下，默认沙箱是只读，审批策略为 <code class="post-code--single">never</code>。这次没改任何文件，耗时 28 秒，退出码 0。允许写入工作区后，15 秒修好了源码，四项测试全部通过：</p>
+<div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="已复制">复制</button><pre><code class="language-bash" data-copy-source>codex exec -s workspace-write &quot;The tests fail. Fix the bug in src/slug.js so that npm test passes. Do not change the tests.&quot;
+</code></pre></div>
+<p>同一个任务，Cline 的默认单次运行不用加额外参数，自动批准工具后就修好了 bug，4/4 通过；Codex 默认没有改动，直到我允许写入工作区才完成修复。对于还没观察过执行过程的脚本，Codex 的只读默认值更安全；Cline 的默认设置则能无人值守地完成这项任务。不论有没有改文件，两者都返回了 0，所以还得检查文件。<a href="/zh/blog/opencode-vs-codex/">OpenCode vs Codex</a>是另一组无头运行对比；额度问题见 <a href="/zh/blog/codex-usage-limits/">Codex 用量限制</a>。</p>
+<h2 id="orbi-能接哪部分工作">Orbi 能接哪部分工作</h2>
+<p>两款工具都能用于有人操作的编程过程，也能放进你自己配置的自动化里。例如 <a href="https://github.com/cline/cline/blob/main/apps/cli/README.md">Cline 支持定时运行</a>，命令是 <code class="post-code--spaced">cline schedule create ... --cron</code>。不管用哪款，PR 由谁评审、谁合并，仍要自己配置。</p>
+<p>Orbi 从打了 <code class="post-code--single">ai-ready</code> 标签的 GitHub Issue 开始，用 Pi 实现，由独立会话评审，评审通过且 CI 全绿后合并。</p>
+<p>在 Claude Code 里，<a href="https://github.com/orbi-build/orbi/blob/main/integrations/claude-plugin/README.md">Orbi 插件</a>提供 <code class="post-code--single">/orbi:ship</code>，把当前任务写成 Issue。在由 Orbi 交付的仓库里，它会在确认后加上 <code class="post-code--single">ai-ready</code>。<code class="post-code--single">/orbi:status</code> 用来查状态。</p>
+<p>Cline 这边，我验证了下面的 skill 安装命令：</p>
+<div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="已复制">复制</button><pre><code class="language-bash" data-copy-source>cline skill add orbi-build/orbi --skill write-ai-ready-issue -y
+</code></pre></div>
+<p>它把 <code class="post-code--single">write-ai-ready-issue</code> 复制到 <code class="post-code--single">./.agents/skills/write-ai-ready-issue</code>，这是 skills CLI 为 Cline 使用的目录。装好后，可以让 Cline 用它把任务写成 Issue。我只验证了安装，没有跑完整的 Cline 到 Orbi 交付。这份 skill 也能在 Codex、Copilot 和 Cursor 中加载；<code class="post-code--single">/orbi:</code> 命令则只在 Claude Code 和 Cursor 中加载。<a href="/zh/compare/claude-code/">Orbi 对比 Claude Code</a>介绍了交接方式。想让 agent 实时陪你写代码，就不用考虑 Orbi。</p>
+<aside class="post-cta">
+  <h2>Orbi 把你的 Issue 一路做到发版。</h2>
+  <a class="button button-signal" data-cta="post-start" href="/zh/cloud/login">免费试用 Orbi Cloud →</a>
+  <p class="post-cta-note">不用绑定信用卡 · 只授权你选的仓库</p>
+  <a class="post-cta-link" data-cta="post-selfhost" href="https://github.com/orbi-build/orbi">想自己部署？开源免费（AGPL）→</a>
+</aside><h2 id="相关">相关</h2>
+<ul>
+<li><a href="/zh/blog/cursor-vs-claude-code/">Cursor vs Claude Code：工作方式、套餐与用量</a></li>
+<li><a href="/zh/blog/opencode-vs-codex/">OpenCode vs Codex CLI：同一模型，无头运行实测</a></li>
+<li><a href="/zh/blog/run-claude-code-unattended/">Claude Code 无人值守运行指南</a></li>
+<li><a href="/zh/compare/claude-code/">Orbi 对比 Claude Code</a></li>
+<li><a href="/zh/cloud/?ref=blog-cline-vs-cc">Orbi Cloud</a></li>
+</ul>
+
+<!--orbi:related-posts-->
+      </article>
+    </div>
+  </main>
+
+<section class="subscribe-box shell" aria-labelledby="subscribe-title">
+  <h2 class="subscribe-title" id="subscribe-title">Orbi 这周又能多做什么</h2>
+  <form class="subscribe-form" action="/subscribe" method="post" data-subscribe-form data-success="请到邮箱点确认链接，确认后就订阅好了。" data-invalid="邮箱格式不对" data-unavailable="暂时无法订阅，请重试。">
+    <label class="sr-only" for="subscribe-email-zh">邮箱地址</label>
+    <input id="subscribe-email-zh" type="email" name="email" autocomplete="email" required placeholder="你的邮箱">
+    <input type="hidden" name="lang" value="zh">
+    <button class="button button-ghost" type="submit">订阅</button>
+    <p class="subscribe-status" data-subscribe-status aria-live="polite"></p>
+  </form>
+  <p class="subscribe-note">每周一封：新功能、实测文章，还有我们自己用 Orbi 干活的数据。随时退订。</p>
+</section>
+
+  <script src="/subscribe.js" defer></script>
+
+  <footer class="site-footer shell">
+    <div class="footer-brand">
+      <a class="wordmark wordmark-footer" href="/zh/" aria-label="Orbi 首页">
+        <img class="wordmark-mark" src="/logo-mark.svg" width="28" height="28" alt="">
+        <span>Orbi</span>
+      </a>
+      <p class="orbi-site-footer-p">不会随 Session 消失的软件生产。</p>
+    </div>
+    <nav aria-label="页脚导航">
+      <div class="footer-group">
+        <h2>产品</h2>
+        <ul><li><a href="/zh/cloud/">Cloud</a></li><li><a href="/zh/cloud/#pricing">价格</a></li><li><a href="/zh/#system">产品怎么运作</a></li><li><a href="/zh/evidence/">Orbi 交付自己的记录</a></li><li><a href="https://github.com/orbi-build/orbi/releases">发布记录</a></li><li><a href="https://status.orbi.build">状态</a></li></ul>
+      </div>
+      <div class="footer-group">
+        <h2>资源</h2>
+        <ul><li><a href="/zh/evidence/">Orbi 交付自己的记录</a></li><li><a href="/zh/benchmark/">我们怎么测 harness</a></li><li><a href="/zh/guides/pi-coding-agent/">Pi 系列：Orbi 是怎么实现的</a></li><li><a href="/zh/cost/">每个 PR 花多少钱</a></li><li><a href="/aiready/zh/">ai-ready 12 要素</a></li><li><a href="/zh/compare/">与同类工具对比</a></li><li><a href="/zh/blog/">博客</a></li><li><a href="/zh/blog/ai-contribute-to-open-source/">开源贡献</a></li><li><a href="https://docs.orbi.build/zh">自托管文档</a></li><li><a href="https://cloud-docs.orbi.build/?ref=footer">Cloud 文档</a></li><li><a href="/zh/#faq">常见问题</a></li></ul>
+      </div>
+      <div class="footer-group footer-guides">
+        <h2>指南</h2>
+        <ul><li><a href="/zh/guides/">指南</a></li><li><a href="/zh/guides/issue-to-release/">Issue 到发版</a></li><li><a href="/zh/guides/ci-gates/">CI 门禁</a></li><li><a href="/zh/guides/auto-merge-ai-prs/">自动合并 AI PR</a></li><li><a href="/zh/guides/autonomous-coding-agent/">自主编程 agent</a></li><li><a href="/zh/guides/self-hosted-coding-agent/">自托管编程 agent</a></li><li><a href="/zh/guides/codex-github-issues/">Codex 处理 GitHub Issue</a></li><li><a href="https://aiready.sh/zh/">ai-ready 十二要素</a></li></ul>
+      </div>
+      <div class="footer-group footer-compare">
+        <h2>对比</h2>
+        <ul><li><a href="/zh/compare/orca/">Orbi vs Orca</a></li><li><a href="/zh/compare/openclaw/">Orbi vs OpenClaw</a></li><li><a href="/zh/compare/github-copilot-coding-agent/">Orbi vs GitHub Copilot cloud agent</a></li><li><a href="/zh/compare/managed-agents/">Orbi vs Claude Managed Agents</a></li><li><a href="/zh/compare/claude-code/">Orbi vs Claude Code</a></li><li><a href="/zh/compare/openhands/">Orbi vs OpenHands</a></li><li><a href="/zh/compare/hermes-agent/">Orbi vs Hermes Agent</a></li><li><a href="/zh/compare/keelen/">Orbi vs Keelen</a></li><li><a href="/zh/compare/codex/">Orbi vs OpenAI Codex</a></li><li><a href="/zh/compare/devin/">Orbi vs Devin</a></li><li><a href="/zh/compare/jules/">Orbi vs Google Jules</a></li><li><a href="/zh/compare/cursor/">Orbi vs Cursor Cloud Agents</a></li><li><a href="/zh/compare/">全部对比</a></li></ul>
+      </div>
+      <div class="footer-group">
+        <h2>公司</h2>
+        <ul><li><a href="/zh/support/">支持</a></li><li><a href="https://github.com/orbi-build/orbi/milestones">路线图</a></li><li><a href="/zh/privacy/">隐私政策</a></li><li><a href="/zh/terms/">服务条款</a></li><li><a href="https://github.com/orbi-build/orbi">GitHub</a></li><li><a href="https://x.com/xqliu" rel="me">X</a></li><li><a href="https://www.youtube.com/@orbibuild" rel="me">YouTube</a></li></ul>
+      </div>
+    </nav>
+    <div class="footer-language language" role="group" aria-label="语言"><span aria-current="page">ZH</span><a href="/blog/cline-vs-claude-code/" lang="en" aria-label="English">EN</a></div>
+    <nav class="footer-friends" aria-label="收录于">
+      <span class="footer-friends-label">收录于</span>
+      <div class="footer-badges">
+        <div class="footer-badges-track" data-footer-badges-track>
+        <span class="footer-friends-text">
+          <a href="https://www.opensourcealternatives.to/" rel="noopener">Open Source Alternatives</a>
+          <a href="https://agentic.ai/best/free-coding-agents" rel="noopener">Agentic.ai</a>
+        </span>
+        <a href="https://betterlaunch.app/p/orbi" target="_blank" rel="noopener noreferrer"><img src="https://betterlaunch.app/api/badges/orbi?kind=featured&amp;theme=light&amp;v=4" alt="Orbi" width="196" height="72" /></a>
+        <a href="https://launchnest.io/p/orbi" rel="dofollow" title="orbi.build — Domain Rating by LaunchNest">
+          <img src="https://launchnest.io/api/badge/dr?domain=orbi.build&style=small&shape=round&color=dark" alt="orbi.build Domain Rating" width="240" />
+        </a>
+        <a href="https://aiagentsdirectory.com/agent/orbi" target="_blank" rel="noopener" title="Discover Orbi on AI Agents Directory">
+          <img src="https://aiagentsdirectory.com/featured-badge.svg?v=2024" alt="Orbi - Featured on AI Agents Directory" width="168" height="42" />
+        </a>
+        <a href="https://aiagentslisting.com/agent/orbi?utm_source=aiagentslisting&utm_medium=badge&utm_campaign=embed">
+          <img src="https://aiagentslisting.com/orbi/badge.svg?theme=dark" alt="Orbi badge" width="168" height="42" />
+        </a>
+        <a href="https://toolradar.com/tools/orbi" target="_blank" rel="noopener">
+          <img src="https://toolradar.com/api/badge/orbi?type=review&style=light&v=4" alt="Orbi on Toolradar" width="147" height="42" />
+        </a>
+        <a href="https://nicklaunches.com/products/orbi/" target="_blank" rel="noopener"><img src="https://nicklaunches.com/badges/featured.png" alt="Featured on Nick Launches" width="244" height="56" /></a>
+        <a href="https://yourhack.ai" target="_blank" rel="noopener"><img src="https://yourhack.ai/badge/yourhack.svg" alt="Listed on yourhack.ai" width="131" height="20" /></a>
+        <a href="https://showmebest.ai" target="_blank"><img src="https://showmebest.ai/badge/feature-badge-white.webp" alt="Featured on ShowMeBestAI" width="220" height="60"></a>
+        <a href="https://goodaitools.com/ai/orbi" target="_blank"><img src="https://goodaitools.com/assets/images/badge.png" alt="Good AI Tools" height="54"></a>
+        <a href="https://aixcollection.com/ai/orbi" target="_blank"><img src="https://aixcollection.com/assets/images/badge.png" alt="AI X Collection" height="54"></a>
+        <a href="https://launchtory.com/projects/orbi-build">Orbi on Launchtory</a>
+        <a href="https://dofollow.tools" target="_blank" rel="noopener noreferrer"><img alt="Featured on Dofollow.Tools" width="200" height="54" src="https://dofollow.tools/badge/badge_dark.svg"></a>
+        <a href="https://gets.tools" target="_blank" rel="noopener noreferrer"><img alt="Featured on Gets.Tools" width="200" height="54" src="https://gets.tools/badge/badge_dark.svg"></a>
+        <a href="https://siftfox.com/tool/orbi" target="_blank"><img src="https://siftfox.com/badges/live-light.svg" alt="Live on SiftFox" width="168" height="56" /></a>
+        <a href="https://altern.ai/ai/orbi" target="_blank" rel="noopener">
+          <img src="https://data.altern.ai/alternbadge.png" alt="Featured on Altern" width="150" />
+        </a>
+        <a href="https://saaspa.ge/product/cmvdfiyyk000mjq06rc8auynb" target="_blank" rel="nofollow">
+          <img src="https://saaspa.ge/api/embed/product/cmvdfiyyk000mjq06rc8auynb/badge.png?theme=black" alt="Featured on Saaspa.ge" width="200" height="60" />
+        </a>
+        <a href="https://www.tooluck.org/item/orbi" target="_blank" rel="noopener noreferrer">
+          <img src="https://www.tooluck.org/badges/tooluck-badge-dark.svg" alt="Featured on Tooluck.org" width="210" height="55" />
+        </a>
+        <a href="https://neeed.directory/products/orbi?utm_source=orbi" target="_blank" rel="noopener">
+          <img src="https://neeed.directory/badges/neeed-badge-light.svg" alt="Featured on neeed.directory" width="139" />
+        </a>
+        <a href="https://zplatform.ai/" target="_blank" rel="noopener" title="Featured on zPlatform.ai">
+          <img src="https://zplatform.ai/badges/zplatform-featured.png" alt="Featured on zPlatform" width="250" height="60" />
+        </a>
+        <a href="https://startupproject.org/startups/" target="_blank" rel="noopener">Featured on The Startup Project</a>
+        <a href="https://devhub.best/projects/orbi?utm_source=badge" target="_blank" rel="noopener noreferrer"><img src="https://r2.direasy-multi-tenant.focusapps.app/uploads/616d0b1a-3979-4b8c-94d1-b4f1fedd3ead/1783239702078/53yqmim54zv/featured-on-light.svg" alt="Featured on DevHub" width="150" height="44" /></a>
+        <a href="https://startupfa.st" target="_blank" rel="noopener" title="Powered by Startup Fast"><img class="footer-badge-startup-fast" src="https://startupfa.st/images/badges/powered-by-dark.svg" alt="Powered by Startup Fast" width="150" height="63" /></a>
+        <a href="https://artificin.com" target="_blank" rel="noopener"><img src="https://artificin.com/badges/Artificin-badge.png" alt="Featured on Artificin" width="139" height="44" /></a>
+        <a href="https://aitooltrek.com" target="_blank" rel="noopener">AI Tool Trek</a>
+        <a href="https://whatisaitools.com/" target="_blank" rel="noopener" title="What Is Ai Tools">What Is Ai Tools</a>
+        <a href="https://toolpotion.ai/en/ai-agent/orbi" target="_blank" rel="noopener"><img src="https://toolpotion.ai/badge/30971/top-ranked-detailed-gradient.svg" alt="Orbi — ToolPotion badge" width="250" height="54" /></a>
+        <a href="https://fazier.com" target="_blank" rel="noopener"><img src="https://fazier.com/api/v1//public/badges/launch_badges.svg?badge_type=launched&theme=light" width="120" alt="Fazier badge" /></a>
+        <a href="https://turbo0.com/item/orbi" target="_blank" rel="noopener noreferrer"><img src="https://img.turbo0.com/badge-listed-light.svg" alt="Listed on Turbo0" width="482" height="161" /></a>
+        <a href="https://toolfame.com/item/orbi" target="_blank" rel="noopener noreferrer"><img src="https://toolfame.com/badge-light.svg" alt="Featured on toolfame.com" width="160" height="54" /></a>
+        <a href="https://dang.ai" target="_blank" rel="noopener"><img src="https://assets.dang.ai/badges/dang-verified-dark.png" alt="Verified on DANG!" width="550" height="198" /></a>
+        <a href="https://scoutforge.net/apps/orbi?ref=badge" target="_blank" rel="noopener"><img src="https://scoutforge.net/badge/orbi/image?theme=light" alt="Orbi on Scout Forge" width="300" height="72" /></a>
+        <a href="https://findly.tools/orbi?utm_source=orbi" target="_blank" rel="noopener noreferrer"><img src="https://findly.tools/badges/findly-tools-badge-light.svg" alt="Featured on Findly.tools" width="139" height="44" /></a>
+        <a href="https://www.founder.best?ref=founderbest&utm_source=founder.best&utm_medium=referral" target="_blank" rel="noopener noreferrer"><img src="https://www.founder.best/api/badge/featured/orbi" alt="Orbi - Featured on Founder.best" width="1195" height="390" decoding="async" /></a>
+        <a href="https://www.makeitla.st/" title="Featured on MakeItLast"><img src="https://www.makeitla.st/badge/makeitlast-badge-dark.svg?v=3" alt="Featured on MakeItLast" width="252" height="76"/></a>
+        <a href="https://postmake.io" target="_blank" rel="noopener"><img src="https://postmake.io/postmake_badge_light.png" alt="Featured on the Postmake directory" height="54" /></a>
+        <a href="https://auraplusplus.com" target="_blank" rel="noopener" title="Featured on Aura++"><img src="https://auraplusplus.com/images/badges/featured-on-light.svg" alt="Featured on Aura++" width="150" height="44" /></a>
+        <a href="https://earlyhunt.com" target="_blank" rel="noopener">Featured on EarlyHunt</a>
+        <a href="https://twelve.tools" target="_blank">Featured on Twelve Tools</a>
+        <a href="https://aifordevelopers.org" target="_blank"><img src="https://aifordevelopers.org/assets/badge.svg" alt="Featured on AI for Developers" width="220" height="48"></a>
+        <a href="https://uno.directory" target="_blank" rel="noopener"><img src="https://uno.directory/uno-directory.svg" alt="Listed on Uno Directory" width="120" height="30" /></a>
+        <a href="https://saascity.io" target="_blank" rel="noopener"><img src="https://saascity.io/badges/featured-dark.svg" alt="Featured on SaaSCity" width="150" height="54" /></a>
+        <a href="https://launchvault.dev" target="_blank" rel="noopener"><img src="https://launchvault.dev/images/badges/launch-valut-badge.svg" alt="Featured on LaunchVault" height="54" /></a>
+        <a target="_blank" rel="noopener" href="https://findstack.com/products/orbi/reviews"><img alt="Orbi on Findstack" width="180" height="56" src="https://findstack.com/badges/orbi.svg" /></a>
+        <a href="https://goodsaas.xyz/saas/orbi" target="_blank" rel="noopener"><img src="https://goodsaas.xyz/badge/orbi.svg?theme=dark" alt="goodSaaS on goodSaaS" /></a>
+        <a href="https://101aitools.com" target="_blank"><img src="https://101aitools.com/badge-featured-101aitools.svg" alt="Featured on 101 AI Tools" width="360" height="72"></a>
+        <a href="https://webtech.tools" title="WebTech">WebTech</a>
+        <a href="https://t0ai.com" title="T0 AI Tools Directory">T0 AI Tools Directory</a>
+        <a href="https://aixlist.com/">AIXList</a>
+        <a href="https://hiaitools.com" title="The latest AI Tools Directory">The latest AI Tools Diresctory</a>
+        <a href="https://aitooli.com/" title="Aitooli AI Tools Directory">Aitooli AI Tools Directory</a>
+        <a href="https://okeiai.com/" title="Okei AI Tools Directory" target="_blank"> Okei AI Tools </a>
+        <a href="https://vibedonalds.com" target="_blank" rel="noopener"><img src="https://vibedonalds.com/badge/featured-on-vibedonalds.svg" alt="Featured on Vibedonalds" width="240" height="60"></a>
+        <a href="https://minylist.com" target="_blank" title="Featured on minylist"><img src="https://minylist.com/badge/featured.svg" alt="Featured on minylist" width="176" height="60" /></a>
+        <a href="https://toolsify.ai/" title="Toolsify AI Tools Directory">Toolsify AI Tools Diresctory</a>
+        <a href="https://bestaitool.app/" title="BestAITool AI Tools Directory">BestAITool AI Tools Diresctory</a>
+        <a href="https://doforai.tools" target="_blank" rel="noopener noreferrer"><img src="https://doforai.tools/badge/feature-badge-white.webp" alt="Featured on doforai.tools" width="172" height="54" /></a>
+        <a href="https://startupfa.me/s/orbi?utm_source=orbi.build" target="_blank"><img src="https://startupfa.me/badges/featured-badge.webp" alt="Orbi - Featured on Startup Fame" width="171" height="54" /></a>
+        <a href="https://www.scrolllaunch.com/products/orbi?ref=badge" target="_blank" rel="noopener"><img src="https://www.scrolllaunch.com/api/badge/orbi" alt="Featured on ScrollLaunch" width="220" height="48" /></a>
+        <a href="https://openhunts.com" target="_blank" rel="noopener noreferrer" title="OpenHunts Club"><img alt="OpenHunts Club Member" width="486" height="105" src="https://cdn.openhunts.com/badges/club.webp"></a>
+        <a href="https://saasgrow.app?ref=orbi.build" target="_blank" rel="noopener"><img src="https://saasgrow.app/api/badge?type=featured&style=light" alt="Orbi on SaaSGrow" width="240" height="54" /></a>
+        <a href="https://navfolders.com" target="_blank"><img src="https://navfolders.com/badge/nav_light.svg" alt="NavFolders" width="200" height="54" /></a>
+        <a href="https://huzzler.so/products/xxBk2zzN1n/orbi-build?utm_source=huzzler_product_website&amp;utm_medium=badge&amp;utm_campaign=free_listing" target="_blank" rel="noopener noreferrer"><img alt="Huzzler Embed Badge" src="https://huzzler.so/assets/images/embeddable-badges/featured.png" width="159" height="55" /></a>
+        <a href="https://productwing.com/product/orbi" target="_blank"><img src="https://productwing.com/assets/images/badge.png" alt="Product Wing" height="54" /></a>
+        <a href="https://unitelist.com/product/orbi" target="_blank"><img src="https://unitelist.com/assets/images/badge.png" alt="Unite List" height="54" /></a>
+        <a href="https://appalist.com/ai/orbi" target="_blank"><img src="https://appalist.com/assets/images/badge.png" alt="Appa List" height="54" /></a>
+        <a href="https://weliketools.com/tool/orbi" target="_blank"><img src="https://weliketools.com/assets/images/badge.png" alt="We Like Tools" height="54" /></a>
+        <a href="https://bowora.com/?via=4rnfymxi" target="_blank">Featured on Bowora</a>
+<a href="https://submitmysaas.com" target="_blank"><img src="https://submitmysaas.com/featured-badge.png" alt="Featured on SubmitMySaas" height="54" /></a>
+<a href="https://launchitx.com/projects/orbi" target="_blank" title="Launched on LaunchitX"><img src="https://launchitx.com/images/badges/launched-on-launchitx.svg" alt="Launched on LaunchitX" width="200" height="44" /></a>
+<a href="https://submitforbacklinks.com/badge/u7UQB2BoSYvTsQwH1CObaHFv?ref=badge" target="_blank" rel="noopener" data-s4b-token="u7UQB2BoSYvTsQwH1CObaHFv" data-s4b-theme="dark"><img src="https://submitforbacklinks.com/api/badge/u7UQB2BoSYvTsQwH1CObaHFv.svg?variant=verified&theme=dark" alt="Orbi — Verified on SubmitForBacklinks" width="220" height="48" /></a>
+<a href="https://liftoapp.com/product/orbi" target="_blank" rel="noopener noreferrer"><img src="https://liftoapp.com/badges/featured-dark.svg" alt="Featured on Lifto" width="200" height="54" /></a>
+<a href="https://www.launchvibe.app/launch/1618" target="_blank" rel="noopener"><img src="https://www.launchvibe.app/src/images/launched-badge.svg" alt="Launched on LaunchVibe" width="220" height="48" /></a>
+<script src="https://earlylaunch.co/widget/0a155a32-7f91-4bf2-9155-5a5509343702/script.js" async></script>
+<a href="https://launch01.com/projects/orbi?utm_source=badge" target="_blank" rel="noopener noreferrer"><img src="https://r2.direasy-multi-tenant.focusapps.app/uploads/616d0b1a-3979-4b8c-94d1-b4f1fedd3ead/1782997254784/3uiqk91geh6/featured-on-light.svg" alt="Featured on Launch01" width="150" height="44" /></a>
+<a href="https://spacerrapps.com/apps/orbi?utm_source=badge&amp;utm_medium=referral&amp;utm_campaign=featured" target="_blank" rel="noopener"><img src="https://spacerrapps.com/badge/orbi.svg?v=3&amp;theme=dark" alt="Orbi is featured on SpacerrApps" width="234" height="54" /></a>
+<a href="https://prolaunch.net" target="_blank" rel="noopener" title="Pro Launch Featured Badge"><img src="https://prolaunch.net/images/badges/featured-light.svg" alt="Pro Launch Featured Badge (light theme)" width="152" height="44" /></a>
+<a href="https://www.productlaunchify.com/projects/orbi" target="_blank" rel="noopener noreferrer" title="Featured on Product Launchify" aria-label="Featured on Product Launchify"><img src="https://www.productlaunchify.com/images/badges/powered-by-light.svg" alt="Featured on Product Launchify" width="231" height="55" /></a>
+<a href="https://launchaf.com/" target="_blank" rel="noopener" data-launchaf-badge="true"><img src="https://launchaf.com/api/badge/light?v=launchaf-blue-2026-2" alt="Featured on LaunchAF" width="200" height="56" /></a>
+<a href="https://ideakiln.com/ideas/orbi" target="_blank" rel="noopener"><img src="https://ideakiln.com/light.svg" alt="Featured on Idea Kiln" width="200" height="54" /></a>
+<a href="https://alterbase.co/" title="Listed on AlterBase" target="_blank" rel="noopener"><img src="https://alterbase.co/badge/alterbase-v1-light.svg" alt="Listed on AlterBase" width="200" height="50" /></a>
+        <a href="https://whatisnew.today/p/orbi?ref=badge"><img src="https://whatisnew.today/badge/orbi.svg?theme=dark" alt="Orbi on What’s New Today" width="172" height="40"></a>
+        <a href="https://www.indietools.app/products/orbi?utm_source=badge&amp;utm_medium=referral&amp;utm_campaign=domain-rating" target="_blank" rel="noopener"><img src="https://www.indietools.app/badges/domain-rating/47da13e5-a4b0-4238-b77c-5a0cd2afa58d.svg?theme=dark&amp;font=modern" alt="View the current Domain Rating for Orbi on IndieTools" width="176" height="56" /></a>
+
+        <a href="https://ufind.best/products/orbi" target="_blank" rel="noopener"><img src="https://ufind.best/badges/ufind-best-badge-light.svg" alt="Featured on ufind.best" width="150" /></a>
+
+        <a href="https://aitoolsdirectory.vip" target="_blank" rel="noopener noreferrer">AI Tools Directory</a>
+        <a href="https://launchsoar.com" target="_blank" rel="noopener noreferrer" data-launch-badge="true" style="display:inline-flex;align-items:center;gap:10px;padding:10px 14px;border:1px solid #e5e7eb;border-radius:9999px;background:#ffffff;color:#111827;text-decoration:none;font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Helvetica Neue,Arial;line-height:1;"><img src="https://launchsoar.com/logo.png" alt="Launch" style="height:18px;width:auto;" /><span style="display:flex;flex-direction:column;gap:2px;line-height:1.1;"><span style="font-size:12px;opacity:0.8;">Listed on</span><span style="font-size:14px;font-weight:700;">Launch</span></span></a>
+        <a href="https://ailaunch.space/" target="_blank" rel="noopener noreferrer" style="text-decoration: none; display: inline-block;">
+          <img src="https://ailaunch.space/assets/badges/featured.svg" alt="Featured on AILaunchSpace" width="225" height="61" style="display: block;" />
+        </a>
+        <a href="https://saasfame.com/" target="_blank" rel="noopener noreferrer"><img src="https://saasfame.com/badge-light.svg" alt="Featured on saasfame.com" height="54" /></a>
+        <a href="https://www.pavelaunch.com/p/a42aed25-69c4-48e1-b37c-c75977668f41" target="_blank" rel="noopener noreferrer"><img src="https://www.pavelaunch.com/api/embed?type=launching-soon&amp;theme=light" alt="On PaveLaunch" width="250" height="54" /></a>
+        <a href="https://aitoolfame.com/" target="_blank" rel="noopener noreferrer"><img src="https://aitoolfame.com/badge-light.svg" alt="Featured on aitoolfame.com" height="54" /></a>
+
+        <a href="https://pickapps.org" target="_blank" rel="noopener noreferrer"><img src="https://pickapps.org/pickapps-badge.svg" width="160" alt="Listed on PickApps" /></a>
+        <a href="https://toolsclaw.com" target="_blank" rel="noopener noreferrer"><img src="https://toolsclaw.com/badge/toolsclaw.com-badge.svg" alt="Featured on ToolsClaw" width="200" height="54" /></a>
+        <a href="https://linksalad.me/projects/orbi?utm_source=badge" target="_blank" rel="noopener noreferrer"><img src="https://linksalad.me/linksalad/images/badges/featured-on-light.svg" alt="Featured on LinkSalad" style="height:44px;width:auto"/></a>
+        <a href="https://softwareontheweb.com" rel="dofollow"><picture><source srcset="https://softwareontheweb.com/images/badge.svg?v=1792560811" type="image/svg+xml"><img src="https://softwareontheweb.com/images/badge.png?v=1792560811" alt="Featured on Software on the Web" width="200"></picture></a>
+        <a href="https://indiehunt.io/project/orbi" target="_blank" rel="noopener"><img src="https://indiehunt.io/badges/indiehunt-badge-light.svg" alt="Featured on IndieHunt" width="265" height="58" /></a>
+        <a href="https://softwarecomoservicio.com"><img src="https://softwarecomoservicio.com/badge/badge-dark.svg" alt="Featured on Software Como Servicio" width="178" height="40" /></a>
+        <a href="https://www.faxianai.com" target="_blank" rel="noopener">发现AI</a>
+        <a href="https://lift-off.sh" target="_blank" title="LiftOff launch badge"><img src="https://lift-off.sh/images/badges/badgeLaunchedLight.webp" alt="LiftOff launch badge" width="200" /></a>
+        <a href="https://dailylaunch.io/" target="_blank" rel="noopener"><img src="https://dailylaunch.io/badge/light.svg?v=a6cc2b9b" alt="Featured on DailyLaunch" width="200" height="54"></a>
+        <a data-topaitools4u-badge="verified-listing" href="https://www.topaitools4u.site" target="_blank" rel="noopener" aria-label="Listed on TopAITools4U" style="display:inline-flex;align-items:center;gap:10px;padding:10px 14px;border:1px solid #d9d9d9;border-radius:12px;background:#ffffff;color:#111111;font-family:Inter,Arial,sans-serif;text-decoration:none;"><img src="https://www.topaitools4u.site/logo.svg" alt="TopAITools4U" width="32" height="32" style="display:block;width:32px;height:32px;border-radius:9px;" /><span style="display:flex;flex-direction:column;line-height:1.15;"><span style="font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:#6b7280;">Listed on</span><span style="font-size:15px;font-weight:700;">TopAITools4U</span></span></a>
+        <a class="hypestar-badge hypestar-badge--auto" data-hypestar-theme="auto" href="https://hypestar.org/?utm_source=supporter_badge&amp;utm_medium=referral&amp;utm_campaign=hype_star_badge" target="_blank" rel="noopener nofollow"><img class="hypestar-badge__image" src="https://hypestar.org/badges/support-hype-star-auto-v2.svg" alt="Verified" width="140" height="24" loading="lazy" decoding="async"></a>
+        <a href="https://thedevtoolslist.com/product/orbi?ref=badge" rel="dofollow"><img src="https://thedevtoolslist.com/badge/orbi.svg" alt="Featured on TheDevToolsList" width="182" height="46"></a>
+        <a href="https://themicrosaasdir.com/product/orbi?ref=badge" rel="dofollow"><img src="https://themicrosaasdir.com/badge/orbi.svg" alt="Featured on TheMicroSaaSDir" width="182" height="46"></a>
+        <a href="https://theaitoolsdir.com/product/orbi?ref=badge" rel="dofollow"><img src="https://theaitoolsdir.com/badge/orbi.svg" alt="Featured on TheAIToolsDir" width="182" height="46"></a>
+        <a href="https://productfame.com" target="_blank" rel="noopener noreferrer"><img src="https://productfame.com/badges/featured-light.svg" alt="Featured on ProductFame" width="245" height="54"></a>
+        <a href="https://aitoolslist.tools" target="_blank" rel="dofollow"><img src="https://aitoolslist.tools/badges/aitoolslist-listed-light.svg" alt="Listed on AiToolsList.Tools" width="220" height="58" /></a>
+        <a href="https://aitoolscoop.com" target="_blank" rel="dofollow">AI Tool Scoop</a>
+        <a href="https://indielineup.com/product/orbi?ref=badge" rel="dofollow"><img src="https://indielineup.com/badge/orbi.svg" alt="Featured on IndieLineup" width="182" height="46"></a>
+        <a href="https://www.promptfrenzy.com/directory" rel="noopener" target="_blank" title="Featured on PromptFrenzy AI Directory"><img src="https://www.promptfrenzy.com/badges/directory.svg" alt="Featured on PromptFrenzy AI Directory" width="220" height="44" /></a>
+        <a href="https://smollaunch.com" target="_blank" rel="noopener">
+          <img src="https://smollaunch.com/badges/featured.svg" alt="Orbi — Featured on Smol Launch" loading="lazy" width="250" height="60" />
+        </a>
+        <a href="https://foundrlist.com/product/orbi?utm_source=badge&amp;utm_medium=embed" target="_blank" rel="noopener"><img src="https://foundrlist.com/api/badge/orbi" alt="Featured on FoundrList" width="150" height="48" /></a>
+        <a href="https://robodebut.com" title="Discover on RoboDebut"><img src="https://robodebut.com/badge.svg" alt="Discover on RoboDebut" width="180" height="40"></a>
+        <a href="https://mossai.org" title="Featured on MossAI"><img src="https://mossai.org/badge/featured.svg" alt="Featured on MossAI" width="140" height="54" loading="lazy" /></a>
+        <a href="https://super-launch.app" target="_blank"><img src="https://super-launch.app/badge/badge_dark.svg" alt="Featured on Super Launch" width="200" height="54" /></a>
+        <a href="https://www.bestaitool.co" target="_blank"><img src="https://www.bestaitool.co/badge/badge_dark.svg" alt="Featured on Best AI Tool" width="200" height="54" /></a>
+        <a href="https://indielaunch.dev/products/orbi?ref=badge" target="_blank" rel="noopener"><img src="https://indielaunch.dev/badges/indielaunch-light.svg" alt="Featured on IndieLaunch" width="200" height="54" /></a>
+        <a href="https://hokai.io/" title="Listed on Hokai"><img src="https://hokai.io/badges/listed-on-hokai.svg" alt="Listed on Hokai" width="172" height="40" loading="lazy"></a>
+        <a href="https://devtool.io" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:6px;padding:6px 12px;background:#10b981;color:#fff;border-radius:6px;text-decoration:none;font-family:sans-serif;font-size:14px;font-weight:600;">Listed on DevTool.io</a>
+        <a href="https://launch-list.org/product/orbi" target="_blank" style="display: block; width: fit-content;">
+          <img src="https://launch-list.org/badges/svg/launch_list_badge_live.svg" alt="Launch List Badge" style="height: 50px;" />
+        </a>
+
+        </div>
+      </div>
+      <button class="footer-badges-toggle" type="button" data-footer-badges-toggle data-label-pause="暂停" data-label-play="播放">暂停</button>
+    </nav>
+    <p class="footer-legal">© 2026 Low Code, LLC</p>
+  </footer>
+
+  <script src="/demo.js" defer></script>
+
+<script>(()=>{try{const links=[...document.querySelectorAll('.post-toc-link')];const targetOf=(link)=>link.getAttribute('href').slice(1);const headings=[...new Set(links.map(link=>document.getElementById(targetOf(link))).filter(Boolean))];const setCurrent=(heading)=>{links.forEach((link)=>link.classList.toggle('is-current',targetOf(link)===heading.id));};if('IntersectionObserver' in window){const update=()=>{const current=headings.findLast((heading)=>heading.getBoundingClientRect().top<=innerHeight*.4)??headings[0];if(current)setCurrent(current);};const observer=new IntersectionObserver(update,{rootMargin:'-24px 0px -60% 0px',threshold:0});headings.forEach((heading)=>observer.observe(heading));addEventListener('scroll',update,{passive:true});update();}}catch(error){console.warn('post_toc_observer_failed',error);}})();</script><script>(()=>{
+  const endpoint="/cloud/e", start=Date.now();
+  let visible=document.visibilityState!=="hidden", visibleAt=visible?start:0, visibleMs=0, interacted=false, engagedSent=false, depthSent=false, maxDepth=0;
+  const send=(kind,detail,extra)=>{const body={kind,path:location.pathname};if(detail!==undefined)body.detail=String(detail);if(extra)Object.assign(body,extra);try{if(!navigator.sendBeacon(endpoint,new Blob([JSON.stringify(body)],{type:"application/json"})))console.warn("engagement_report_failed","sendBeacon returned false");}catch(error){console.warn("engagement_report_failed",error);}};
+  send("visit",undefined,{search:location.search,referrer:document.referrer});
+  const elapsed=()=>visibleMs+(visible?Date.now()-visibleAt:0);
+  const check=()=>{if(!engagedSent&&interacted&&elapsed()>=10000){engagedSent=true;send("engaged");}};
+  const schedule=()=>setTimeout(check,Math.max(0,10000-elapsed()));
+  const markInteraction=()=>{interacted=true;check();};
+  ["scroll","pointerdown","keydown","touchstart"].forEach(type=>addEventListener(type,markInteraction,{passive:true}));
+  const depth=()=>{const height=document.documentElement.scrollHeight;maxDepth=Math.max(maxDepth,height<=0?100:Math.min(100,Math.floor((scrollY+innerHeight)/height*100)));};
+  addEventListener("scroll",depth,{passive:true});
+  schedule();
+  const hide=()=>{depth();if(visible){visibleMs+=Date.now()-visibleAt;visible=false;}check();if(!depthSent){depthSent=true;send("scroll_depth",Math.max(25,Math.min(100,Math.floor(maxDepth/25)*25)));}};
+  const show=()=>{if(!visible){visible=true;visibleAt=Date.now();schedule();}};
+  addEventListener("visibilitychange",()=>document.visibilityState==="hidden"?hide():show());
+  addEventListener("pagehide",hide);
+  addEventListener("click",event=>{const link=event.target.closest?.("[data-cta]");if(link)send("cta_click",link.dataset.cta);},{passive:true});
+  const sectionViews=new Set();
+  const sectionDetail=section=>section.id||section.classList?.[0];
+  if(typeof IntersectionObserver!=="undefined"){
+    const sections=[...document.querySelectorAll("main section")].filter(section=>!section.parentElement?.closest("section"));
+    const thresholds=[.3,...sections.map(section=>{const height=section.getBoundingClientRect().height;return height>0?Math.min(.3,innerHeight*.5/height):.3;})];
+    const sectionObserver=new IntersectionObserver(entries=>{entries.forEach(entry=>{
+      const detail=sectionDetail(entry.target);
+      if(detail&&!sectionViews.has(entry.target)&&((entry.intersectionRatio||0)>=.3||(entry.intersectionRect?.height||0)>=innerHeight*.5)){
+        sectionViews.add(entry.target);send("section_view",detail);sectionObserver.unobserve(entry.target);
+      }
+    });},{threshold:thresholds});
+    sections.forEach(section=>sectionObserver.observe(section));
+  }
+})();</script><script data-login-handoff>(()=>{
+  const login=new RegExp("^(?:/zh)?/cloud/login/?$"), pending=new Map();
+  const pendingLabel=/^zh/i.test(document.documentElement.lang)?"正在打开 GitHub…":"Opening GitHub…";
+  addEventListener("click",event=>{
+    if(event.metaKey||event.ctrlKey||event.shiftKey||event.altKey)return;
+    const link=event.target.closest?.("a[href]");
+    if(!link||!login.test(link.pathname))return;
+    if(pending.has(link)){event.preventDefault();return;}
+    pending.set(link,link.innerHTML);
+    link.setAttribute("aria-disabled","true");
+    setTimeout(()=>{link.textContent=pendingLabel;},0);
+  },true);
+  addEventListener("pageshow",event=>{
+    if(!event.persisted)return;
+    pending.forEach((html,link)=>{link.innerHTML=html;link.removeAttribute("aria-disabled");});
+    pending.clear();
+  });
+})();</script><script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "44c2c3310e2e46b7955bb09f04c93fd1"}'></script><script>(function(){
+  var start=function(){
+    !function(t,e){var o,n,p,r;e.__SV||(window.posthog=e,e._i=[],e.init=function(i,s,a){function g(t,e){var o=e.split(".");2==o.length&&(t=t[o[0]],e=o[1]),t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}}(p=t.createElement("script")).type="text/javascript",p.crossOrigin="anonymous",p.async=!0,p.src=s.api_host.replace(".i.posthog.com","-assets.i.posthog.com")+"/static/array.js",(r=t.getElementsByTagName("script")[0]).parentNode.insertBefore(p,r);var u=e;for(void 0!==a?u=e[a]=[]:a="posthog",u.people=u.people||[],Object.defineProperty(u,"toString",{configurable:!0,enumerable:!0,writable:!0,value:function(t){var e="posthog";return"posthog"!==a&&(e+="."+a),t||(e+=" (stub)"),e}}),Object.defineProperty(u.people,"toString",{configurable:!0,enumerable:!0,writable:!0,value:function(){return u.toString(1)+".people (stub)"}}),o="init capture register register_once register_for_session unregister unregister_for_session getFeatureFlag getFeatureFlagResult isFeatureEnabled reloadFeatureFlags updateEarlyAccessFeatureEnrollment getEarlyAccessFeatures on onFeatureFlags onSessionId getSurveys getActiveMatchingSurveys renderSurvey canRenderSurvey getNextSurveyStep identify setPersonProperties group resetGroups setPersonPropertiesForFlags resetPersonPropertiesForFlags setGroupPropertiesForFlags resetGroupPropertiesForFlags reset get_distinct_id getGroups get_session_id get_session_replay_url alias set_config startSessionRecording stopSessionRecording sessionRecordingStarted captureException loadToolbar get_property getSessionProperty createPersonProfile opt_in_capturing opt_out_capturing has_opted_in_capturing has_opted_out_capturing clear_opt_in_out_capturing debug".split(" "),n=0;n<o.length;n++)g(u,o[n]);e._i.push([i,s,a])},e.__SV=1)}(document,window.posthog||[]);
+    posthog.init("phc_nhxAwie7BY0blOSHfAbNzRGcb2rGDJInLUGPh93i8Mx",{api_host:"/api/ph",ui_host:"https://us.posthog.com",autocapture:true,disable_session_recording:false});
+  };
+  if(document.readyState==="complete")start();else addEventListener("load",start,{once:true});
+})();</script></body>
+</html>

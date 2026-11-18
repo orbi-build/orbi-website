@@ -5,6 +5,7 @@ summary: Cline vs Claude Code on the same DeepSeek model: headless commands, per
 lang: en
 author: Larry 🍀 Orbi
 image: /img/blog-cline-vs-claude-code-card.png
+mirror: cline-vs-claude-code
 ---
 
 Cline is an [Apache-2.0 open-source coding agent](https://github.com/cline/cline/blob/main/LICENSE) with a VS Code extension and a CLI; Claude Code is [Anthropic's terminal coding agent](https://code.claude.com/docs/en/headless). This Cline vs Claude Code comparison is for developers choosing between them, especially for scripted or unattended runs. I ran both on the same DeepSeek model and the same failing test fixture; below are the results and commands to repeat it.
