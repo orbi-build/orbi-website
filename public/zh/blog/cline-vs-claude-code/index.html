@@ -263,7 +263,7 @@ test(&quot;trims edges&quot;, () =&gt; assert.equal(slugify(&quot;  Hi! &quot;),
 test(&quot;empty&quot;, () =&gt; assert.equal(slugify(&quot;&quot;), &quot;&quot;));
 </code></pre></div>
 <h3 id="claude-code-接入-deepseek">Claude Code 接入 DeepSeek</h3>
-<p>装好 Claude Code 后，我通过 <a href="https://api-docs.deepseek.com/quick_start/agent_integrations/claude_code">DeepSeek 兼容 Anthropic 的接口</a>调用模型，并用下面的设置固定模型。运行前替换引号里的密钥占位符：</p>
+<p>装好 Claude Code 后，我通过 <a href="https://api-docs.deepseek.com/quick_start/agent_integrations/claude_code">DeepSeek 兼容 Anthropic 的接口</a>调用模型，并用下面的设置固定模型；DeepSeek 的指南也设了 Haiku 那个变量，让 Claude Code 在后台用的小模型同样走 DeepSeek。运行前替换引号里的密钥占位符：</p>
 <div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="已复制">复制</button><pre><code class="language-bash" data-copy-source>export ANTHROPIC_BASE_URL=https://api.deepseek.com/anthropic
 export ANTHROPIC_AUTH_TOKEN=&quot;&lt;your DeepSeek API key&gt;&quot;
 export ANTHROPIC_MODEL=deepseek-flash
@@ -340,7 +340,7 @@ cline -P deepseek -k &quot;$DEEPSEEK_API_KEY&quot; -m deepseek-flash --json \
 <div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="已复制">复制</button><pre><code class="language-text" data-copy-source>Claude Code E1a: &quot;is_error&quot;: false
 Cline E5: &quot;type&quot;: &quot;run_result&quot;, &quot;finishReason&quot;: &quot;aborted&quot;
 </code></pre></div>
-<p>前面的 Claude Code 命令用 <code class="post-code--single">acceptEdits</code> 放行文件编辑，再单独批准测试命令。放进 CI 时，我会用文档中的 <code class="post-code--single">dontAsk</code> 模式，明确列出允许的工具；需要审批却没有获准的调用会被拒绝。下面这条也通过了测试：</p>
+<p>前面的 Claude Code 命令用 <code class="post-code--single">acceptEdits</code> 放行文件编辑，再单独批准测试命令。放进 CI 时，我会用文档中的 <code class="post-code--single">dontAsk</code> 模式，明确列出允许的工具。别被名字误导，<code class="post-code--single">dontAsk</code> 是更严的那个：需要审批却没有获准的调用直接拒绝，不会弹出询问。下面这条也通过了测试：</p>
 <div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="已复制">复制</button><pre><code class="language-bash" data-copy-source>claude -p &quot;The tests fail. Fix the bug in src/slug.js so that npm test passes. Do not change the tests.&quot; \
   --permission-mode dontAsk \
   --allowedTools &quot;Read,Edit,Bash(npm test)&quot; \
@@ -371,7 +371,7 @@ Cline E5: &quot;type&quot;: &quot;run_result&quot;, &quot;finishReason&quot;: &q
 <td>1</td>
 </tr>
 </tbody></table></div>
-<p>脚本要自行判断是否超时：这两次失败的耗时差得很大。</p>
+<p>Claude Code 遇到 401 会重试约三分钟才退出；不想让一个失效的密钥卡住任务，就给这一步单独设超时。</p>
 <h2 id="同一模型下的-token-用量">同一模型下的 token 用量</h2>
 <p>这里统计的只是同一个小任务：Cline 使用默认设置成功运行了三次，Claude Code 使用 <code class="post-code--single">acceptEdits</code> 成功运行了两次，样本不足以作为基准测试。</p>
 <p class="post-table-hint" hidden>左右滑动查看所有列。</p><div class="post-table-scroll" tabindex="0" role="region" aria-label="左右滑动查看所有列。"><table class="table-comparison">
@@ -396,6 +396,7 @@ Cline E5: &quot;type&quot;: &quot;run_result&quot;, &quot;finishReason&quot;: &q
 <td>655 至 783</td>
 </tr>
 </tbody></table></div>
+<p>每一列各自取几次运行里的最小值和最大值，同一行不同列的端点不一定来自同一次运行。</p>
 <p>Claude Code 的输入总量是我把 <code class="post-code--single">input_tokens</code> 和缓存读取 token 相加得到的：E3 为 12,734 + 46,976，E14 为 13,242 + 61,184。Cline 的 <code class="post-code--single">inputTokens</code> 已经包含缓存读取，再加一次会重复计算。</p>
 <p>在同样的隔离环境里，提示词只有 <code class="post-code--spaced">reply ok</code> 时，Claude Code 用了 11,162 个输入 token，Cline 用了 5,325 个。请求本身很短，agent 仍会带上自己的上下文。Cline 在这次测试里的输入用量较少；换成大仓库，需要重新测。</p>
 <h2 id="价格与模型账单">价格与模型账单</h2>
@@ -463,7 +464,7 @@ Cline E5: &quot;type&quot;: &quot;run_result&quot;, &quot;finishReason&quot;: &q
 </tr>
 </tbody></table></div>
 <p>高峰时段为周一至周五的 UTC 01:00–04:00 和 06:00–10:00，中国法定节假日除外；其余时间，包括周末和这些节假日，都是非高峰。我运行的时间约为周三 UTC 02:00，处在高峰时段。</p>
-<p>Claude Code 在 E14 的 <code class="post-code--single">total_cost_usd</code> 里报了约 $0.081，同时输出 <code class="post-code--single">[claude-code:unrecognized_model]</code>。它按 Anthropic 价格计算这个未识别的模型，用第三方模型时应忽略这个费用字段。Cline 给 E15 报了约 $0.0018，和按 DeepSeek 非高峰标价算出的数一致。两者自报费用的计价口径不同，没法据此算出实际扣款的比例。</p>
+<p>Claude Code 在 E14 的 <code class="post-code--single">total_cost_usd</code> 里报了约 $0.081，同时输出 <code class="post-code--single">[claude-code:unrecognized_model]</code>。它按 Anthropic 价格计算这个未识别的模型，用第三方模型时应忽略这个费用字段。Cline 给 E15 报了约 $0.0018，和按 DeepSeek 非高峰标价算出的数一致；可这次运行落在高峰时段，看来 Cline 的自报没有算上高峰价。两者自报费用的计价口径不同，没法据此算出实际扣款的比例。</p>
 <p>按上面的 token 数和高峰标价计算，E14 约 $0.0053（13,242 × $0.30 + 61,184 × $0.006 + 783 × $1.20，再除以一百万），E15 约 $0.0035（7,732 个未缓存输入 × $0.30 + 25,856 × $0.006 + 849 × $1.20，再除以一百万）。DeepSeek 账户余额显示到 0.01 CNY，我在每次运行结束 20 秒后检查，余额都没有变化，因此没能从账户确认实际扣款。</p>
 <h2 id="cline-vs-codex">Cline vs Codex</h2>
 <p>我还在同一份测试代码上跑了 Codex CLI <code class="post-code--single">0.167.0</code>，通过 ChatGPT 登录，使用它默认的 <code class="post-code--single">gpt-6.2-sol</code>。模型不同，这里不比较 token 用量。</p>

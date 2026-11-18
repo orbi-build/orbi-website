@@ -61,7 +61,7 @@ test("empty", () => assert.equal(slugify(""), ""));
 
 ### Claude Code through DeepSeek
 
-With Claude Code installed, use [DeepSeek's Anthropic-compatible endpoint](https://api-docs.deepseek.com/quick_start/agent_integrations/claude_code). I pinned the model as follows. Replace the quoted key placeholder before running:
+With Claude Code installed, use [DeepSeek's Anthropic-compatible endpoint](https://api-docs.deepseek.com/quick_start/agent_integrations/claude_code). I pinned the model as follows; DeepSeek's guide also sets the Haiku variable, which keeps Claude Code's smaller background model on DeepSeek too. Replace the quoted key placeholder before running:
 
 ```bash
 export ANTHROPIC_BASE_URL=https://api.deepseek.com/anthropic
@@ -99,7 +99,7 @@ The expected changed path is `src/slug.js`, with test files untouched and all fo
 
 For Claude Code vs Cline in a script, the default permissions made the biggest difference in my runs. [Claude Code's permission docs](https://code.claude.com/docs/en/permission-modes) say that since `v2.1.302`, `claude -p` without a permission mode starts in Manual mode. Calls needing approval are denied unless another mechanism allows them.
 
-The [Cline CLI README](https://github.com/cline/cline/blob/main/apps/cli/README.md) says tool calls are auto-approved by default and one-shot runs use yolo mode. So the same unattended command edits files in one agent and not in the other.
+The [Cline CLI README](https://github.com/cline/cline/blob/main/apps/cli/README.md) says tool calls are auto-approved by default and one-shot runs use yolo mode. So the same prompt, run unattended with each tool's defaults, edits files in one agent and not in the other.
 
 All rows below used the fix prompt printed above. Times are wall time; run IDs identify separate attempts.
 
@@ -121,7 +121,7 @@ Claude Code E1a: "is_error": false
 Cline E5: "type": "run_result", "finishReason": "aborted"
 ```
 
-The Claude Code command above uses `acceptEdits` to allow file edits and separately approves the test command. For CI, I would use the documented `dontAsk` mode and list the allowed tools explicitly; any call that still needs approval is denied. This command also passed:
+The Claude Code command above uses `acceptEdits` to allow file edits and separately approves the test command. For CI, I would use the documented `dontAsk` mode and list the allowed tools explicitly. Despite the name, `dontAsk` is the strict option: any call that still needs approval is denied instead of prompting. This command also passed:
 
 ```bash
 claude -p "The tests fail. Fix the bug in src/slug.js so that npm test passes. Do not change the tests." \
@@ -141,7 +141,7 @@ I also asked, "Why does npm test fail in this repo?" Neither default agent edite
 | Claude Code | `Failed to authenticate. API Error: 401` | 178.5s, including retries | 1 |
 | Cline | `Authentication Fails` | 1.2s | 1 |
 
-Keep track of the time limit in your script: retry delays differed substantially in these runs.
+Claude Code kept retrying the 401 for about three minutes before it exited, so give the step its own timeout if a stuck credential should not hold up the job.
 
 ## Token use on the same model
 
@@ -151,6 +151,8 @@ The token ranges below come from one small task: three successful Cline runs wit
 |---|---|---|---|
 | Cline, E2a/E2b/E15 | 33,588 to 42,217 | 25,856 to 34,304 | 849 to 959 |
 | Claude Code, E3/E14 | 59,710 to 74,426 | 46,976 to 61,184 | 655 to 783 |
+
+Each column shows its own lowest and highest value across the runs, so the endpoints in one column may come from a different run than those in the next.
 
 For Claude Code, I added `input_tokens` and cache-read tokens: E3 was 12,734 + 46,976; E14 was 13,242 + 61,184. Cline's `inputTokens` already includes cache reads, so adding them again would double-count them.
 
@@ -182,7 +184,7 @@ I checked these prices on 18 November 2026. Compare tool access separately from 
 
 Peak hours are 01:00 to 04:00 and 06:00 to 10:00 UTC, Monday through Friday, excluding Chinese public holidays; all other hours, including weekends and those holidays, are off-peak. My runs were around 02:00 UTC on Wednesday, inside a peak window.
 
-Claude Code reported about $0.081 in `total_cost_usd` for E14 while printing `[claude-code:unrecognized_model]`. It priced the unknown model using Anthropic rates; ignore that cost field with third-party models. Cline reported about $0.0018 for E15, which matches DeepSeek's off-peak list price for its token counts. These tool-reported values do not establish a ratio between actual charges.
+Claude Code reported about $0.081 in `total_cost_usd` for E14 while printing `[claude-code:unrecognized_model]`. It priced the unknown model using Anthropic rates; ignore that cost field with third-party models. Cline reported about $0.0018 for E15. That matches DeepSeek's off-peak price for its token counts, although the run fell inside a peak window, so Cline's figure appears to leave out the peak rate. These tool-reported values do not establish a ratio between actual charges.
 
 Working from the token counts above at peak list price, E14 comes to about $0.0053 (13,242 × $0.30 + 61,184 × $0.006 + 783 × $1.20, per million) and E15 to about $0.0035 (7,732 uncached × $0.30 + 25,856 × $0.006 + 849 × $1.20). The DeepSeek account balance, displayed to 0.01 CNY, had not moved when I checked 20 seconds after each run, so I could not confirm the actual charge from the account.
 

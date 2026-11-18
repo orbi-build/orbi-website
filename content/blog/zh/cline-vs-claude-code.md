@@ -61,7 +61,7 @@ test("empty", () => assert.equal(slugify(""), ""));
 
 ### Claude Code 接入 DeepSeek
 
-装好 Claude Code 后，我通过 [DeepSeek 兼容 Anthropic 的接口](https://api-docs.deepseek.com/quick_start/agent_integrations/claude_code)调用模型，并用下面的设置固定模型。运行前替换引号里的密钥占位符：
+装好 Claude Code 后，我通过 [DeepSeek 兼容 Anthropic 的接口](https://api-docs.deepseek.com/quick_start/agent_integrations/claude_code)调用模型，并用下面的设置固定模型；DeepSeek 的指南也设了 Haiku 那个变量，让 Claude Code 在后台用的小模型同样走 DeepSeek。运行前替换引号里的密钥占位符：
 
 ```bash
 export ANTHROPIC_BASE_URL=https://api.deepseek.com/anthropic
@@ -121,7 +121,7 @@ Claude Code E1a: "is_error": false
 Cline E5: "type": "run_result", "finishReason": "aborted"
 ```
 
-前面的 Claude Code 命令用 `acceptEdits` 放行文件编辑，再单独批准测试命令。放进 CI 时，我会用文档中的 `dontAsk` 模式，明确列出允许的工具；需要审批却没有获准的调用会被拒绝。下面这条也通过了测试：
+前面的 Claude Code 命令用 `acceptEdits` 放行文件编辑，再单独批准测试命令。放进 CI 时，我会用文档中的 `dontAsk` 模式，明确列出允许的工具。别被名字误导，`dontAsk` 是更严的那个：需要审批却没有获准的调用直接拒绝，不会弹出询问。下面这条也通过了测试：
 
 ```bash
 claude -p "The tests fail. Fix the bug in src/slug.js so that npm test passes. Do not change the tests." \
@@ -141,7 +141,7 @@ claude -p "The tests fail. Fix the bug in src/slug.js so that npm test passes. D
 | Claude Code | `Failed to authenticate. API Error: 401` | 178.5s，包含重试 | 1 |
 | Cline | `Authentication Fails` | 1.2s | 1 |
 
-脚本要自行判断是否超时：这两次失败的耗时差得很大。
+Claude Code 遇到 401 会重试约三分钟才退出；不想让一个失效的密钥卡住任务，就给这一步单独设超时。
 
 ## 同一模型下的 token 用量
 
@@ -151,6 +151,8 @@ claude -p "The tests fail. Fix the bug in src/slug.js so that npm test passes. D
 |---|---|---|---|
 | Cline，E2a/E2b/E15 | 33,588 至 42,217 | 25,856 至 34,304 | 849 至 959 |
 | Claude Code，E3/E14 | 59,710 至 74,426 | 46,976 至 61,184 | 655 至 783 |
+
+每一列各自取几次运行里的最小值和最大值，同一行不同列的端点不一定来自同一次运行。
 
 Claude Code 的输入总量是我把 `input_tokens` 和缓存读取 token 相加得到的：E3 为 12,734 + 46,976，E14 为 13,242 + 61,184。Cline 的 `inputTokens` 已经包含缓存读取，再加一次会重复计算。
 
@@ -182,7 +184,7 @@ Claude Code 的输入总量是我把 `input_tokens` 和缓存读取 token 相加
 
 高峰时段为周一至周五的 UTC 01:00–04:00 和 06:00–10:00，中国法定节假日除外；其余时间，包括周末和这些节假日，都是非高峰。我运行的时间约为周三 UTC 02:00，处在高峰时段。
 
-Claude Code 在 E14 的 `total_cost_usd` 里报了约 $0.081，同时输出 `[claude-code:unrecognized_model]`。它按 Anthropic 价格计算这个未识别的模型，用第三方模型时应忽略这个费用字段。Cline 给 E15 报了约 $0.0018，和按 DeepSeek 非高峰标价算出的数一致。两者自报费用的计价口径不同，没法据此算出实际扣款的比例。
+Claude Code 在 E14 的 `total_cost_usd` 里报了约 $0.081，同时输出 `[claude-code:unrecognized_model]`。它按 Anthropic 价格计算这个未识别的模型，用第三方模型时应忽略这个费用字段。Cline 给 E15 报了约 $0.0018，和按 DeepSeek 非高峰标价算出的数一致；可这次运行落在高峰时段，看来 Cline 的自报没有算上高峰价。两者自报费用的计价口径不同，没法据此算出实际扣款的比例。
 
 按上面的 token 数和高峰标价计算，E14 约 $0.0053（13,242 × $0.30 + 61,184 × $0.006 + 783 × $1.20，再除以一百万），E15 约 $0.0035（7,732 个未缓存输入 × $0.30 + 25,856 × $0.006 + 849 × $1.20，再除以一百万）。DeepSeek 账户余额显示到 0.01 CNY，我在每次运行结束 20 秒后检查，余额都没有变化，因此没能从账户确认实际扣款。
 
