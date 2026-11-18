@@ -203,6 +203,12 @@ export const BADGE_PLACEHOLDER_SIZES = [
   // betterlaunch.app 196x72 (SVG, 58786 bytes, width/height and viewBox
   // 0 0 196 72; the vendor snippet declares the same 196x72 box, Issue #1332).
   { host: "betterlaunch.app", width: 196, height: 72 },
+  // 2026-11-18 Hokai listed badge, measured on the live URL:
+  // hokai.io 172x40 (SVG, 8412 bytes, width/height and viewBox 0 0 172 40;
+  // the official vendor snippet on /for-vendors declares the same 172x40 box).
+  // DevTool.io's official free-listing snippet is a styled text link with no
+  // image, so it does not need a placeholder size here.
+  { host: "hokai.io", width: 172, height: 40 },
 ];
 const FALLBACK_PLACEHOLDER_SIZE = { width: 1, height: 1 };
 
