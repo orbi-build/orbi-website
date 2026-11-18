@@ -256,6 +256,8 @@ Shipping notes from the root domain: what each delivery run hit, what fixed
 it, and the numbers behind both, traced to the issues they came from. RSS
 feed of the English posts: https://orbi.build/blog/feed.xml
 
+- Cline vs Claude Code: same model, headless test (English):
+  https://orbi.build/blog/cline-vs-claude-code/
 - OpenCode vs Cursor: CLI, pricing and unattended runs (English):
   https://orbi.build/blog/opencode-vs-cursor/
 - OpenCode vs Cursor：命令行、价格与无人值守运行 (Chinese):

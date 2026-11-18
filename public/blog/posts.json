@@ -1,5 +1,13 @@
 [
   {
+    "slug": "cline-vs-claude-code",
+    "title": "Cline vs Claude Code: same model, headless test",
+    "summary": "Cline vs Claude Code on the same DeepSeek model: headless commands, permission defaults, exit codes, token use and pricing for unattended coding runs.",
+    "zhSlug": null,
+    "zhTitle": null,
+    "related": []
+  },
+  {
     "slug": "opencode-vs-cursor",
     "title": "OpenCode vs Cursor: CLI, pricing and unattended runs",
     "summary": "OpenCode and Cursor compared on headless CLI runs, credentials and prices, with real command output and counts of the public PRs their GitHub Apps opened.",

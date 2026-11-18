@@ -6,6 +6,13 @@
     <description>Notes from shipping Orbi in the open: delivery runs, failures, fixes, and measurements.</description>
     <language>en</language>
     <item>
+      <title>Cline vs Claude Code: same model, headless test</title>
+      <link>https://orbi.build/blog/cline-vs-claude-code/</link>
+      <guid isPermaLink="true">https://orbi.build/blog/cline-vs-claude-code/</guid>
+      <pubDate>Wed, 18 Nov 2026 00:00:00 GMT</pubDate>
+      <description>Cline vs Claude Code on the same DeepSeek model: headless commands, permission defaults, exit codes, token use and pricing for unattended coding runs.</description>
+    </item>
+    <item>
       <title>OpenCode vs Cursor: CLI, pricing and unattended runs</title>
       <link>https://orbi.build/blog/opencode-vs-cursor/</link>
       <guid isPermaLink="true">https://orbi.build/blog/opencode-vs-cursor/</guid>
