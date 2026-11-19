@@ -218,6 +218,11 @@ export const BADGE_PLACEHOLDER_SIZES = [
   // uses the apex host; it redirects to www, so both hostnames are listed.
   { host: "launch-list.org", width: 260, height: 85 },
   { host: "www.launch-list.org", width: 260, height: 85 },
+  // 2026-11-19 aidirecto brand badge, measured on the live URL:
+  // aidirecto.com 236x56 (SVG, 11879 bytes, width/height and viewBox 0 0 236 56;
+  // the official /badge embed for light sites declares the same 236x56 box,
+  // with ?ref=your-tool as a placeholder — we use ?ref=orbi).
+  { host: "aidirecto.com", width: 236, height: 56 },
 ];
 const FALLBACK_PLACEHOLDER_SIZE = { width: 1, height: 1 };
 
