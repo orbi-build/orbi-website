@@ -223,6 +223,15 @@ export const BADGE_PLACEHOLDER_SIZES = [
   // the official /badge embed for light sites declares the same 236x56 box,
   // with ?ref=your-tool as a placeholder — we use ?ref=orbi).
   { host: "aidirecto.com", width: 236, height: 56 },
+  // 2026-11-19 PublishYourSaaS listed badge, measured on the live URL:
+  // publishyoursaas.com 240x60 (SVG, 679 bytes, width/height and viewBox
+  // 0 0 240 60; the official vendor snippet declares the same 240x60 box).
+  { host: "publishyoursaas.com", width: 240, height: 60 },
+  // 2026-11-19 LaunchPact listed badge, measured on the live URL:
+  // www.launchpact.io 540x180 (PNG, 109094 bytes). The official vendor
+  // snippet declares 180x60, the same 3:1 ratio, so the source file decides
+  // the placeholder box. The snippet uses the www host.
+  { host: "www.launchpact.io", width: 540, height: 180 },
 ];
 const FALLBACK_PLACEHOLDER_SIZE = { width: 1, height: 1 };
 
