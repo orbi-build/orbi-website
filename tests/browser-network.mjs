@@ -299,6 +299,12 @@ export const BADGE_PLACEHOLDER_SIZES = [
   // not declare width/height attributes, so the source file decides the
   // placeholder box.
   { host: "theonestartup.com", width: 230, height: 54 },
+  // 2026-11-20 The Launch Directory listed badge, measured on the live URL:
+  // thelaunchdirectory.com /badge/orbi.svg?... 250x54 (SVG, 1003 bytes,
+  // width/height and viewBox 0 0 250 54; the official vendor snippet
+  // declares the same 250x54 box). Official /badge/orbi.js (343 bytes)
+  // is kept in the footer; browser tests already stub third-party scripts.
+  { host: "thelaunchdirectory.com", width: 250, height: 54 },
 ];
 const FALLBACK_PLACEHOLDER_SIZE = { width: 1, height: 1 };
 
