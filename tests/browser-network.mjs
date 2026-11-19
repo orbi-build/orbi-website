@@ -310,6 +310,19 @@ export const BADGE_PLACEHOLDER_SIZES = [
   // and viewBox 0 0 250 54; the official vendor snippet declares the same
   // 250x54 box).
   { host: "confettisaas.com", width: 250, height: 54 },
+  // 2026-11-20 So Product featured badge, measured on the live URL:
+  // soproduct.com /badages-awards.svg 184x54 (SVG, 2918 bytes, width/height
+  // and viewBox 0 0 184 54). Official typo "badages" kept exact, same family
+  // spelling as Starter Best / Days Launch / The One Startup. The official
+  // snippet styles the image at height 54px; width auto, so the source file
+  // decides the placeholder box.
+  { host: "soproduct.com", width: 184, height: 54 },
+  // 2026-11-20 ProductWill featured badge, measured on the live URL:
+  // productwill.com /badages-awards.svg 190x54 (SVG, 2925 bytes,
+  // width="190" height="54", viewBox 0 0 184 54). Official typo "badages"
+  // kept exact. The official snippet styles the image at height 54px; width
+  // auto, so the source file decides the placeholder box.
+  { host: "productwill.com", width: 190, height: 54 },
 ];
 const FALLBACK_PLACEHOLDER_SIZE = { width: 1, height: 1 };
 
