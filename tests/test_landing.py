@@ -807,8 +807,9 @@ class LandingTests(unittest.TestCase):
             self.assertIn("https://x.com/xqliu", hrefs, hrefs)
 
     # Issue #1083 sanctions chat.sh only on the two Cloud pricing pages and
-    # the two support pages. The EarlyLaunch footer widget is on every page
-    # that ships the shared footer, in addition to the analytics beacon.
+    # the two support pages. The EarlyLaunch footer widget and The Launch
+    # Directory official badge script are on every page that ships the shared
+    # footer, in addition to the analytics beacon.
     CHAT_SH_PAGES = frozenset({
         "cloud/index.html",
         "zh/cloud/index.html",
@@ -823,7 +824,7 @@ class LandingTests(unittest.TestCase):
                 r'<script[^>]*src="(https?://[^/"]+)',
                 path.read_text(encoding="utf-8"),
             ))
-            expected = {"https://static.cloudflareinsights.com", "https://earlylaunch.co"}
+            expected = {"https://static.cloudflareinsights.com", "https://earlylaunch.co", "https://thelaunchdirectory.com"}
             if page in self.CHAT_SH_PAGES:
                 expected.add("https://chat.sh")
             self.assertEqual(hosts, expected, page)
