@@ -744,9 +744,29 @@ async function assertHomepage(browser, path, comparisonPath, size, screenshot) {
   // and CTA note must fit the viewport. The proof bar keeps its own
   // first-screen contract where the layout has room for it (desktop widths);
   // on a short phone it follows the taller hero copy below the fold.
-  const heroCopyBox = await page.locator(".hero-copy").boundingBox();
-  if (!heroCopyBox || heroCopyBox.y < 0 || heroCopyBox.y + heroCopyBox.height > size.height) {
-    throw new Error(`${path}: hero copy is outside the first ${size.width}x${size.height} viewport: ${JSON.stringify(heroCopyBox)}`);
+  //
+  // Issue #1373: below 481px the definition deliberately leaves the first
+  // screen — the real-delivery receipt sits between it and the CTA note — and
+  // .hero-copy has no box of its own there (display: contents), so the copy is
+  // measured by its last element, the CTA note, which must still fit.
+  if (size.width <= 480) {
+    const noteBox = await page.locator(".hero-cta-note").boundingBox();
+    if (!noteBox || noteBox.y < 0 || noteBox.y + noteBox.height > size.height) {
+      throw new Error(`${path}: hero CTA note is outside the first ${size.width}x${size.height} viewport: ${JSON.stringify(noteBox)}`);
+    }
+  } else {
+    const heroCopyBox = await page.locator(".hero-copy").boundingBox();
+    if (!heroCopyBox || heroCopyBox.y < 0 || heroCopyBox.y + heroCopyBox.height > size.height) {
+      throw new Error(`${path}: hero copy is outside the first ${size.width}x${size.height} viewport: ${JSON.stringify(heroCopyBox)}`);
+    }
+    // Acceptance #2 of Issue #1373: the wide hero stays the two-column layout
+    // it was — copy on the left, the real-delivery receipt beside it.
+    if (size.width >= 981) {
+      const receiptBox = await page.locator(".hero figure.hero-receipt").boundingBox();
+      if (!receiptBox || receiptBox.x < heroCopyBox.x + heroCopyBox.width - 1) {
+        throw new Error(`${path}: hero receipt is not the right-hand column at ${size.width}px: copy ${JSON.stringify(heroCopyBox)}, receipt ${JSON.stringify(receiptBox)}`);
+      }
+    }
   }
   const heroProofBox = await page.locator(".hero-proof-bar").boundingBox();
   if (size.width >= 1000 && (!heroProofBox || heroProofBox.y < 0 || heroProofBox.y + heroProofBox.height > size.height)) {
@@ -1131,6 +1151,39 @@ async function assertHeroAboveFold(browser, path, size, screenshot) {
   const view = `${path} ${size.width}x${size.height}`;
   if (size.width >= 1000 && ctaTop >= 450) {
     throw new Error(`${view}: primary CTA top is ${ctaTop}, must stay < 450`);
+  }
+  // Issue #1373: on a phone the hero reads eyebrow, headline, primary CTA,
+  // CTA note, real-delivery receipt, definition — the receipt answers "what
+  // did Orbi actually ship?" faster than the paragraphs, and the CTA still
+  // ends inside the first screen. Measured in pixels, top to bottom.
+  if (size.width <= 480) {
+    const order = await page.locator(".hero").evaluate((hero) => {
+      const rect = (selector) => {
+        const box = hero.querySelector(selector).getBoundingClientRect();
+        return { top: box.top, bottom: box.bottom };
+      };
+      return {
+        kicker: rect(".hero-kicker"),
+        h1: rect("h1"),
+        cta: rect(".hero-cta"),
+        note: rect(".hero-cta-note"),
+        receipt: rect(".hero-receipt"),
+        lede: rect(".hero-lede"),
+      };
+    });
+    const sequence = ["kicker", "h1", "cta", "note", "receipt", "lede"];
+    for (let index = 1; index < sequence.length; index += 1) {
+      const previous = order[sequence[index - 1]];
+      const current = order[sequence[index]];
+      if (current.top < previous.bottom - 1) {
+        throw new Error(
+          `${view}: hero ${sequence[index]} starts at ${current.top}px, at or above the ${sequence[index - 1]} ending at ${previous.bottom}px — expected ${sequence.join(" → ")}`,
+        );
+      }
+    }
+    if (order.cta.bottom > size.height) {
+      throw new Error(`${view}: the hero CTA ends at ${order.cta.bottom}px, past the ${size.height}px first screen`);
+    }
   }
   // Issue #1184: the first screen ends with the CTA note, so no third-party
   // badge box may sit under it — the measured hero is the copy plus receipt.
