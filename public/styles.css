@@ -2428,6 +2428,29 @@ h2 {
   .site-footer nav li + li { margin-top: 6px; }
 }
 
+/* Issue #1373: a paid user reading the homepage on a phone asked to see the
+   real-delivery receipt before the definition sentence — the card answers
+   "what did Orbi actually ship?" in one glance, while the paragraphs take a
+   paragraph to read. The receipt cannot go above the primary CTA: it is
+   ~250px tall and would push the button out of the first screen, the
+   regression #259 fixed. So it goes between the CTA note and the lede, and
+   the phone hero reads eyebrow, headline, CTA, CTA note, receipt, lede.
+   .hero-copy keeps no box of its own at this width only — that is what lets
+   the figure sit between two of its children — and the wide two-column hero
+   (from 981px up) never sees these rules. 480px is the phone width this
+   stylesheet already breaks at (footer badges), and the ticket names it. */
+@media (max-width: 480px) {
+  /* The stack's own margins space it: a 16px grid gap would double them. */
+  .hero.homepage-hero { gap: 0; }
+  .hero.homepage-hero .hero-copy { display: contents; }
+  .hero.homepage-hero .hero-kicker { order: 1; }
+  .hero.homepage-hero h1 { order: 2; }
+  .hero.homepage-hero .hero-cta { order: 3; }
+  .hero.homepage-hero .hero-cta-note { order: 4; }
+  .hero.homepage-hero .hero-receipt { order: 5; margin-top: 20px; }
+  .hero.homepage-hero .hero-lede { order: 6; margin: 20px 0 0; }
+}
+
 @media (max-width: 430px) {
   .site-footer nav:not(.footer-friends) {
     grid-template-columns: 1fr;
