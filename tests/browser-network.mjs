@@ -232,6 +232,11 @@ export const BADGE_PLACEHOLDER_SIZES = [
   // snippet declares 180x60, the same 3:1 ratio, so the source file decides
   // the placeholder box. The snippet uses the www host.
   { host: "www.launchpact.io", width: 540, height: 180 },
+  // 2026-11-19 LaunchIt featured badge, measured on the live URL:
+  // launchit.fast 200x54 (SVG, 2036 bytes, width/height and viewBox 0 0 200 54).
+  // The official vendor snippet does not declare width/height attributes,
+  // so the source file decides the placeholder box.
+  { host: "launchit.fast", width: 200, height: 54 },
 ];
 const FALLBACK_PLACEHOLDER_SIZE = { width: 1, height: 1 };
 
