@@ -9,10 +9,10 @@
   },
   {
     "slug": "high-frequency-agent-development",
-    "title": "Agentic software development: a week inside Orbi",
-    "summary": "How Orbi develops itself with agents: automated implementation, independent review, CI waits, merge and release, with work preserved across interruptions.",
+    "title": "Agentic software development beyond one session",
+    "summary": "How Orbi resumes interrupted tasks, waits for GitHub and applies maintainer decisions, with rules for keeping agent delivery running between sessions.",
     "zhSlug": "high-frequency-agent-development",
-    "zhTitle": "Orbi 的高频开发：实现、评审和发版怎样自动推进",
+    "zhTitle": "Orbi 的高频开发：让自动交付持续运行",
     "related": []
   },
   {
