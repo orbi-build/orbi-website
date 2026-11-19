@@ -516,6 +516,12 @@ h1 span { color: var(--signal); }
 }
 
 .hero-lede strong { color: #edf5f0; font-weight: 600; }
+/* Issue #1371: a paid user circled the English homepage lede on a phone
+   screenshot — secondary ink on the night ground, and three sentences to
+   decode. The English home is the only one that now carries the ink colour
+   the page already gives <strong>; the Chinese home and every other
+   .hero-lede page keep the secondary ink. */
+html[lang="en"] .hero.homepage-hero .hero-lede { color: #edf5f0; }
 /* Keep the denser CJK hero within the same first-screen contract as EN. */
 html[lang="zh-CN"] .hero-lede { margin-bottom: 22px; }
 

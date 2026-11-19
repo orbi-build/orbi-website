@@ -4018,6 +4018,36 @@ describe("homepage body carries an Orbi definition sentence (Issues #890, #899, 
   }
 });
 
+// Issue #1371: the English hero lede was three sentences of secondary ink on
+// the night ground — a paid user circled it on a phone screenshot. It is one
+// sentence now, in the ink colour the page already gives its <strong> runs,
+// scoped so the Chinese home and every other .hero-lede page keep the
+// secondary ink.
+describe("homepage hero lede is one readable sentence in English (Issue #1371)", () => {
+  const ledeOf = (output) =>
+    region(shipped.get(output), '<p class="hero-lede">', "</p>")
+      .replace(/<[^>]+>/g, "")
+      .trim();
+
+  it("the English home ships the one-sentence lede", () => {
+    expect(ledeOf("index.html"))
+      .toBe("Orbi turns your GitHub Issues into reviewed, merged code and real releases.");
+  });
+
+  it("scopes the bright ink to the English homepage hero", () => {
+    const scoped = styles.match(/html\[lang="en"\] \.hero\.homepage-hero \.hero-lede\s*\{[^}]*\}/)?.[0];
+    expect(scoped, "English homepage lede colour rule").toBeTruthy();
+    expect(scoped).toMatch(/color:\s*#edf5f0;/);
+    expect(styles.match(/^\.hero-lede\s*\{[^}]*\}/m)?.[0], "shared .hero-lede colour")
+      .toMatch(/color:\s*#b6c7c3;/);
+  });
+
+  it("leaves the Chinese home lede unchanged", () => {
+    expect(ledeOf("zh/index.html"))
+      .toBe("Orbi 用 AI 完成 GitHub 上的开发任务。代码经过独立 AI 评审，通过后自动合并，再按仓库流程发版。你不用一直守着。");
+  });
+});
+
 // Issue #1217: the six pages a buyer reads before deciding (home, Cloud, cost,
 // evidence, terms, privacy) must speak to that visitor — no internal
 // vocabulary, no source field name, no database table name. This is the
