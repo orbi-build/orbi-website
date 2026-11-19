@@ -323,6 +323,12 @@ export const BADGE_PLACEHOLDER_SIZES = [
   // kept exact. The official snippet styles the image at height 54px; width
   // auto, so the source file decides the placeholder box.
   { host: "productwill.com", width: 190, height: 54 },
+  // 2026-11-20 Another Directory listed badge, measured on the live URL:
+  // another.directory /badges/listed-light.svg 214x48 (SVG, 1004 bytes,
+  // width/height and viewBox 0 0 214 48; the official vendor snippet
+  // declares the same 214x48 box). The listing /tools/orbi is expected
+  // to go live after the badge is found.
+  { host: "another.directory", width: 214, height: 48 },
 ];
 const FALLBACK_PLACEHOLDER_SIZE = { width: 1, height: 1 };
 
