@@ -749,8 +749,16 @@ function fillHomepageStats(body, stats, now = Date.now()) {
 // lands in the new-visitor conversion counts.
 const HOME_CTA_KEYS = ["cloud-start", "midway-cloud", "closing-start"];
 const HOME_CTA_STATES = {
-  signedIn: { suffix: "-signed-in", label: { en: "Open dashboard →", zh: "打开控制台 →" } },
-  returning: { suffix: "-returning", label: { en: "Sign in →", zh: "登录 →" } },
+  signedIn: {
+    suffix: "-signed-in",
+    label: { en: "Open dashboard →", zh: "打开控制台 →" },
+    navLabel: { en: "Open dashboard", zh: "打开控制台" },
+  },
+  returning: {
+    suffix: "-returning",
+    label: { en: "Sign in →", zh: "登录 →" },
+    navLabel: { en: "Sign in", zh: "登录" },
+  },
 };
 
 function homepageVisitorState(request) {
@@ -759,8 +767,12 @@ function homepageVisitorState(request) {
   return null;
 }
 
-// The shipped homepage is the new-visitor state; this upgrades its three
-// plain-text anchors in place. Every other CTA on the page is left untouched.
+// The shipped homepage is the new-visitor state; this upgrades its plain-text
+// anchors in place. Every other CTA on the page is left untouched.
+//
+// Issue #1377: the page header's button is the same handoff as the buttons in
+// the body, so it follows the same state (and its own data-cta value). It is
+// listed here rather than in HOME_CTA_KEYS because its label has no arrow.
 function fillHomepageCtas(body, zh, state) {
   const label = zh ? state.label.zh : state.label.en;
   for (const key of HOME_CTA_KEYS) {
@@ -769,7 +781,23 @@ function fillHomepageCtas(body, zh, state) {
       (match, start, middle, end) => `${start}${key}${state.suffix}${middle}${label}${end}`,
     );
   }
-  return body;
+  const navLabel = zh ? state.navLabel.zh : state.navLabel.en;
+  return body.replace(
+    new RegExp(`(<a\\b[^>]*\\bdata-cta=")nav-start("[^>]*>)[^<]*(</a>)`),
+    (match, start, middle, end) => `${start}nav-start${state.suffix}${middle}${navLabel}${end}`,
+  );
+}
+
+// Issue #1377: the note under the hero button opens with what a first visit
+// costs ("GitHub sign-in and App install required. No credit card required").
+// A returning visitor does not need it, so the segment goes together with its
+// separator — the line is the self-host link alone, never a lone "·" or an
+// empty first slot. Only the homepage carries this element in the block below.
+function dropHeroNoteFirstSegment(body) {
+  return body.replace(
+    /<span class="hero-cta-note-first">[^<]*<\/span>\s*<span class="hero-cta-note-separator"[^>]*>[^<]*<\/span>\s*/,
+    "",
+  );
 }
 
 async function homepageStats(env, ctx) {
@@ -895,7 +923,10 @@ async function assetResponse(asset, cloudLoginConfigured, founding = { logins: [
   }
   if (homepage && cloudLoginConfigured) {
     const state = homepageVisitorState(request);
-    if (state) body = fillHomepageCtas(body, zh, state);
+    if (state) {
+      body = fillHomepageCtas(body, zh, state);
+      body = dropHeroNoteFirstSegment(body);
+    }
   }
   if (!cloudLoginConfigured) {
     // The shipped hrefs carry ?ref= tokens (Issue #256); the rewrite must
