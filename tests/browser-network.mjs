@@ -284,6 +284,13 @@ export const BADGE_PLACEHOLDER_SIZES = [
   // width/height and viewBox 0 0 220 54; the official vendor snippet
   // declares the same 220x54 box).
   { host: "productperch.com", width: 220, height: 54 },
+  // 2026-11-20 LaunchPanda launched badge, measured on the live URL:
+  // launchpanda.dev /images/badges/launchpanda-badge.svg 260x64 (SVG, 1896
+  // bytes, width/height and viewBox 0 0 260 64; the official vendor snippet
+  // declares the same 260x64 box). The apex host 301s to www, so both
+  // hostnames are listed.
+  { host: "launchpanda.dev", width: 260, height: 64 },
+  { host: "www.launchpanda.dev", width: 260, height: 64 },
 ];
 const FALLBACK_PLACEHOLDER_SIZE = { width: 1, height: 1 };
 
