@@ -1,5 +1,21 @@
 [
   {
+    "slug": "antigravity-vs-claude-code",
+    "title": "Antigravity vs Claude Code: headless CLI test",
+    "summary": "Antigravity vs Claude Code on one failing Python test: Claude Code needs explicit permissions to fix it; Antigravity hit errors on a free Gemini API key.",
+    "zhSlug": "antigravity-vs-claude-code",
+    "zhTitle": "Antigravity vs Claude Code：无人值守修复与 API 错误实测",
+    "related": []
+  },
+  {
+    "slug": "high-frequency-agent-development",
+    "title": "Agentic software development beyond one session",
+    "summary": "How Orbi resumes interrupted tasks, waits for GitHub and applies maintainer decisions, with rules for keeping agent delivery running between sessions.",
+    "zhSlug": "high-frequency-agent-development",
+    "zhTitle": "Orbi 的高频开发：让自动交付持续运行",
+    "related": []
+  },
+  {
     "slug": "cline-vs-claude-code",
     "title": "Cline vs Claude Code: same model, headless test",
     "summary": "Cline vs Claude Code tested on the same DeepSeek model, with commands, permission settings, exit codes, token counts and prices for unattended coding runs.",

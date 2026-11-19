@@ -516,6 +516,12 @@ h1 span { color: var(--signal); }
 }
 
 .hero-lede strong { color: #edf5f0; font-weight: 600; }
+/* Issue #1371: a paid user circled the English homepage lede on a phone
+   screenshot — secondary ink on the night ground, and three sentences to
+   decode. The English home is the only one that now carries the ink colour
+   the page already gives <strong>; the Chinese home and every other
+   .hero-lede page keep the secondary ink. */
+html[lang="en"] .hero.homepage-hero .hero-lede { color: #edf5f0; }
 /* Keep the denser CJK hero within the same first-screen contract as EN. */
 html[lang="zh-CN"] .hero-lede { margin-bottom: 22px; }
 
@@ -2420,6 +2426,29 @@ h2 {
   .site-footer .footer-friends,
   .site-footer .footer-legal { grid-column: 1; }
   .site-footer nav li + li { margin-top: 6px; }
+}
+
+/* Issue #1373: a paid user reading the homepage on a phone asked to see the
+   real-delivery receipt before the definition sentence — the card answers
+   "what did Orbi actually ship?" in one glance, while the paragraphs take a
+   paragraph to read. The receipt cannot go above the primary CTA: it is
+   ~250px tall and would push the button out of the first screen, the
+   regression #259 fixed. So it goes between the CTA note and the lede, and
+   the phone hero reads eyebrow, headline, CTA, CTA note, receipt, lede.
+   .hero-copy keeps no box of its own at this width only — that is what lets
+   the figure sit between two of its children — and the wide two-column hero
+   (from 981px up) never sees these rules. 480px is the phone width this
+   stylesheet already breaks at (footer badges), and the ticket names it. */
+@media (max-width: 480px) {
+  /* The stack's own margins space it: a 16px grid gap would double them. */
+  .hero.homepage-hero { gap: 0; }
+  .hero.homepage-hero .hero-copy { display: contents; }
+  .hero.homepage-hero .hero-kicker { order: 1; }
+  .hero.homepage-hero h1 { order: 2; }
+  .hero.homepage-hero .hero-cta { order: 3; }
+  .hero.homepage-hero .hero-cta-note { order: 4; }
+  .hero.homepage-hero .hero-receipt { order: 5; margin-top: 20px; }
+  .hero.homepage-hero .hero-lede { order: 6; margin: 20px 0 0; }
 }
 
 @media (max-width: 430px) {

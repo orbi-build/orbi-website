@@ -1519,15 +1519,16 @@ describe("one unified footer on every content page", () => {
       // Issue #845 moved the Pi hub from the Guides row to the Resources row:
       // the Resources row gained one link and the Guides row lost one.
       // Issue #1000 adds the open-source contributions post to Resources.
-      expect(linkCounts, `${page.output}: footer group link counts`).toEqual([6, 11, 8, 13, 7]);
+      // Issue #1384 adds the Reddit community link to the Company group.
+      expect(linkCounts, `${page.output}: footer group link counts`).toEqual([6, 11, 8, 13, 8]);
       const companyLinks = [...groups[4][2].matchAll(/<a href="([^"]+)"[^>]*>([^<]+)<\/a>/g)]
         .map(([, href, label]) => [href, label]);
       const siteBase = page.nav.siteBase ?? "";
       expect(companyLinks, `${page.output}: Company links`).toEqual(page.lang === "zh"
-        ? [[`${siteBase}/zh/support/`, "支持"], ["https://github.com/orbi-build/orbi/milestones", "路线图"], [`${siteBase}/zh/privacy/`, "隐私政策"], [`${siteBase}/zh/terms/`, "服务条款"], ["https://github.com/orbi-build/orbi", "GitHub"], ["https://x.com/xqliu", "X"], ["https://www.youtube.com/@orbibuild", "YouTube"]]
-        : [[`${siteBase}/support/`, "Support"], ["https://github.com/orbi-build/orbi/milestones", "Roadmap"], [`${siteBase}/privacy/`, "Privacy"], [`${siteBase}/terms/`, "Terms"], ["https://github.com/orbi-build/orbi", "GitHub"], ["https://x.com/xqliu", "X"], ["https://www.youtube.com/@orbibuild", "YouTube"]]);
+        ? [[`${siteBase}/zh/support/`, "支持"], ["https://github.com/orbi-build/orbi/milestones", "路线图"], [`${siteBase}/zh/privacy/`, "隐私政策"], [`${siteBase}/zh/terms/`, "服务条款"], ["https://github.com/orbi-build/orbi", "GitHub"], ["https://x.com/xqliu", "X"], ["https://www.youtube.com/@orbibuild", "YouTube"], ["https://www.reddit.com/r/OrbiBuild/", "Reddit"]]
+        : [[`${siteBase}/support/`, "Support"], ["https://github.com/orbi-build/orbi/milestones", "Roadmap"], [`${siteBase}/privacy/`, "Privacy"], [`${siteBase}/terms/`, "Terms"], ["https://github.com/orbi-build/orbi", "GitHub"], ["https://x.com/xqliu", "X"], ["https://www.youtube.com/@orbibuild", "YouTube"], ["https://www.reddit.com/r/OrbiBuild/", "Reddit"]]);
       const items = [...nav.matchAll(/<a href="([^"]+)"/g)].map((m) => m[1]);
-      expect(items, `${page.output}: footer nav drifted`).toHaveLength(45);
+      expect(items, `${page.output}: footer nav drifted`).toHaveLength(46);
     }
   });
 
@@ -1582,6 +1583,20 @@ describe("one unified footer on every content page", () => {
       const footer = footerRegion(shipped.get(output));
       expect(footer, `${output}: YouTube footer anchor drifted`).toContain(
         '<a href="https://www.youtube.com/@orbibuild" rel="me">YouTube</a>',
+      );
+    }
+  });
+
+  // Issue #1384: the Reddit community link sits right after YouTube in the
+  // Company group, written like its siblings and shared by both languages.
+  it("links Reddit in the footer right after YouTube, on en and zh (Issue #1384)", () => {
+    for (const output of ["index.html", "zh/index.html"]) {
+      const footer = footerRegion(shipped.get(output));
+      expect(footer, `${output}: Reddit footer anchor drifted`).toContain(
+        '<li><a href="https://www.reddit.com/r/OrbiBuild/">Reddit</a></li>',
+      );
+      expect(footer, `${output}: the Reddit link must follow the YouTube link`).toContain(
+        '<a href="https://www.youtube.com/@orbibuild" rel="me">YouTube</a></li><li><a href="https://www.reddit.com/r/OrbiBuild/">Reddit</a></li>',
       );
     }
   });
@@ -4016,6 +4031,36 @@ describe("homepage body carries an Orbi definition sentence (Issues #890, #899, 
       expect(html.slice(html.indexOf("<body")), `${output}: body definition`).toContain(lede);
     });
   }
+});
+
+// Issue #1371: the English hero lede was three sentences of secondary ink on
+// the night ground — a paid user circled it on a phone screenshot. It is one
+// sentence now, in the ink colour the page already gives its <strong> runs,
+// scoped so the Chinese home and every other .hero-lede page keep the
+// secondary ink.
+describe("homepage hero lede is one readable sentence in English (Issue #1371)", () => {
+  const ledeOf = (output) =>
+    region(shipped.get(output), '<p class="hero-lede">', "</p>")
+      .replace(/<[^>]+>/g, "")
+      .trim();
+
+  it("the English home ships the one-sentence lede", () => {
+    expect(ledeOf("index.html"))
+      .toBe("Orbi turns your GitHub Issues into reviewed, merged code and real releases.");
+  });
+
+  it("scopes the bright ink to the English homepage hero", () => {
+    const scoped = styles.match(/html\[lang="en"\] \.hero\.homepage-hero \.hero-lede\s*\{[^}]*\}/)?.[0];
+    expect(scoped, "English homepage lede colour rule").toBeTruthy();
+    expect(scoped).toMatch(/color:\s*#edf5f0;/);
+    expect(styles.match(/^\.hero-lede\s*\{[^}]*\}/m)?.[0], "shared .hero-lede colour")
+      .toMatch(/color:\s*#b6c7c3;/);
+  });
+
+  it("leaves the Chinese home lede unchanged", () => {
+    expect(ledeOf("zh/index.html"))
+      .toBe("Orbi 用 AI 完成 GitHub 上的开发任务。代码经过独立 AI 评审，通过后自动合并，再按仓库流程发版。你不用一直守着。");
+  });
 });
 
 // Issue #1217: the six pages a buyer reads before deciding (home, Cloud, cost,
