@@ -274,6 +274,16 @@ export const BADGE_PLACEHOLDER_SIZES = [
   // bytes, width/height and viewBox 0 0 212 55; the official vendor
   // snippet declares the same 212x55 box).
   { host: "postyourstartup.com", width: 212, height: 55 },
+  // 2026-11-20 DiscoverLaunches featured badge, measured on the live URL:
+  // discoverlaunches.com /badge/orbi.svg 212x48 (SVG, 787 bytes, width/height
+  // and viewBox 0 0 212 48; the official vendor snippet declares the same
+  // 212x48 box). The listing /product/orbi returns 200.
+  { host: "discoverlaunches.com", width: 212, height: 48 },
+  // 2026-11-20 ProductPerch Discover badge, measured on the live URL:
+  // productperch.com /badges/discover-light.svg 220x54 (SVG, 1211 bytes,
+  // width/height and viewBox 0 0 220 54; the official vendor snippet
+  // declares the same 220x54 box).
+  { host: "productperch.com", width: 220, height: 54 },
 ];
 const FALLBACK_PLACEHOLDER_SIZE = { width: 1, height: 1 };
 
