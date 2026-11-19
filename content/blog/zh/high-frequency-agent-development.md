@@ -34,7 +34,7 @@ Rocky 的[《Magpie 的高频开发实践》](https://83d.me/2026/11/19/magpie-a
 
 | 阶段 | 公开证据 |
 |---|---|
-| 认领任务 | [启动回执](https://github.com/orbi-build/orbi/issues/2256#issuecomment-6975163075)记录本次运行、任务分支，以及基分支当时的提交 |
+| 认领任务 | [启动回执](https://github.com/orbi-build/orbi/issues/2256#issuecomment-6975163075)记录本次运行、任务分支，以及基础分支当时的提交 |
 | 交付实现 | [PR #2258](https://github.com/orbi-build/orbi/pull/2258)包含恢复逻辑的修改 |
 | 评审与合并 | [合并回执](https://github.com/orbi-build/orbi/issues/2256#issuecomment-6980679331)记录一轮评审、在 head `3507be8` 上保存的通过结果，以及 CI 后的合并 |
 | 发布版本 | [v0.7.49](https://github.com/orbi-build/orbi/releases/tag/v0.7.49)的已核实发布范围包含这张 Issue 和 PR |
@@ -50,7 +50,7 @@ Rocky 的[《Magpie 的高频开发实践》](https://83d.me/2026/11/19/magpie-a
 
 agent 进程退出时，文件、提交、分支、打开的 PR 和尚未解决的问题，可能都还在。如果重新从原始需求开始，就可能丢掉这些上下文，还在原交付旁边再启动一份工作。
 
-Orbi 的[交付代码](https://github.com/orbi-build/orbi/blob/8b543b232b4ee81dbd79018ca4b679599559f71b/src/orbi/implementation_delivery.py#L299)会在认领时记录基分支当时的提交、本次运行和工作树。接续现有工作树时，也沿用它原来的分支。
+Orbi 的[交付代码](https://github.com/orbi-build/orbi/blob/8b543b232b4ee81dbd79018ca4b679599559f71b/src/orbi/implementation_delivery.py#L299)会在认领时记录基础分支当时的提交、本次运行和工作树。接续现有工作树时，也沿用它原来的分支。
 
 #2256 补上的条件，是恢复者必须能确认这份工作属于本部署。把它写成验收场景，其他项目也能采用：
 
@@ -60,13 +60,13 @@ Orbi 的[交付代码](https://github.com/orbi-build/orbi/blob/8b543b232b4ee81db
 
 ## 等待交给调度程序
 
-任务分支需要吸收基分支的最新代码时，也出现过无效重复。Runner 已经无冲突地合并并推送成功，紧接着查 GitHub PR，拿到的却还是旧 head。分支引用和 PR 查询结果短暂不一致。
+把基础分支的最新代码合并到任务分支时，也出现过无效重复。Runner 已经无冲突地合并并推送成功，紧接着查 GitHub PR，拿到的却还是旧 head。分支引用和 PR 查询结果短暂不一致。
 
 [Issue #2017](https://github.com/orbi-build/orbi/issues/2017)记录了后果：Orbi 把旧查询结果当成 head 发生变化，重新送去评审。推送其实已经成功，没有新的实现问题需要模型处理。
 
 10 月 30 日合并的 [PR #2019](https://github.com/orbi-build/orbi/pull/2019)把这两种情况分开了。确认分支推送成功以后，如果 PR 查询还停在推送前的 head，Runner 会短暂重读。读数追上来，就采用新状态；始终追不上，就不合并。如果读到既不是推送前、也不是刚推上去的“第三个提交”，则立即拒绝这次合并，因为它已经不是已知的旧读数。
 
-[当前合并代码](https://github.com/orbi-build/orbi/blob/8b543b232b4ee81dbd79018ca4b679599559f71b/src/orbi/merge_exec.py#L214)给这段等待设了边界。并入基分支的新代码并推送后，这一轮也不会马上合并，而是等后续调度再检查新 head 的 CI。通常，任务分支变化后要重新评审。但无冲突并入基分支时，Runner 只更新已记录的 head，不另起一轮模型评审。
+[当前合并代码](https://github.com/orbi-build/orbi/blob/8b543b232b4ee81dbd79018ca4b679599559f71b/src/orbi/merge_exec.py#L214)给这段等待设了边界。将基础分支的最新代码合并到任务分支并推送后，这一轮也不会马上合并，而是等后续调度再检查新 head 的 CI。通常，任务分支变化后要重新评审。但将基础分支的代码无冲突地合并到任务分支时，Runner 只更新已记录的 head，不另起一轮模型评审。
 
 普通的 CI 等待也是这个分工。Orbi 可以把没有待修问题的评审结果，与 head 提交、评审者读过的 Issue 正文一起保存。后续调度发现这些输入没变，就能直接查 CI 是否完成并尝试合并，不必再启动一个评审会话。
 
