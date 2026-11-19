@@ -6,6 +6,13 @@
     <description>Notes from shipping Orbi in the open: delivery runs, failures, fixes, and measurements.</description>
     <language>en</language>
     <item>
+      <title>Antigravity vs Claude Code: headless CLI test</title>
+      <link>https://orbi.build/blog/antigravity-vs-claude-code/</link>
+      <guid isPermaLink="true">https://orbi.build/blog/antigravity-vs-claude-code/</guid>
+      <pubDate>Thu, 19 Nov 2026 00:00:00 GMT</pubDate>
+      <description>Antigravity vs Claude Code on one failing Python test: Claude Code needs explicit permissions to fix it; Antigravity hit errors on a free Gemini API key.</description>
+    </item>
+    <item>
       <title>Cline vs Claude Code: same model, headless test</title>
       <link>https://orbi.build/blog/cline-vs-claude-code/</link>
       <guid isPermaLink="true">https://orbi.build/blog/cline-vs-claude-code/</guid>
