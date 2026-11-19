@@ -269,6 +269,11 @@ export const BADGE_PLACEHOLDER_SIZES = [
   // 1186x182 (PNG, 194200 bytes). The official submit-page snippet
   // styles the image at height 22px; width auto.
   { host: "ainexfinder.com", width: 1186, height: 182 },
+  // 2026-11-19 PostYourStartup featured badge, measured on the live URL:
+  // postyourstartup.com /api/badge/orbi?theme=light 212x55 (SVG, 16929
+  // bytes, width/height and viewBox 0 0 212 55; the official vendor
+  // snippet declares the same 212x55 box).
+  { host: "postyourstartup.com", width: 212, height: 55 },
 ];
 const FALLBACK_PLACEHOLDER_SIZE = { width: 1, height: 1 };
 
