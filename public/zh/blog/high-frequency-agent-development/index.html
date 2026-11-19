@@ -249,7 +249,7 @@
 <td>Release 发布以后，<a href="https://github.com/orbi-build/orbi/actions/runs/44362052953/job/135006009705">PyPI 发布</a>和随后<a href="https://github.com/orbi-build/orbi/actions/runs/44362052953/job/135006307821">软件包验证</a>都已成功完成</td>
 </tr>
 </tbody></table></div>
-<p>实现这项修改时，Orbi 使用 <a href="/zh/blog/orbi-on-pi-coding-agent/">Pi 编程 agent</a>。代码写好后，它会启动一个使用独立上下文的评审进程，重新读取需求和代码。评审者可以直接在原任务分支修复问题，最后给出结论，并注明结论对应哪次提交。我不需要再把评审意见复制到另一个聊天会话里。</p>
+<p>实现这项修改时，Orbi 使用 <a href="/zh/blog/orbi-on-pi-coding-agent/">Pi 编程 agent</a>。代码写好后，Orbi 会启动一个使用独立上下文的评审进程，重新读取需求和代码。评审者可以直接在原任务分支修复问题，最后给出结论，并注明结论对应哪次提交。我不需要再把评审意见复制到另一个聊天会话里。</p>
 <p>这次任务的实现和评审回执都记录了同一个运行编号：<code class="post-code--single">d7ce6300</code>。GitHub 记录的 PR 创建者和合并者都是 Orbi App。PR 最后一次提交（head）的 tests 和 macOS 检查先通过，随后在 13:56 UTC 合并；包含这项改动的版本在 17:44 UTC 发布。</p>
 <p>启动评审、保存结论、读取 GitHub 当前状态，以及在条件满足后合并，都是 Runner 负责的步骤。发版由另一张任务票处理，发布范围和需要通过的检查也单独写清。</p>
 <h2 id="会话中断后-接着原任务做">会话中断后，接着原任务做</h2>

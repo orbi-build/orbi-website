@@ -40,7 +40,7 @@ Rocky 的[《Magpie 的高频开发实践》](https://83d.me/2026/11/19/magpie-a
 | 发布版本 | [v0.7.49](https://github.com/orbi-build/orbi/releases/tag/v0.7.49)列出的已核实发布范围包含这张 Issue 和 PR |
 | 发布并验证软件包 | Release 发布以后，[PyPI 发布](https://github.com/orbi-build/orbi/actions/runs/44362052953/job/135006009705)和随后[软件包验证](https://github.com/orbi-build/orbi/actions/runs/44362052953/job/135006307821)都已成功完成 |
 
-实现这项修改时，Orbi 使用 [Pi 编程 agent](/zh/blog/orbi-on-pi-coding-agent/)。代码写好后，它会启动一个使用独立上下文的评审进程，重新读取需求和代码。评审者可以直接在原任务分支修复问题，最后给出结论，并注明结论对应哪次提交。我不需要再把评审意见复制到另一个聊天会话里。
+实现这项修改时，Orbi 使用 [Pi 编程 agent](/zh/blog/orbi-on-pi-coding-agent/)。代码写好后，Orbi 会启动一个使用独立上下文的评审进程，重新读取需求和代码。评审者可以直接在原任务分支修复问题，最后给出结论，并注明结论对应哪次提交。我不需要再把评审意见复制到另一个聊天会话里。
 
 这次任务的实现和评审回执都记录了同一个运行编号：`d7ce6300`。GitHub 记录的 PR 创建者和合并者都是 Orbi App。PR 最后一次提交（head）的 tests 和 macOS 检查先通过，随后在 13:56 UTC 合并；包含这项改动的版本在 17:44 UTC 发布。
 
