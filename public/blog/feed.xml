@@ -13,6 +13,13 @@
       <description>Antigravity vs Claude Code on one failing Python test: Claude Code needs explicit permissions to fix it; Antigravity hit errors on a free Gemini API key.</description>
     </item>
     <item>
+      <title>Agentic software development: a week inside Orbi</title>
+      <link>https://orbi.build/blog/high-frequency-agent-development/</link>
+      <guid isPermaLink="true">https://orbi.build/blog/high-frequency-agent-development/</guid>
+      <pubDate>Thu, 19 Nov 2026 00:00:00 GMT</pubDate>
+      <description>How Orbi develops itself with agents: automated implementation, independent review, CI waits, merge and release, with work preserved across interruptions.</description>
+    </item>
+    <item>
       <title>Cline vs Claude Code: same model, headless test</title>
       <link>https://orbi.build/blog/cline-vs-claude-code/</link>
       <guid isPermaLink="true">https://orbi.build/blog/cline-vs-claude-code/</guid>
