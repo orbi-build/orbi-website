@@ -305,6 +305,11 @@ export const BADGE_PLACEHOLDER_SIZES = [
   // declares the same 250x54 box). Official /badge/orbi.js (343 bytes)
   // is kept in the footer; browser tests already stub third-party scripts.
   { host: "thelaunchdirectory.com", width: 250, height: 54 },
+  // 2026-11-20 ConfettiSaaS official badge, measured on the live URL:
+  // confettisaas.com /badge-light.svg 250x54 (SVG, 12269 bytes, width/height
+  // and viewBox 0 0 250 54; the official vendor snippet declares the same
+  // 250x54 box).
+  { host: "confettisaas.com", width: 250, height: 54 },
 ];
 const FALLBACK_PLACEHOLDER_SIZE = { width: 1, height: 1 };
 
