@@ -291,6 +291,14 @@ export const BADGE_PLACEHOLDER_SIZES = [
   // hostnames are listed.
   { host: "launchpanda.dev", width: 260, height: 64 },
   { host: "www.launchpanda.dev", width: 260, height: 64 },
+  // 2026-11-20 The One Startup featured badge, measured on the live URL:
+  // theonestartup.com /badages-awards.svg 230x54 (SVG, 2923 bytes,
+  // width="230" height="54", viewBox 0 0 225 54). Official typo
+  // "badages" kept exact, same family spelling as Starter Best / Days Launch.
+  // The official snippet styles the image at height 54px; width auto and does
+  // not declare width/height attributes, so the source file decides the
+  // placeholder box.
+  { host: "theonestartup.com", width: 230, height: 54 },
 ];
 const FALLBACK_PLACEHOLDER_SIZE = { width: 1, height: 1 };
 
