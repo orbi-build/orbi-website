@@ -256,6 +256,10 @@ Shipping notes from the root domain: what each delivery run hit, what fixed
 it, and the numbers behind both, traced to the issues they came from. RSS
 feed of the English posts: https://orbi.build/blog/feed.xml
 
+- Antigravity vs Claude Code: headless CLI test (English):
+  https://orbi.build/blog/antigravity-vs-claude-code/
+- Antigravity vs Claude Code：无人值守修复与 API 错误实测 (Chinese):
+  https://orbi.build/zh/blog/antigravity-vs-claude-code/
 - Cline vs Claude Code: same model, headless test (English):
   https://orbi.build/blog/cline-vs-claude-code/
 - Cline vs Claude Code：用同一模型测试无人值守运行 (Chinese):
