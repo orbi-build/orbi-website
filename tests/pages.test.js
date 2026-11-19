@@ -1519,15 +1519,16 @@ describe("one unified footer on every content page", () => {
       // Issue #845 moved the Pi hub from the Guides row to the Resources row:
       // the Resources row gained one link and the Guides row lost one.
       // Issue #1000 adds the open-source contributions post to Resources.
-      expect(linkCounts, `${page.output}: footer group link counts`).toEqual([6, 11, 8, 13, 7]);
+      // Issue #1384 adds the Reddit community link to the Company group.
+      expect(linkCounts, `${page.output}: footer group link counts`).toEqual([6, 11, 8, 13, 8]);
       const companyLinks = [...groups[4][2].matchAll(/<a href="([^"]+)"[^>]*>([^<]+)<\/a>/g)]
         .map(([, href, label]) => [href, label]);
       const siteBase = page.nav.siteBase ?? "";
       expect(companyLinks, `${page.output}: Company links`).toEqual(page.lang === "zh"
-        ? [[`${siteBase}/zh/support/`, "支持"], ["https://github.com/orbi-build/orbi/milestones", "路线图"], [`${siteBase}/zh/privacy/`, "隐私政策"], [`${siteBase}/zh/terms/`, "服务条款"], ["https://github.com/orbi-build/orbi", "GitHub"], ["https://x.com/xqliu", "X"], ["https://www.youtube.com/@orbibuild", "YouTube"]]
-        : [[`${siteBase}/support/`, "Support"], ["https://github.com/orbi-build/orbi/milestones", "Roadmap"], [`${siteBase}/privacy/`, "Privacy"], [`${siteBase}/terms/`, "Terms"], ["https://github.com/orbi-build/orbi", "GitHub"], ["https://x.com/xqliu", "X"], ["https://www.youtube.com/@orbibuild", "YouTube"]]);
+        ? [[`${siteBase}/zh/support/`, "支持"], ["https://github.com/orbi-build/orbi/milestones", "路线图"], [`${siteBase}/zh/privacy/`, "隐私政策"], [`${siteBase}/zh/terms/`, "服务条款"], ["https://github.com/orbi-build/orbi", "GitHub"], ["https://x.com/xqliu", "X"], ["https://www.youtube.com/@orbibuild", "YouTube"], ["https://www.reddit.com/r/OrbiBuild/", "Reddit"]]
+        : [[`${siteBase}/support/`, "Support"], ["https://github.com/orbi-build/orbi/milestones", "Roadmap"], [`${siteBase}/privacy/`, "Privacy"], [`${siteBase}/terms/`, "Terms"], ["https://github.com/orbi-build/orbi", "GitHub"], ["https://x.com/xqliu", "X"], ["https://www.youtube.com/@orbibuild", "YouTube"], ["https://www.reddit.com/r/OrbiBuild/", "Reddit"]]);
       const items = [...nav.matchAll(/<a href="([^"]+)"/g)].map((m) => m[1]);
-      expect(items, `${page.output}: footer nav drifted`).toHaveLength(45);
+      expect(items, `${page.output}: footer nav drifted`).toHaveLength(46);
     }
   });
 
@@ -1582,6 +1583,20 @@ describe("one unified footer on every content page", () => {
       const footer = footerRegion(shipped.get(output));
       expect(footer, `${output}: YouTube footer anchor drifted`).toContain(
         '<a href="https://www.youtube.com/@orbibuild" rel="me">YouTube</a>',
+      );
+    }
+  });
+
+  // Issue #1384: the Reddit community link sits right after YouTube in the
+  // Company group, written like its siblings and shared by both languages.
+  it("links Reddit in the footer right after YouTube, on en and zh (Issue #1384)", () => {
+    for (const output of ["index.html", "zh/index.html"]) {
+      const footer = footerRegion(shipped.get(output));
+      expect(footer, `${output}: Reddit footer anchor drifted`).toContain(
+        '<li><a href="https://www.reddit.com/r/OrbiBuild/">Reddit</a></li>',
+      );
+      expect(footer, `${output}: the Reddit link must follow the YouTube link`).toContain(
+        '<a href="https://www.youtube.com/@orbibuild" rel="me">YouTube</a></li><li><a href="https://www.reddit.com/r/OrbiBuild/">Reddit</a></li>',
       );
     }
   });
