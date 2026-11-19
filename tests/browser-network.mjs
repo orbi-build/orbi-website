@@ -237,6 +237,21 @@ export const BADGE_PLACEHOLDER_SIZES = [
   // The official vendor snippet does not declare width/height attributes,
   // so the source file decides the placeholder box.
   { host: "launchit.fast", width: 200, height: 54 },
+  // 2026-11-19 Starter Best featured badge, measured on the live URL:
+  // starterbest.com 184x54 (SVG, 2925 bytes, width/height and viewBox
+  // 0 0 184 54). The official vendor snippet styles the image at
+  // height 54px; width auto and does not declare width/height attributes,
+  // so the source file decides the placeholder box. The asset path is the
+  // official /badages-awards.svg spelling.
+  { host: "starterbest.com", width: 184, height: 54 },
+  // 2026-11-19 Days Launch featured badge, measured on the live URL:
+  // dayslaunch.com 200x54 (SVG, 2919 bytes, width="200" height="54",
+  // viewBox 0 0 184 54). Same family as Starter Best; the official
+  // /badages-awards.svg asset returns 200 image/svg+xml and is linked
+  // from public pages on both sites. The official-style snippet styles
+  // the image at height 54px; width auto, so the source file decides
+  // the placeholder box.
+  { host: "dayslaunch.com", width: 200, height: 54 },
 ];
 const FALLBACK_PLACEHOLDER_SIZE = { width: 1, height: 1 };
 
