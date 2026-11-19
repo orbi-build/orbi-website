@@ -252,6 +252,23 @@ export const BADGE_PLACEHOLDER_SIZES = [
   // the image at height 54px; width auto, so the source file decides
   // the placeholder box.
   { host: "dayslaunch.com", width: 200, height: 54 },
+  // 2026-11-19 MegaLaunch featured badge, measured on the live URL:
+  // megalaun.ch /badges/featured/asset 280x72 (SVG, 795 bytes, width/height
+  // and viewBox 0 0 280 72). The official embed on /badges/featured
+  // declares 220x57, a different box, so the source file decides the
+  // placeholder. Orbi has no product slug yet, so the href is the
+  // official homepage (their docs also accept a link to MegaLaunch).
+  { host: "megalaun.ch", width: 280, height: 72 },
+  // 2026-11-19 SuperLaunch List featured badge, measured on the live URL:
+  // superlaunchlist.com /badge.svg 174x42 (SVG, 1491 bytes, width/height
+  // and viewBox 0 0 174 42). This is the official badgeHtml() snippet
+  // from their public pricing/submit JS (no product ref query).
+  { host: "superlaunchlist.com", width: 174, height: 42 },
+  // 2026-11-19 AInexfinder official Free Launch badge logo, measured on
+  // the live URL: ainexfinder.com /brand/ainexfinder-logo-white.png
+  // 1186x182 (PNG, 194200 bytes). The official submit-page snippet
+  // styles the image at height 22px; width auto.
+  { host: "ainexfinder.com", width: 1186, height: 182 },
 ];
 const FALLBACK_PLACEHOLDER_SIZE = { width: 1, height: 1 };
 
