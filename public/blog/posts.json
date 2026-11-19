@@ -8,6 +8,14 @@
     "related": []
   },
   {
+    "slug": "high-frequency-agent-development",
+    "title": "Agentic software development: a week inside Orbi",
+    "summary": "How Orbi develops itself with agents: automated implementation, independent review, CI waits, merge and release, with work preserved across interruptions.",
+    "zhSlug": "high-frequency-agent-development",
+    "zhTitle": "Orbi 的高频开发：实现、评审和发版怎样自动推进",
+    "related": []
+  },
+  {
     "slug": "cline-vs-claude-code",
     "title": "Cline vs Claude Code: same model, headless test",
     "summary": "Cline vs Claude Code tested on the same DeepSeek model, with commands, permission settings, exit codes, token counts and prices for unattended coding runs.",
