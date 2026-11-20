@@ -1,145 +1,153 @@
 ---
-title: AI-generated tests: what I found in 5,087 cases
+title: Make AI agents test behavior, not implementation
 date: 2026-11-20
-summary: A strict count found that a third of 5,087 Orbi Cloud Vitest cases pinned implementation details. I trace why, add a repo rule and speed up the test step.
+summary: Rules, ticket wording and review checks that make AI coding agents test what users see, from an audit of 5,087 tests where 34% checked how code is written.
 lang: en
 author: Larry 🍀 Orbi
 image: /img/blog-ai-generated-tests-card.png
 mirror: ai-generated-tests
 ---
 
-Orbi is an open-source system that takes a GitHub Issue through implementation, review, merge and release. I audited the Vitest suites in the private repository of Orbi Cloud, its hosted service, where Orbi's delivery bot last changed most test registration lines. Engineering leads and solo maintainers who use coding agents to write code and AI-generated tests can use these counts and the repository rule to check the suite they rely on for merge decisions. I also trace where the implementation-coupled tests came from, and show the setup and parallelism changes behind a CI test-step median that fell from 271 s to 102 s.
+If an AI agent writes most of your tests, many of them may check how the code is written instead of what users see (in our repository, 34% asserted at least one such detail, often alongside a real behavior check), and those tests then decide what gets merged. This post is for teams in that position: it gives the three rules we use to make agents write behavior tests, what they look like for browser tests, and a method to audit your own suite in about half an hour. It also covers how we cut the test step in CI from 4:26 to 1:39 on Cloudflare Workers, mostly by raising the worker count, with a smaller win from the setup change below.
 
-I'm Larry 🍀 Orbi, the creator of Orbi.
+I'm Larry 🍀 Orbi, the creator of Orbi. Orbi is a delivery engine: it takes a GitHub issue, has one agent write the code and tests, has a second agent review the change, then merges and ships it, with no human in the loop by default. Orbi Cloud, our hosted product, is a codebase that Orbi mostly builds itself. On 18 November we classified all 5,087 tests in that codebase: 1,739 of them, 34%, asserted at least one implementation detail. Many of those also check a real behavior and are counted only because they assert an implementation detail too, so read 34% as "has at least one implementation assertion", not "is a bad test" (the stricter cut is 29%, below). The rules below are what we changed afterwards; the audit is further down as evidence.
 
-## How the audit counted
+## What counts as behavior
 
-On 18 November 2026, I had independent, read-only Codex sessions classify the tests in Orbi Cloud's repository at beta commit `4619a9fc`. They covered the three TypeScript suites run by Vitest: the main test directory, browser tests and operational-script tests. The audit excluded the repository's 5 Python test files (32 test methods). The orbi-cloud repository is private, so I quote the audit's numbers and name its issues without links.
+A behavior test asserts something a user or caller can observe: an HTTP status and the text on the page, what a rendered page lets you see and click, the content of an email or GitHub comment the code sends, a database row that records a business fact, a script's exit code and output.
 
-The audit counted each case registered through parameters or loops separately. A loop checking several inputs inside a test body still counted as a single case. A case with both observable-behavior assertions and implementation assertions counted as implementation-coupled. Implementation-assertion categories could overlap.
+An implementation test asserts how the code happens to be written. In the audit we sorted these into six kinds, and the list works as a rubric for review:
 
-Reading business records from a database or checking content sent to an external service counted as behavior. So did using a selector to extract visible text. In the usual phrase, I asked whether a test was testing implementation details: could an assertion fail when the implementation changed but the result visible to a user or caller stayed the same?
+- A: reads source text (searches a file for a string, counts rules, asserts "there is only one implementation").
+- B: asserts arguments, call counts or call order of internal functions. Calls that cross a real boundary (sending an email, calling GitHub or Stripe) and assert what was sent count as behavior.
+- C: asserts SQL text, table names or index names.
+- D: asserts internal shape: array lengths, object keys, constant values, CSS class names or element IDs the user never sees, page script text, CSS text, whole HTML strings.
+- E: snapshots that pin internal structure rather than visible output.
+- F: calls an internal helper and asserts its intermediate return value. If the helper is itself a business rule (say, "when does the trial end"), that's behavior.
 
-I spot-checked the source at 5 locations. Only one was ambiguous: a test that counted the deactivate buttons by their form's submit address, which can reasonably identify the controls a user sees. The spot-check was too small to estimate a classification error rate for the whole audit. I reviewed the tests statically, without measuring how well they detected defects or the cost of each failure.
+The test of a test: would it go red when nothing a user sees has changed? If yes, it's pinned to implementation. The second question is narrower: for the behavior this test claims to cover, would it stay green when that behavior is broken? If yes, the test is asserting the wrong thing: either the assertion or the coverage needs fixing. (A title-only test staying green when a button breaks isn't testing implementation; it just never covered the button.)
 
-To check the labels, I gave a separate DeepSeek session the same definitions and 60 test registrations drawn at random from the main directory (seed 20261120), without the audit's labels. It agreed on 48 of 60 (80%; Cohen's kappa 0.60, usually read as moderate agreement), including all 18 cases the audit had marked implementation-coupled. In all 12 disagreements, it marked a case as implementation-coupled where the audit had called it behavior. Most involved exact comparisons of HTML fragments such as hidden inputs, or direct calls to internal helpers. On this main-directory sample the second rater was stricter, never calling a case behavior that the audit had marked implementation-coupled, so it shows no overstatement there. A first attempt was discarded because that session found and read the file holding the audit's labels.
+## Rule 1: write down what a test may assert
 
-## A third of the cases pinned implementation
+Agents follow the instructions file in the repository. Ours had one line on testing: don't write unit tests for UI structure or styling. That said nothing about reading source, asserting SQL or counting internal calls, so none of it was off limits. This is the rule now, in the testing section of `AGENTS.md`:
 
-The strict count classified 1,739 of 5,087 cases as implementation-coupled, or 34%. The total also includes 16 uncertain cases, which are outside the implementation-coupled count.
+> Tests only assert results a user or caller can see: API responses, text and links on a page, emails and GitHub comments sent, database rows that record business facts, a script's exit code and output. Do not write the following, even if the ticket asks for them (if it does, say in the pull request which visible result you asserted instead): reading source text (searching for a string, counting rules, asserting a single implementation); how a page script or SQL statement is written; arguments and call counts of internal functions (content sent outward excepted); internal array lengths, constant values, element IDs; whole-page hash snapshots.
 
-| Test directory | Files | Cases | Implementation-coupled | Uncertain |
-|---|---:|---:|---:|---:|
-| Main, `test/` | 160 | 3,999 | 1,046 | 7 |
-| `test/browser/` | 80 | 639 | 466 | 0 |
-| `test/runbook/` | 47 | 449 | 227 | 9 |
+Two parts of it do most of the work. The list names concrete forms instead of saying "avoid implementation details", because an agent applies a list literally and a principle loosely. And "even if the ticket asks for them" is there because some of our tickets did ask for them (next rule).
 
-The audit grouped implementation assertions into the categories below. A case can appear in several categories, so adding category rows within a suite would count some cases more than once.
+## Rule 2: acceptance criteria describe results, not code
 
-| Assertion category | Main | Browser | Operational scripts (`test/runbook/`) |
+For a while my own ticket-writing rules said that when two parts of the code must share one decision, the acceptance criterion should read "there is only one render function". The delivery agent did exactly what that said: it wrote a permanent test that scans the source and fails if a second implementation appears. Several of the source-reading tests in the audit trace back to tickets written that way.
+
+So the criterion now describes what a user would notice if the rule broke. "There is only one function that decides the heading" became "for the same input, the first render and the live update show the same heading". The agent can satisfy that only by rendering both and comparing what a person would read, and the test survives any refactor that keeps the heading right.
+
+Our reviewer agent checks the diff against the acceptance criteria. A criterion that describes source structure steers both the agent writing the test and the one reviewing it toward checking that structure instead of the result, so the wording of the criterion shapes what the test ends up asserting.
+
+## Rule 3: one-time equivalence checks go in the pull request
+
+"This refactor changed nothing" is true once, on the day of the refactor. Prove it by pasting the before and after output into the pull request, not by adding a permanent test.
+
+We learned this twice. On the open-source engine, a golden snapshot of the CLI output recorded the full line `orbi 0.7.15`, so the v0.7.16 release commit failed the tests job on main. Every version bump rewrote that line. The fix ([orbi `c5e0f0db`](https://github.com/orbi-build/orbi/commit/c5e0f0db)) asserts `--version` against the package version in its own test and keeps the version line out of the golden capture, so a release bump stays green while changed help text still fails. On Orbi Cloud, when the status page was split into one file per card type, the agent added a test that rendered 18 screens and compared each page's SHA-256 with a stored value. Every later change to anything on those pages had to update the stored hashes: in the nine days before the test was removed, 35 non-merge commits touched that fixture file at all. Not all of them were for the snapshot's sake, but about five say in the commit message that re-generating the snapshot was the only change. The test has since been replaced by assertions on what each card shows.
+
+## Rules for browser and end-to-end tests
+
+For browser tests the rules become concrete:
+
+- Let the page run its own scripts the way a browser would. If the test needs a fake network or fake timers, install them before the page loads. About 50 of our browser test files instead did this:
+
+  ```ts
+  const source = [...rendered.querySelectorAll("script")]
+    .map((script) => script.textContent ?? "")
+    .find((text) => text.includes("delivery-progress-data"));
+  expect(source).toBeTruthy();
+  ```
+
+  They stripped the page's scripts, installed stubs, then evaluated the one script found by searching for a string inside it. Renaming a data block inside that script would break dozens of tests that otherwise asserted visible text correctly.
+- Assert what a person would see or do: the heading text, which button is enabled, what the page shows after the fake server answers, the request the page sent. Class names, node identity and `outerHTML` are off limits.
+- Compare two renders by what they show. "The live update shows the same heading as the first render" survives a restyle; "the row's `outerHTML` equals the server's" does not.
+- Check layout with geometry. A count of lines or a "contains this string" check passes however badly the layout breaks. A browser test can assert computed sizes and positions: one of ours checks that a button sits below its heading, fills the row and is at least 44px tall. For everything nobody thought to encode, we screenshot the staging site at desktop and phone widths in both languages and look at the pictures.
+
+A pull request once passed review with zero severe findings while 10 of the 14 design differences listed in its ticket were still there, including a heading that rendered one character per line. Every test asserted strings, and they all passed.
+
+## Why agents drift toward implementation tests
+
+It's tempting to say AI agents like testing implementation. Our evidence points at the setup around the agent instead:
+
+- **The tickets.** Some acceptance criteria described code ("only one render function"), and the agent read them literally (Rule 2).
+- **Gaps in the repository rules.** Anything the instructions didn't rule out was fair game (Rule 1).
+- **The cheapest red-to-green test pins the diff.** An agent closing a ticket needs a test that fails before its change and passes after. The cheapest one asserts that the new string, class name or function call now exists. A behavior test needs a fixture, a rendered page or a running script. This is our reading of the pattern, not something we measured.
+
+None of this is specific to AI. Kent C. Dodds described the same failure for human-written React tests in [Testing Implementation Details](https://kentcdodds.com/blog/testing-implementation-details): tests that break when you refactor and stay green when the app breaks. Google's testing blog said it in 2013: [test behavior, not implementation](https://testing.googleblog.com/2013/08/testing-on-toilet-test-behavior-not.html). What agents change is volume and literalness: an agent writes every test a ticket implies, on every ticket written the same way.
+
+It matters more when tests gate merges. Orbi merges a change once review and CI pass, with no human in the loop by default. An implementation test that goes red on a harmless rename blocks a merge and burns a review round. One that stays green while the page breaks lets the break through.
+
+## What the audit found
+
+The repository has three test suites. Counts are per test case, with parameterized cases expanded, at commit `4619a9fc`.
+
+| Suite | Test cases | At least one implementation assertion | Share |
 |---|---:|---:|---:|
-| Reading source text | 15 | 360 | 112 |
-| Internal call arguments or counts | 47 | 1 | 49 |
-| SQL text | 31 | 0 | 4 |
-| Internal shape: classes, IDs, array lengths, script text, HTML structure | 939 | 221 | 73 |
-| Snapshots pinning internal structure | 18 | 0 | 0 |
-| Calling internal helpers to inspect intermediate values | 74 | 0 | 57 |
+| Main (Workers unit and integration tests) | 3,999 | 1,046 | 26% |
+| Browser (rendered pages in a real browser) | 639 | 466 | 73% |
+| Host scripts (provisioning, deploy, timers) | 449 | 227 | 51% |
+| **Total** | **5,087** | **1,739** | **34%** |
 
-In the browser suite, 244 cases met the strict definition solely because a mounting helper looked for a source marker in the page's script before running it. The helpers are copied into individual files: 72 browser test files define their own `mount`. There was no single helper to fix; the cleanup PR, #3638, rewrote the mounting across the browser test files so pages run their own scripts. Some internal-shape cases used class names to find elements or counted controls a user could click; those classifications are also debatable.
+A test that asserted a visible result and also an implementation detail counted as implementation, so these numbers include mixed tests. 244 of the 466 browser tests do check visible behavior and are counted only because they find the page's script by searching its text (the pattern above). Leaving those out, 1,495 tests (29%) still have at least one implementation assertion.
 
-After excluding source checks introduced only by the helpers and ambiguous uses of locators, the audit estimated roughly 1,300–1,500 clearly implementation-coupled cases, or 25%–30%. That estimate did not include a second exact case-by-case count or a statistical confidence interval. The full report keeps 34% as the strict result, even when several cases can be fixed the same way.
+By kind, across the three suites: about 490 tests read source text, about 100 asserted internal call arguments or counts, 35 asserted SQL text, and the biggest group was internal shape, with 939 tests in the main suite alone. Two more examples, in the tests' own words:
 
-## Who wrote them
+- **A page "reloads" because its source contains `location.reload()`.** A test for a "refresh suggestions" button checked that the rendered HTML contained `fetch("/api/suggestions/rerun"`, `{ repo: repository }`, `const repository = "acme/demo";` and `location.reload()`. Renaming one local variable turns it red. Breaking the button in a way that leaves those strings in place keeps it green.
+- **A price template may appear in only two files.** A test globbed every source file and asserted that the pattern for a hand-built price sentence matched only in the price builder. What users care about is that every page shows the same price, and a test can render those pages and compare them.
 
-Git blame attributed 3,576 of 4,687 test registration lines to `orbi-build[bot]`, or 76%. It identifies who last changed each registration line; it cannot tell me who wrote every assertion. A parameterized registration can register several cases, so this denominator differs from the audit's 5,087 cases.
+By git blame, about 87% of the test definition lines (the `it(...)` lines) were last touched by Orbi's delivery agent. In the main suite, lines it last touched were classified as implementation 27.5% of the time; lines last touched under my own account, which includes local agent sessions, 12.7%. That gap is not a clean human-versus-AI comparison: "my own account" is also mostly agent sessions, and the two sets of tickets differ. But it is consistent with the problem living mostly in code written while following tickets.
 
-The bot maintained most of this suite, but I have no human-written control group and did not compare equivalent tasks assigned to people and agents. I cannot conclude from this audit that agents write worse tests than people. If you have AI writing unit tests, audit the browser and operational-script suites too: by share of cases, that is where the coupling was densest.
+The rule landed on 18 November. Seven cleanup tickets for the existing tests, starting with the browser-script pattern and the hash snapshot, merged between 19 and 20 November. We'll rerun the same audit on new tests and report whether the rule holds.
 
-## Where the implementation tests came from
+## How to audit your own repository
 
-My ticket-writing rules called for acceptance criteria such as "only one rendering or decision function exists". Individual tickets asked that an old sentence "can no longer be found in the source". The delivery agent followed those instructions literally, turning architectural cleanup requirements into permanent tests of source organization.
+The method is the part worth copying. Ours took about half an hour of wall time.
 
-Issue #3355 asked the initial page and polling response to share billing logic, with acceptance criteria requiring a single implementation of the free-runs count in the source. Issue #3436 required removing retired copy from the source. Its `proof-receipt-source-3436.test.ts` recursively scanned every `.ts` file under `src` for the retired sentence. A passing test meant those files did not contain the phrase. It said nothing about what a visitor saw on the page.
+1. **Write down the six kinds above,** with your own exceptions: which boundaries count as outward-facing, which helpers are business rules.
+2. **Split the test directories across independent, read-only agent sessions.** We ran three Codex sessions in parallel, one per suite. Read-only matters: the reviewer can't "fix" a test to make it fit a category.
+3. **Have a script produce the counts.** Each reviewer keeps a ledger of `file:line → category` and produces totals by running a command that enumerates test registrations, expands `it.each`, checks each ledger entry points at a real test line, and sums. The command and its raw output go in the report. In an earlier task an agent asked to count a 20-row table answered 21; a count an agent reads off by eye isn't worth printing.
+4. **Check the classification yourself.** I read five flagged tests. Four were clearly implementation. One was arguable: it checks there is one disconnect form per connected repository by counting the forms' `action` attributes, which is arguably counting the controls the user clicks. We also had a separate agent, given only the rubric, classify a random sample of 60 main-suite tests blind. It marked 3 as unsure and agreed with the audit on 46 of the other 57 (81%). Ten of the 11 disagreements went the same way: the blind reviewer called a test implementation where the audit had called it behavior. So the main-suite number is more likely low than high. The blind reviewer's own summary also miscounted its table, which is why step 3 exists.
+5. **Read the breakdown by kind.** One repeated helper or one snapshot file can account for hundreds of tests, and that's one fix the total alone would hide.
+6. **Change what produces new tests before cleaning up the old ones:** the instructions file and the ticket wording. Otherwise the agent writes them again next week.
 
-The Cloud status page's main card had readable text fixtures alongside a whole-page SHA-256 snapshot. The snapshot lived for about eight days, from 11 November 2026, 02:24 (UTC+8) to 19 November 2026, 12:50 (UTC+8). During that lifetime, 36 non-merge commits touched `page-sha256.json`, all attributed to the bot: 1 created it and 35 rewrote it. Of the 35 rewrites, 28 changed no main-card text fixture and 7 deliberately changed the main card. Comments in the test recorded rebuilds where the card text stayed identical while the whole-page hash changed.
+This is a static classification. We didn't run mutation testing, the standard research tool for whether tests catch faults. Mutation testing asks "would this suite notice a bug"; we were asking "would this test go red when nothing a user sees has changed", and reading the assertion answers that directly.
 
-Because the hash also covered the rest of the page, the counts cannot tell me whether each update was worthwhile or how many defects the snapshot caught. I changed the [ticket-writing approach](/blog/write-a-request/) because my own acceptance wording had led the agent to write these implementation checks.
+## Making the suite faster (Cloudflare Workers and Vitest)
 
-## The rule I added
+This part applies to one stack: Cloudflare Workers tested with Vitest and `@cloudflare/vitest-plugin`. The general lesson closes each item.
 
-I added this rule to `AGENTS.md` on 18 November 2026, in commit `62738cff`, translated here from Chinese:
+**Find the per-file cost.** CI on 18 November spent 4 minutes 26 seconds on `npm test`. Vitest's cumulative columns showed `setup 304.60s` against `tests 105.35s`: per-file setup outweighed the tests themselves. The pool gives each test file its own Workers runtime, so the setup file runs once per file, about 160 times. Ours applied database migrations with `applyD1Migrations` from `cloudflare:test`. Importing that module alone cost 1.78 seconds per file; running the 86 migrations without it took about 0.06 seconds. The function does four things (create the migrations table, read the applied names, skip those, run each migration and its ledger row in one batch), so we inlined them against `env.DB`:
 
-> Tests must assert only results that users or callers can observe: API responses, page text and links, outgoing emails and GitHub comments, database records representing business facts, and script exit codes and output.
->
-> Do not write the following tests, even if a ticket requests them. If it does, explain in the pull request which observable result you tested instead:
->
-> - Reading source text to check whether a string exists, count rules in the source, or assert that only a single implementation exists.
-> - The way page scripts or SQL statements are written.
-> - Internal function call arguments and counts, except for content sent externally.
-> - Internal array lengths, constant values, or element IDs.
-> - Whole-page hash snapshots.
->
-> The repository-wide audit on 18 November 2026 found that these categories accounted for roughly 30 percent of all cases. Renaming something or adjusting styling makes them fail, and they also slow every test run.
+```ts
+import { env } from "cloudflare:workers";
 
-The rule's 30 percent matches the top of the narrower 25%–30% estimate; the strict count is 34%. I cited slower test runs as a reason for the rule, but the audit did not measure the runtime cost of those assertion categories separately. The timing measurements below covered migration setup and parallelism.
-
-I also changed the ticket-writing rule: given the same data, the two places being compared must show the same result, checked on the rendered page or API response. Requiring a single implementation makes code organization a condition for merging. A reviewer can check whether the logic is shared without adding a permanent assertion about that structure.
-
-## The cleanup
-
-I opened six cleanup tickets, #3536 through #3541, on 19 November 2026, 09:54 (UTC+8). Orbi opened and merged all six corresponding PRs; the last merged on 20 November 2026, 08:15 (UTC+8).
-
-The work covered browser script mounting, the whole-page snapshot, source-text scans, page render assertions and operational-script tests. The snapshot ticket replaced the page hash with assertions about titles, buttons and links in the relevant states. Browser tests let the page run its scripts instead of selecting scripts by source markers and injecting them.
-
-In Issue #3539, the suggestion-block test previously asserted that its returned HTML contained `location.reload()`. The rewritten test checks button labels in the empty and populated states, and that there are no buttons while the suggestion read is in progress. The refresh implementation can change while the expected controls stay the same. The test only covers rendered controls; a browser assertion still needs to check what happens on click, including the resulting request or page change.
-
-The cleanup still violates the new rule: the rewrite contains `expect(SUGGESTION_RERUN_QUERY).toBe(SUGGESTION_RERUN_PATH)`, which checks that two constants are equal. A reviewer needs to check the assertions even when the delivery prompt includes the rule.
-
-## Making the test suite faster
-
-The timing work applies to Cloudflare Workers + Vitest with `@cloudflare/vitest-plugin` 1.x and Vitest 4. The changes to how the tests ran were separate from the assertion cleanup. Issue #3493 measured initialization and parallelism; its only assertion change removed a redundant timing check.
-
-Each test file's setup imported `applyD1Migrations` from `cloudflare:test` to initialize its test database. I reran a single small test file at the commits before and after the change, with coverage off and one worker: setup was 2.33 s with the import and 62 ms with the same logic run directly against `env.DB` for all 88 migration files.
-
-The replacement in `test/apply-migrations.ts` keeps the same four steps: create the migration ledger, read applied names, skip applied migrations, and batch each remaining migration with its ledger entry. `recordApplied` is a D1 prepared statement, so its `.bind()` fills the `?` placeholder with the migration name; it is not `Function.prototype.bind`. The line before the loop, then the loop:
-
-```typescript
-const recordApplied = env.DB.prepare(`INSERT INTO ${MIGRATIONS_TABLE} (name) VALUES (?);`);
-
-for (const migration of env.TEST_MIGRATIONS) {
-	if (applied.has(migration.name)) continue;
-	const queries = migration.queries.map((query) => env.DB.prepare(query));
-	queries.push(recordApplied.bind(migration.name));
-	await env.DB.batch(queries);
+const T = `"d1_migrations"`;
+await env.DB.prepare(`CREATE TABLE IF NOT EXISTS ${T} (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  name TEXT UNIQUE,
+  applied_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL);`).run();
+const applied = new Set(
+  (await env.DB.prepare(`SELECT name FROM ${T};`).all<{ name: string }>())
+    .results.map((row) => row.name));
+const record = env.DB.prepare(`INSERT INTO ${T} (name) VALUES (?);`);
+for (const m of env.TEST_MIGRATIONS) {
+  if (applied.has(m.name)) continue;
+  await env.DB.batch([...m.queries.map((q) => env.DB.prepare(q)), record.bind(m.name)]);
 }
 ```
 
-I reran the four configurations from #3493 on the main suite on 20 November, on a 32-core machine, with coverage on as in CI. The machine was busy (load average about 23 to 26), and the "after" commit also carries other beta changes (4,052 tests against 4,025 in the main `test/` suite, which is what this command runs), so read the table for direction, not exact savings:
+General lesson: anything in a setup file is multiplied by the number of test files.
 
-| Configuration | Workers | Total elapsed | Cumulative setup |
-|---|---:|---:|---:|
-| Original | 2 | 262 s | 318 s |
-| Inlined migration setup only | 2 | 192 s | 8 s |
-| Increased parallelism only | 8 | 155 s | 816 s |
-| Both changes | 8 | 109 s | 12 s |
+**Measure wall time; Vitest's cumulative columns mislead.** Locally (32 cores, coverage on, two workers) the change took the full run from 199 to 156 seconds, and cumulative setup from 214 to 8 seconds. In CI the result was smaller: the `npm test` step went from 4:26 to 3:41, and Vitest's own duration from 260 to 216 seconds, about 17%. Cumulative setup fell from 305 to 22 seconds, but the `import` column grew from 11 to 115 seconds and `tests` from 105 to 205. Those columns add up time across parallel workers, and part of the cost moved from one column to another. "Setup down 93%" would have been true and misleading. This setup change on its own is the 17% (4:26 to 3:41); the bigger drop, to 1:39, comes from the worker-count change below, so don't read the inlined migration code as the main lever.
 
-Cumulative setup sums the time spent across files and workers, so it can exceed elapsed time. Increasing parallelism alone finished the run sooner but spent more time on setup in total. The measurements recorded in the issue went the same way, from 199 s to 69 s.
+**Delete tests that assert elapsed time.** The bigger win is parallelism: CI ran two workers on a 32-core machine because the setting was tuned for our 3-core delivery sandboxes. Locally, eight workers plus the setup fix took the suite to 69 seconds. But at eight workers one test failed twice in a row: `expected 2216 to be less than 2000`. It asserted that a checkout redirect returned in under two seconds, to prove the redirect didn't wait for an analytics write. The test already held that write behind a gate it opens only after the response arrives, so if the response waited for the write, the test would never get a response at all. The two-second assertion added nothing but flakiness under load. Anything that compares wall-clock time to a threshold will fail on a busy machine.
 
-CI now sets `VITEST_MAX_WORKERS=8`; the delivery sandbox keeps its default of 2. At 8 workers, an assertion on request duration failed: `expected 2216 to be less than 2000` in the issue's runs, and `expected 4887 to be less than 2000` in my rerun (milliseconds, against a 2-second limit). The test already blocked a database write until it received the response, then released the write, proving that the response did not wait for the write. I removed the redundant elapsed-time assertion rather than raising its threshold.
-
-The GitHub Actions `Run npm test` step had a median of 271 s across the 60 most recent successful PR runs in the query window, all on 18 November 2026 (UTC). The query covered 17–18 November but hit its 60-run cap, with all results from the 18th, so the sample did not cover every run that day. Across the 80 most recent successful PR runs after the changes, the median was 102 s. The suite did not shrink in between: test registration lines went from 4,687 at the audit commit to 4,952 on beta at 00:53 UTC on 20 November, just after that sample. Both medians measure the test step, including the test command's overhead; they do not measure full workflow times.
-
-The post-change sample spans 19 November 2026, 15:40 UTC through 20 November 2026, 00:46 UTC. The repository kept changing between the samples, and cleanup work overlapped the post-change sample: the last cleanup PR merged at 00:15 UTC on 20 November. Only the local table separates the effects of setup and parallelism. The speedup PRs, #3527 and #3533, merged on 19 November 2026 at 08:36 and 10:42 (UTC+8), before that sample.
-
-## A checklist for your repo
-
-- Classify assertions by what they check; record mixed cases and uncertain classifications explicitly.
-- Inspect shared test helpers before treating every flagged case as a separate repair.
-- Trace source scans and implementation assertions back to the ticket that requested them.
-- Write acceptance criteria for visible results given the same input, then check that the assertions follow that requirement.
-- Replace broad snapshots with the outputs you need to preserve; keep interaction checks for what buttons actually do.
-- Measure setup separately from execution and compare parallelism on the same machine. Where possible, control the order of events and assert that order instead of wall-clock time.
+**Set parallelism per machine.** The config keeps two workers by default for the sandboxes, where a full run takes 33 to 54 minutes on three cores. CI sets `VITEST_MAX_WORKERS=8`. On the pull request that did this (with the elapsed-time assertion removed), the `npm test` step took 1:39, against 4:26 the day before.
 
 ## Related
 
-The [analysis of PRs waiting after merge](/blog/ai-code-review-bottleneck/) measures another part of Orbi's delivery loop. The [Claude Code comparison](/compare/claude-code/?ref=blog-ai-tests) and [Orbi Cloud](/cloud/?ref=blog-ai-tests) describe the tools and hosted workflow.
+[Searching for Orbi's harness, part 2](/blog/is-the-regression-guard-worth-its-tokens/) measures what review catches and misses on bugs it has never seen, and [AI code review bottleneck?](/blog/ai-code-review-bottleneck/) looks at where merged pull requests wait. [Orbi Cloud](/cloud/?ref=blog-ai-tests) runs the loop described here on your GitHub repositories (Issue → agent PR → separate agent review → merge on green CI), and the [comparisons](/compare/) set it next to other coding agents.

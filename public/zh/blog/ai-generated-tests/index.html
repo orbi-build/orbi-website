@@ -3,20 +3,20 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>AI 写的测试：5,087 条用例的审查结果 | Orbi</title>
-  <meta name="description" content="我审查了 Orbi Cloud 的 5,087 条测试用例，按严格口径，34% 依赖实现细节。文中给出分类方法、仓库规则，以及调整初始化和并行度前后的 CI 测试步骤耗时。">
+  <title>让 AI agent 测行为，不要测实现 | Orbi</title>
+  <meta name="description" content="审计了 5,087 个测试，34% 至少断言了一处实现细节。这篇给出让 AI 编程 agent 写行为测试的三条规则、浏览器测试写法，以及审计自己测试套件的方法。">
   <link rel="canonical" href="https://orbi.build/zh/blog/ai-generated-tests/">
   <link rel="alternate" hreflang="en" href="https://orbi.build/blog/ai-generated-tests/">
   <link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/blog/ai-generated-tests/">
   <link rel="alternate" hreflang="x-default" href="https://orbi.build/blog/ai-generated-tests/">
   <meta property="og:type" content="article">
-  <meta property="og:title" content="AI 写的测试：5,087 条用例的审查结果">
-  <meta property="og:description" content="我审查了 Orbi Cloud 的 5,087 条测试用例，按严格口径，34% 依赖实现细节。文中给出分类方法、仓库规则，以及调整初始化和并行度前后的 CI 测试步骤耗时。">
+  <meta property="og:title" content="让 AI agent 测行为，不要测实现">
+  <meta property="og:description" content="审计了 5,087 个测试，34% 至少断言了一处实现细节。这篇给出让 AI 编程 agent 写行为测试的三条规则、浏览器测试写法，以及审计自己测试套件的方法。">
   <meta property="og:url" content="https://orbi.build/zh/blog/ai-generated-tests/">
   <meta property="og:image" content="https://orbi.build/img/blog-ai-generated-tests-card.png">
-  <meta property="og:image:alt" content="AI 写的测试：5,087 条用例的审查结果">
+  <meta property="og:image:alt" content="让 AI agent 测行为，不要测实现">
   <meta property="article:published_time" content="2026-11-20">
-  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"AI 写的测试：5,087 条用例的审查结果","datePublished":"2026-11-20","author":{"@type":"Person","name":"Larry 🍀 Orbi","url":"https://orbi.build/zh/about/larry-orbi/","sameAs":["https://github.com/xqliu","https://x.com/xqliu"]},"publisher":{"@type":"Organization","name":"Orbi","url":"https://orbi.build/","logo":{"@type":"ImageObject","url":"https://orbi.build/logo-mark.svg"}},"mainEntityOfPage":"https://orbi.build/zh/blog/ai-generated-tests/","image":"https://orbi.build/img/blog-ai-generated-tests-card.png","inLanguage":"zh-CN","description":"我审查了 Orbi Cloud 的 5,087 条测试用例，按严格口径，34% 依赖实现细节。文中给出分类方法、仓库规则，以及调整初始化和并行度前后的 CI 测试步骤耗时。","url":"https://orbi.build/zh/blog/ai-generated-tests/"}</script>
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"让 AI agent 测行为，不要测实现","datePublished":"2026-11-20","author":{"@type":"Person","name":"Larry 🍀 Orbi","url":"https://orbi.build/zh/about/larry-orbi/","sameAs":["https://github.com/xqliu","https://x.com/xqliu"]},"publisher":{"@type":"Organization","name":"Orbi","url":"https://orbi.build/","logo":{"@type":"ImageObject","url":"https://orbi.build/logo-mark.svg"}},"mainEntityOfPage":"https://orbi.build/zh/blog/ai-generated-tests/","image":"https://orbi.build/img/blog-ai-generated-tests-card.png","inLanguage":"zh-CN","description":"审计了 5,087 个测试，34% 至少断言了一处实现细节。这篇给出让 AI 编程 agent 写行为测试的三条规则、浏览器测试写法，以及审计自己测试套件的方法。","url":"https://orbi.build/zh/blog/ai-generated-tests/"}</script>
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <meta name="theme-color" content="#06151b">
 
@@ -152,10 +152,10 @@
       <div class="post-grid">
         <section class="post-hero" aria-labelledby="post-title">
           <p class="eyebrow">博客</p>
-          <h1 id="post-title">AI 写的测试：5,087 条用例的审查结果</h1>
+          <h1 id="post-title">让 AI agent 测行为，不要测实现</h1>
           <p class="post-byline"><a href="/zh/about/larry-orbi/">Larry 🍀 Orbi</a> · <time datetime="2026-11-20">2026-11-20</time></p>
 
-          <p class="hero-lede">我审查了 Orbi Cloud 的 5,087 条测试用例，按严格口径，34% 依赖实现细节。文中给出分类方法、仓库规则，以及调整初始化和并行度前后的 CI 测试步骤耗时。</p>
+          <p class="hero-lede">审计了 5,087 个测试，34% 至少断言了一处实现细节。这篇给出让 AI 编程 agent 写行为测试的三条规则、浏览器测试写法，以及审计自己测试套件的方法。</p>
         </section>
       </div>
     </div>
@@ -164,214 +164,174 @@
         <nav class="post-toc" aria-label="本页目录">
           <h2>本页目录</h2>
           <ol>
-          <li><a class="post-toc-link" href="#这次审查怎么算">这次审查怎么算</a></li>
-          <li><a class="post-toc-link" href="#ai-写的测试里-有多少在测实现">AI 写的测试里，有多少在测实现</a></li>
-          <li><a class="post-toc-link" href="#这些测试是谁写的">这些测试是谁写的</a></li>
-          <li><a class="post-toc-link" href="#为什么会写出这些实现断言">为什么会写出这些实现断言</a></li>
-          <li><a class="post-toc-link" href="#我给仓库加了什么规则">我给仓库加了什么规则</a></li>
-          <li><a class="post-toc-link" href="#清理做到了哪里">清理做到了哪里</a></li>
-          <li><a class="post-toc-link" href="#测试还可以怎样跑得更快">测试还可以怎样跑得更快</a></li>
-          <li><a class="post-toc-link" href="#检查自己仓库时可以照着做">检查自己仓库时可以照着做</a></li>
+          <li><a class="post-toc-link" href="#什么算行为">什么算行为</a></li>
+          <li><a class="post-toc-link" href="#规则一-写清楚一个测试可以断言什么">规则一：写清楚一个测试可以断言什么</a></li>
+          <li><a class="post-toc-link" href="#规则二-验收条件描述结果-不描述代码">规则二：验收条件描述结果，不描述代码</a></li>
+          <li><a class="post-toc-link" href="#规则三-一次性的等价检查放进-pr-不进测试">规则三：一次性的等价检查放进 PR，不进测试</a></li>
+          <li><a class="post-toc-link" href="#浏览器和端到端测试的规则">浏览器和端到端测试的规则</a></li>
+          <li><a class="post-toc-link" href="#agent-为什么偏向写实现测试">agent 为什么偏向写实现测试</a></li>
+          <li><a class="post-toc-link" href="#审计查到了什么">审计查到了什么</a></li>
+          <li><a class="post-toc-link" href="#怎么审计你自己的仓库">怎么审计你自己的仓库</a></li>
+          <li><a class="post-toc-link" href="#让测试套件更快-cloudflare-workers-和-vitest">让测试套件更快（Cloudflare Workers 和 Vitest）</a></li>
           <li><a class="post-toc-link" href="#相关">相关</a></li>
           </ol>
         </nav>
       <article class="post-body">
         <details class="post-toc-inline">
-          <summary>本页目录 · 9 节</summary>
+          <summary>本页目录 · 10 节</summary>
           <ol>
-          <li><a class="post-toc-link" href="#这次审查怎么算">这次审查怎么算</a></li>
-          <li><a class="post-toc-link" href="#ai-写的测试里-有多少在测实现">AI 写的测试里，有多少在测实现</a></li>
-          <li><a class="post-toc-link" href="#这些测试是谁写的">这些测试是谁写的</a></li>
-          <li><a class="post-toc-link" href="#为什么会写出这些实现断言">为什么会写出这些实现断言</a></li>
-          <li><a class="post-toc-link" href="#我给仓库加了什么规则">我给仓库加了什么规则</a></li>
-          <li><a class="post-toc-link" href="#清理做到了哪里">清理做到了哪里</a></li>
-          <li><a class="post-toc-link" href="#测试还可以怎样跑得更快">测试还可以怎样跑得更快</a></li>
-          <li><a class="post-toc-link" href="#检查自己仓库时可以照着做">检查自己仓库时可以照着做</a></li>
+          <li><a class="post-toc-link" href="#什么算行为">什么算行为</a></li>
+          <li><a class="post-toc-link" href="#规则一-写清楚一个测试可以断言什么">规则一：写清楚一个测试可以断言什么</a></li>
+          <li><a class="post-toc-link" href="#规则二-验收条件描述结果-不描述代码">规则二：验收条件描述结果，不描述代码</a></li>
+          <li><a class="post-toc-link" href="#规则三-一次性的等价检查放进-pr-不进测试">规则三：一次性的等价检查放进 PR，不进测试</a></li>
+          <li><a class="post-toc-link" href="#浏览器和端到端测试的规则">浏览器和端到端测试的规则</a></li>
+          <li><a class="post-toc-link" href="#agent-为什么偏向写实现测试">agent 为什么偏向写实现测试</a></li>
+          <li><a class="post-toc-link" href="#审计查到了什么">审计查到了什么</a></li>
+          <li><a class="post-toc-link" href="#怎么审计你自己的仓库">怎么审计你自己的仓库</a></li>
+          <li><a class="post-toc-link" href="#让测试套件更快-cloudflare-workers-和-vitest">让测试套件更快（Cloudflare Workers 和 Vitest）</a></li>
           <li><a class="post-toc-link" href="#相关">相关</a></li>
           </ol>
         </details>
-<p>Orbi 是一个开源系统，把 GitHub Issue 从实现、评审一路做到合并和发版；这次审查的是它的托管服务 Orbi Cloud 的私有仓库。这篇写给让编程 agent 写代码和测试、再靠测试放行合并的工程负责人和独立开发者。你可以拿这次审查的分类方法和仓库规则检查自己的测试。我也比较了数据库迁移初始化和并行度的本地测量结果，以及 CI 改动前后两批样本的耗时。</p>
-<p>我是 Larry 🍀 Orbi，Orbi 的创始人。</p><aside class="post-cta-inline"><span>Orbi 把你的 Issue 一路做到发版。</span><a class="button button-signal" data-cta="post-inline-start" href="/zh/cloud/login">免费试用 Orbi Cloud →</a></aside>
-<p>我这次审查了 Orbi Cloud 自己的 Vitest 测试集，其中大多数测试注册行最后由 Orbi 的交付机器人修改。</p>
-<h2 id="这次审查怎么算">这次审查怎么算</h2>
-<p>2026 年 11 月 18 日，我让相互独立、只读的 Codex 会话对 Orbi Cloud 仓库 beta 分支上提交 <code class="post-code--single">4619a9fc</code> 的测试逐条分类。审查覆盖 Vitest 运行的 3 组 TypeScript 测试：主测试目录、浏览器测试和运维脚本测试。仓库里的 5 个 Python 测试文件、32 个测试方法没有纳入。orbi-cloud 仓库是私有的，我只引用审查数据、写出 Issue 编号，不放链接。每条分类和计数脚本都保存在内部讨论中。</p>
-<p>参数化或循环注册的测试，按展开后的用例数计数；循环如果写在测试体内，即使检查多个输入，仍算 1 条用例。同一条用例只要同时含有行为断言和实现断言，就归为依赖实现细节。实现断言的子类可以重叠。</p>
-<p>从数据库读取业务记录、检查发给外部服务的内容，都算行为测试；用选择器提取可见文字也算。我判断的是：用户或调用方看到的结果没变，只改实现方式，这条断言会不会失败？</p>
-<p>我抽查了 5 处源码，只有一处有歧义：它按表单提交地址统计禁用控件的数量，用这个地址识别页面上的控件也说得通。抽查太少，无法估计整次审查的分类错误率。我只读了测试源码，没有测它们能发现多少缺陷，也没有测每条测试失败后要花多少代价处理。</p>
-<p>我从主测试目录随机抽了 60 条测试注册，随机种子为 <code class="post-code--single">20261120</code>，交给一个独立的 DeepSeek 会话复核。它拿到相同的分类定义，但看不到原审查的标签。两次分类有 48 条一致，一致率为 80%，分类一致性指标 Cohen&#39;s kappa 为 0.60（通常算中等一致）。</p>
-<p>原审查判为依赖实现的 18 条，它全部同意。12 条分歧中，原审查都判为行为，它都判为依赖实现；主要涉及精确比较隐藏输入等 HTML 片段，以及直接调用内部辅助函数。在这份主目录样本上，复核比原审查更严，没有把原审查判为依赖实现的用例改判成行为，所以在这份样本里看不出原审查高估。第一次复核作废了，因为那个会话找到了存放原审查标签的文件，并读了它。</p>
-<h2 id="ai-写的测试里-有多少在测实现">AI 写的测试里，有多少在测实现</h2>
-<p>清理前的提交 <code class="post-code--single">4619a9fc</code> 中，按严格口径，5,087 条用例有 1,739 条依赖实现细节，占 34%。其中包含辅助函数引入的源码检查，以及部分有歧义的元素定位方式，后面会分开说明。总数还包含 16 条存疑用例，没有计入这 1,739 条。</p>
+<p>如果你的测试大多是 AI agent 写的，里面很多可能在测「代码怎么写的」，而不是「用户看到什么」。我们仓库全部 5,087 个测试里，有 34% 至少夹带了一条这样的断言（很多同时也测了可见行为，所以这是「至少有一条实现断言」，不是「34% 是坏测试」，更严口径见后文）。而这些测试又在决定什么能合并。这篇写给正处在这个局面的团队：给出我们用来让 agent 写行为测试的三条规则、浏览器测试具体怎么写，以及一套半小时就能审计自己测试套件的方法。还会讲我们怎么把 CI 里的测试步骤从 4 分 26 秒压到 1 分 39 秒（Cloudflare Workers）：主要靠调大 worker 数，下面那处 setup 改动是小头。</p>
+<p>我是 Larry 🍀 Orbi，Orbi 的创始人。Orbi 是一个交付引擎：它接一个 GitHub issue，让一个 agent 写代码和测试，另一个 agent 评审这次改动，然后合并、发版，默认全程没有人把关。我们的托管产品 Orbi Cloud 是一个代码库，大部分由 Orbi 自己建。11 月 18 日，我们把这个代码库全部 5,087 个测试分了类：其中 1,739 个，34%，至少断言了一处实现细节。下面的规则是之后改的；审计在后面，作为证据。</p><aside class="post-cta-inline"><span>Orbi 把你的 Issue 一路做到发版。</span><a class="button button-signal" data-cta="post-inline-start" href="/zh/cloud/login">免费试用 Orbi Cloud →</a></aside>
+<h2 id="什么算行为">什么算行为</h2>
+<p>行为测试断言的是用户或调用方能观察到的东西：一个 HTTP 状态码加页面上的文字、渲染出来的页面让你看到和点到什么、代码发出的邮件或 GitHub 评论的内容、库里记录一条业务事实的行、脚本的退出码和输出。</p>
+<p>实现测试断言的是代码碰巧怎么写的。审计里我们把它分成六类，这份清单也当评审的判据用：</p>
+<ul>
+<li>A：读源码文本（在文件里搜字符串、数规则条数、断言「只有一处实现」）。</li>
+<li>B：断言内部函数的参数、调用次数或调用顺序。跨越真实边界的调用（发邮件、调 GitHub 或 Stripe）并断言发出去的内容，算行为。</li>
+<li>C：断言 SQL 文本、表名或索引名。</li>
+<li>D：断言内部形状：数组长度、对象的键、常量值、用户看不到的 CSS 类名或元素 ID、页面脚本文本、CSS 文本、整段 HTML 字符串。</li>
+<li>E：钉住内部结构而非可见输出的快照。</li>
+<li>F：调用一个内部辅助函数、断言它的中间返回值。如果这个辅助函数本身就是一条业务规则（比如「试用期什么时候结束」），那算行为。</li>
+</ul>
+<p>判断一个测试，问两句。第一句：用户看到的东西没变，它会不会变红？会，就是钉在实现上了。第二句：它声称要覆盖的那个行为坏掉了，它还会不会是绿的？会，就说明它断言错了对象，要么改断言，要么补覆盖。（一个只断言标题文字的测试，在按钮坏掉时仍然绿，这不是在测实现，只是它从没覆盖那个按钮。）</p>
+<h2 id="规则一-写清楚一个测试可以断言什么">规则一：写清楚一个测试可以断言什么</h2>
+<p>agent 照仓库里的指令文件办事。我们原来关于测试只有一句：别给 UI 结构或样式写单元测试。这句话对读源码、断言 SQL、数内部调用次数只字未提，所以这些都不算越界。现在 <code class="post-code--single">AGENTS.md</code> 的测试一节是这条规则：</p>
+<blockquote>
+<p>测试只断言用户或调用方看得到的结果：接口返回、页面上的文字和链接、发出去的邮件和 GitHub 评论、库里代表业务事实的记录、脚本的退出码和输出。下面这些不要写，哪怕票里要求了（真要求了，就在 PR 里写明你改成断言了哪个可见结果）：读源码文本（搜字符串、数规则条数、断言只有一处实现）；页面脚本或 SQL 语句怎么写的；内部函数的参数和调用次数（发到外部的内容除外）；内部数组长度、常量值、元素 ID；整页哈希快照。</p>
+</blockquote>
+<p>这条规则里关键的是两处。清单列的是具体形态，而不是「避免实现细节」这种话，因为 agent 会照着清单一条条抠，却会把原则用得很松。而「哪怕票里要求了」这句，是因为我们有些票确实就是这么要求的（下一条规则）。</p>
+<h2 id="规则二-验收条件描述结果-不描述代码">规则二：验收条件描述结果，不描述代码</h2>
+<p>有段时间我自己写票的规则是：当两处代码必须共用同一个判断时，验收条件应该写成「只有一个渲染函数」。交付 agent 就照这句字面做了：它写了一个永久测试，扫描源码，一旦出现第二处实现就让测试失败。审计里好几个读源码的测试都能追到这样写的票。</p>
+<p>所以现在的验收条件写的是：规则一旦坏掉，用户会注意到什么。「只有一个函数决定标题」改成了「同样的输入，首次渲染和实时更新显示的标题一致」。agent 要满足它，只能把两处都渲染出来、比较一个人会读到的内容，而且这个测试能扛过任何保持标题正确的重构。</p>
+<p>我们的评审 agent 拿 diff 对照验收条件看。一条描述源码结构的验收条件，会把写测试的 agent 和评审的 agent 都往「检查结构」而不是「检查结果」上引，所以验收条件怎么写，测试就会断言什么。</p>
+<h2 id="规则三-一次性的等价检查放进-pr-不进测试">规则三：一次性的等价检查放进 PR，不进测试</h2>
+<p>「这次重构什么都没改」这句话只在重构当天成立。证明它，靠的是把前后输出贴进 PR，而不是加一个永久测试。</p>
+<p>这个教训我们吃了两次。开源引擎上，CLI 输出的一份 golden 快照（存下来逐字比对的基准输出）记下了整行 <code class="post-code--spaced">orbi 0.7.15</code>，于是 v0.7.16 的发版提交让 main 上的测试任务红了：每次版本号一升，那一行就被重写。修复（<a href="https://github.com/orbi-build/orbi/commit/c5e0f0db">orbi <code class="post-code--single">c5e0f0db</code></a>）把 <code class="post-code--single">--version</code> 单独放一个测试、对着包版本号断言，golden 快照里不再留版本行，这样发版升号照样绿，而 help 文案真变了还是会红。Orbi Cloud 上，状态页按卡片类型拆成一个文件一类时，agent 加了个测试，渲染 18 种卡片状态、把每页的 SHA-256 和存下来的值比。那之后页面上任何一处改动都得更新存下来的哈希：在这个测试被删掉前的九天里，一共有 35 个非合并提交动过那个夹具文件，不全是为了快照，但其中大约五个提交的说明写的就是「这次只是重新生成快照」。这个测试后来换成了断言每张卡显示什么。</p>
+<h2 id="浏览器和端到端测试的规则">浏览器和端到端测试的规则</h2>
+<p>浏览器测试里，这些规则变得很具体：</p>
+<ul>
+<li><p>让页面像在浏览器里那样跑自己的脚本。测试要用假网络或假定时器，就在页面加载前装好。我们大约 50 个浏览器测试文件原本是这么干的：</p>
+<div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="已复制">复制</button><pre><code class="language-ts" data-copy-source>const source = [...rendered.querySelectorAll(&quot;script&quot;)]
+  .map((script) =&gt; script.textContent ?? &quot;&quot;)
+  .find((text) =&gt; text.includes(&quot;delivery-progress-data&quot;));
+expect(source).toBeTruthy();
+</code></pre></div>
+<p>它们把页面的脚本剥下来、装上桩，再去执行那个靠搜字符串找出来的脚本。改一下那段脚本里一个数据块的名字，就会让一堆本来正确断言了可见文字的测试一起红。</p>
+</li>
+<li><p>断言一个人会看到或做到什么：标题文字、哪个按钮可点、假服务器应答后页面显示什么、页面发出的请求。类名、节点身份和 <code class="post-code--single">outerHTML</code> 都不要碰。</p>
+</li>
+<li><p>比较两次渲染，比的是它们显示什么。「实时更新显示的标题和首次渲染一致」能扛过重新设计样式；「这一行的 <code class="post-code--single">outerHTML</code> 等于服务器返回的」扛不过。</p>
+</li>
+<li><p>布局用几何量检查，别用字符串。数行数或「包含某字符串」这种检查，布局烂成什么样都能过。浏览器测试可以断言算出来的尺寸和位置：我们有一个就检查某个按钮在标题下方、占满整行、至少 44 像素高。那些没人想到要编码进去的，我们就在桌面和手机两种宽度、中英两种语言下截 staging 站的图，用眼睛看。</p>
+</li>
+</ul>
+<p>曾经有个 PR 零严重问题通过了评审，而它票里列的 14 处设计差异还有 10 处在那里，包括一个标题渲染成了每行一个字。每个测试都在断言字符串，而且全过了。</p>
+<h2 id="agent-为什么偏向写实现测试">agent 为什么偏向写实现测试</h2>
+<p>很容易说 AI agent 就爱测实现。我们的证据指向的是 agent 周围的那套设置：</p>
+<ul>
+<li><strong>票。</strong> 有些验收条件描述的是代码（「只有一个渲染函数」），agent 照字面做了（规则二）。</li>
+<li><strong>仓库规则的漏洞。</strong> 指令没明令禁止的，都是允许的（规则一）。</li>
+<li><strong>从红到绿最省力的测试，钉的就是这次 diff。</strong> 一个要关票的 agent 需要一个「改动前失败、改动后通过」的测试。最省力的那个，就断言新加的字符串、类名或函数调用现在存在了。而行为测试需要一个夹具、一个渲染出来的页面或一个跑起来的脚本。这是我们对这个模式的解读，不是量出来的数。</li>
+</ul>
+<p>这些都不是 AI 独有的。Kent C. Dodds 在 <a href="https://kentcdodds.com/blog/testing-implementation-details">Testing Implementation Details</a> 里描述过人写的 React 测试一样的毛病：重构时会红、应用坏了反而绿。Google 的测试博客 2013 年就说过：<a href="https://testing.googleblog.com/2013/08/testing-on-toilet-test-behavior-not.html">测行为，不测实现</a>。agent 会写得更多，也更照字面：一张票暗示要写的每个测试它都会写，每张同样写法的票它都照做。</p>
+<p>测试在把关合并时，这事更要紧。Orbi 在评审和 CI 都过了之后就合并，默认没有人在中间看。一个实现测试在无害的改名上变红，就挡住一次合并、烧掉一轮评审。一个在页面坏掉时还绿的测试，会让这个故障蒙混过关。</p>
+<h2 id="审计查到了什么">审计查到了什么</h2>
+<p>仓库有三个测试套件。计数按测试用例算，参数化用例展开，取 commit <code class="post-code--single">4619a9fc</code> 时的状态。</p>
 <p class="post-table-hint" hidden>左右滑动查看所有列。</p><div class="post-table-scroll" tabindex="0" role="region" aria-label="左右滑动查看所有列。"><table class="table-comparison">
 <thead>
 <tr>
-<th scope="col">测试目录</th>
-<th scope="col" align="right">文件数</th>
-<th scope="col" align="right">用例数</th>
-<th scope="col" align="right">依赖实现细节</th>
-<th scope="col" align="right">存疑</th>
+<th scope="col">套件</th>
+<th scope="col" align="right">测试用例</th>
+<th scope="col" align="right">至少一处实现断言</th>
+<th scope="col" align="right">占比</th>
 </tr>
 </thead>
 <tbody><tr>
-<th scope="row">主目录 <code class="post-code--single">test/</code></th>
-<td align="right">160</td>
+<th scope="row">主套件（Workers 单元和集成测试）</th>
 <td align="right">3,999</td>
 <td align="right">1,046</td>
-<td align="right">7</td>
+<td align="right">26%</td>
 </tr>
 <tr>
-<th scope="row"><code class="post-code--single">test/browser/</code></th>
-<td align="right">80</td>
+<th scope="row">浏览器（真实浏览器里渲染页面）</th>
 <td align="right">639</td>
 <td align="right">466</td>
-<td align="right">0</td>
+<td align="right">73%</td>
 </tr>
 <tr>
-<th scope="row"><code class="post-code--single">test/runbook/</code></th>
-<td align="right">47</td>
+<th scope="row">主机脚本（开通、部署、定时器）</th>
 <td align="right">449</td>
 <td align="right">227</td>
-<td align="right">9</td>
+<td align="right">51%</td>
+</tr>
+<tr>
+<th scope="row"><strong>合计</strong></th>
+<td align="right"><strong>5,087</strong></td>
+<td align="right"><strong>1,739</strong></td>
+<td align="right"><strong>34%</strong></td>
 </tr>
 </tbody></table></div>
-<p>审查把实现断言分成以下类别。同一条用例可以属于多个类别，把同一组测试的各行相加会重复计数。</p>
-<p class="post-table-hint" hidden>左右滑动查看所有列。</p><div class="post-table-scroll" tabindex="0" role="region" aria-label="左右滑动查看所有列。"><table class="table-comparison">
-<thead>
-<tr>
-<th scope="col">断言类别</th>
-<th scope="col" align="right">主测试</th>
-<th scope="col" align="right">浏览器测试</th>
-<th scope="col" align="right">运维脚本测试（<code class="post-code--single">test/runbook/</code>）</th>
-</tr>
-</thead>
-<tbody><tr>
-<th scope="row">读取源码文本</th>
-<td align="right">15</td>
-<td align="right">360</td>
-<td align="right">112</td>
-</tr>
-<tr>
-<th scope="row">内部调用的参数或次数</th>
-<td align="right">47</td>
-<td align="right">1</td>
-<td align="right">49</td>
-</tr>
-<tr>
-<th scope="row">SQL 文本</th>
-<td align="right">31</td>
-<td align="right">0</td>
-<td align="right">4</td>
-</tr>
-<tr>
-<th scope="row">内部结构：class、ID、数组长度、脚本文本、HTML 结构</th>
-<td align="right">939</td>
-<td align="right">221</td>
-<td align="right">73</td>
-</tr>
-<tr>
-<th scope="row">固定内部结构的快照</th>
-<td align="right">18</td>
-<td align="right">0</td>
-<td align="right">0</td>
-</tr>
-<tr>
-<th scope="row">调用内部辅助函数，检查中间值</th>
-<td align="right">74</td>
-<td align="right">0</td>
-<td align="right">57</td>
-</tr>
-</tbody></table></div>
-<p>浏览器测试中有 244 条符合严格定义，唯一原因是挂载页面的辅助函数在运行页面脚本前，会先查找脚本中的源码标记。这些辅助函数是各文件自带的副本，72 个浏览器测试文件各自定义了 <code class="post-code--single">mount</code>，没有一个公共函数能一处改好；清理 PR #3638 把浏览器测试文件里的挂载方式都改成让页面自己运行脚本。还有一些归入「内部结构」的用例，用 class 名定位元素，或统计用户能点击的控件数量；这些分类也有商榷空间。</p>
-<p>排除仅由挂载函数引入的源码检查和有歧义的定位方式后，按更窄的口径，审查估计约有 1,300–1,500 条用例明确依赖实现，占 25%–30%。这个估计没有再逐条精确计数，也没有统计置信区间。完整报告仍保留严格口径的 34%；多条用例能用同一种方式修复，不影响这个计数。</p>
-<h2 id="这些测试是谁写的">这些测试是谁写的</h2>
-<p><code class="post-code--spaced">git blame</code> 显示，4,687 行测试注册中，3,576 行最后由 <code class="post-code--single">orbi-build[bot]</code> 修改，四舍五入到整数百分比是 76%。它只能告诉我谁最后改了注册行，无法还原每条断言最初由谁写成。一次参数化注册可以对应多条用例，所以这里的分母与审查的 5,087 条不同。</p>
-<p>这套测试主要由机器人维护，但我没有一组人写的测试作对照，也没有把相同任务分别交给人和 agent 比较，无法据此判断 agent 写的测试比人差。如果你已经让 AI 写单元测试，别只查主目录：按用例占比，这次依赖实现最集中的是浏览器和运维脚本测试。</p>
-<h2 id="为什么会写出这些实现断言">为什么会写出这些实现断言</h2>
-<p>我自己的写票规则曾要求把验收标准写成「只存在一个渲染或判断函数」，具体票面也要求过某句旧文案「在源码里搜不到」。交付 agent 照着做了，把清理架构的要求变成了长期检查源码组织方式的测试。</p>
-<p>Issue #3355 要求首屏和轮询响应共用计费逻辑，验收项要求源码里只保留一份免费运行次数的实现。Issue #3436 要求旧文案从源码中消失，对应的 <code class="post-code--single">proof-receipt-source-3436.test.ts</code> 会递归扫描 <code class="post-code--single">src</code> 下的每个 <code class="post-code--single">.ts</code> 文件，查找那句旧文案。测试通过只能证明这些文件里没有这句话，无法证明访客在页面上看到了什么。</p>
-<p>Cloud 状态页主卡片的测试用了可读的文本样本，也用了整页 SHA-256 快照。因为哈希覆盖整页，下面的重写次数既说明不了每次更新是否必要，也说明不了快照抓到了多少缺陷。</p>
-<p>这个快照存在了约 8 天，从 2026 年 11 月 11 日 02:24（北京时间）到 11 月 19 日 12:50（北京时间）。期间有 36 个非合并提交改过 <code class="post-code--single">page-sha256.json</code>，最后修改者全是机器人：1 次创建，35 次重写。35 次重写中，28 次没有改动主卡片的任何文本样本，7 次有意修改了主卡片。测试注释也记下了多次重建：主卡片文字逐字未变，整页哈希却变了。</p>
-<p>是我自己的验收措辞让 agent 写出了这些实现检查，所以我修改了<a href="/zh/blog/write-a-request/">写任务请求的方法</a>。</p>
-<h2 id="我给仓库加了什么规则">我给仓库加了什么规则</h2>
-<p>2026 年 11 月 18 日，我在提交 <code class="post-code--single">62738cff</code> 中给 <code class="post-code--single">AGENTS.md</code> 加了这条规则。规则原文如下：</p>
-<blockquote>
-<p>测试只断言用户或调用方看得到的结果：接口返回、页面上的文字和链接、发出去的邮件和 GitHub 评论、库里代表业务事实的记录、脚本的退出码和输出。下面这些不写，票面要求也不写（票面写了，在合并请求里说明改成了哪个可见结果）：读源码文本（搜某字符串在不在、数规则条数、断言只有一份实现）；页面脚本或 SQL 语句的写法；内部函数的调用参数和次数（对外发送的内容除外）；内部数组长度、常量值、元素 id；整页哈希快照。2026-11-18 全仓审查，这几类约占全部用例的三成，改个名、调个样式就红，还拖慢每轮测试。</p>
-</blockquote>
-<p>测试要求到「整页哈希快照」为止，后面是这次审查的背景。「三成」是较窄口径的取整估计；严格口径是 34%。我把「拖慢每轮测试」作为加这条规则的理由，但审查没有单独测量这些断言类别的运行成本。下面只测了迁移初始化和并行度。</p>
-<p>我也改了写票规则：同样的数据，两处要显示同样的结果，在渲染后的页面或 API 响应上检查。要求「只存在一份实现」，就把代码组织方式写进了合并条件。评审者可以检查逻辑有没有共用，不必为这种结构加永久断言。</p>
-<h2 id="清理做到了哪里">清理做到了哪里</h2>
-<p>11 月 19 日 09:54（北京时间），我开了 6 张清理票，编号为 #3536 至 #3541。Orbi 创建并合并了对应的全部 6 个 PR（拉取请求），最后一个在 11 月 20 日 08:15（北京时间）合并。</p>
-<p>清理涉及浏览器脚本挂载、整页快照、源码文本扫描、页面渲染断言和运维脚本测试。快照那张票不再检查整页哈希，改为检查相关状态下的标题、按钮和链接。浏览器测试让页面运行自己的脚本，不再按源码标记挑出脚本、再注入执行。</p>
-<p>Issue #3539 中，suggestion-block 测试以前断言返回的 HTML 含有 <code class="post-code--single">location.reload()</code>。改写后，测试检查空状态和有内容时的按钮文字，并断言读取建议时没有按钮。刷新方式可以改，预期显示的控件不用跟着改。测试只覆盖渲染出的控件；点击之后有没有发请求、页面有没有变化，仍需要浏览器断言。</p>
-<p>改写后仍留着 <code class="post-code--single">expect(SUGGESTION_RERUN_QUERY).toBe(SUGGESTION_RERUN_PATH)</code>，检查两个常量是否相等，违反了新规则。这次清理还没完全符合规则；即使交付提示词里写了规则，评审者仍要检查具体断言。</p>
-<h2 id="测试还可以怎样跑得更快">测试还可以怎样跑得更快</h2>
-<p>耗时调整适用于 Cloudflare Workers + Vitest，依赖版本为 <code class="post-code--single">@cloudflare/vitest-plugin</code> 1.x 和 Vitest 4。运行耗时的调整和断言清理分开做。Issue #3493 测了初始化和并行度，只改了一处断言：移除一条多余的计时检查。</p>
-<p>原先，各测试文件初始化数据库时，都会从 <code class="post-code--single">cloudflare:test</code> 导入 <code class="post-code--single">applyD1Migrations</code>。我在改动前后的两个提交上，各跑了一个小测试文件（关覆盖率、1 个 worker）：带着这个导入，初始化 2.33 秒；直接对 <code class="post-code--single">env.DB</code> 执行相同逻辑、跑完全部 88 个迁移文件，初始化 62 毫秒。</p>
-<p>替代代码放在 <code class="post-code--single">test/apply-migrations.ts</code>，仍按原来的 4 步执行：创建迁移记录表、读取已执行的迁移名、跳过已执行的迁移，再把每个剩余迁移与它的记录一起批量执行。<code class="post-code--single">recordApplied</code> 是一条 D1 预编译语句，它的 <code class="post-code--single">.bind()</code> 把迁移名填进 <code class="post-code--single">?</code> 占位符，不是 JavaScript 函数的 <code class="post-code--single">bind</code>。下面是循环前的那条语句和循环本身：</p>
-<div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="已复制">复制</button><pre><code class="language-typescript" data-copy-source>const recordApplied = env.DB.prepare(`INSERT INTO ${MIGRATIONS_TABLE} (name) VALUES (?);`);
+<p>一个既断言了可见结果、又断言了实现细节的测试，算作实现，所以这些数字包含了混合测试。466 个浏览器测试里有 244 个确实检查了可见行为，只是因为用搜文本的办法找页面脚本（上面那个模式）才被算进去。从 1,739 里减掉这 244，仍有 1,495 个测试（29%）至少有一处实现断言。</p>
+<p>按类别看，跨三个套件：约 490 个测试读源码文本，约 100 个断言内部调用的参数或次数，35 个断言 SQL 文本，最大的一类是内部形状，光主套件就有 939 个。再给两个例子，用测试自己的话：</p>
+<ul>
+<li><strong>页面「刷新」是因为它的源码里含 <code class="post-code--single">location.reload()</code>。</strong> 一个测「刷新建议」按钮的测试，检查渲染出来的 HTML 里含有 <code class="post-code--single">fetch(&quot;/api/suggestions/rerun&quot;</code>、<code class="post-code--spaced">{ repo: repository }</code>、<code class="post-code--spaced">const repository = &quot;acme/demo&quot;;</code> 和 <code class="post-code--single">location.reload()</code>。改一个局部变量名就让它红。而把按钮改坏、只要这些字符串还在，它照样绿。</li>
+<li><strong>一个价格模板只准出现在两个文件里。</strong> 一个测试 glob 了所有源码文件，断言手写价格句的那个模式只在价格构造器里匹配到。用户真正在意的是每个页面显示同一个价格，而这个可以靠渲染那些页面、比较它们来测。</li>
+</ul>
+<p>按 git blame 看，约 87% 的测试定义行（那些 <code class="post-code--single">it(...)</code> 行）最后由 Orbi 的交付 agent 改动。主套件里，它最后改的行被判为实现的比例是 27.5%；最后由我的账号改的行（含本地 agent 会话）是 12.7%。这个差距不是干净的「人对 AI」比较：「我的账号」底下也多半是 agent 会话，两批票本身也不一样。但它和「问题主要出在照票写出来的代码里」这个判断是相符的。</p>
+<p>规则 11 月 18 日落地。针对现有测试的七张清理票，从浏览器脚本那个模式和哈希快照开始，在 11 月 19 到 20 日之间合并。我们会对新测试重跑同一套审计，报告这条规则有没有守住。</p>
+<h2 id="怎么审计你自己的仓库">怎么审计你自己的仓库</h2>
+<p>真正值得照搬的是这套方法。我们花了大约半小时的实际时间。</p>
+<ol>
+<li><strong>把上面六类写下来，</strong> 加上你自己的例外：哪些边界算对外，哪些辅助函数是业务规则。</li>
+<li><strong>把测试目录拆给几个互相独立、只读的 agent 会话。</strong> 我们并行跑了三个 Codex 会话，一个套件一个。只读很关键：评审方不能「改」一个测试去让它符合某一类。</li>
+<li><strong>让计数靠脚本，不靠一句话。</strong> 每个评审方维护一份 <code class="post-code--spaced">文件:行号 → 类别</code> 的台账，总数靠跑一条命令得出：这条命令枚举测试注册、展开 <code class="post-code--single">it.each</code>、检查每条台账指向的是一个真实的测试行、再求和。命令和它的原始输出都放进报告。之前有一次让 agent 数一张 20 行的表，它报了 21；靠文字描述报出来的计数不值得写进报告。</li>
+<li><strong>自己核一遍分类。</strong> 我读了五个被标记的测试，四个明显是实现，一个有争议：它数每个已连接仓库对应的断开表单的 <code class="post-code--single">action</code> 属性个数，来检查「一个仓库一个断开表单」，这勉强算在数用户会点的控件。我们还另找一个 agent，只给它判据，对随机抽的 60 个主套件测试盲分类。它标了 3 个「不确定」，在其余 57 个里有 46 个（81%）和审计一致。11 处分歧里有 10 处方向一样：盲评方把审计判为行为的测试判成了实现。所以主套件那个数，更可能偏低而不是偏高。盲评方自己的汇总也把它的表数错了，这正是第 3 步存在的理由。</li>
+<li><strong>看类别，不只看总数。</strong> 一个被反复用的辅助函数、或一个快照文件，就能占掉几百个测试，而那是一处修复。</li>
+<li><strong>先改产生新测试的东西，再清理旧的：</strong> 指令文件和票的措辞。否则下周 agent 又照写一遍。</li>
+</ol>
+<p>这是一次静态分类。我们没跑变异测试，那是研究界判断测试能不能抓到缺陷的标准工具。变异测试问的是「这套测试会不会注意到一个 bug」；我们问的是「用户看到的东西没变时，这个测试会不会红」，而读一眼断言就能直接回答后者。</p>
+<h2 id="让测试套件更快-cloudflare-workers-和-vitest">让测试套件更快（Cloudflare Workers 和 Vitest）</h2>
+<p>这一节只适用于一种技术栈：用 Vitest 加 <code class="post-code--single">@cloudflare/vitest-plugin</code> 测的 Cloudflare Workers。每条末尾给出通用的教训。</p>
+<p><strong>找出每个文件的开销。</strong> 11 月 18 日 CI 在 <code class="post-code--spaced">npm test</code> 上花了 4 分 26 秒。Vitest 的累计列显示 <code class="post-code--spaced">setup 304.60s</code> 对 <code class="post-code--spaced">tests 105.35s</code>：每个文件的 setup 比测试本身还重。这个池给每个测试文件各一个 Workers 运行时，所以 setup 文件每个文件跑一次，大约 160 次。我们的 setup 用 <code class="post-code--single">cloudflare:test</code> 的 <code class="post-code--single">applyD1Migrations</code> 跑数据库迁移。光导入那个模块每个文件就要 1.78 秒；不用它、直接跑 86 条迁移约 0.06 秒。这个函数做四件事（建迁移表、读已应用的名字、跳过它们、把每条迁移和它的台账行放一个 batch 里跑），于是我们对着 <code class="post-code--single">env.DB</code> 把它内联了：</p>
+<div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="已复制">复制</button><pre><code class="language-ts" data-copy-source>import { env } from &quot;cloudflare:workers&quot;;
 
-for (const migration of env.TEST_MIGRATIONS) {
-	if (applied.has(migration.name)) continue;
-	const queries = migration.queries.map((query) =&gt; env.DB.prepare(query));
-	queries.push(recordApplied.bind(migration.name));
-	await env.DB.batch(queries);
+const T = `&quot;d1_migrations&quot;`;
+await env.DB.prepare(`CREATE TABLE IF NOT EXISTS ${T} (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  name TEXT UNIQUE,
+  applied_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL);`).run();
+const applied = new Set(
+  (await env.DB.prepare(`SELECT name FROM ${T};`).all&lt;{ name: string }&gt;())
+    .results.map((row) =&gt; row.name));
+const record = env.DB.prepare(`INSERT INTO ${T} (name) VALUES (?);`);
+for (const m of env.TEST_MIGRATIONS) {
+  if (applied.has(m.name)) continue;
+  await env.DB.batch([...m.queries.map((q) =&gt; env.DB.prepare(q)), record.bind(m.name)]);
 }
 </code></pre></div>
-<p>11 月 20 日，我在一台 32 核机器上按 #3493 的四组配置把主目录测试重跑了一遍，和 CI 一样开着覆盖率。当时机器负载较高（负载均值约 23 到 26），而且改动后的提交还带进了 beta 上的其他改动（主目录 <code class="post-code--single">test/</code> 用例 4,052 条对 4,025 条，这条命令只跑主目录），所以这张表只看方向，不看精确节省了多少：</p>
-<p class="post-table-hint" hidden>左右滑动查看所有列。</p><div class="post-table-scroll" tabindex="0" role="region" aria-label="左右滑动查看所有列。"><table class="table-comparison">
-<thead>
-<tr>
-<th scope="col">配置</th>
-<th scope="col" align="right">并行 worker 数</th>
-<th scope="col" align="right">总耗时</th>
-<th scope="col" align="right">累计初始化耗时</th>
-</tr>
-</thead>
-<tbody><tr>
-<th scope="row">原配置</th>
-<td align="right">2</td>
-<td align="right">262 秒</td>
-<td align="right">318 秒</td>
-</tr>
-<tr>
-<th scope="row">只把迁移初始化逻辑内联</th>
-<td align="right">2</td>
-<td align="right">192 秒</td>
-<td align="right">8 秒</td>
-</tr>
-<tr>
-<th scope="row">只提高并行度</th>
-<td align="right">8</td>
-<td align="right">155 秒</td>
-<td align="right">816 秒</td>
-</tr>
-<tr>
-<th scope="row">两项都改</th>
-<td align="right">8</td>
-<td align="right">109 秒</td>
-<td align="right">12 秒</td>
-</tr>
-</tbody></table></div>
-<p>累计初始化耗时把各文件、各 worker 花的时间相加，所以可以超过总耗时。只提高并行度那次，整轮更快结束，累计初始化耗时却更多。票里记录的测量结果方向相同：从 199 秒降到 69 秒。</p>
-<p>现在 CI 设置 <code class="post-code--single">VITEST_MAX_WORKERS=8</code>，交付沙箱仍保留默认值 2。开到 8 个 worker 后，一条请求耗时断言失败，票里记录的报错是 <code class="post-code--spaced">expected 2216 to be less than 2000</code>，我重跑时是 <code class="post-code--spaced">expected 4887 to be less than 2000</code>（单位是毫秒，上限 2 秒）。测试原本就用可控的阻塞点拦住数据库写入，收到响应后再放行，已经能证明响应没有等待写入。我移除了多余的耗时断言，没有把阈值调大。</p>
-<p>改动前，GitHub Actions 的 <code class="post-code--spaced">Run npm test</code> 步骤在查询窗口里最近 60 次成功 PR 运行中，耗时中位数为 271 秒。这批运行都发生在 2026 年 11 月 18 日，按 UTC 计。查询覆盖 11 月 17–18 日，但返回结果达到 60 条上限，全部来自 18 日，没有覆盖当天全部运行。改动后取最近 80 次成功 PR 运行，中位数为 102 秒。这期间测试并没有变少：测试注册行从审查提交上的 4,687 行，增加到 11 月 20 日 00:53 UTC（改动后样本刚结束）beta 上的 4,952 行。两批样本记录的都是测试步骤的耗时，包含测试命令本身的额外开销，不代表整个工作流的耗时。</p>
-<p>改动后的样本窗口为 2026 年 11 月 19 日 15:40 UTC 至 11 月 20 日 00:46 UTC。两批样本之间仓库仍在变化；测试清理也和改动后的样本窗口重叠，最后一个清理 PR 在 11 月 20 日 00:15 UTC 合并。CI 数据只能用来比较改动前后的耗时；上面的本地表格把初始化和并行度的影响分开测了。两个提速 PR #3527、#3533，分别在 11 月 19 日 08:36 和 10:42（北京时间）合并，都早于改动后的样本窗口。</p>
-<h2 id="检查自己仓库时可以照着做">检查自己仓库时可以照着做</h2>
-<ul>
-<li>按断言实际检查的内容分类；同一条用例混有多种断言，或分类存疑时，都记下来。</li>
-<li>先看共用的测试辅助函数，再判断每条被标记的用例是否需要单独修复。</li>
-<li>遇到源码扫描和实现断言，回查是哪张任务票要求这么写的。</li>
-<li>验收写清「相同输入下能看到什么结果」，评审时对照这个要求检查断言。</li>
-<li>把范围过大的快照换成真正要保留的输出；按钮点击后实际做了什么，仍要保留交互检查。</li>
-<li>分开测初始化和执行耗时，在同一台机器上比较并行度；能控制执行顺序时，优先用顺序断言代替实际耗时断言。</li>
-</ul>
+<p>通用教训：setup 文件里的任何东西，都要乘以测试文件的数量。</p>
+<p><strong>量实际耗时（墙钟时间）；Vitest 的累计列会骗人。</strong> 本地（32 核、开覆盖率、两个 worker），这次改动把整轮从 199 秒降到 156 秒，累计 setup 从 214 秒降到 8 秒。CI 上效果小些：<code class="post-code--spaced">npm test</code> 步骤从 4:26 到 3:41，Vitest 自己的 duration 从 260 秒到 216 秒，约 17%。累计 setup 从 305 秒降到 22 秒，但 <code class="post-code--single">import</code> 列从 11 秒涨到 115 秒、<code class="post-code--single">tests</code> 从 105 秒涨到 205 秒。那些列是把并行 worker 的时间加起来，一部分开销只是从一列挪到了另一列。说「setup 降了 93%」没错，但会误导。单看这处 setup 改动，CI 上就是那 17%（4:26 到 3:41）；真正降到 1:39 的大头，来自下面那处 worker 数的调整，所以别把那段内联迁移代码当成主要杠杆。</p>
+<p><strong>删掉断言耗时的测试。</strong> 更大的提升在并行度：CI 原本在一台 32 核机器上只跑两个 worker，因为这个设置是按我们 3 核的交付沙箱调的。本地上，八个 worker 加上 setup 那处修复，把套件压到了 69 秒。但到八个 worker 时，有个测试连红两次：<code class="post-code--spaced">expected 2216 to be less than 2000</code>。它断言一次结账跳转在两秒内返回，用来证明跳转没有等一次分析写入。这个测试本来就把那次写入挡在一道闸后面、只在响应到达之后才打开，所以要是响应真等了写入，这个测试根本拿不到响应。那个两秒断言没带来任何保障，只会在高负载下变 flaky。任何拿实际耗时和阈值比的东西，在忙的机器上都会挂。</p>
+<p><strong>按机器设并行度。</strong> 配置默认留两个 worker 给沙箱，在那种 3 核机器上跑一整轮要 33 到 54 分钟。CI 设 <code class="post-code--single">VITEST_MAX_WORKERS=8</code>。在做这件事的那个 PR 上（已经删掉那个比耗时的断言），<code class="post-code--spaced">npm test</code> 步骤花了 1:39，而前一天是 4:26。</p>
 <aside class="post-cta">
   <h2>Orbi 把你的 Issue 一路做到发版。</h2>
   <a class="button button-signal" data-cta="post-start" href="/zh/cloud/login">免费试用 Orbi Cloud →</a>
   <p class="post-cta-note">不用绑定信用卡 · 只授权你选的仓库</p>
   <a class="post-cta-link" data-cta="post-selfhost" href="https://github.com/orbi-build/orbi">想自己部署？开源免费（AGPL）→</a>
 </aside><h2 id="相关">相关</h2>
-<p><a href="/zh/blog/ai-code-review-bottleneck/">PR 合并后还在等待什么</a>测了 Orbi 交付流程的另一段。<a href="/zh/compare/claude-code/?ref=blog-ai-tests">Claude Code 对比</a>和 <a href="/zh/cloud/?ref=blog-ai-tests">Orbi Cloud</a>介绍了工具及托管工作流。</p>
+<p><a href="/zh/blog/is-the-regression-guard-worth-its-tokens/">为 Orbi 找 harness，第二部分</a> 量了评审对没见过的 bug 能抓到多少、漏掉多少，<a href="/zh/blog/ai-code-review-bottleneck/">AI 代码评审是瓶颈吗？</a> 看合并的 PR 卡在哪。<a href="/zh/cloud/?ref=blog-ai-tests">Orbi Cloud</a> 在你的 GitHub 仓库上跑这里讲的这套循环（Issue → agent 开 PR → 另一个 agent 评审 → CI 绿了合并），<a href="/zh/compare/">对比页</a> 把它和其他编程 agent 摆在一起。</p>
 
 <!--orbi:related-posts-->
       </article>
