@@ -8,6 +8,14 @@
     "related": []
   },
   {
+    "slug": "orbi-weekly-7",
+    "title": "Orbi weekly #7: 14-day trial, hand-back, Prioritize",
+    "summary": "The trial is now 14 days with unlimited merges, a stuck request goes back to Orbi in one click once fixed, and Prioritize moves urgent ones first.",
+    "zhSlug": "orbi-weekly-7",
+    "zhTitle": "Orbi 周报 #7：免费试用改成 14 天，卡住一键交回，急的需求优先做",
+    "related": []
+  },
+  {
     "slug": "stuck-delivery-one-click",
     "title": "When an AI coding run stops and needs your answer",
     "summary": "A stopped Orbi delivery needs either an answer or an edited Issue. Which Cloud button to press, what it changes on GitHub, and how to change your mind.",

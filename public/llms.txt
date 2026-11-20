@@ -258,12 +258,16 @@ feed of the English posts: https://orbi.build/blog/feed.xml
 
 - Make AI agents test behavior, not implementation (English):
   https://orbi.build/blog/ai-generated-tests/
+- Orbi weekly #7: 14-day trial, hand-back, Prioritize (English):
+  https://orbi.build/blog/orbi-weekly-7/
 - When an AI coding run stops and needs your answer (English):
   https://orbi.build/blog/stuck-delivery-one-click/
 - From a vague request to a merged PR with Orbi (English):
   https://orbi.build/blog/vague-request-to-merged-pr/
 - 让 AI agent 测行为，不要测实现 (Chinese):
   https://orbi.build/zh/blog/ai-generated-tests/
+- Orbi 周报 #7：免费试用改成 14 天，卡住一键交回，急的需求优先做 (Chinese):
+  https://orbi.build/zh/blog/orbi-weekly-7/
 - AI 编码交付卡住后，怎么让 Orbi 继续 (Chinese):
   https://orbi.build/zh/blog/stuck-delivery-one-click/
 - 一句话需求，怎么走到 PR 合并 (Chinese):
