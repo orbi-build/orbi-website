@@ -157,11 +157,11 @@ describe("llms.txt Connect a repository to Cloud (Issue #154 acceptance 1)", () 
     expect(section.indexOf("`ai-ready`"), "dispatch before subscribe").toBeLessThan(section.indexOf("/api/checkout"));
   });
 
-  it("leads with the free allowance, not a subscription (Issues #874, #1216)", () => {
-    // Issues #1212 / #1216: the allowance-before-checkout order is the
-    // contract; the sentence that states it is the one shared token.
+  it("leads with the free trial, not a subscription (Issues #874, #1216)", () => {
+    // Issues #1212 / #1216: the trial-before-checkout order is the contract;
+    // the sentence that states it is the one shared token.
     expect(section).toContain(pricing.freeTrialCopyToken);
-    expect(section, "no per-section delivery count").not.toContain(pricing.freeDeliveriesToken);
+    expect(section, "no per-section trial day count").not.toContain(pricing.freeTrialDaysToken);
     expect(section.indexOf(pricing.freeTrialCopyToken), "allowance before checkout").toBeLessThan(section.indexOf("/api/checkout"));
   });
 
@@ -287,6 +287,7 @@ describe("llms pricing tokens (Issue #874)", () => {
     expect(body).toContain("US$" + pricing.proAnnualUsd + "/year");
     expect(body).toContain(pricing.soloIncludedTokensLabel + " tokens");
     expect(body).toContain(pricing.includedTokensLabel + " tokens");
+    expect(body).toContain(`${pricing.freeTrialDays}-day free trial`);
     expect(body).toContain(pricing.foundingPartnerRemaining + " of " + pricing.foundingPartnerLimit);
     expect(body).not.toMatch(/__[A-Z_]+__/);
   });

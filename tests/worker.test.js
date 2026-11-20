@@ -42,7 +42,7 @@ describe("Worker request helpers", () => {
         pricing.includedTokensLabel,
         pricing.soloRepositories,
         pricing.proRepositories,
-        pricing.freeDeliveries,
+        pricing.freeTrialDays,
         pricing.foundingPartnerLimit,
         pricing.foundingPartnerRemaining,
       ]) {
@@ -753,13 +753,13 @@ describe("per-repo GitHub stats (Issue #101)", () => {
       CLOUD_LOGIN_URL: "https://beta.orbi.build/api/login",
     };
     for (const [path, expected] of [
-      ["/", "First 3 merged pull requests free"],
-      ["/zh/", "前 3 个合并的 PR 免费"],
+      ["/", "14-day free trial"],
+      ["/zh/", "免费试用 14 天"],
     ]) {
       const body = await (await handleFetch(new Request(`https://orbi.build${path}`), env)).text();
       expect(body, path).toContain(expected);
       expect(body, path).not.toContain(pricing.freeTrialCopyToken);
-      expect(body, path).not.toContain(pricing.freeDeliveriesToken);
+      expect(body, path).not.toContain(pricing.freeTrialDaysToken);
     }
   });
 

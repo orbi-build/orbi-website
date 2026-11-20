@@ -96,8 +96,8 @@ Orbi 照着 Issue 做事。Issue 只有一句话，Orbi 就得自己猜：改哪
 「自检」指你仓库的 CI 加上 Orbi 自己的评审。
 
 <figure class="post-media">
-<img src="/img/blog-write-request-zh-handoff.webp" alt="「交给 Orbi 开始做」按钮下面：会在你的 GitHub 仓库里建一个 Issue，Orbi 照它去做。Orbi 自检通过后会直接合并。想先看再合并，可以在 GitHub 给仓库设置合并前需要 1 个批准（怎么设置）。再下面一行说明免费次数已经用完。" width="1200" height="989">
-<figcaption>这张还是上面 README 那个需求。截图时测试账户的免费次数刚好用完，所以最后多了一行：现在交给 Orbi 也行，Issue 会先建好，订阅后才能开工。这个需求我们没有交出去。</figcaption>
+<img src="/img/blog-write-request-zh-handoff.webp" alt="「交给 Orbi 开始做」按钮下面：会在你的 GitHub 仓库里建一个 Issue，Orbi 照它去做。Orbi 自检通过后会直接合并。想先看再合并，可以在 GitHub 给仓库设置合并前需要 1 个批准（怎么设置）。" width="1200" height="989">
+<figcaption>这张还是上面 README 那个需求。这个需求我们没有交出去。</figcaption>
 </figure>
 
 Orbi 的评审会读改动、要求修改，但它不是 GitHub 上的那种批准。Orbi 不会批准自己的 PR，所以要求 1 个批准的仓库里，任务会停在「等你批准」，你批准后它才合并。「怎么设置」链到 GitHub 讲分支保护规则的官方文档。
@@ -127,7 +127,7 @@ Orbi 的评审会读改动、要求修改，但它不是 GitHub 上的那种批�
 新加的检查照 Issue 的要求做了：没配密钥就失败，CI 一直是红的，而 Orbi 不会在 CI 红的时候合并。草稿里列出了这项检查需要的 secret 和变量，但写需求不会替你核对它们配好没有。检查失败后，Orbi 的评审把任务停下来等人决定，Issue 被打上 `ai-blocked` 标签。Orbi 没有为了让 CI 变绿去删检查或改测试，PR 里它们都原样留着。
 
 <figure class="post-media">
-<img src="/img/blog-write-request-zh-blocked.webp" alt="卡住了：CI 在 push 和 PR 上执行 Stripe 扣款验证，密钥取自仓库 secret STRIPE_SECRET_KEY，缺密钥时直接失败。Orbi 已停下：有件事需要你拿主意。改动没有合并到项目。不算免费次数。联系我们：Telegram 群、support@orbi.build。按钮：查看 Orbi 的说明、再写一个需求。" width="1200" height="721">
+<img src="/img/blog-write-request-zh-blocked.webp" alt="卡住了：CI 在 push 和 PR 上执行 Stripe 扣款验证，密钥取自仓库 secret STRIPE_SECRET_KEY，缺密钥时直接失败。Orbi 已停下：有件事需要你拿主意。改动没有合并到项目。联系我们：Telegram 群、support@orbi.build。按钮：查看 Orbi 的说明、再写一个需求。" width="1200" height="721">
 <figcaption>卡住的任务，主按钮直达 Orbi 的说明。</figcaption>
 </figure>
 
@@ -139,9 +139,7 @@ Orbi 的评审会读改动、要求修改，但它不是 GitHub 上的那种批�
 
 ## 要花多少
 
-免费试用有 \_\_FREE\_DELIVERIES\_\_ 次交付。失败的、卡住的（比如上面那个，卡片上也写着「不算免费次数」）、没合并就结束的都不占次数，只有合并了的才算。写草稿不占免费交付次数。
-
-免费次数用完后照样能写草稿。这时交给 Orbi 会马上建好 Issue，但 Orbi 随即摘掉它的 `ai-ready` 标签，并在 Issue 里留言说明原因。订阅后到状态页，点这个 Issue 旁边的「试试 →」，它会给 Issue 打上 `ai-ready`，Orbi 这才开始做。这个按钮只在没有别的任务在跑时列出来。有任务在跑，就等它结束，或者直接在 GitHub 上给这个 Issue 打 `ai-ready`。
+注册后即可\_\_FREE\_TRIAL\_\_，不用绑卡。[额度与限制](https://cloud-docs.orbi.build/zh/limits-and-quotas)写了试用包含什么、结束后会怎样。
 
 按月付费的话，Solo 每月 US$\_\_SOLO\_MONTHLY\_USD\_\_（含 \_\_SOLO\_INCLUDED\_TOKENS\_\_ tokens 模型用量），Pro 每月 US$\_\_CLOUD\_MONTHLY\_USD\_\_（含 \_\_INCLUDED\_TOKENS\_\_ tokens）。写草稿和交付一样计入每月用量。当月用量用完后，新草稿和新交付都会暂停（进行中的会做完），下个月 1 号恢复（按 UTC 算月份），不会额外扣钱。接了自己模型 API key 的账户不受这个限制。详情看 [Orbi Cloud 页面](/zh/cloud/?ref=blog-write-request)。
 

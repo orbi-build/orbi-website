@@ -62,11 +62,11 @@ The seven steps are the current Cloud onboarding path:
 4. **Provision the environment.** About a minute.
 5. **Your first Issue.** Label it `ai-ready`, and Orbi writes the code and opens a pull request.
 6. **Cut a release.** Type the version; Orbi bumps it, tags it and publishes the GitHub Release.
-7. **Subscribe.** The first `__FREE_DELIVERIES__` deliveries are free; paid plans are Solo at US$`__SOLO_MONTHLY_USD__`/month with `__SOLO_INCLUDED_TOKENS__` tokens, or Pro at US$`__CLOUD_MONTHLY_USD__`/month with `__INCLUDED_TOKENS__` tokens. When the allowance runs out, only new deliveries pause: your data stays intact, and you can cancel at any time.
+7. **Subscribe.** The \_\_FREE\_TRIAL\_\_ starts when you sign up, with no credit card required; paid plans are Solo at US$`__SOLO_MONTHLY_USD__`/month with `__SOLO_INCLUDED_TOKENS__` tokens, or Pro at US$`__CLOUD_MONTHLY_USD__`/month with `__INCLUDED_TOKENS__` tokens. When the trial ends, only new deliveries pause: your data stays intact, and you can cancel at any time.
 
 ## The seventh step is the one that starts paid delivery
 
-Steps one through six are setup and delivery: you are handing Orbi the things it cannot infer: an identity, an installation, a repository, a runtime, an Issue, and a release. Step seven is where you opt into the Managed Cloud plan after the `__FREE_DELIVERIES__` free deliveries.
+Steps one through six are setup and delivery: you are handing Orbi the things it cannot infer: an identity, an installation, a repository, a runtime, an Issue, and a release. Step seven is where you opt into the Managed Cloud plan once the \_\_FREE\_TRIAL\_\_ ends.
 
 The release step still requires your decision: *you decide the version, Orbi never increments it for you.* The runner will bump the version file, create the tag and publish the Release. It will not choose the number. A version is a claim about what changed and who should care. That is a product decision, and reading it off a counter would be pretending otherwise. The release scope comes from the Milestone carrying that exact title; without one, the release stops at scope derivation and tells you why.
 

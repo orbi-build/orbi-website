@@ -243,8 +243,8 @@
 </ul>
 <p>「自检」指你仓库的 CI 加上 Orbi 自己的评审。</p>
 <figure class="post-media">
-<img src="/img/blog-write-request-zh-handoff.webp" alt="「交给 Orbi 开始做」按钮下面：会在你的 GitHub 仓库里建一个 Issue，Orbi 照它去做。Orbi 自检通过后会直接合并。想先看再合并，可以在 GitHub 给仓库设置合并前需要 1 个批准（怎么设置）。再下面一行说明免费次数已经用完。" width="1200" height="989">
-<figcaption>这张还是上面 README 那个需求。截图时测试账户的免费次数刚好用完，所以最后多了一行：现在交给 Orbi 也行，Issue 会先建好，订阅后才能开工。这个需求我们没有交出去。</figcaption>
+<img src="/img/blog-write-request-zh-handoff.webp" alt="「交给 Orbi 开始做」按钮下面：会在你的 GitHub 仓库里建一个 Issue，Orbi 照它去做。Orbi 自检通过后会直接合并。想先看再合并，可以在 GitHub 给仓库设置合并前需要 1 个批准（怎么设置）。" width="1200" height="989">
+<figcaption>这张还是上面 README 那个需求。这个需求我们没有交出去。</figcaption>
 </figure><p>Orbi 的评审会读改动、要求修改，但它不是 GitHub 上的那种批准。Orbi 不会批准自己的 PR，所以要求 1 个批准的仓库里，任务会停在「等你批准」，你批准后它才合并。「怎么设置」链到 GitHub 讲分支保护规则的官方文档。</p>
 <h2 id="交给-orbi-以后">交给 Orbi 以后</h2>
 <p>交给 Orbi 会在你的仓库里建一张普通的 Issue：第一行写明是你通过 Orbi 提交的，后面就是你认可的那份草稿，一字不改。页面不跳走，草稿那一块变成一张任务卡片，会自己更新。</p>
@@ -260,14 +260,13 @@
 <p>下面这个任务（Issue #71）和 #69 一样涉及 Stripe，但扣款验证放进了每次 CI，是故意造来失败的：要求 CI 每次 push 和 PR 都跑一次 Stripe 扣款验证，密钥从仓库 secret 里读、付款方式从仓库变量里读，缺密钥就让 CI 失败。测试仓库里这些都没有。</p>
 <p>新加的检查照 Issue 的要求做了：没配密钥就失败，CI 一直是红的，而 Orbi 不会在 CI 红的时候合并。草稿里列出了这项检查需要的 secret 和变量，但写需求不会替你核对它们配好没有。检查失败后，Orbi 的评审把任务停下来等人决定，Issue 被打上 <code class="post-code--single">ai-blocked</code> 标签。Orbi 没有为了让 CI 变绿去删检查或改测试，PR 里它们都原样留着。</p>
 <figure class="post-media">
-<img src="/img/blog-write-request-zh-blocked.webp" alt="卡住了：CI 在 push 和 PR 上执行 Stripe 扣款验证，密钥取自仓库 secret STRIPE_SECRET_KEY，缺密钥时直接失败。Orbi 已停下：有件事需要你拿主意。改动没有合并到项目。不算免费次数。联系我们：Telegram 群、support@orbi.build。按钮：查看 Orbi 的说明、再写一个需求。" width="1200" height="721">
+<img src="/img/blog-write-request-zh-blocked.webp" alt="卡住了：CI 在 push 和 PR 上执行 Stripe 扣款验证，密钥取自仓库 secret STRIPE_SECRET_KEY，缺密钥时直接失败。Orbi 已停下：有件事需要你拿主意。改动没有合并到项目。联系我们：Telegram 群、support@orbi.build。按钮：查看 Orbi 的说明、再写一个需求。" width="1200" height="721">
 <figcaption>卡住的任务，主按钮直达 Orbi 的说明。</figcaption>
 </figure><p>卡片上没写具体原因，点「查看 Orbi 的说明」会打开 Orbi 在 Issue 里写的<a href="https://github.com/xqliu/orbi-e2e-2609260042/issues/71#issuecomment-6063352853">那条评论</a>，原因在那里：缺 Stripe 密钥。这次它给了两条路：按 Issue 的要求，把 Stripe 密钥配成仓库 secret、付款方式配成仓库变量；或者改掉 Issue 里「缺密钥就必须让 CI 失败」这条决定。不管选哪条，卡住的任务都不会自己接着做：重跑 CI、只摘掉 <code class="post-code--single">ai-blocked</code> 标签或者留评论都没用。</p>
 <p>先把原因修好，再在 Issue 上换标签（Issue 得是打开的）：PR 还开着的，把 <code class="post-code--single">ai-blocked</code> 换成 <code class="post-code--single">ai-fix-needed</code>，Orbi 在原来的 PR 和分支上接着改；还没有 PR 的，换成 <code class="post-code--single">ai-ready</code>。</p>
 <p>这个任务我们没有恢复：它是故意造的失败，测完就把 <a href="https://github.com/xqliu/orbi-e2e-2609260042/issues/71">Issue #71</a> 和它的 PR 关掉了。</p>
 <h2 id="要花多少">要花多少</h2>
-<p>免费试用有 __FREE_DELIVERIES__ 次交付。失败的、卡住的（比如上面那个，卡片上也写着「不算免费次数」）、没合并就结束的都不占次数，只有合并了的才算。写草稿不占免费交付次数。</p>
-<p>免费次数用完后照样能写草稿。这时交给 Orbi 会马上建好 Issue，但 Orbi 随即摘掉它的 <code class="post-code--single">ai-ready</code> 标签，并在 Issue 里留言说明原因。订阅后到状态页，点这个 Issue 旁边的「试试 →」，它会给 Issue 打上 <code class="post-code--single">ai-ready</code>，Orbi 这才开始做。这个按钮只在没有别的任务在跑时列出来。有任务在跑，就等它结束，或者直接在 GitHub 上给这个 Issue 打 <code class="post-code--single">ai-ready</code>。</p>
+<p>注册后即可__FREE_TRIAL__，不用绑卡。<a href="https://cloud-docs.orbi.build/zh/limits-and-quotas">额度与限制</a>写了试用包含什么、结束后会怎样。</p>
 <p>按月付费的话，Solo 每月 US$__SOLO_MONTHLY_USD__（含 __SOLO_INCLUDED_TOKENS__ tokens 模型用量），Pro 每月 US$__CLOUD_MONTHLY_USD__（含 __INCLUDED_TOKENS__ tokens）。写草稿和交付一样计入每月用量。当月用量用完后，新草稿和新交付都会暂停（进行中的会做完），下个月 1 号恢复（按 UTC 算月份），不会额外扣钱。接了自己模型 API key 的账户不受这个限制。详情看 <a href="/zh/cloud/?ref=blog-write-request">Orbi Cloud 页面</a>。</p>
 <h2 id="什么时候自己写-issue-更快">什么时候自己写 Issue 更快</h2>
 <p>你已经清楚要改什么、也知道怎么验收，那直接在 GitHub 上建 Issue、打上 <code class="post-code--single">ai-ready</code> 标签更快。你知道要解决什么问题、但不知道它落在代码哪里，或者想在动工前先让 Orbi 把需要你决定的问题列出来，这时用写需求。</p>
