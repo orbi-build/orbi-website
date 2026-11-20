@@ -346,6 +346,12 @@ export const BADGE_PLACEHOLDER_SIZES = [
   // official vendor snippet declares the same 260x48 box). The listing
   // /startup/orbi is expected to go live after the badge is verified.
   { host: "launchpadly.co", width: 260, height: 48 },
+  // 2026-11-21 Sell With Boost listed badge, measured on the live URL:
+  // sellwithboost.com /badge/listing.svg 160x40 (SVG, 2624 bytes,
+  // width="160" height="40"; the official vendor snippet styles the
+  // image at height 40px; width auto, so the source file decides the
+  // placeholder box).
+  { host: "sellwithboost.com", width: 160, height: 40 },
 ];
 const FALLBACK_PLACEHOLDER_SIZE = { width: 1, height: 1 };
 
