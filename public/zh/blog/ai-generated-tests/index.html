@@ -281,7 +281,7 @@
 <td align="right">57</td>
 </tr>
 </tbody></table></div>
-<p>浏览器测试中有 244 条符合严格定义，唯一原因是挂载页面的辅助函数在运行页面脚本前，会先查找脚本中的源码标记。这些辅助函数是各文件自带的副本，72 个浏览器测试文件各自定义了 <code class="post-code--single">mount</code>，修复时要逐个文件改成让页面自己运行脚本。还有一些归入「内部结构」的用例，用 class 名定位元素，或统计用户能点击的控件数量；这些分类也有商榷空间。</p>
+<p>浏览器测试中有 244 条符合严格定义，唯一原因是挂载页面的辅助函数在运行页面脚本前，会先查找脚本中的源码标记。这些辅助函数是各文件自带的副本，72 个浏览器测试文件各自定义了 <code class="post-code--single">mount</code>，没有一个公共函数能一处改好；清理 PR #3638 把浏览器测试文件里的挂载方式都改成让页面自己运行脚本。还有一些归入「内部结构」的用例，用 class 名定位元素，或统计用户能点击的控件数量；这些分类也有商榷空间。</p>
 <p>排除仅由挂载函数引入的源码检查和有歧义的定位方式后，按更窄的口径，审查估计约有 1,300–1,500 条用例明确依赖实现，占 25%–30%。这个估计没有再逐条精确计数，也没有统计置信区间。完整报告仍保留严格口径的 34%；多条用例能用同一种方式修复，不影响这个计数。</p>
 <h2 id="这些测试是谁写的">这些测试是谁写的</h2>
 <p><code class="post-code--spaced">git blame</code> 显示，4,687 行测试注册中，3,576 行最后由 <code class="post-code--single">orbi-build[bot]</code> 修改，四舍五入到整数百分比是 76%。它只能告诉我谁最后改了注册行，无法还原每条断言最初由谁写成。一次参数化注册可以对应多条用例，所以这里的分母与审查的 5,087 条不同。</p>
@@ -306,7 +306,7 @@
 <p>改写后仍留着 <code class="post-code--single">expect(SUGGESTION_RERUN_QUERY).toBe(SUGGESTION_RERUN_PATH)</code>，检查两个常量是否相等，违反了新规则。这次清理还没完全符合规则；即使交付提示词里写了规则，评审者仍要检查具体断言。</p>
 <h2 id="测试还可以怎样跑得更快">测试还可以怎样跑得更快</h2>
 <p>耗时调整适用于 Cloudflare Workers + Vitest，依赖版本为 <code class="post-code--single">@cloudflare/vitest-plugin</code> 1.x 和 Vitest 4。运行耗时的调整和断言清理分开做。Issue #3493 测了初始化和并行度，只改了一处断言：移除一条多余的计时检查。</p>
-<p>原先，各测试文件初始化数据库时，都会从 <code class="post-code--single">cloudflare:test</code> 导入 <code class="post-code--single">applyD1Migrations</code>。在单个文件上测，仅这个导入就让初始化多花 1.78 秒。去掉导入，直接对 <code class="post-code--single">env.DB</code> 执行相同逻辑，跑完全部 86 个迁移约需 0.06 秒。</p>
+<p>原先，各测试文件初始化数据库时，都会从 <code class="post-code--single">cloudflare:test</code> 导入 <code class="post-code--single">applyD1Migrations</code>。我在改动前后的两个提交上，各跑了一个小测试文件（关覆盖率、1 个 worker）：带着这个导入，初始化 2.33 秒；直接对 <code class="post-code--single">env.DB</code> 执行相同逻辑、跑完全部 88 个迁移文件，初始化 62 毫秒。</p>
 <p>替代代码放在 <code class="post-code--single">test/apply-migrations.ts</code>，仍按原来的 4 步执行：创建迁移记录表、读取已执行的迁移名、跳过已执行的迁移，再把每个剩余迁移与它的记录一起批量执行。<code class="post-code--single">recordApplied</code> 是一条 D1 预编译语句，它的 <code class="post-code--single">.bind()</code> 把迁移名填进 <code class="post-code--single">?</code> 占位符，不是 JavaScript 函数的 <code class="post-code--single">bind</code>。下面是循环前的那条语句和循环本身：</p>
 <div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="已复制">复制</button><pre><code class="language-typescript" data-copy-source>const recordApplied = env.DB.prepare(`INSERT INTO ${MIGRATIONS_TABLE} (name) VALUES (?);`);
 
@@ -317,7 +317,7 @@ for (const migration of env.TEST_MIGRATIONS) {
 	await env.DB.batch(queries);
 }
 </code></pre></div>
-<p>#3493 的本地测量都在同一台 32 核机器上完成，开启了覆盖率：</p>
+<p>11 月 20 日，我在一台 32 核机器上按 #3493 的四组配置把主目录测试重跑了一遍，和 CI 一样开着覆盖率。当时机器负载较高（负载均值约 23 到 26），而且改动后的提交还带进了 beta 上的其他改动（主目录 <code class="post-code--single">test/</code> 用例 4,052 条对 4,025 条，这条命令只跑主目录），所以这张表只看方向，不看精确节省了多少：</p>
 <p class="post-table-hint" hidden>左右滑动查看所有列。</p><div class="post-table-scroll" tabindex="0" role="region" aria-label="左右滑动查看所有列。"><table class="table-comparison">
 <thead>
 <tr>
@@ -330,30 +330,30 @@ for (const migration of env.TEST_MIGRATIONS) {
 <tbody><tr>
 <th scope="row">原配置</th>
 <td align="right">2</td>
-<td align="right">199 秒</td>
-<td align="right">214 秒</td>
+<td align="right">262 秒</td>
+<td align="right">318 秒</td>
 </tr>
 <tr>
 <th scope="row">只把迁移初始化逻辑内联</th>
 <td align="right">2</td>
-<td align="right">156 秒</td>
+<td align="right">192 秒</td>
 <td align="right">8 秒</td>
 </tr>
 <tr>
 <th scope="row">只提高并行度</th>
 <td align="right">8</td>
-<td align="right">93 秒</td>
-<td align="right">402 秒</td>
+<td align="right">155 秒</td>
+<td align="right">816 秒</td>
 </tr>
 <tr>
 <th scope="row">两项都改</th>
 <td align="right">8</td>
-<td align="right">69 秒</td>
-<td align="right">10 秒</td>
+<td align="right">109 秒</td>
+<td align="right">12 秒</td>
 </tr>
 </tbody></table></div>
-<p>累计初始化耗时把各文件、各 worker 花的时间相加，所以可以超过总耗时。只提高并行度那次，整轮更快结束，累计初始化耗时却更多。只看总耗时，会漏掉重复导入的成本。</p>
-<p>现在 CI 设置 <code class="post-code--single">VITEST_MAX_WORKERS=8</code>，交付沙箱仍保留默认值 2。开到 8 个 worker 后，一条请求耗时断言失败，报错是 <code class="post-code--spaced">expected 2216 to be less than 2000</code>（单位是毫秒，上限 2 秒）。测试原本就用可控的阻塞点拦住数据库写入，收到响应后再放行，已经能证明响应没有等待写入。我移除了多余的耗时断言，没有把阈值调大。</p>
+<p>累计初始化耗时把各文件、各 worker 花的时间相加，所以可以超过总耗时。只提高并行度那次，整轮更快结束，累计初始化耗时却更多。票里记录的测量结果方向相同：从 199 秒降到 69 秒。</p>
+<p>现在 CI 设置 <code class="post-code--single">VITEST_MAX_WORKERS=8</code>，交付沙箱仍保留默认值 2。开到 8 个 worker 后，一条请求耗时断言失败，票里记录的报错是 <code class="post-code--spaced">expected 2216 to be less than 2000</code>，我重跑时是 <code class="post-code--spaced">expected 4887 to be less than 2000</code>（单位是毫秒，上限 2 秒）。测试原本就用可控的阻塞点拦住数据库写入，收到响应后再放行，已经能证明响应没有等待写入。我移除了多余的耗时断言，没有把阈值调大。</p>
 <p>改动前，GitHub Actions 的 <code class="post-code--spaced">Run npm test</code> 步骤在查询窗口里最近 60 次成功 PR 运行中，耗时中位数为 271 秒。这批运行都发生在 2026 年 11 月 18 日，按 UTC 计。查询覆盖 11 月 17–18 日，但返回结果达到 60 条上限，全部来自 18 日，没有覆盖当天全部运行。改动后取最近 80 次成功 PR 运行，中位数为 102 秒。这期间测试并没有变少：测试注册行从审查提交上的 4,687 行，增加到 11 月 20 日 00:53 UTC（改动后样本刚结束）beta 上的 4,952 行。两批样本记录的都是测试步骤的耗时，包含测试命令本身的额外开销，不代表整个工作流的耗时。</p>
 <p>改动后的样本窗口为 2026 年 11 月 19 日 15:40 UTC 至 11 月 20 日 00:46 UTC。两批样本之间仓库仍在变化；测试清理也和改动后的样本窗口重叠，最后一个清理 PR 在 11 月 20 日 00:15 UTC 合并。CI 数据只能用来比较改动前后的耗时；上面的本地表格把初始化和并行度的影响分开测了。两个提速 PR #3527、#3533，分别在 11 月 19 日 08:36 和 10:42（北京时间）合并，都早于改动后的样本窗口。</p>
 <h2 id="检查自己仓库时可以照着做">检查自己仓库时可以照着做</h2>

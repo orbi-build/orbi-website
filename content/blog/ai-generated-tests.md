@@ -45,7 +45,7 @@ The audit grouped implementation assertions into the categories below. A case ca
 | Snapshots pinning internal structure | 18 | 0 | 0 |
 | Calling internal helpers to inspect intermediate values | 74 | 0 | 57 |
 
-In the browser suite, 244 cases met the strict definition solely because a mounting helper looked for a source marker in the page's script before running it. The helpers are copied into individual files: 72 browser test files define their own `mount`. The repair changed each file to let the page run its own scripts. Some internal-shape cases used class names to find elements or counted controls a user could click; those classifications are also debatable.
+In the browser suite, 244 cases met the strict definition solely because a mounting helper looked for a source marker in the page's script before running it. The helpers are copied into individual files: 72 browser test files define their own `mount`. There was no single helper to fix; the cleanup PR, #3638, rewrote the mounting across the browser test files so pages run their own scripts. Some internal-shape cases used class names to find elements or counted controls a user could click; those classifications are also debatable.
 
 After excluding source checks introduced only by the helpers and ambiguous uses of locators, the audit estimated roughly 1,300–1,500 clearly implementation-coupled cases, or 25%–30%. That estimate did not include a second exact case-by-case count or a statistical confidence interval. The full report keeps 34% as the strict result, even when several cases can be fixed the same way.
 
@@ -99,7 +99,7 @@ The cleanup still violates the new rule: the rewrite contains `expect(SUGGESTION
 
 The timing work applies to Cloudflare Workers + Vitest with `@cloudflare/vitest-plugin` 1.x and Vitest 4. The changes to how the tests ran were separate from the assertion cleanup. Issue #3493 measured initialization and parallelism; its only assertion change removed a redundant timing check.
 
-Each test file's setup imported `applyD1Migrations` from `cloudflare:test` to initialize its test database. Measured on one file, that import alone added 1.78 s of setup. Without it, running the same logic for all 86 migrations directly against `env.DB` took about 0.06 s.
+Each test file's setup imported `applyD1Migrations` from `cloudflare:test` to initialize its test database. I reran a single small test file at the commits before and after the change, with coverage off and one worker: setup was 2.33 s with the import and 62 ms with the same logic run directly against `env.DB` for all 88 migration files.
 
 The replacement in `test/apply-migrations.ts` keeps the same four steps: create the migration ledger, read applied names, skip applied migrations, and batch each remaining migration with its ledger entry. `recordApplied` is a D1 prepared statement, so its `.bind()` fills the `?` placeholder with the migration name; it is not `Function.prototype.bind`. The line before the loop, then the loop:
 
@@ -114,18 +114,18 @@ for (const migration of env.TEST_MIGRATIONS) {
 }
 ```
 
-The local measurements in #3493 used the same 32-core machine with coverage enabled:
+I reran the four configurations from #3493 on the main suite on 20 November, on a 32-core machine, with coverage on as in CI. The machine was busy (load average about 23 to 26), and the "after" commit also carries other beta changes (4,052 tests against 4,025 in the main `test/` suite, which is what this command runs), so read the table for direction, not exact savings:
 
 | Configuration | Workers | Total elapsed | Cumulative setup |
 |---|---:|---:|---:|
-| Original | 2 | 199 s | 214 s |
-| Inlined migration setup only | 2 | 156 s | 8 s |
-| Increased parallelism only | 8 | 93 s | 402 s |
-| Both changes | 8 | 69 s | 10 s |
+| Original | 2 | 262 s | 318 s |
+| Inlined migration setup only | 2 | 192 s | 8 s |
+| Increased parallelism only | 8 | 155 s | 816 s |
+| Both changes | 8 | 109 s | 12 s |
 
-Cumulative setup sums the time spent across files and workers, so it can exceed elapsed time. Increasing parallelism alone finished the run sooner but spent more time on setup in total.
+Cumulative setup sums the time spent across files and workers, so it can exceed elapsed time. Increasing parallelism alone finished the run sooner but spent more time on setup in total. The measurements recorded in the issue went the same way, from 199 s to 69 s.
 
-CI now sets `VITEST_MAX_WORKERS=8`; the delivery sandbox keeps its default of 2. At 8 workers, an assertion on request duration failed with `expected 2216 to be less than 2000` (milliseconds, against a 2-second limit). The test already blocked a database write until it received the response, then released the write, proving that the response did not wait for the write. I removed the redundant elapsed-time assertion rather than raising its threshold.
+CI now sets `VITEST_MAX_WORKERS=8`; the delivery sandbox keeps its default of 2. At 8 workers, an assertion on request duration failed: `expected 2216 to be less than 2000` in the issue's runs, and `expected 4887 to be less than 2000` in my rerun (milliseconds, against a 2-second limit). The test already blocked a database write until it received the response, then released the write, proving that the response did not wait for the write. I removed the redundant elapsed-time assertion rather than raising its threshold.
 
 The GitHub Actions `Run npm test` step had a median of 271 s across the 60 most recent successful PR runs in the query window, all on 18 November 2026 (UTC). The query covered 17–18 November but hit its 60-run cap, with all results from the 18th, so the sample did not cover every run that day. Across the 80 most recent successful PR runs after the changes, the median was 102 s. The suite did not shrink in between: test registration lines went from 4,687 at the audit commit to 4,952 on beta at 00:53 UTC on 20 November, just after that sample. Both medians measure the test step, including the test command's overhead; they do not measure full workflow times.
 

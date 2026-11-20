@@ -279,7 +279,7 @@
 <td align="right">57</td>
 </tr>
 </tbody></table></div>
-<p>In the browser suite, 244 cases met the strict definition solely because a mounting helper looked for a source marker in the page&#39;s script before running it. The helpers are copied into individual files: 72 browser test files define their own <code class="post-code--single">mount</code>. The repair changed each file to let the page run its own scripts. Some internal-shape cases used class names to find elements or counted controls a user could click; those classifications are also debatable.</p>
+<p>In the browser suite, 244 cases met the strict definition solely because a mounting helper looked for a source marker in the page&#39;s script before running it. The helpers are copied into individual files: 72 browser test files define their own <code class="post-code--single">mount</code>. There was no single helper to fix; the cleanup PR, #3638, rewrote the mounting across the browser test files so pages run their own scripts. Some internal-shape cases used class names to find elements or counted controls a user could click; those classifications are also debatable.</p>
 <p>After excluding source checks introduced only by the helpers and ambiguous uses of locators, the audit estimated roughly 1,300–1,500 clearly implementation-coupled cases, or 25%–30%. That estimate did not include a second exact case-by-case count or a statistical confidence interval. The full report keeps 34% as the strict result, even when several cases can be fixed the same way.</p>
 <h2 id="who-wrote-them">Who wrote them</h2>
 <p>Git blame attributed 3,576 of 4,687 test registration lines to <code class="post-code--single">orbi-build[bot]</code>, or 76%. It identifies who last changed each registration line; it cannot tell me who wrote every assertion. A parameterized registration can register several cases, so this denominator differs from the audit&#39;s 5,087 cases.</p>
@@ -312,7 +312,7 @@
 <p>The cleanup still violates the new rule: the rewrite contains <code class="post-code--single">expect(SUGGESTION_RERUN_QUERY).toBe(SUGGESTION_RERUN_PATH)</code>, which checks that two constants are equal. A reviewer needs to check the assertions even when the delivery prompt includes the rule.</p>
 <h2 id="making-the-test-suite-faster">Making the test suite faster</h2>
 <p>The timing work applies to Cloudflare Workers + Vitest with <code class="post-code--single">@cloudflare/vitest-plugin</code> 1.x and Vitest 4. The changes to how the tests ran were separate from the assertion cleanup. Issue #3493 measured initialization and parallelism; its only assertion change removed a redundant timing check.</p>
-<p>Each test file&#39;s setup imported <code class="post-code--single">applyD1Migrations</code> from <code class="post-code--single">cloudflare:test</code> to initialize its test database. Measured on one file, that import alone added 1.78 s of setup. Without it, running the same logic for all 86 migrations directly against <code class="post-code--single">env.DB</code> took about 0.06 s.</p>
+<p>Each test file&#39;s setup imported <code class="post-code--single">applyD1Migrations</code> from <code class="post-code--single">cloudflare:test</code> to initialize its test database. I reran a single small test file at the commits before and after the change, with coverage off and one worker: setup was 2.33 s with the import and 62 ms with the same logic run directly against <code class="post-code--single">env.DB</code> for all 88 migration files.</p>
 <p>The replacement in <code class="post-code--single">test/apply-migrations.ts</code> keeps the same four steps: create the migration ledger, read applied names, skip applied migrations, and batch each remaining migration with its ledger entry. <code class="post-code--single">recordApplied</code> is a D1 prepared statement, so its <code class="post-code--single">.bind()</code> fills the <code class="post-code--single">?</code> placeholder with the migration name; it is not <code class="post-code--single">Function.prototype.bind</code>. The line before the loop, then the loop:</p>
 <div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="Copied">Copy</button><pre><code class="language-typescript" data-copy-source>const recordApplied = env.DB.prepare(`INSERT INTO ${MIGRATIONS_TABLE} (name) VALUES (?);`);
 
@@ -323,7 +323,7 @@ for (const migration of env.TEST_MIGRATIONS) {
 	await env.DB.batch(queries);
 }
 </code></pre></div>
-<p>The local measurements in #3493 used the same 32-core machine with coverage enabled:</p>
+<p>I reran the four configurations from #3493 on the main suite on 20 November, on a 32-core machine, with coverage on as in CI. The machine was busy (load average about 23 to 26), and the &quot;after&quot; commit also carries other beta changes (4,052 tests against 4,025 in the main <code class="post-code--single">test/</code> suite, which is what this command runs), so read the table for direction, not exact savings:</p>
 <p class="post-table-hint" hidden>Swipe horizontally to see all columns.</p><div class="post-table-scroll" tabindex="0" role="region" aria-label="Swipe horizontally to see all columns."><table class="table-comparison">
 <thead>
 <tr>
@@ -336,30 +336,30 @@ for (const migration of env.TEST_MIGRATIONS) {
 <tbody><tr>
 <th scope="row">Original</th>
 <td align="right">2</td>
-<td align="right">199 s</td>
-<td align="right">214 s</td>
+<td align="right">262 s</td>
+<td align="right">318 s</td>
 </tr>
 <tr>
 <th scope="row">Inlined migration setup only</th>
 <td align="right">2</td>
-<td align="right">156 s</td>
+<td align="right">192 s</td>
 <td align="right">8 s</td>
 </tr>
 <tr>
 <th scope="row">Increased parallelism only</th>
 <td align="right">8</td>
-<td align="right">93 s</td>
-<td align="right">402 s</td>
+<td align="right">155 s</td>
+<td align="right">816 s</td>
 </tr>
 <tr>
 <th scope="row">Both changes</th>
 <td align="right">8</td>
-<td align="right">69 s</td>
-<td align="right">10 s</td>
+<td align="right">109 s</td>
+<td align="right">12 s</td>
 </tr>
 </tbody></table></div>
-<p>Cumulative setup sums the time spent across files and workers, so it can exceed elapsed time. Increasing parallelism alone finished the run sooner but spent more time on setup in total.</p>
-<p>CI now sets <code class="post-code--single">VITEST_MAX_WORKERS=8</code>; the delivery sandbox keeps its default of 2. At 8 workers, an assertion on request duration failed with <code class="post-code--spaced">expected 2216 to be less than 2000</code> (milliseconds, against a 2-second limit). The test already blocked a database write until it received the response, then released the write, proving that the response did not wait for the write. I removed the redundant elapsed-time assertion rather than raising its threshold.</p>
+<p>Cumulative setup sums the time spent across files and workers, so it can exceed elapsed time. Increasing parallelism alone finished the run sooner but spent more time on setup in total. The measurements recorded in the issue went the same way, from 199 s to 69 s.</p>
+<p>CI now sets <code class="post-code--single">VITEST_MAX_WORKERS=8</code>; the delivery sandbox keeps its default of 2. At 8 workers, an assertion on request duration failed: <code class="post-code--spaced">expected 2216 to be less than 2000</code> in the issue&#39;s runs, and <code class="post-code--spaced">expected 4887 to be less than 2000</code> in my rerun (milliseconds, against a 2-second limit). The test already blocked a database write until it received the response, then released the write, proving that the response did not wait for the write. I removed the redundant elapsed-time assertion rather than raising its threshold.</p>
 <p>The GitHub Actions <code class="post-code--spaced">Run npm test</code> step had a median of 271 s across the 60 most recent successful PR runs in the query window, all on 18 November 2026 (UTC). The query covered 17–18 November but hit its 60-run cap, with all results from the 18th, so the sample did not cover every run that day. Across the 80 most recent successful PR runs after the changes, the median was 102 s. The suite did not shrink in between: test registration lines went from 4,687 at the audit commit to 4,952 on beta at 00:53 UTC on 20 November, just after that sample. Both medians measure the test step, including the test command&#39;s overhead; they do not measure full workflow times.</p>
 <p>The post-change sample spans 19 November 2026, 15:40 UTC through 20 November 2026, 00:46 UTC. The repository kept changing between the samples, and cleanup work overlapped the post-change sample: the last cleanup PR merged at 00:15 UTC on 20 November. Only the local table separates the effects of setup and parallelism. The speedup PRs, #3527 and #3533, merged on 19 November 2026 at 08:36 and 10:42 (UTC+8), before that sample.</p>
 <h2 id="a-checklist-for-your-repo">A checklist for your repo</h2>
