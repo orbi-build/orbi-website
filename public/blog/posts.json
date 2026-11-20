@@ -1,5 +1,13 @@
 [
   {
+    "slug": "ai-generated-tests",
+    "title": "Make AI agents test behavior, not implementation",
+    "summary": "Rules, ticket wording and review checks that make AI coding agents test what users see, from an audit of 5,087 tests where 34% checked how code is written.",
+    "zhSlug": "ai-generated-tests",
+    "zhTitle": "让 AI agent 测行为，不要测实现",
+    "related": []
+  },
+  {
     "slug": "stuck-delivery-one-click",
     "title": "When an AI coding run stops and needs your answer",
     "summary": "A stopped Orbi delivery needs either an answer or an edited Issue. Which Cloud button to press, what it changes on GitHub, and how to change your mind.",
