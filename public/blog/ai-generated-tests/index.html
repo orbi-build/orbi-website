@@ -4,19 +4,19 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>AI-generated tests: what I found in 5,087 cases | Orbi</title>
-  <meta name="description" content="Of 5,087 Orbi Cloud Vitest cases, a third pinned implementation details. Our bot last changed most registration lines. I cover the cause, my rule and faster CI.">
+  <meta name="description" content="Of 5,087 Orbi Cloud Vitest cases, a strict count found a third pinned implementation details. Where they came from, the rule I added, and faster CI runs.">
   <link rel="canonical" href="https://orbi.build/blog/ai-generated-tests/">
   <link rel="alternate" hreflang="en" href="https://orbi.build/blog/ai-generated-tests/">
   <link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/blog/ai-generated-tests/">
   <link rel="alternate" hreflang="x-default" href="https://orbi.build/blog/ai-generated-tests/">
   <meta property="og:type" content="article">
   <meta property="og:title" content="AI-generated tests: what I found in 5,087 cases">
-  <meta property="og:description" content="Of 5,087 Orbi Cloud Vitest cases, a third pinned implementation details. Our bot last changed most registration lines. I cover the cause, my rule and faster CI.">
+  <meta property="og:description" content="Of 5,087 Orbi Cloud Vitest cases, a strict count found a third pinned implementation details. Where they came from, the rule I added, and faster CI runs.">
   <meta property="og:url" content="https://orbi.build/blog/ai-generated-tests/">
   <meta property="og:image" content="https://orbi.build/img/blog-ai-generated-tests-card.png">
   <meta property="og:image:alt" content="AI-generated tests: what I found in 5,087 cases">
   <meta property="article:published_time" content="2026-11-20">
-  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"AI-generated tests: what I found in 5,087 cases","datePublished":"2026-11-20","author":{"@type":"Person","name":"Larry 🍀 Orbi","url":"https://orbi.build/about/larry-orbi/","sameAs":["https://github.com/xqliu","https://x.com/xqliu"]},"publisher":{"@type":"Organization","name":"Orbi","url":"https://orbi.build/","logo":{"@type":"ImageObject","url":"https://orbi.build/logo-mark.svg"}},"mainEntityOfPage":"https://orbi.build/blog/ai-generated-tests/","image":"https://orbi.build/img/blog-ai-generated-tests-card.png","inLanguage":"en","description":"Of 5,087 Orbi Cloud Vitest cases, a third pinned implementation details. Our bot last changed most registration lines. I cover the cause, my rule and faster CI.","url":"https://orbi.build/blog/ai-generated-tests/"}</script>
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"AI-generated tests: what I found in 5,087 cases","datePublished":"2026-11-20","author":{"@type":"Person","name":"Larry 🍀 Orbi","url":"https://orbi.build/about/larry-orbi/","sameAs":["https://github.com/xqliu","https://x.com/xqliu"]},"publisher":{"@type":"Organization","name":"Orbi","url":"https://orbi.build/","logo":{"@type":"ImageObject","url":"https://orbi.build/logo-mark.svg"}},"mainEntityOfPage":"https://orbi.build/blog/ai-generated-tests/","image":"https://orbi.build/img/blog-ai-generated-tests-card.png","inLanguage":"en","description":"Of 5,087 Orbi Cloud Vitest cases, a strict count found a third pinned implementation details. Where they came from, the rule I added, and faster CI runs.","url":"https://orbi.build/blog/ai-generated-tests/"}</script>
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <meta name="theme-color" content="#06151b">
 
@@ -155,7 +155,7 @@
           <h1 id="post-title">AI-generated tests: what I found in 5,087 cases</h1>
           <p class="post-byline"><a href="/about/larry-orbi/">Larry 🍀 Orbi</a> · <time datetime="2026-11-20">2026-11-20</time></p>
 
-          <p class="hero-lede">Of 5,087 Orbi Cloud Vitest cases, a third pinned implementation details. Our bot last changed most registration lines. I cover the cause, my rule and faster CI.</p>
+          <p class="hero-lede">Of 5,087 Orbi Cloud Vitest cases, a strict count found a third pinned implementation details. Where they came from, the rule I added, and faster CI runs.</p>
         </section>
       </div>
     </div>
@@ -165,7 +165,7 @@
           <h2>On this page</h2>
           <ol>
           <li><a class="post-toc-link" href="#how-the-audit-counted">How the audit counted</a></li>
-          <li><a class="post-toc-link" href="#what-the-audit-of-ai-generated-tests-found">What the audit of AI-generated tests found</a></li>
+          <li><a class="post-toc-link" href="#a-third-of-the-cases-pinned-implementation">A third of the cases pinned implementation</a></li>
           <li><a class="post-toc-link" href="#who-wrote-them">Who wrote them</a></li>
           <li><a class="post-toc-link" href="#where-the-implementation-tests-came-from">Where the implementation tests came from</a></li>
           <li><a class="post-toc-link" href="#the-rule-i-added">The rule I added</a></li>
@@ -180,7 +180,7 @@
           <summary>On this page · 9 sections</summary>
           <ol>
           <li><a class="post-toc-link" href="#how-the-audit-counted">How the audit counted</a></li>
-          <li><a class="post-toc-link" href="#what-the-audit-of-ai-generated-tests-found">What the audit of AI-generated tests found</a></li>
+          <li><a class="post-toc-link" href="#a-third-of-the-cases-pinned-implementation">A third of the cases pinned implementation</a></li>
           <li><a class="post-toc-link" href="#who-wrote-them">Who wrote them</a></li>
           <li><a class="post-toc-link" href="#where-the-implementation-tests-came-from">Where the implementation tests came from</a></li>
           <li><a class="post-toc-link" href="#the-rule-i-added">The rule I added</a></li>
@@ -190,7 +190,7 @@
           <li><a class="post-toc-link" href="#related">Related</a></li>
           </ol>
         </details>
-<p>Orbi is an open-source system that takes a GitHub Issue through implementation, review, merge and release. I audited the Vitest suites in Orbi Cloud&#39;s own repository, where Orbi&#39;s delivery bot last changed most test registration lines. Engineering leads and solo maintainers who use coding agents to write code and AI-generated tests can use these counts and the repository rule to check the suite they rely on for merge decisions. I also trace where the implementation-coupled tests came from and how the measured CI test-step median fell from 271 s to 102 s after setup and parallelism changes.</p>
+<p>Orbi is an open-source system that takes a GitHub Issue through implementation, review, merge and release. I audited the Vitest suites in Orbi Cloud&#39;s own repository, where Orbi&#39;s delivery bot last changed most test registration lines. Engineering leads and solo maintainers who use coding agents to write code and AI-generated tests can use these counts and the repository rule to check the suite they rely on for merge decisions. I also trace where the implementation-coupled tests came from, and show the setup and parallelism changes behind a CI test-step median that fell from 271 s to 102 s.</p>
 <p>I&#39;m Larry 🍀 Orbi, the creator of Orbi.</p><aside class="post-cta-inline"><span>Orbi takes your Issues all the way to a release.</span><a class="button button-signal" data-cta="post-inline-start" href="/cloud/login">Try Orbi Cloud free →</a></aside>
 <h2 id="how-the-audit-counted">How the audit counted</h2>
 <p>On 18 November 2026, I had independent, read-only Codex sessions classify the tests in Orbi Cloud&#39;s repository at beta commit <code class="post-code--single">4619a9fc</code>. They covered the three TypeScript suites run by Vitest: the main test directory, browser tests and operational-script tests. The audit excluded the repository&#39;s 5 Python test files (32 test methods). The orbi-cloud repository is private, so I quote the audit&#39;s numbers and name its issues without links. Every classification and the counting scripts are saved in an internal discussion.</p>
@@ -198,7 +198,7 @@
 <p>Reading business records from a database or checking content sent to an external service counted as behavior. So did using a selector to extract visible text. I asked whether an assertion could fail when the implementation changed but the result visible to a user or caller stayed the same.</p>
 <p>I spot-checked the source at 5 locations. Only the example counting disabled controls by their form submission address was ambiguous: the address could reasonably identify the rendered controls. The spot-check was too small to estimate a classification error rate for the whole audit. I reviewed the tests statically, without measuring how well they detected defects or the cost of each failure.</p>
 <p>To check the labels, I gave a separate DeepSeek session the same definitions and 60 test registrations drawn at random from the main directory (seed 20261120), without the audit&#39;s labels. It agreed on 48 of 60 (80%, Cohen&#39;s kappa 0.60), including all 18 cases the audit had marked implementation-coupled. In all 12 disagreements, it marked a case as implementation-coupled where the audit had called it behavior. Most involved exact comparisons of HTML fragments such as hidden inputs, or direct calls to internal helpers. The check found no inflation in the audit&#39;s count on this sample. A first attempt was discarded because that session found and read the file holding the audit&#39;s labels.</p>
-<h2 id="what-the-audit-of-ai-generated-tests-found">What the audit of AI-generated tests found</h2>
+<h2 id="a-third-of-the-cases-pinned-implementation">A third of the cases pinned implementation</h2>
 <p>The strict count classified 1,739 of 5,087 cases as implementation-coupled, or 34%. The total also includes 16 uncertain cases, which are outside the implementation-coupled count.</p>
 <p class="post-table-hint" hidden>Swipe horizontally to see all columns.</p><div class="post-table-scroll" tabindex="0" role="region" aria-label="Swipe horizontally to see all columns."><table class="table-comparison">
 <thead>
@@ -283,7 +283,7 @@
 <p>After excluding source checks introduced only by the helpers and ambiguous uses of locators, the audit estimated roughly 1,300–1,500 clearly implementation-coupled cases, or 25%–30%. That estimate did not include a second exact case-by-case count or a statistical confidence interval. The full report keeps 34% as the strict result, even when several cases can be fixed the same way.</p>
 <h2 id="who-wrote-them">Who wrote them</h2>
 <p>Git blame attributed 3,576 of 4,687 test registration lines to <code class="post-code--single">orbi-build[bot]</code>, or 76% rounded to a whole percent. It identifies who last changed each registration line; it cannot tell me who wrote every assertion. A parameterized registration can register several cases, so this denominator differs from the audit&#39;s 5,087 cases.</p>
-<p>The bot maintained most of this suite, but I have no human-written control group and did not compare equivalent tasks assigned to people and agents. I cannot conclude from this audit that agents write worse tests than people. If you have AI writing unit tests, check the browser and operational-script suites too.</p>
+<p>The bot maintained most of this suite, but I have no human-written control group and did not compare equivalent tasks assigned to people and agents. I cannot conclude from this audit that agents write worse tests than people. If you have AI writing unit tests, audit the browser and operational-script suites too: by share of cases, that is where the coupling was densest.</p>
 <h2 id="where-the-implementation-tests-came-from">Where the implementation tests came from</h2>
 <p>My ticket-writing rules called for acceptance criteria such as &quot;only one rendering or decision function exists&quot;. Individual tickets asked that an old sentence &quot;can no longer be found in the source&quot;. The delivery agent followed those instructions literally, turning architectural cleanup requirements into permanent tests of source organization.</p>
 <p>Issue #3355 asked the initial page and polling response to share billing logic, with acceptance criteria requiring a single implementation of the free-runs count in the source. Issue #3436 required removing retired copy from the source. Its <code class="post-code--single">proof-receipt-source-3436.test.ts</code> recursively scanned every <code class="post-code--single">.ts</code> file under <code class="post-code--single">src</code> for the retired sentence. A passing test meant those files did not contain the phrase. It said nothing about what a visitor saw on the page.</p>
@@ -303,7 +303,7 @@
 </ul>
 <p>The repository-wide audit on 18 November 2026 found that these categories accounted for roughly 30 percent of all cases. Renaming something or adjusting styling makes them fail, and they also slow every test run.</p>
 </blockquote>
-<p>The rule&#39;s 30 percent rounds the narrower estimate; the strict count is 34%. I cited slower test runs as a reason for the rule, but the audit did not measure the runtime cost of those assertion categories separately. The timing measurements below covered migration setup and parallelism.</p>
+<p>The rule&#39;s 30 percent matches the top of the narrower 25%–30% estimate; the strict count is 34%. I cited slower test runs as a reason for the rule, but the audit did not measure the runtime cost of those assertion categories separately. The timing measurements below covered migration setup and parallelism.</p>
 <p>I also changed the ticket-writing rule: given the same data, the two places being compared must show the same result, checked on the rendered page or API response. Requiring a single implementation makes code organization a condition for merging. A reviewer can check whether the logic is shared without adding a permanent assertion about that structure.</p>
 <h2 id="the-cleanup">The cleanup</h2>
 <p>I opened six cleanup tickets, #3536 through #3541, on 19 November 2026, 09:54 (UTC+8). Orbi opened and merged all six corresponding PRs; the last merged on 20 November 2026, 08:15 (UTC+8).</p>
@@ -356,10 +356,10 @@
 <td align="right">10 s</td>
 </tr>
 </tbody></table></div>
-<p>Cumulative setup sums the time spent across files and workers, so it can exceed elapsed time. Increasing parallelism alone finished the run sooner but spent more time on setup in total. Looking only at elapsed time would have hidden the cost of repeated imports.</p>
+<p>Cumulative setup sums the time spent across files and workers, so it can exceed elapsed time. Increasing parallelism alone finished the run sooner but spent more time on setup in total.</p>
 <p>CI now sets <code class="post-code--single">VITEST_MAX_WORKERS=8</code>; the delivery sandbox keeps its default of 2. At 8 workers, an assertion on request duration failed with <code class="post-code--spaced">expected 2216 to be less than 2000</code>. The test already blocked a database write until it received the response, then released the write, proving that the response did not wait for the write. I removed the redundant elapsed-time assertion rather than raising its threshold.</p>
 <p>The GitHub Actions <code class="post-code--spaced">Run npm test</code> step had a median of 271 s across 60 successful PR runs on 18 November 2026 (UTC). The query covered 17–18 November but hit its 60-run cap, with all results from the 18th, so the sample did not cover every run that day. Across 80 successful PR runs after the changes, the median was 102 s. Both medians measure the test step, including the test command&#39;s overhead; they do not measure full workflow times.</p>
-<p>The post-change sample spans 19 November 2026, 15:40 UTC through 20 November 2026, 00:46 UTC. The repository kept changing between the samples, including cleanup work. The CI comparison records the before-and-after timings; the local table separates the effects of setup and parallelism. The speedup PRs, #3527 and #3533, merged on 19 November 2026 at 08:36 and 10:42 (UTC+8), before that sample.</p>
+<p>The post-change sample spans 19 November 2026, 15:40 UTC through 20 November 2026, 00:46 UTC. The repository kept changing between the samples, including cleanup work. Only the local table separates the effects of setup and parallelism. The speedup PRs, #3527 and #3533, merged on 19 November 2026 at 08:36 and 10:42 (UTC+8), before that sample.</p>
 <h2 id="a-checklist-for-your-repo">A checklist for your repo</h2>
 <ul>
 <li>Classify assertions by what they check; record mixed cases and uncertain classifications explicitly.</li>

@@ -1,14 +1,14 @@
 ---
 title: AI-generated tests: what I found in 5,087 cases
 date: 2026-11-20
-summary: Of 5,087 Orbi Cloud Vitest cases, a third pinned implementation details. Our bot last changed most registration lines. I cover the cause, my rule and faster CI.
+summary: Of 5,087 Orbi Cloud Vitest cases, a strict count found a third pinned implementation details. Where they came from, the rule I added, and faster CI runs.
 lang: en
 author: Larry 🍀 Orbi
 image: /img/blog-ai-generated-tests-card.png
 mirror: ai-generated-tests
 ---
 
-Orbi is an open-source system that takes a GitHub Issue through implementation, review, merge and release. I audited the Vitest suites in Orbi Cloud's own repository, where Orbi's delivery bot last changed most test registration lines. Engineering leads and solo maintainers who use coding agents to write code and AI-generated tests can use these counts and the repository rule to check the suite they rely on for merge decisions. I also trace where the implementation-coupled tests came from and how the measured CI test-step median fell from 271 s to 102 s after setup and parallelism changes.
+Orbi is an open-source system that takes a GitHub Issue through implementation, review, merge and release. I audited the Vitest suites in Orbi Cloud's own repository, where Orbi's delivery bot last changed most test registration lines. Engineering leads and solo maintainers who use coding agents to write code and AI-generated tests can use these counts and the repository rule to check the suite they rely on for merge decisions. I also trace where the implementation-coupled tests came from, and show the setup and parallelism changes behind a CI test-step median that fell from 271 s to 102 s.
 
 I'm Larry 🍀 Orbi, the creator of Orbi.
 
@@ -24,7 +24,7 @@ I spot-checked the source at 5 locations. Only the example counting disabled con
 
 To check the labels, I gave a separate DeepSeek session the same definitions and 60 test registrations drawn at random from the main directory (seed 20261120), without the audit's labels. It agreed on 48 of 60 (80%, Cohen's kappa 0.60), including all 18 cases the audit had marked implementation-coupled. In all 12 disagreements, it marked a case as implementation-coupled where the audit had called it behavior. Most involved exact comparisons of HTML fragments such as hidden inputs, or direct calls to internal helpers. The check found no inflation in the audit's count on this sample. A first attempt was discarded because that session found and read the file holding the audit's labels.
 
-## What the audit of AI-generated tests found
+## A third of the cases pinned implementation
 
 The strict count classified 1,739 of 5,087 cases as implementation-coupled, or 34%. The total also includes 16 uncertain cases, which are outside the implementation-coupled count.
 
@@ -53,7 +53,7 @@ After excluding source checks introduced only by the helpers and ambiguous uses 
 
 Git blame attributed 3,576 of 4,687 test registration lines to `orbi-build[bot]`, or 76% rounded to a whole percent. It identifies who last changed each registration line; it cannot tell me who wrote every assertion. A parameterized registration can register several cases, so this denominator differs from the audit's 5,087 cases.
 
-The bot maintained most of this suite, but I have no human-written control group and did not compare equivalent tasks assigned to people and agents. I cannot conclude from this audit that agents write worse tests than people. If you have AI writing unit tests, check the browser and operational-script suites too.
+The bot maintained most of this suite, but I have no human-written control group and did not compare equivalent tasks assigned to people and agents. I cannot conclude from this audit that agents write worse tests than people. If you have AI writing unit tests, audit the browser and operational-script suites too: by share of cases, that is where the coupling was densest.
 
 ## Where the implementation tests came from
 
@@ -81,7 +81,7 @@ I added this rule to `AGENTS.md` on 18 November 2026, in commit `62738cff`, tran
 >
 > The repository-wide audit on 18 November 2026 found that these categories accounted for roughly 30 percent of all cases. Renaming something or adjusting styling makes them fail, and they also slow every test run.
 
-The rule's 30 percent rounds the narrower estimate; the strict count is 34%. I cited slower test runs as a reason for the rule, but the audit did not measure the runtime cost of those assertion categories separately. The timing measurements below covered migration setup and parallelism.
+The rule's 30 percent matches the top of the narrower 25%–30% estimate; the strict count is 34%. I cited slower test runs as a reason for the rule, but the audit did not measure the runtime cost of those assertion categories separately. The timing measurements below covered migration setup and parallelism.
 
 I also changed the ticket-writing rule: given the same data, the two places being compared must show the same result, checked on the rendered page or API response. Requiring a single implementation makes code organization a condition for merging. A reviewer can check whether the logic is shared without adding a permanent assertion about that structure.
 
@@ -121,13 +121,13 @@ The local measurements in #3493 used the same 32-core machine with coverage enab
 | Increased parallelism only | 8 | 93 s | 402 s |
 | Both changes | 8 | 69 s | 10 s |
 
-Cumulative setup sums the time spent across files and workers, so it can exceed elapsed time. Increasing parallelism alone finished the run sooner but spent more time on setup in total. Looking only at elapsed time would have hidden the cost of repeated imports.
+Cumulative setup sums the time spent across files and workers, so it can exceed elapsed time. Increasing parallelism alone finished the run sooner but spent more time on setup in total.
 
 CI now sets `VITEST_MAX_WORKERS=8`; the delivery sandbox keeps its default of 2. At 8 workers, an assertion on request duration failed with `expected 2216 to be less than 2000`. The test already blocked a database write until it received the response, then released the write, proving that the response did not wait for the write. I removed the redundant elapsed-time assertion rather than raising its threshold.
 
 The GitHub Actions `Run npm test` step had a median of 271 s across 60 successful PR runs on 18 November 2026 (UTC). The query covered 17–18 November but hit its 60-run cap, with all results from the 18th, so the sample did not cover every run that day. Across 80 successful PR runs after the changes, the median was 102 s. Both medians measure the test step, including the test command's overhead; they do not measure full workflow times.
 
-The post-change sample spans 19 November 2026, 15:40 UTC through 20 November 2026, 00:46 UTC. The repository kept changing between the samples, including cleanup work. The CI comparison records the before-and-after timings; the local table separates the effects of setup and parallelism. The speedup PRs, #3527 and #3533, merged on 19 November 2026 at 08:36 and 10:42 (UTC+8), before that sample.
+The post-change sample spans 19 November 2026, 15:40 UTC through 20 November 2026, 00:46 UTC. The repository kept changing between the samples, including cleanup work. Only the local table separates the effects of setup and parallelism. The speedup PRs, #3527 and #3533, merged on 19 November 2026 at 08:36 and 10:42 (UTC+8), before that sample.
 
 ## A checklist for your repo
 

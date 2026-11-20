@@ -10,7 +10,7 @@
       <link>https://orbi.build/blog/ai-generated-tests/</link>
       <guid isPermaLink="true">https://orbi.build/blog/ai-generated-tests/</guid>
       <pubDate>Fri, 20 Nov 2026 00:00:00 GMT</pubDate>
-      <description>Of 5,087 Orbi Cloud Vitest cases, a third pinned implementation details. Our bot last changed most registration lines. I cover the cause, my rule and faster CI.</description>
+      <description>Of 5,087 Orbi Cloud Vitest cases, a strict count found a third pinned implementation details. Where they came from, the rule I added, and faster CI runs.</description>
     </item>
     <item>
       <title>Antigravity vs Claude Code: headless CLI test</title>
