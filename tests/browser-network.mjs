@@ -329,6 +329,23 @@ export const BADGE_PLACEHOLDER_SIZES = [
   // declares the same 214x48 box). The listing /tools/orbi is expected
   // to go live after the badge is found.
   { host: "another.directory", width: 214, height: 48 },
+  // 2026-11-20 LaunchBuff featured badge, measured on the live URL:
+  // launchbuff.com /badge-featured-dark.svg 256x80 (SVG, 1153 bytes,
+  // width/height and viewBox 0 0 256 80; the official vendor snippet
+  // declares the same 256x80 box). The listing /products/orbi-hii2su is
+  // expected to go live after the badge is verified.
+  { host: "launchbuff.com", width: 256, height: 80 },
+  // 2026-11-20 AI Jet featured badge, measured on the live URL:
+  // aijet.cc /badge/badge_light.svg 200x55 (SVG, 1158 bytes,
+  // width/height and viewBox 0 0 200 55; the official vendor snippet
+  // declares the same 200x55 box).
+  { host: "aijet.cc", width: 200, height: 55 },
+  // 2026-11-20 Launchpadly listed-on badge, measured on the live URL:
+  // launchpadly.co /embed/badges/startup/orbi.svg?variant=listed-on
+  // 260x48 (SVG, 1183 bytes, width/height and viewBox 0 0 260 48; the
+  // official vendor snippet declares the same 260x48 box). The listing
+  // /startup/orbi is expected to go live after the badge is verified.
+  { host: "launchpadly.co", width: 260, height: 48 },
 ];
 const FALLBACK_PLACEHOLDER_SIZE = { width: 1, height: 1 };
 
