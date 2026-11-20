@@ -258,6 +258,8 @@ feed of the English posts: https://orbi.build/blog/feed.xml
 
 - AI-generated tests: what auditing 5,087 of ours found (English):
   https://orbi.build/blog/ai-generated-tests/
+- AI 写的测试：5,087 条用例的审查结果 (Chinese):
+  https://orbi.build/zh/blog/ai-generated-tests/
 - Antigravity vs Claude Code: headless CLI test (English):
   https://orbi.build/blog/antigravity-vs-claude-code/
 - Agentic software development beyond one session (English):

@@ -5,6 +5,7 @@ summary: I classified 5,087 Vitest cases in Orbi Cloud's repo, most last written
 lang: en
 author: Larry 🍀 Orbi
 image: /img/blog-ai-generated-tests-card.png
+mirror: ai-generated-tests
 ---
 
 Orbi is an open-source system that takes a GitHub Issue through implementation, review, merge and release; this post audits the Vitest suites in Orbi Cloud's own repository, where Orbi's delivery bot last wrote most of the test registrations. It is for engineering leads and solo maintainers who use coding agents to write code and AI-generated tests, then let the suite gate merges. You get the counts, where the implementation tests came from, a repository rule to copy, and how the measured CI test-step median fell from 271 s to 102 s after setup and parallelism changes.

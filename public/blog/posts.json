@@ -3,8 +3,8 @@
     "slug": "ai-generated-tests",
     "title": "AI-generated tests: what auditing 5,087 of ours found",
     "summary": "I classified 5,087 Vitest cases in Orbi Cloud's repo, most last written by our bot. A third pinned implementation: why, the rule I added, how CI time fell.",
-    "zhSlug": null,
-    "zhTitle": null,
+    "zhSlug": "ai-generated-tests",
+    "zhTitle": "AI 写的测试：5,087 条用例的审查结果",
     "related": []
   },
   {
