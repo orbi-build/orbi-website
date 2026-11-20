@@ -9,7 +9,6 @@ import { foundingDiscountNote, paidPriceReplacements } from "../src/pricing-toke
 const PUBLIC_DIR = fileURLToPath(new URL("../public/", import.meta.url));
 const SITE_DIR = fileURLToPath(new URL("../site/", import.meta.url));
 const SITE_PAGES_DIR = fileURLToPath(new URL("../site/pages/", import.meta.url));
-const CONTENT_DIR = fileURLToPath(new URL("../content/blog/", import.meta.url));
 const SRC_DIR = fileURLToPath(new URL("../src/", import.meta.url));
 const TOKEN = pricing.monthlyUsdToken;
 const USD = String(pricing.cloudMonthlyUsd);
@@ -111,8 +110,8 @@ async function listHtmlFiles(dir = PUBLIC_DIR) {
   return files.flat();
 }
 
-// Acceptance 2 (Issue #1351): every text source and built file the retired
-// per-delivery wording could hide in — pages, content, worker code, assets.
+// Acceptance 2 (Issue #1351): every text file the retired per-delivery
+// wording could hide in — page sources, llms prose, worker copy, built pages.
 const TEXT_EXTENSIONS = new Set([".html", ".md", ".txt", ".json", ".js", ".mjs", ".xml", ".css"]);
 
 async function listTextFiles(dir) {
@@ -222,8 +221,8 @@ describe("Cloud monthly price constant (Issue #102)", () => {
 // and on the terms pages; no other product page states its own trial terms.
 // Blog articles under content/blog/ are dated writing, not product pages: the
 // ticket's audit covered the 44 non-blog pages, and two articles explain the
-// trial on purpose, so the sentence-token scan below reads the built
-// non-blog pages, while the retired-wording scan covers every source file.
+// trial on purpose, so the scans below read the built non-blog pages and the
+// two articles Issue #1351 rewrites, never the dated archive.
 describe("free trial copy (Issue #1216)", () => {
   const EN = `${FREE_TRIAL_DAYS}-day free trial`;
   const ZH = `免费试用 ${FREE_TRIAL_DAYS} 天`;
@@ -308,13 +307,45 @@ describe("free trial copy (Issue #1216)", () => {
     }
   });
 
-  // Acceptance 2: the retired per-delivery rule must not survive anywhere in
-  // the site source, the content files or the build, blog posts included.
-  it("ships none of the retired per-delivery phrases in source, build or llms files", async () => {
-    for (const root of [SITE_DIR, CONTENT_DIR, SRC_DIR, PUBLIC_DIR]) {
+  // Acceptance 2: the retired per-delivery rule must not survive in the copy
+  // the build ships as product text — the page sources, the llms prose, the
+  // Worker's copy table and every built non-blog page.
+  //
+  // Dated blog articles stay out, which is the scope Issue #1216 set and the
+  // repository still keeps: the newsletter archive republishes each issue
+  // verbatim (Issue #1405) and says so in its own lead — "Prices, free
+  // allowances and screens are as of that day; see Orbi Cloud for how things
+  // stand now" — so an archived issue states what was true the day it was
+  // sent, not what the product promises today. Rewriting those originals is a
+  // decision for the archive's own ticket, not this one. The two articles
+  // this ticket rewrites are checked by name below.
+  it("ships none of the retired per-delivery phrases in the page sources, the Worker copy or the non-blog build", async () => {
+    for (const root of [SITE_DIR, SRC_DIR, PUBLIC_DIR]) {
       for (const path of await listTextFiles(root)) {
+        if (isBlog(path)) continue;
         const text = await readFile(path, "utf8");
         for (const phrase of RETIRED) expect(text, `${path}: ${phrase}`).not.toContain(phrase);
+      }
+    }
+  });
+
+  // Issue #1351 items 2 and 3: the two articles that explained how the free
+  // count was spent now state the trial, and the "write a request" article in
+  // each language links the Cloud docs' limits page for the rest.
+  it("states the trial, not a delivery count, in the two articles that explained it", async () => {
+    for (const [relativePath, expected] of Object.entries({
+      "blog/write-a-request": { copy: EN, link: "https://cloud-docs.orbi.build/limits-and-quotas" },
+      "zh/blog/write-a-request": { copy: ZH, link: "https://cloud-docs.orbi.build/zh/limits-and-quotas" },
+      "blog/watch-the-six-steps": { copy: EN },
+      "zh/blog/watch-the-six-steps": { copy: ZH },
+    })) {
+      const body = await (await serve(await rawPage(`${relativePath}/index.html`), `/${relativePath}/`)).text();
+      expect(body, `${relativePath}: sentence token`).not.toContain(FREE_TRIAL_TOKEN);
+      expect(body, `${relativePath}: day token`).not.toContain(FREE_TRIAL_DAYS_TOKEN);
+      expect(body, `${relativePath}: the served sentence`).toContain(expected.copy);
+      for (const phrase of RETIRED) expect(body, `${relativePath}: ${phrase}`).not.toContain(phrase);
+      if (expected.link) {
+        expect(body, `${relativePath}: limits page link`).toContain(`href="${expected.link}"`);
       }
     }
   });
