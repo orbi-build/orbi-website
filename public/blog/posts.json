@@ -1,5 +1,21 @@
 [
   {
+    "slug": "stuck-delivery-one-click",
+    "title": "Answer a stuck Orbi delivery from the status page",
+    "summary": "When an Orbi delivery stops, see why, choose an answer in Cloud, and let it continue. Examples show what each button does and how to change your mind.",
+    "zhSlug": null,
+    "zhTitle": null,
+    "related": []
+  },
+  {
+    "slug": "vague-request-to-merged-pr",
+    "title": "From a vague request to a merged PR with Orbi",
+    "summary": "See how Orbi adds acceptance criteria to one-line GitHub Issues, splits larger requests into queued child tickets, and records decisions before delivery.",
+    "zhSlug": null,
+    "zhTitle": null,
+    "related": []
+  },
+  {
     "slug": "antigravity-vs-claude-code",
     "title": "Antigravity vs Claude Code: headless CLI test",
     "summary": "Antigravity vs Claude Code on one failing Python test: Claude Code needs explicit permissions to fix it; Antigravity hit errors on a free Gemini API key.",

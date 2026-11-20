@@ -6,6 +6,20 @@
     <description>Notes from shipping Orbi in the open: delivery runs, failures, fixes, and measurements.</description>
     <language>en</language>
     <item>
+      <title>Answer a stuck Orbi delivery from the status page</title>
+      <link>https://orbi.build/blog/stuck-delivery-one-click/</link>
+      <guid isPermaLink="true">https://orbi.build/blog/stuck-delivery-one-click/</guid>
+      <pubDate>Fri, 20 Nov 2026 00:00:00 GMT</pubDate>
+      <description>When an Orbi delivery stops, see why, choose an answer in Cloud, and let it continue. Examples show what each button does and how to change your mind.</description>
+    </item>
+    <item>
+      <title>From a vague request to a merged PR with Orbi</title>
+      <link>https://orbi.build/blog/vague-request-to-merged-pr/</link>
+      <guid isPermaLink="true">https://orbi.build/blog/vague-request-to-merged-pr/</guid>
+      <pubDate>Fri, 20 Nov 2026 00:00:00 GMT</pubDate>
+      <description>See how Orbi adds acceptance criteria to one-line GitHub Issues, splits larger requests into queued child tickets, and records decisions before delivery.</description>
+    </item>
+    <item>
       <title>Antigravity vs Claude Code: headless CLI test</title>
       <link>https://orbi.build/blog/antigravity-vs-claude-code/</link>
       <guid isPermaLink="true">https://orbi.build/blog/antigravity-vs-claude-code/</guid>

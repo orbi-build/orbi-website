@@ -256,6 +256,10 @@ Shipping notes from the root domain: what each delivery run hit, what fixed
 it, and the numbers behind both, traced to the issues they came from. RSS
 feed of the English posts: https://orbi.build/blog/feed.xml
 
+- Answer a stuck Orbi delivery from the status page (English):
+  https://orbi.build/blog/stuck-delivery-one-click/
+- From a vague request to a merged PR with Orbi (English):
+  https://orbi.build/blog/vague-request-to-merged-pr/
 - Antigravity vs Claude Code: headless CLI test (English):
   https://orbi.build/blog/antigravity-vs-claude-code/
 - Agentic software development beyond one session (English):
