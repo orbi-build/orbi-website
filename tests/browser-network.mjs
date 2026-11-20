@@ -352,6 +352,12 @@ export const BADGE_PLACEHOLDER_SIZES = [
   // image at height 40px; width auto, so the source file decides the
   // placeholder box).
   { host: "sellwithboost.com", width: 160, height: 40 },
+  // 2026-11-21 NewTool.site featured badge, measured on the live URL:
+  // newtool.site /badges/newtool-light.svg 210x54 (SVG, 115904 bytes,
+  // width/height and viewBox 0 0 210 54). Official snippet uses
+  // height = "54px" width = "auto" (spacing kept exact), so the source
+  // file decides the placeholder box. The listing /item/orbi returns 200.
+  { host: "newtool.site", width: 210, height: 54 },
 ];
 const FALLBACK_PLACEHOLDER_SIZE = { width: 1, height: 1 };
 
