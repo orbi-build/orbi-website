@@ -136,7 +136,7 @@ The third request, which actually ran first, on the evening of October 8, was wr
 The new check did what the Issue asked: with no key configured it failed, so CI stayed red, and Orbi does not merge on red CI. The draft listed the secret and variables the check needs, but it didn't ask whether they were configured; Write a request doesn't check whether the secrets or variables a task needs actually exist. Orbi's review stopped the task for a human decision, labeled the Issue `ai-blocked`, and left the failing check in its pull request, unmerged.
 
 <figure class="post-media">
-<img src="/img/blog-write-request-blocked.webp" alt="Blocked. Orbi stopped: you need to make a call on something. The change was not merged into your project. This doesn't use a free run. Contact us: Telegram group, support@orbi.build. Buttons: See Orbi's note and Write another request." width="1200" height="751">
+<img src="/img/blog-write-request-blocked.webp" alt="Blocked. Orbi stopped: you need to make a call on something. The change was not merged into your project. Contact us: Telegram group, support@orbi.build. Buttons: See Orbi's note and Write another request." width="1200" height="751">
 <figcaption>The stuck task. Its title is Chinese because the request was written in Chinese; the page is in English.</figcaption>
 </figure>
 
@@ -144,9 +144,7 @@ The card only says Orbi needs a decision from you. **See Orbi's note** opens [th
 
 ## What it costs
 
-On the free trial you get \_\_FREE\_DELIVERIES\_\_ free deliveries (the page calls them free runs). A task that fails, gets stuck like request 3, or ends without a merge doesn't use one, so only merged deliveries count. Drafts never use a free delivery, and you can keep drafting after the free deliveries are gone.
-
-If you hand one off after the free deliveries are gone, the Issue is still created right away, but Orbi removes its `ai-ready` label at once and leaves a comment saying why. After you subscribe, click **Try →** next to that Issue on the status page; it adds `ai-ready`, and that is when Orbi starts. The status page lists that button only when no other task is running; if one is, wait for it to finish, or add `ai-ready` to the Issue on GitHub yourself.
+Your \_\_FREE\_TRIAL\_\_ starts when you sign up, with no credit card required. The Cloud docs' [Limits and quotas](https://cloud-docs.orbi.build/limits-and-quotas) page covers what the trial includes and what happens when it ends.
 
 Paying monthly, Solo is US$\_\_SOLO\_MONTHLY\_USD\_\_ (\_\_SOLO\_INCLUDED\_TOKENS\_\_ tokens of model usage a month) and Pro is US$\_\_CLOUD\_MONTHLY\_USD\_\_ (\_\_INCLUDED\_TOKENS\_\_ tokens). Drafts count toward that monthly usage, the same as deliveries. Once the month's usage runs out, new drafts and new deliveries pause (running ones finish) until the 1st (months are counted in UTC); there is no overage charge, and accounts that bring their own model API key aren't paused this way. Details are on the [Orbi Cloud page](/cloud/?ref=blog-write-request).
 

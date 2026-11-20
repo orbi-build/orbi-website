@@ -17,7 +17,7 @@ const pricingReplacements = {
   // Issue #1237: the founding price and the struck-through list price state
   // resolve the same way the Worker resolves them.
   ...paidPrices,
-  [pricing.freeDeliveriesToken]: String(pricing.freeDeliveries),
+  [pricing.freeTrialDaysToken]: String(pricing.freeTrialDays),
   [pricing.monthlyUsdToken]: String(pricing.cloudMonthlyUsd),
   [pricing.soloMonthlyUsdToken]: String(pricing.soloMonthlyUsd),
   [pricing.soloAnnualUsdToken]: String(pricing.soloAnnualUsd),

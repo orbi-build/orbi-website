@@ -216,10 +216,10 @@ function startServer() {
                 foundingDiscountNote(pricing, { zh: pathname.startsWith("/zh") }),
               )
               .replaceAll(pricing.includedTokensToken, String(pricing.includedTokensLabel))
-              // Issue #1216: the free-allowance sentence is one shared token;
-              // its nested count is filled by the freeDeliveriesToken rule below.
+              // Issue #1216: the free-trial sentence is one shared token;
+              // its nested day count is filled by the freeTrialDaysToken rule below.
               .replaceAll(pricing.freeTrialCopyToken, pathname.startsWith("/zh") ? pricing.freeTrialCopyZh : pricing.freeTrialCopy)
-              .replaceAll(pricing.freeDeliveriesToken, String(pricing.freeDeliveries))
+              .replaceAll(pricing.freeTrialDaysToken, String(pricing.freeTrialDays))
               .replaceAll(
                 pricing.measuredSmallRepositoryDeliveryRangeToken,
                 String(pricing.measuredSmallRepositoryDeliveryRange),
@@ -827,8 +827,8 @@ async function assertHomepage(browser, path, comparisonPath, size, screenshot) {
   if (!heroButtonText) throw new Error(`${path}: hero CTA has no label`);
   const heroNote = (await hero.locator(".hero-cta-note").textContent()).replace(/\s+/g, " ").trim();
   if (!heroNote) throw new Error(`${path}: hero CTA note is empty`);
-  if (heroNote.includes(String(pricing.freeDeliveries))) {
-    throw new Error(`${path}: hero CTA note is ${JSON.stringify(heroNote)}, expected no delivery count beside the button`);
+  if (heroNote.includes(String(pricing.freeTrialDays))) {
+    throw new Error(`${path}: hero CTA note is ${JSON.stringify(heroNote)}, expected no trial term beside the button`);
   }
   const heroGithub = hero.locator('[data-cta="hero-github"]');
   if (await heroGithub.count() !== 1
@@ -1011,7 +1011,7 @@ async function assertHomepage(browser, path, comparisonPath, size, screenshot) {
   const summary = page.locator(".pricing-summary");
   if (await summary.count() !== 1) throw new Error(`${path}: pricing summary is missing`);
   const summaryText = await summary.textContent();
-  for (const value of [pricing.soloMonthlyUsd, pricing.cloudMonthlyUsd, pricing.soloIncludedTokensLabel, pricing.includedTokensLabel, pricing.soloRepositories, pricing.proRepositories, pricing.freeDeliveries, pricing.foundingPartnerLimit, pricing.foundingPartnerRemaining]) {
+  for (const value of [pricing.soloMonthlyUsd, pricing.cloudMonthlyUsd, pricing.soloIncludedTokensLabel, pricing.includedTokensLabel, pricing.soloRepositories, pricing.proRepositories, pricing.freeTrialDays, pricing.foundingPartnerLimit, pricing.foundingPartnerRemaining]) {
     if (!summaryText.includes(String(value))) throw new Error(`${path}: pricing summary is missing ${value}`);
   }
   // Issue #1212: the founding sentence is copy; its live values are not.
@@ -1521,7 +1521,7 @@ async function assertCloudPage(browser, path, size, screenshot) {
     "US$" + pricing.proAnnualUsd,
     pricing.soloIncludedTokensLabel + " token",
     pricing.includedTokensLabel + " token",
-    String(pricing.freeDeliveries),
+    String(pricing.freeTrialDays),
     "ai-release",
     "GitHub Actions",
   ];
@@ -1603,8 +1603,8 @@ async function assertCloudPage(browser, path, size, screenshot) {
     || await heroButton.getAttribute("data-cta") !== "cloud-hero") {
     throw new Error(`${path}: Cloud hero CTA contract is incorrect`);
   }
-  if ((await heroButton.textContent()).includes(String(pricing.freeDeliveries))) {
-    throw new Error(`${path}: Cloud hero CTA must not name a delivery count`);
+  if ((await heroButton.textContent()).includes(String(pricing.freeTrialDays))) {
+    throw new Error(`${path}: Cloud hero CTA must not name a trial term`);
   }
   // Issue #128: the "needs GitHub Actions" sentence links the CI-gates
   // guide — the explanation of what that requirement actually buys.
