@@ -258,8 +258,16 @@ feed of the English posts: https://orbi.build/blog/feed.xml
 
 - AI-generated tests: what I found in 5,087 cases (English):
   https://orbi.build/blog/ai-generated-tests/
+- When an AI coding run stops and needs your answer (English):
+  https://orbi.build/blog/stuck-delivery-one-click/
+- From a vague request to a merged PR with Orbi (English):
+  https://orbi.build/blog/vague-request-to-merged-pr/
 - AI 写的测试：5,087 条用例的审查结果 (Chinese):
   https://orbi.build/zh/blog/ai-generated-tests/
+- AI 编码交付卡住后，怎么让 Orbi 继续 (Chinese):
+  https://orbi.build/zh/blog/stuck-delivery-one-click/
+- 一句话需求，怎么走到 PR 合并 (Chinese):
+  https://orbi.build/zh/blog/vague-request-to-merged-pr/
 - Antigravity vs Claude Code: headless CLI test (English):
   https://orbi.build/blog/antigravity-vs-claude-code/
 - Agentic software development beyond one session (English):

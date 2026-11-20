@@ -13,6 +13,20 @@
       <description>A strict count found that a third of 5,087 Orbi Cloud Vitest cases pinned implementation details. I trace why, add a repo rule and speed up the test step.</description>
     </item>
     <item>
+      <title>When an AI coding run stops and needs your answer</title>
+      <link>https://orbi.build/blog/stuck-delivery-one-click/</link>
+      <guid isPermaLink="true">https://orbi.build/blog/stuck-delivery-one-click/</guid>
+      <pubDate>Fri, 20 Nov 2026 00:00:00 GMT</pubDate>
+      <description>A stopped Orbi delivery needs either an answer or an edited Issue. Which Cloud button to press, what it changes on GitHub, and how to change your mind.</description>
+    </item>
+    <item>
+      <title>From a vague request to a merged PR with Orbi</title>
+      <link>https://orbi.build/blog/vague-request-to-merged-pr/</link>
+      <guid isPermaLink="true">https://orbi.build/blog/vague-request-to-merged-pr/</guid>
+      <pubDate>Fri, 20 Nov 2026 00:00:00 GMT</pubDate>
+      <description>Three real requests show how Orbi writes acceptance criteria into a one-line GitHub Issue, splits multi-outcome requests, and still merges in minutes.</description>
+    </item>
+    <item>
       <title>Antigravity vs Claude Code: headless CLI test</title>
       <link>https://orbi.build/blog/antigravity-vs-claude-code/</link>
       <guid isPermaLink="true">https://orbi.build/blog/antigravity-vs-claude-code/</guid>

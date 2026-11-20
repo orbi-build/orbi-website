@@ -368,10 +368,34 @@
     <xhtml:link rel="alternate" hreflang="x-default" href="https://orbi.build/blog/ai-generated-tests/"/>
   </url>
   <url>
+    <loc>https://orbi.build/blog/stuck-delivery-one-click/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/blog/stuck-delivery-one-click/"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/blog/stuck-delivery-one-click/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://orbi.build/blog/stuck-delivery-one-click/"/>
+  </url>
+  <url>
+    <loc>https://orbi.build/blog/vague-request-to-merged-pr/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/blog/vague-request-to-merged-pr/"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/blog/vague-request-to-merged-pr/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://orbi.build/blog/vague-request-to-merged-pr/"/>
+  </url>
+  <url>
     <loc>https://orbi.build/zh/blog/ai-generated-tests/</loc>
     <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/blog/ai-generated-tests/"/>
     <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/blog/ai-generated-tests/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://orbi.build/blog/ai-generated-tests/"/>
+  </url>
+  <url>
+    <loc>https://orbi.build/zh/blog/stuck-delivery-one-click/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/blog/stuck-delivery-one-click/"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/blog/stuck-delivery-one-click/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://orbi.build/blog/stuck-delivery-one-click/"/>
+  </url>
+  <url>
+    <loc>https://orbi.build/zh/blog/vague-request-to-merged-pr/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/blog/vague-request-to-merged-pr/"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/blog/vague-request-to-merged-pr/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://orbi.build/blog/vague-request-to-merged-pr/"/>
   </url>
   <url>
     <loc>https://orbi.build/blog/antigravity-vs-claude-code/</loc>
@@ -773,12 +797,14 @@
   </url>
   <url>
     <loc>https://orbi.build/blog/write-a-request/</loc>
+    <lastmod>2026-11-20</lastmod>
     <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/blog/write-a-request/"/>
     <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/blog/write-a-request/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://orbi.build/blog/write-a-request/"/>
   </url>
   <url>
     <loc>https://orbi.build/zh/blog/write-a-request/</loc>
+    <lastmod>2026-11-20</lastmod>
     <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/blog/write-a-request/"/>
     <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/blog/write-a-request/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://orbi.build/blog/write-a-request/"/>
