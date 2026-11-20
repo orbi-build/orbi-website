@@ -1,5 +1,13 @@
 [
   {
+    "slug": "ai-generated-tests",
+    "title": "AI-generated tests: what I found in 5,087 cases",
+    "summary": "A strict count found that a third of 5,087 Orbi Cloud Vitest cases pinned implementation details. I trace why, add a repo rule and speed up the test step.",
+    "zhSlug": "ai-generated-tests",
+    "zhTitle": "AI 写的测试：5,087 条用例的审查结果",
+    "related": []
+  },
+  {
     "slug": "antigravity-vs-claude-code",
     "title": "Antigravity vs Claude Code: headless CLI test",
     "summary": "Antigravity vs Claude Code on one failing Python test: Claude Code needs explicit permissions to fix it; Antigravity hit errors on a free Gemini API key.",
