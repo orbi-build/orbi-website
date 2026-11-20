@@ -260,6 +260,10 @@ feed of the English posts: https://orbi.build/blog/feed.xml
   https://orbi.build/blog/stuck-delivery-one-click/
 - From a vague request to a merged PR with Orbi (English):
   https://orbi.build/blog/vague-request-to-merged-pr/
+- 交付卡住了，在状态页上点一下 (Chinese):
+  https://orbi.build/zh/blog/stuck-delivery-one-click/
+- 一句话需求，怎么走到 PR 合并 (Chinese):
+  https://orbi.build/zh/blog/vague-request-to-merged-pr/
 - Antigravity vs Claude Code: headless CLI test (English):
   https://orbi.build/blog/antigravity-vs-claude-code/
 - Agentic software development beyond one session (English):

@@ -4,16 +4,19 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>From a vague request to a merged PR with Orbi | Orbi</title>
-  <meta name="description" content="See how Orbi adds acceptance criteria to one-line GitHub Issues, splits larger requests into queued child tickets, and records decisions before delivery.">
+  <meta name="description" content="Real runs show Orbi adding acceptance criteria to one-line GitHub Issues, splitting larger requests into queued child tickets and recording its decisions.">
   <link rel="canonical" href="https://orbi.build/blog/vague-request-to-merged-pr/">
+  <link rel="alternate" hreflang="en" href="https://orbi.build/blog/vague-request-to-merged-pr/">
+  <link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/blog/vague-request-to-merged-pr/">
+  <link rel="alternate" hreflang="x-default" href="https://orbi.build/blog/vague-request-to-merged-pr/">
   <meta property="og:type" content="article">
   <meta property="og:title" content="From a vague request to a merged PR with Orbi">
-  <meta property="og:description" content="See how Orbi adds acceptance criteria to one-line GitHub Issues, splits larger requests into queued child tickets, and records decisions before delivery.">
+  <meta property="og:description" content="Real runs show Orbi adding acceptance criteria to one-line GitHub Issues, splitting larger requests into queued child tickets and recording its decisions.">
   <meta property="og:url" content="https://orbi.build/blog/vague-request-to-merged-pr/">
   <meta property="og:image" content="https://orbi.build/img/blog-vague-request-to-merged-pr-card.png">
   <meta property="og:image:alt" content="From a vague request to a merged PR with Orbi">
   <meta property="article:published_time" content="2026-11-20">
-  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"From a vague request to a merged PR with Orbi","datePublished":"2026-11-20","author":{"@type":"Person","name":"Larry 🍀 Orbi","url":"https://orbi.build/about/larry-orbi/","sameAs":["https://github.com/xqliu","https://x.com/xqliu"]},"publisher":{"@type":"Organization","name":"Orbi","url":"https://orbi.build/","logo":{"@type":"ImageObject","url":"https://orbi.build/logo-mark.svg"}},"mainEntityOfPage":"https://orbi.build/blog/vague-request-to-merged-pr/","image":"https://orbi.build/img/blog-vague-request-to-merged-pr-card.png","inLanguage":"en","description":"See how Orbi adds acceptance criteria to one-line GitHub Issues, splits larger requests into queued child tickets, and records decisions before delivery.","url":"https://orbi.build/blog/vague-request-to-merged-pr/"}</script>
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"From a vague request to a merged PR with Orbi","datePublished":"2026-11-20","author":{"@type":"Person","name":"Larry 🍀 Orbi","url":"https://orbi.build/about/larry-orbi/","sameAs":["https://github.com/xqliu","https://x.com/xqliu"]},"publisher":{"@type":"Organization","name":"Orbi","url":"https://orbi.build/","logo":{"@type":"ImageObject","url":"https://orbi.build/logo-mark.svg"}},"mainEntityOfPage":"https://orbi.build/blog/vague-request-to-merged-pr/","image":"https://orbi.build/img/blog-vague-request-to-merged-pr-card.png","inLanguage":"en","description":"Real runs show Orbi adding acceptance criteria to one-line GitHub Issues, splitting larger requests into queued child tickets and recording its decisions.","url":"https://orbi.build/blog/vague-request-to-merged-pr/"}</script>
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <meta name="theme-color" content="#06151b">
 
@@ -152,7 +155,7 @@
           <h1 id="post-title">From a vague request to a merged PR with Orbi</h1>
           <p class="post-byline"><a href="/about/larry-orbi/">Larry 🍀 Orbi</a> · <time datetime="2026-11-20">2026-11-20</time></p>
 
-          <p class="hero-lede">See how Orbi adds acceptance criteria to one-line GitHub Issues, splits larger requests into queued child tickets, and records decisions before delivery.</p>
+          <p class="hero-lede">Real runs show Orbi adding acceptance criteria to one-line GitHub Issues, splitting larger requests into queued child tickets and recording its decisions.</p>
         </section>
       </div>
     </div>
@@ -181,7 +184,7 @@
           <li><a class="post-toc-link" href="#related">Related</a></li>
           </ol>
         </details>
-<p>Orbi is an open-source system that takes a one-sentence request through code, independent review, merge and release. This post is for developers and maintainers who use coding agents with GitHub and want to queue a change in plain language. It explains how Orbi turns a vague request into acceptance criteria, or a larger request into child tickets, before delivery starts.</p>
+<p>Orbi is an open-source system that takes a one-sentence request through code, independent review, merge and release. If you use coding agents with GitHub and want to queue a change in plain language, these real runs show how Orbi turns a vague request into acceptance criteria, or a larger request into child tickets, before delivery starts.</p>
 <p>I&#39;m Larry 🍀 Orbi, the creator of Orbi. The behavior here spans engine v0.7.44 through v0.7.52; the production demo requests below ran on v0.7.52.</p><aside class="post-cta-inline"><span>Orbi takes your Issues all the way to a release.</span><a class="button button-signal" data-cta="post-inline-start" href="/cloud/login">Try Orbi Cloud free →</a></aside>
 <h2 id="what-orbi-checks-before-starting-a-github-issue">What Orbi checks before starting a GitHub Issue</h2>
 <p>Orbi&#39;s pre-claim check reads a queued ticket for three things:</p>
@@ -191,7 +194,7 @@
 <li>A single outcome: one change that can be delivered on its own.</li>
 </ul>
 <p>The check judges what the ticket says. Separate template headings are optional. Orbi Cloud turns it on for every connected repository. On a self-hosted engine it is off by default; set <code class="post-code--spaced">clarify_thin_tickets = true</code> in <code class="post-code--single">.github/orbi.toml</code> to use it. A model error, timeout or malformed answer is logged as a skipped check and lets delivery proceed.</p>
-<p>Here, a claim means the runner picking up a queued ticket to work on it. When the only missing part is the acceptance condition and Orbi has a usable criteria proposal, the engine appends those criteria to the Issue body. The criteria, their heading (<code class="post-code--spaced">## Acceptance</code> or <code class="post-code--spaced">## 验收</code>) and Orbi&#39;s comment are written in the repository&#39;s configured message language, English or Chinese, whatever language the ticket uses.</p>
+<p>Here, a claim means the runner picking up a queued ticket to work on it. When the only missing part is the acceptance condition and Orbi has a usable criteria proposal, the engine appends those criteria to the Issue body. The criteria, their heading (<code class="post-code--spaced">## Acceptance</code> or <code class="post-code--spaced">## 验收</code>) and Orbi&#39;s comment are written in the repository&#39;s configured message language, English or Chinese, regardless of the ticket&#39;s language.</p>
 <p>The same claim continues to delivery. The implementation session receives the amended body from this step, without a second queue entry or approval exchange. Orbi leaves a comment beginning:</p>
 <blockquote>
 <p>Added the proposed acceptance criteria to this ticket.</p>
@@ -200,7 +203,7 @@
 <blockquote>
 <p>They are under <code class="post-code--spaced">## Acceptance</code>, and this claim continues to delivery. Editing this ticket changes them.</p>
 </blockquote>
-<p>The criteria remain editable in the Issue body. This automatic path continues immediately; it provides no approval window before implementation starts.</p>
+<p>Delivery starts right away, without an approval window.</p>
 <h2 id="a-one-sentence-todo-request-merged-in-8-minutes-26-seconds">A one-sentence todo request, merged in 8 minutes 26 seconds</h2>
 <p>On 19 November 2026 at 23:54:56 UTC, Issue #21 in Orbi&#39;s own production demo repository, <code class="post-code--single">orbi-build/orbi-e2e-prod</code>, opened with the title &quot;I lose count of my open todos&quot;. Its entire body was:</p>
 <blockquote>
@@ -213,7 +216,7 @@
 <li>The count stays visible and correct once the list gets long</li>
 </ul>
 </blockquote>
-<p>The first criterion defines what the count measures. The second preserves the situation that prompted the request: a long list. Both describe behavior the requester can check directly.</p>
+<p>The first criterion defines what the count measures. The second preserves the situation that prompted the request: a long list.</p>
 <figure class="post-media">
 <img src="/img/blog-vague-criteria-en.webp" alt="GitHub Issue #21, I lose count of my open todos, showing the one-sentence body, two bullets under Acceptance, and the bot comment confirming the criteria were added." width="912" height="782">
 <figcaption>Issue #21 after Orbi appended the criteria. This is Orbi's private demo repository, so the evidence here is a screenshot.</figcaption>
@@ -262,7 +265,7 @@
 <figure class="post-media">
 <img src="/img/blog-vague-split-comment-263.webp" alt="Orbi's GitHub comment saying Split into 3 child tickets, listing #266, #267 and #268, and confirming the parent is ai-epic and every child is queued." width="922" height="322">
 <figcaption>The split comment on Issue #263.</figcaption>
-</figure><p>#266 was delivered and merged at 14:36:06 UTC, 16 minutes after the split. #263 was a test ticket, so #267 and #268 were closed by hand without delivery.</p>
+</figure><p>#266 was delivered and its PR merged at 14:36:05 UTC, 16 minutes after the split. #263 was a test ticket, so #267 and #268 were closed by hand without delivery.</p>
 <p>With v0.7.44 and later, the same comment appears without the <code class="post-code--spaced">/orbi split</code> reply. On 18 November at 17:26:06 UTC, a speed-up ticket in Orbi Cloud&#39;s own repository was split into two children this way, one for test setup time and one for running tests in parallel on CI. Both were delivered and merged by 02:42:40 UTC the next morning. That repository is private and writes Chinese messages, so here is a screenshot:</p>
 <figure class="post-media">
 <img src="/img/blog-vague-split-auto-zh.webp" alt="Chinese Orbi comment on a private Orbi Cloud Issue saying it was split into 2 child tickets, #3508 and #3509, with the parent now ai-epic and both children queued; no maintainer command precedes it." width="922" height="382">
@@ -342,7 +345,7 @@
         <ul><li><a href="/support/">Support</a></li><li><a href="https://github.com/orbi-build/orbi/milestones">Roadmap</a></li><li><a href="/privacy/">Privacy</a></li><li><a href="/terms/">Terms</a></li><li><a href="https://github.com/orbi-build/orbi">GitHub</a></li><li><a href="https://x.com/xqliu" rel="me">X</a></li><li><a href="https://www.youtube.com/@orbibuild" rel="me">YouTube</a></li><li><a href="https://www.reddit.com/r/OrbiBuild/">Reddit</a></li></ul>
       </div>
     </nav>
-    <div class="footer-language language" role="group" aria-label="Language"><span aria-current="page">EN</span><a href="/zh/blog/" lang="zh-CN" aria-label="简体中文">ZH</a></div>
+    <div class="footer-language language" role="group" aria-label="Language"><span aria-current="page">EN</span><a href="/zh/blog/vague-request-to-merged-pr/" lang="zh-CN" aria-label="简体中文">ZH</a></div>
     <nav class="footer-friends" aria-label="Featured on">
       <span class="footer-friends-label">Featured on</span>
       <div class="footer-badges">

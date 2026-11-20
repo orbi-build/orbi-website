@@ -1,13 +1,14 @@
 ---
 title: From a vague request to a merged PR with Orbi
 date: 2026-11-20
-summary: See how Orbi adds acceptance criteria to one-line GitHub Issues, splits larger requests into queued child tickets, and records decisions before delivery.
+summary: Real runs show Orbi adding acceptance criteria to one-line GitHub Issues, splitting larger requests into queued child tickets and recording its decisions.
 lang: en
 author: Larry 🍀 Orbi
 image: /img/blog-vague-request-to-merged-pr-card.png
+mirror: vague-request-to-merged-pr
 ---
 
-Orbi is an open-source system that takes a one-sentence request through code, independent review, merge and release. This post is for developers and maintainers who use coding agents with GitHub and want to queue a change in plain language. It explains how Orbi turns a vague request into acceptance criteria, or a larger request into child tickets, before delivery starts.
+Orbi is an open-source system that takes a one-sentence request through code, independent review, merge and release. If you use coding agents with GitHub and want to queue a change in plain language, these real runs show how Orbi turns a vague request into acceptance criteria, or a larger request into child tickets, before delivery starts.
 
 I'm Larry 🍀 Orbi, the creator of Orbi. The behavior here spans engine v0.7.44 through v0.7.52; the production demo requests below ran on v0.7.52.
 
@@ -21,17 +22,15 @@ Orbi's pre-claim check reads a queued ticket for three things:
 
 The check judges what the ticket says. Separate template headings are optional. Orbi Cloud turns it on for every connected repository. On a self-hosted engine it is off by default; set `clarify_thin_tickets = true` in `.github/orbi.toml` to use it. A model error, timeout or malformed answer is logged as a skipped check and lets delivery proceed.
 
-Here, a claim means the runner picking up a queued ticket to work on it. When the only missing part is the acceptance condition and Orbi has a usable criteria proposal, the engine appends those criteria to the Issue body. The criteria, their heading (`## Acceptance` or `## 验收`) and Orbi's comment are written in the repository's configured message language, English or Chinese, whatever language the ticket uses.
+Here, a claim means the runner picking up a queued ticket to work on it. When the only missing part is the acceptance condition and Orbi has a usable criteria proposal, the engine appends those criteria to the Issue body. The criteria, their heading (`## Acceptance` or `## 验收`) and Orbi's comment are written in the repository's configured message language, English or Chinese, regardless of the ticket's language.
 
-The same claim continues to delivery. The implementation session receives the amended body from this step, without a second queue entry or approval exchange. Orbi leaves a comment beginning:
+The same claim continues to delivery right away. The implementation session receives the amended body from this step, without a second queue entry or approval exchange. Orbi leaves a comment beginning:
 
 > Added the proposed acceptance criteria to this ticket.
 
 After listing the criteria, it says:
 
 > They are under `## Acceptance`, and this claim continues to delivery. Editing this ticket changes them.
-
-The criteria remain editable in the Issue body. This automatic path continues immediately; it provides no approval window before implementation starts.
 
 ## A one-sentence todo request, merged in 8 minutes 26 seconds
 
@@ -44,7 +43,7 @@ At 23:58:28 UTC, Orbi added these two acceptance criteria:
 > - The todo list shows how many open todos are left, and that number matches the actual count of open items
 > - The count stays visible and correct once the list gets long
 
-The first criterion defines what the count measures. The second preserves the situation that prompted the request: a long list. Both describe behavior the requester can check directly.
+The first criterion defines what the count measures. The second preserves the situation that prompted the request: a long list.
 
 <figure class="post-media">
 <img src="/img/blog-vague-criteria-en.webp" alt="GitHub Issue #21, I lose count of my open todos, showing the one-sentence body, two bullets under Acceptance, and the bot comment confirming the criteria were added." width="912" height="782">

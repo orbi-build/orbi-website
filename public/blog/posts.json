@@ -3,16 +3,16 @@
     "slug": "stuck-delivery-one-click",
     "title": "Answer a stuck Orbi delivery from the status page",
     "summary": "When an Orbi delivery stops, see why, choose an answer in Cloud, and let it continue. Examples show what each button does and how to change your mind.",
-    "zhSlug": null,
-    "zhTitle": null,
+    "zhSlug": "stuck-delivery-one-click",
+    "zhTitle": "交付卡住了，在状态页上点一下",
     "related": []
   },
   {
     "slug": "vague-request-to-merged-pr",
     "title": "From a vague request to a merged PR with Orbi",
-    "summary": "See how Orbi adds acceptance criteria to one-line GitHub Issues, splits larger requests into queued child tickets, and records decisions before delivery.",
-    "zhSlug": null,
-    "zhTitle": null,
+    "summary": "Real runs show Orbi adding acceptance criteria to one-line GitHub Issues, splitting larger requests into queued child tickets and recording its decisions.",
+    "zhSlug": "vague-request-to-merged-pr",
+    "zhTitle": "一句话需求，怎么走到 PR 合并",
     "related": []
   },
   {

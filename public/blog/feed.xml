@@ -17,7 +17,7 @@
       <link>https://orbi.build/blog/vague-request-to-merged-pr/</link>
       <guid isPermaLink="true">https://orbi.build/blog/vague-request-to-merged-pr/</guid>
       <pubDate>Fri, 20 Nov 2026 00:00:00 GMT</pubDate>
-      <description>See how Orbi adds acceptance criteria to one-line GitHub Issues, splits larger requests into queued child tickets, and records decisions before delivery.</description>
+      <description>Real runs show Orbi adding acceptance criteria to one-line GitHub Issues, splitting larger requests into queued child tickets and recording its decisions.</description>
     </item>
     <item>
       <title>Antigravity vs Claude Code: headless CLI test</title>

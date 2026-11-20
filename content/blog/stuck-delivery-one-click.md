@@ -5,9 +5,10 @@ summary: When an Orbi delivery stops, see why, choose an answer in Cloud, and le
 lang: en
 author: Larry 🍀 Orbi
 image: /img/blog-stuck-delivery-one-click-card.png
+mirror: stuck-delivery-one-click
 ---
 
-Orbi is an open-source system that takes a one-sentence request through code, independent review, merge and release. This post is for developers and maintainers whose coding-agent delivery has started and then stopped. It shows which answer to choose in Orbi Cloud and what that choice changes on GitHub.
+Orbi is an open-source system that takes a one-sentence request through code, independent review, merge and release. If you run coding-agent deliveries with Orbi and one has stopped, here is which answer to choose in Orbi Cloud and what that choice changes on GitHub.
 
 I'm Larry 🍀 Orbi, the creator of Orbi. Cloud v0.8.61 is live in production on 20 November 2026, with engine v0.7.52. The answer flow builds on engine v0.7.46+, with changed-answer handling from v0.7.47 described below. The examples here come from Orbi's beta site.
 
@@ -26,7 +27,7 @@ A decision stop carries at most one question. Technical stops can instead show t
 
 ## Decide whether to accept an outside contribution
 
-In the test repository `xqliu/orbi-e2e-2609260042`, Issue #394 tracks PR #393, a pull request opened outside Orbi that stands in for an outside contribution. Orbi reviewed it and the review passed. Accepting the contribution and choosing its release remain the maintainer's call; the engine leaves the merge to that person.
+In the test repository `xqliu/orbi-e2e-2609260042`, Issue #394 tracks PR #393, opened outside Orbi to simulate a contribution. Orbi reviewed it and the review passed. Accepting the contribution and choosing its release remain the maintainer's call; the engine leaves the merge to that person.
 
 The English UI offers these actions:
 
@@ -59,7 +60,7 @@ Cloud replaces the choices with an acknowledgement. This beta screenshot from 18
 
 > Received. Orbi is delivering right now and redoes the work with your new choice within a minute.
 
-Cloud acknowledges receipt before the engine carries out the answer. A stopped ticket is read on the next scheduler pass. You can also change an answer while a delivery session is running: by default, that session checks new trusted comments every 60 seconds and can restart with the amended ticket up to three times. The actual response follows those scheduler and restart limits. Between rounds, the English message says: "Orbi is between rounds; the next round follows your new choice."
+Cloud acknowledges receipt before the engine carries out the answer. A stopped ticket is read on the next scheduler pass. You can also change an answer while a delivery session is running: by default, that session checks new trusted comments every 60 seconds and can restart with the amended ticket up to three times by default. Between rounds, the English message says: "Orbi is between rounds; the next round follows your new choice."
 
 <figure class="post-media">
 <img src="/img/blog-stuck-answered-zh.webp" alt="Chinese beta status page with a stopped-ticket question and a received-answer message in place of the option buttons." width="1568" height="775">
@@ -72,7 +73,7 @@ The engine can carry out a recommendation itself when a stopped run has a struct
 
 This automatic resume happens at most once over an Issue's lifetime. An automatic requeue after a temporary GitHub error uses the same allowance. Starting another run does not reset it.
 
-Authority decisions stay with the person: accepting outside code, decisions about money, prices or plans, and overriding an explicit maintainer instruction in the Issue or AGENTS.md. Links and closing actions never run automatically. Neither do confirmation or text questions, or choices without a recommendation.
+Authority decisions stay with the maintainer: accepting outside code, decisions about money, prices or plans, and overriding an explicit maintainer instruction in the Issue or AGENTS.md. Links and closing actions never run automatically. Neither do confirmation or text questions, or choices without a recommendation.
 
 Orbi writes the selected criterion into the Issue and leaves this comment:
 
@@ -86,7 +87,7 @@ Cloud shows "Orbi decided for you: {label}, because: {reason}" with "Change it".
 
 For answers that amend and resume an open delivery, submit another valid answer to the same question from a trusted author. That new answer supersedes the earlier one. If the earlier choice already amended the ticket, Orbi replaces that question's acceptance criterion in place, keeping criteria from other questions.
 
-For an unmerged delivery, a newer answer waiting to be applied holds the merge and returns the work to apply the new choice. This changed-answer behavior is in engine v0.7.47. The [merge-gate detail](/blog/high-frequency-agent-development/) explains where that final check happens.
+For an unmerged delivery, a newer answer waiting to be applied holds the merge and sends the delivery back to redo it with the new choice. The [merge-gate detail](/blog/high-frequency-agent-development/) explains where that final check happens.
 
 ## Find stop reasons in task history
 
