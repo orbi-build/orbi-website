@@ -63,7 +63,7 @@ Issue #3355 asked the initial page and polling response to share billing logic, 
 
 The Cloud status page's main card had readable text fixtures alongside a whole-page SHA-256 snapshot. The snapshot lived for about eight days, from 11 November 2026, 02:24 (UTC+8) to 19 November 2026, 12:50 (UTC+8). During that lifetime, 36 non-merge commits touched `page-sha256.json`, all attributed to the bot: 1 created it and 35 rewrote it. Of the 35 rewrites, 28 changed no main-card text fixture and 7 deliberately changed the main card. Comments in the test recorded rebuilds where the card text stayed identical while the whole-page hash changed.
 
-Because the hash also covered the rest of the page, the counts cannot tell me whether each update was worthwhile or how many defects the snapshot caught. I changed the [ticket-writing approach](/blog/write-a-request/) because my own acceptance wording had asked the agent to preserve these implementation checks.
+Because the hash also covered the rest of the page, the counts cannot tell me whether each update was worthwhile or how many defects the snapshot caught. I changed the [ticket-writing approach](/blog/write-a-request/) because my own acceptance wording had led the agent to write these implementation checks.
 
 ## The rule I added
 
@@ -127,7 +127,7 @@ CI now sets `VITEST_MAX_WORKERS=8`; the delivery sandbox keeps its default of 2.
 
 The GitHub Actions `Run npm test` step had a median of 271 s across 60 successful PR runs on 18 November 2026 (UTC). The query covered 17–18 November but hit its 60-run cap, with all results from the 18th, so the sample did not cover every run that day. Across 80 successful PR runs after the changes, the median was 102 s. Both medians measure the test step, including the test command's overhead; they do not measure full workflow times.
 
-The post-change sample spans 19 November 2026, 15:40 UTC through 20 November 2026, 00:46 UTC. The repository kept changing between the samples, including cleanup work. Only the local table separates the effects of setup and parallelism. The speedup PRs, #3527 and #3533, merged on 19 November 2026 at 08:36 and 10:42 (UTC+8), before that sample.
+The post-change sample spans 19 November 2026, 15:40 UTC through 20 November 2026, 00:46 UTC. The repository kept changing between the samples, and cleanup work overlapped the post-change sample: the last cleanup PR merged at 00:15 UTC on 20 November. Only the local table separates the effects of setup and parallelism. The speedup PRs, #3527 and #3533, merged on 19 November 2026 at 08:36 and 10:42 (UTC+8), before that sample.
 
 ## A checklist for your repo
 
