@@ -18,7 +18,7 @@ On 18 November 2026, I had independent, read-only Codex sessions classify the te
 
 The audit counted each case registered through parameters or loops separately. A loop checking several inputs inside a test body still counted as a single case. A case with both observable-behavior assertions and implementation assertions counted as implementation-coupled. Implementation-assertion categories could overlap.
 
-Reading business records from a database or checking content sent to an external service counted as behavior. So did using a selector to extract visible text. I asked whether an assertion could fail when the implementation changed but the result visible to a user or caller stayed the same.
+Reading business records from a database or checking content sent to an external service counted as behavior. So did using a selector to extract visible text. In the usual phrase, I asked whether a test was testing implementation details: could an assertion fail when the implementation changed but the result visible to a user or caller stayed the same?
 
 I spot-checked the source at 5 locations. Only one was ambiguous: a test that counted the deactivate buttons by their form's submit address, which can reasonably identify the controls a user sees. The spot-check was too small to estimate a classification error rate for the whole audit. I reviewed the tests statically, without measuring how well they detected defects or the cost of each failure.
 
