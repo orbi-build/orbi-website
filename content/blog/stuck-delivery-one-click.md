@@ -26,7 +26,7 @@ A decision stop carries at most one question. Technical stops can instead show t
 
 ## Decide whether to accept an outside contribution
 
-In the test repository `xqliu/orbi-e2e-2609260042`, [Issue #394](https://github.com/xqliu/orbi-e2e-2609260042/issues/394) tracks an outside contributor's [PR #393](https://github.com/xqliu/orbi-e2e-2609260042/pull/393), a one-line code of conduct. Orbi's review passed. Accepting the contribution and choosing its release remain the maintainer's call; the engine leaves the merge to that person.
+In the test repository `xqliu/orbi-e2e-2609260042`, Issue #394 tracks PR #393, a pull request opened outside Orbi that stands in for an outside contribution. Orbi reviewed it and the review passed. Accepting the contribution and choosing its release remain the maintainer's call; the engine leaves the merge to that person.
 
 The English UI offers these actions:
 
@@ -53,9 +53,9 @@ Choosing a question's answer submits a form to Cloud's `POST /api/issues/answer`
 
 Cloud uses its GitHub App installation token to post a structured answer comment on the Issue, recording your login in `by`. This route writes the comment; the engine handles the resulting work and label changes on its next tick, or scheduler pass.
 
-For answers posted directly on GitHub, the engine trusts the actual comment author's repository write permission, or its own runner identity. Filling in someone else's login in `by` grants no authority. Each executed answer gets a receipt tied to its comment, so later scans do not execute that answer again.
+For answers posted directly on GitHub, the engine trusts the actual comment author's repository write permission, or its own runner identity. Filling in someone else's login in `by` grants no authority.
 
-Cloud replaces the choices with an acknowledgement. This beta screenshot from 19 November 2026 shows the Chinese receipt: "已收到。Orbi 正在交付，一分钟内按您的新选择重做。" Its English string is:
+Cloud replaces the choices with an acknowledgement. This beta screenshot from 18 November 2026 shows the Chinese receipt: "已收到。Orbi 正在交付，一分钟内按您的新选择重做。" Its English string is:
 
 > Received. Orbi is delivering right now and redoes the work with your new choice within a minute.
 
@@ -63,7 +63,7 @@ Cloud acknowledges receipt before the engine carries out the answer. A stopped t
 
 <figure class="post-media">
 <img src="/img/blog-stuck-answered-zh.webp" alt="Chinese beta status page with a stopped-ticket question and a received-answer message in place of the option buttons." width="1568" height="775">
-<figcaption>The answered state on beta, 19 November 2026. The Chinese message acknowledges receipt and describes continuing with the new choice.</figcaption>
+<figcaption>The answered state on beta, 18 November 2026. The Chinese message acknowledges receipt and describes continuing with the new choice.</figcaption>
 </figure>
 
 ## When Orbi acts on a recommended answer
@@ -107,7 +107,7 @@ Self-hosted users can post the [documented structured answer](https://github.com
 <!-- orbi:answer:v1 {"q":"q1","action":"accept","value":"<the option's full label>","by":"<your GitHub login>","reason":"optional reason"} -->
 ```
 
-Read the raw body of Orbi's question comment: its hidden `orbi:question:v1` block contains `question.id`. Use that ID for `q`. Replace the `value` placeholder with the option's full label and `by` with your GitHub login; `reason` is optional. Submit from an account with repository write access. To change an amendment answer, post a new structured comment for the same question.
+Read the raw body of Orbi's question comment: its hidden `orbi:question:v1` block contains `question.id`. Use that ID for `q`. Replace the `value` placeholder with the option's full label and `by` with your GitHub login; `reason` is optional: delete the field if you have none, because an empty string is rejected. Submit from an account with repository write access. To change an amendment answer, post a new structured comment for the same question.
 
 ## Related
 

@@ -162,7 +162,7 @@
           <h2>On this page</h2>
           <ol>
           <li><a class="post-toc-link" href="#what-orbi-checks-before-starting-a-github-issue">What Orbi checks before starting a GitHub Issue</a></li>
-          <li><a class="post-toc-link" href="#a-one-sentence-todo-request-merged-in-8-minutes-33-seconds">A one-sentence todo request, merged in 8 minutes 33 seconds</a></li>
+          <li><a class="post-toc-link" href="#a-one-sentence-todo-request-merged-in-8-minutes-26-seconds">A one-sentence todo request, merged in 8 minutes 26 seconds</a></li>
           <li><a class="post-toc-link" href="#how-orbi-splits-a-request-with-several-outcomes">How Orbi splits a request with several outcomes</a></li>
           <li><a class="post-toc-link" href="#what-happens-in-write-a-request-on-orbi-cloud">What happens in &quot;Write a request&quot; on Orbi Cloud</a></li>
           <li><a class="post-toc-link" href="#how-to-get-the-most-out-of-a-one-line-request">How to get the most out of a one-line request</a></li>
@@ -174,7 +174,7 @@
           <summary>On this page · 6 sections</summary>
           <ol>
           <li><a class="post-toc-link" href="#what-orbi-checks-before-starting-a-github-issue">What Orbi checks before starting a GitHub Issue</a></li>
-          <li><a class="post-toc-link" href="#a-one-sentence-todo-request-merged-in-8-minutes-33-seconds">A one-sentence todo request, merged in 8 minutes 33 seconds</a></li>
+          <li><a class="post-toc-link" href="#a-one-sentence-todo-request-merged-in-8-minutes-26-seconds">A one-sentence todo request, merged in 8 minutes 26 seconds</a></li>
           <li><a class="post-toc-link" href="#how-orbi-splits-a-request-with-several-outcomes">How Orbi splits a request with several outcomes</a></li>
           <li><a class="post-toc-link" href="#what-happens-in-write-a-request-on-orbi-cloud">What happens in &quot;Write a request&quot; on Orbi Cloud</a></li>
           <li><a class="post-toc-link" href="#how-to-get-the-most-out-of-a-one-line-request">How to get the most out of a one-line request</a></li>
@@ -191,7 +191,7 @@
 <li>A single outcome: one change that can be delivered on its own.</li>
 </ul>
 <p>The check judges what the ticket says. Separate template headings are optional. Orbi Cloud turns it on for every connected repository. On a self-hosted engine it is off by default; set <code class="post-code--spaced">clarify_thin_tickets = true</code> in <code class="post-code--single">.github/orbi.toml</code> to use it. A model error, timeout or malformed answer is logged as a skipped check and lets delivery proceed.</p>
-<p>Here, a claim means the runner picking up a queued ticket to work on it. When the only missing part is the acceptance condition and Orbi has a usable criteria proposal, the engine appends those criteria to the Issue body. The heading is <code class="post-code--spaced">## Acceptance</code> in English or <code class="post-code--spaced">## 验收</code> in Chinese.</p>
+<p>Here, a claim means the runner picking up a queued ticket to work on it. When the only missing part is the acceptance condition and Orbi has a usable criteria proposal, the engine appends those criteria to the Issue body. The criteria, their heading (<code class="post-code--spaced">## Acceptance</code> or <code class="post-code--spaced">## 验收</code>) and Orbi&#39;s comment are written in the repository&#39;s configured message language, English or Chinese, whatever language the ticket uses.</p>
 <p>The same claim continues to delivery. The implementation session receives the amended body from this step, without a second queue entry or approval exchange. Orbi leaves a comment beginning:</p>
 <blockquote>
 <p>Added the proposed acceptance criteria to this ticket.</p>
@@ -201,7 +201,7 @@
 <p>They are under <code class="post-code--spaced">## Acceptance</code>, and this claim continues to delivery. Editing this ticket changes them.</p>
 </blockquote>
 <p>The criteria remain editable in the Issue body. This automatic path continues immediately; it provides no approval window before implementation starts.</p>
-<h2 id="a-one-sentence-todo-request-merged-in-8-minutes-33-seconds">A one-sentence todo request, merged in 8 minutes 33 seconds</h2>
+<h2 id="a-one-sentence-todo-request-merged-in-8-minutes-26-seconds">A one-sentence todo request, merged in 8 minutes 26 seconds</h2>
 <p>On 19 November 2026 at 23:54:56 UTC, Issue #21 in Orbi&#39;s own production demo repository, <code class="post-code--single">orbi-build/orbi-e2e-prod</code>, opened with the title &quot;I lose count of my open todos&quot;. Its entire body was:</p>
 <blockquote>
 <p>Once the list gets long I can&#39;t tell how many are left.</p>
@@ -217,7 +217,7 @@
 <figure class="post-media">
 <img src="/img/blog-vague-criteria-en.webp" alt="GitHub Issue #21, I lose count of my open todos, showing the one-sentence body, two bullets under Acceptance, and the bot comment confirming the criteria were added." width="912" height="782">
 <figcaption>Issue #21 after Orbi appended the criteria. This is Orbi's private demo repository, so the evidence here is a screenshot.</figcaption>
-</figure><p>Orbi started at 23:58:32 UTC, four seconds after adding the criteria. PR #22 opened at 00:00:17 UTC on 20 November and merged at 00:03:29 UTC after one review round. From the original sentence to merge: 8 minutes 33 seconds.</p>
+</figure><p>Orbi started at 23:58:32 UTC, four seconds after adding the criteria. PR #22 opened at 00:00:12 UTC on 20 November and merged at 00:03:22 UTC after one review round. From the original sentence to merge: 8 minutes 26 seconds. Times in this section are the Issue&#39;s creation time and the PR&#39;s merge time as GitHub records them.</p>
 <p>Two other production requests show the same preparation step:</p>
 <p class="post-table-hint" hidden>Swipe horizontally to see all columns.</p><div class="post-table-scroll" tabindex="0" role="region" aria-label="Swipe horizontally to see all columns."><table class="table-comparison">
 <thead>
@@ -233,51 +233,42 @@
 <th scope="row">#19, Chinese todo count</th>
 <td>Nov 19, 23:46:05</td>
 <td>Nov 19, 23:48:42</td>
-<td>Nov 19, 23:52:58</td>
-<td>6 min 53 s</td>
+<td>Nov 19, 23:52:52</td>
+<td>6 min 47 s</td>
 </tr>
 <tr>
 <th scope="row">#25, clear the list</th>
 <td>Nov 20, 00:20:07</td>
 <td>Nov 20, 00:23:38</td>
-<td>Nov 20, 00:30:08</td>
-<td>10 min 1 s</td>
+<td>Nov 20, 00:30:02</td>
+<td>9 min 55 s</td>
 </tr>
 </tbody></table></div>
-<p>Issue #19&#39;s title was &quot;待办多了想知道还剩几个没做&quot;, with the body &quot;待办一多就数不过来了。&quot; The criteria came back in Chinese, matching the ticket&#39;s language.</p>
+<p>Issue #19&#39;s title was &quot;待办多了想知道还剩几个没做&quot;, with the body &quot;待办一多就数不过来了。&quot; The demo repository&#39;s message language is Chinese, so the criteria and comment came back in Chinese. For #21 and #25 the repository was temporarily switched to English messages, which is why those two runs answered in English.</p>
 <figure class="post-media">
 <img src="/img/blog-vague-criteria-zh.webp" alt="GitHub Issue #19 with a Chinese title and one-sentence body, two Chinese criteria under 验收, and a Chinese bot comment confirming their addition." width="912" height="782">
-<figcaption>The Chinese request receives Chinese acceptance criteria and a Chinese confirmation comment.</figcaption>
+<figcaption>Issue #19 in the demo repository, whose message language is Chinese.</figcaption>
 </figure><p>Issue #25 was titled &quot;Let me clear the whole list&quot;, with the body &quot;The list is a mess and I want to start over.&quot; One review finding was resolved in the same session before merge. These are three recorded runs on a demo application; their elapsed times describe those requests.</p>
 <h2 id="how-orbi-splits-a-request-with-several-outcomes">How Orbi splits a request with several outcomes</h2>
-<p>The pre-claim check can also produce a split proposal. When the ticket contains several outcomes and the proposal is usable, Orbi creates child Issues and queues them.</p>
-<p>The public example is <a href="https://github.com/orbi-build/orbi/issues/2230">Issue #2230</a>. It concerned maintainers&#39; answers to questions Orbi asks during delivery, and requested these changes:</p>
-<ul>
-<li>#2233: when an answer changes from A to B, carry out B consistently while checking stopped tickets, before merging, and during a running session.</li>
-<li>#2234: reuse the existing delivery PR lookup with same-repository filtering, so a close action selects the PR in the right repository.</li>
-<li>#2235: use one implementation to validate answer payloads.</li>
-</ul>
-<p>At 13:15:11 UTC on 17 November 2026, Orbi posted:</p>
-<blockquote>
-<p>Split into 3 child tickets.</p>
-</blockquote>
-<p>The comment listed #2233, #2234 and #2235, then ended:</p>
+<p>The pre-claim check can also produce a split proposal. When the ticket contains several outcomes and the proposal is usable, Orbi creates child Issues and queues them in the same claim. Before engine v0.7.44 the proposal waited for a maintainer to reply <code class="post-code--spaced">/orbi split</code>; since v0.7.44 the engine applies it itself.</p>
+<p>A public example from the earlier flow shows what the children look like. <a href="https://github.com/xqliu/orbi-e2e-2609260042/issues/263">Issue #263</a> in a public test repository asked for three CLI changes in one sentence: <code class="post-code--single">export</code> should take <code class="post-code--single">--email</code>, <code class="post-code--single">summary</code> should take <code class="post-code--single">--by-month</code>, and <code class="post-code--single">refunds-summary</code> should count per week instead of per month.</p>
+<figure class="post-media">
+<img src="/img/blog-vague-split-request-263.webp" alt="GitHub Issue #263 with a one-sentence body asking for three CLI changes, labeled ai-epic, and a Sub-issues panel listing #266, #267 and #268, all closed." width="922" height="525">
+<figcaption>Issue #263: one request, three native sub-issues.</figcaption>
+</figure><p>On 28 October 2026 at 14:20:04 UTC, after the <code class="post-code--spaced">/orbi split</code> reply, Orbi posted &quot;Split into 3 child tickets.&quot; and listed #266 (<code class="post-code--spaced">export --email</code>), #267 (<code class="post-code--spaced">summary --by-month</code>) and #268 (weekly refunds), ending with:</p>
 <blockquote>
 <p>This ticket is now their parent (<code class="post-code--single">ai-epic</code>) and every child is queued.</p>
 </blockquote>
 <figure class="post-media">
-<img src="/img/blog-vague-split-comment.webp" alt="Orbi's GitHub comment saying Split into 3 child tickets, listing #2233, #2234 and #2235, and confirming their parent is ai-epic and every child is queued." width="912" height="443">
-<figcaption>The split comment on public Issue #2230 names each queued child.</figcaption>
-</figure><p>Each child gets its own result and acceptance criteria. Orbi attaches the children using GitHub&#39;s native sub-issues, then applies the queue label after linking them. The parent receives <code class="post-code--single">ai-epic</code> and loses <code class="post-code--single">ai-ready</code>; delivery proceeds through the children, with no PR for the parent.</p>
-<p>A split must have at least two children. There is no fixed maximum: the instruction is to use the fewest slices that cover every goal. If a child depends on another, the proposal can refer to an earlier item, and Orbi records that dependency through GitHub&#39;s native <code class="post-code--single">blockedBy</code> relationship. Children also inherit the parent&#39;s milestone and its <code class="post-code--single">p0</code> or <code class="post-code--single">bug</code> labels when present.</p>
-<p>At 16:56:06 UTC that day, the parent recorded:</p>
-<blockquote>
-<p>Epic reconciliation: complete; children: Issue #2233 closed, Issue #2234 closed, Issue #2235 closed</p>
-</blockquote>
+<img src="/img/blog-vague-split-comment-263.webp" alt="Orbi's GitHub comment saying Split into 3 child tickets, listing #266, #267 and #268, and confirming the parent is ai-epic and every child is queued." width="922" height="322">
+<figcaption>The split comment on Issue #263.</figcaption>
+</figure><p>#266 was delivered and merged at 14:36:06 UTC, 16 minutes after the split. #263 was a test ticket, so #267 and #268 were closed by hand without delivery.</p>
+<p>With v0.7.44 and later, the same comment appears without the <code class="post-code--spaced">/orbi split</code> reply. On 18 November at 17:26:06 UTC, a speed-up ticket in Orbi Cloud&#39;s own repository was split into two children this way, one for test setup time and one for running tests in parallel on CI. Both were delivered and merged by 02:42:40 UTC the next morning. That repository is private and writes Chinese messages, so here is a screenshot:</p>
 <figure class="post-media">
-<img src="/img/blog-vague-subissues.webp" alt="GitHub's Sub-issues panel on Issue #2230 showing 3 of 3 completed, with closed children #2233, #2234 and #2235." width="912" height="250">
-<figcaption>The native GitHub panel shows all three children completed.</figcaption>
-</figure><p>The <a href="https://orbi.build/proof/orbi-build/orbi/2233?ref=blog-vague">public proof page for #2233</a> follows one child through delivery.</p>
+<img src="/img/blog-vague-split-auto-zh.webp" alt="Chinese Orbi comment on a private Orbi Cloud Issue saying it was split into 2 child tickets, #3508 and #3509, with the parent now ai-epic and both children queued; no maintainer command precedes it." width="922" height="382">
+<figcaption>An automatic split on 18 November, in a repository whose message language is Chinese.</figcaption>
+</figure><p>Each child gets its own result and acceptance criteria. Orbi attaches the children using GitHub&#39;s native sub-issues, then applies the queue label after linking them. The parent receives <code class="post-code--single">ai-epic</code> and loses <code class="post-code--single">ai-ready</code>; delivery proceeds through the children, with no PR for the parent.</p>
+<p>A split must have at least two children. The engine sets no maximum of its own and asks for the fewest slices that cover every goal; GitHub allows up to 100 sub-issues per parent. If a child depends on another, the proposal can refer to an earlier item, and Orbi records that dependency through GitHub&#39;s native <code class="post-code--single">blockedBy</code> relationship. Children also inherit the parent&#39;s milestone and its <code class="post-code--single">p0</code> or <code class="post-code--single">bug</code> labels when present.</p>
 <p>When required detail is missing and no usable proposal can supply it, Orbi explains the missing detail, removes the queue label and adds <code class="post-code--single">ai-needs-detail</code>.</p>
 <h2 id="what-happens-in-write-a-request-on-orbi-cloud">What happens in &quot;Write a request&quot; on Orbi Cloud</h2>
 <p>Preparation can begin before a GitHub Issue exists. In Orbi Cloud&#39;s &quot;Write a request&quot;, when Orbi&#39;s drafting session proposes a question with a recommended option, the engine chooses that option itself. This behavior shipped in engine v0.7.44.</p>

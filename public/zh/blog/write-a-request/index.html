@@ -16,7 +16,7 @@
   <meta property="og:image" content="https://orbi.build/img/blog-write-request-card.png">
   <meta property="og:image:alt" content="写需求：说一句话，Orbi Cloud 替你写好 GitHub Issue">
   <meta property="article:published_time" content="2026-10-09">
-  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"写需求：说一句话，Orbi Cloud 替你写好 GitHub Issue","datePublished":"2026-10-09","author":{"@type":"Person","name":"Larry 🍀 Orbi","url":"https://orbi.build/zh/about/larry-orbi/","sameAs":["https://github.com/xqliu","https://x.com/xqliu"]},"publisher":{"@type":"Organization","name":"Orbi","url":"https://orbi.build/","logo":{"@type":"ImageObject","url":"https://orbi.build/logo-mark.svg"}},"mainEntityOfPage":"https://orbi.build/zh/blog/write-a-request/","image":"https://orbi.build/img/blog-write-request-card.png","inLanguage":"zh-CN","description":"在 Orbi Cloud 里说一句想改什么，Orbi 先读你的仓库，写出 Issue 草稿，要你决定的地方用选择题问你，你确认后才开始做。每一步都配了截图。","url":"https://orbi.build/zh/blog/write-a-request/"}</script>
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"写需求：说一句话，Orbi Cloud 替你写好 GitHub Issue","datePublished":"2026-10-09","dateModified":"2026-11-20","author":{"@type":"Person","name":"Larry 🍀 Orbi","url":"https://orbi.build/zh/about/larry-orbi/","sameAs":["https://github.com/xqliu","https://x.com/xqliu"]},"publisher":{"@type":"Organization","name":"Orbi","url":"https://orbi.build/","logo":{"@type":"ImageObject","url":"https://orbi.build/logo-mark.svg"}},"mainEntityOfPage":"https://orbi.build/zh/blog/write-a-request/","image":"https://orbi.build/img/blog-write-request-card.png","inLanguage":"zh-CN","description":"在 Orbi Cloud 里说一句想改什么，Orbi 先读你的仓库，写出 Issue 草稿，要你决定的地方用选择题问你，你确认后才开始做。每一步都配了截图。","url":"https://orbi.build/zh/blog/write-a-request/"}</script>
   <script type="application/ld+json">{"@context":"https://schema.org","@type":"VideoObject","name":"Orbi 写需求：描述一个问题，15 分钟后合进代码","description":"65 秒中文解说：在一个待办清单仓库里只说「刷新一下页面，待办就全没了」，Orbi 读代码、先问两个问题、写成 Issue。从说出那句话到 PR 合并约 15 分钟，其中写草稿和答题约 4 分钟。","thumbnailUrl":"https://orbi.build/img/blog-write-request-video-zh.jpg","uploadDate":"2026-10-09","duration":"PT1M5S","embedUrl":"https://www.youtube.com/embed/R1fiDGdcz_o"}</script>
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <meta name="theme-color" content="#06151b">
@@ -154,7 +154,7 @@
         <section class="post-hero" aria-labelledby="post-title">
           <p class="eyebrow">博客</p>
           <h1 id="post-title">写需求：说一句话，Orbi Cloud 替你写好 GitHub Issue</h1>
-          <p class="post-byline"><a href="/zh/about/larry-orbi/">Larry 🍀 Orbi</a> · <time datetime="2026-10-09">2026-10-09</time></p>
+          <p class="post-byline"><a href="/zh/about/larry-orbi/">Larry 🍀 Orbi</a> · <time datetime="2026-10-09">2026-10-09</time> · <time class="post-updated" datetime="2026-11-20">更新于 2026-11-20</time></p>
 
           <p class="hero-lede">在 Orbi Cloud 里说一句想改什么，Orbi 先读你的仓库，写出 Issue 草稿，要你决定的地方用选择题问你，你确认后才开始做。每一步都配了截图。</p>
         </section>
@@ -234,6 +234,7 @@
 <figcaption>推荐项排在第一个，草稿就是按它写的。</figcaption>
 </figure><p>选项不合适就换一个。改了选项之后，按钮会变成「按选项重写草稿」，重写完成之前，「交给 Orbi 开始做」是灰的。改了又后悔，点「恢复原来的选择」，输入框里还没发出的话也会一起清掉。</p>
 <p>草稿本身不能直接手改；选项里没有的要求，写在草稿下方的输入框里（「要补充或修改，写在这里」），Orbi 重写时会带着你在输入框里说过的所有话。</p>
+<p>2026 年 11 月 20 日更新：引擎 v0.7.44 起，起草时带推荐选项的问题由引擎直接按推荐定下，写进 Issue 的「假设」一节，只有没有推荐项的问题才会问你。现在的做法见<a href="/zh/blog/vague-request-to-merged-pr/">《一句话需求，怎么变成合并的 PR》</a>。</p>
 <h2 id="交给-orbi-之前看清楚">交给 Orbi 之前看清楚</h2>
 <p>「交给 Orbi 开始做」按钮下面有几行字，说明交出去以后会发生什么。其中讲合并的那句，写成什么样取决于任务要合入的分支是否要求合并前至少 1 个批准。这个分支是连接仓库时设的，一般就是默认分支。</p>
 <ul>
@@ -265,6 +266,7 @@
 </figure><p>卡片上没写具体原因，点「查看 Orbi 的说明」会打开 Orbi 在 Issue 里写的<a href="https://github.com/xqliu/orbi-e2e-2609260042/issues/71#issuecomment-6063352853">那条评论</a>，原因在那里：缺 Stripe 密钥。这次它给了两条路：按 Issue 的要求，把 Stripe 密钥配成仓库 secret、付款方式配成仓库变量；或者改掉 Issue 里「缺密钥就必须让 CI 失败」这条决定。不管选哪条，卡住的任务都不会自己接着做：重跑 CI、只摘掉 <code class="post-code--single">ai-blocked</code> 标签或者留评论都没用。</p>
 <p>先把原因修好，再在 Issue 上换标签（Issue 得是打开的）：PR 还开着的，把 <code class="post-code--single">ai-blocked</code> 换成 <code class="post-code--single">ai-fix-needed</code>，Orbi 在原来的 PR 和分支上接着改；还没有 PR 的，换成 <code class="post-code--single">ai-ready</code>。</p>
 <p>这个任务我们没有恢复：它是故意造的失败，测完就把 <a href="https://github.com/xqliu/orbi-e2e-2609260042/issues/71">Issue #71</a> 和它的 PR 关掉了。</p>
+<p>2026 年 11 月 20 日更新：Orbi Cloud v0.8.61 起，卡住的任务卡片上直接写明原因；Orbi 有问题要问时，选项就是按钮，点一下就算回答，Orbi 接着做，不用再手动换标签。具体见<a href="/zh/blog/stuck-delivery-one-click/">《交付卡住了，在状态页上点一下》</a>。</p>
 <h2 id="要花多少">要花多少</h2>
 <p>免费试用有 __FREE_DELIVERIES__ 次交付。失败的、卡住的（比如上面那个，卡片上也写着「不算免费次数」）、没合并就结束的都不占次数，只有合并了的才算。写草稿不占免费交付次数。</p>
 <p>免费次数用完后照样能写草稿。这时交给 Orbi 会马上建好 Issue，但 Orbi 随即摘掉它的 <code class="post-code--single">ai-ready</code> 标签，并在 Issue 里留言说明原因。订阅后到状态页，点这个 Issue 旁边的「试试 →」，它会给 Issue 打上 <code class="post-code--single">ai-ready</code>，Orbi 这才开始做。这个按钮只在没有别的任务在跑时列出来。有任务在跑，就等它结束，或者直接在 GitHub 上给这个 Issue 打 <code class="post-code--single">ai-ready</code>。</p>
@@ -274,7 +276,7 @@
 <p>三个让草稿更好用的习惯：</p>
 <ul>
 <li>先说你想要的结果。比如写「提建议的人要写清楚想解决什么问题」这样一句，Orbi 会自己在代码里找最合适的改法；你已经知道要改哪个文件、有什么限制，也一并写上。</li>
-<li>一次只提一件事。Orbi 动工前会先检查 Issue，它判断一张票里塞了几件不相干的事时，会在 Issue 里留言让你拆开，任务先停着；拆开后重新打上 <code class="post-code--single">ai-ready</code>。这一步是模型的判断，不保证每次都能拦下。</li>
+<li>一次只提一件事。Orbi 动工前会先检查 Issue。引擎 v0.7.44 起，它判断一张票里塞了几件事、又能给出拆法时，会自己建好子票排队；给不出拆法时，才在 Issue 里留言说缺什么，任务先停着。这一步是模型的判断，不保证每次都能拦下。</li>
 <li>交给 Orbi 之前，读一读回复里写的假设。读偏了，在输入框里补一句就行。</li>
 </ul>
 <aside class="post-cta">
