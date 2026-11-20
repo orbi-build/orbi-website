@@ -440,10 +440,22 @@
     <xhtml:link rel="alternate" hreflang="x-default" href="https://orbi.build/blog/best-ai-agent-for-coding/"/>
   </url>
   <url>
+    <loc>https://orbi.build/blog/orbi-weekly-6/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/blog/orbi-weekly-6/"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/blog/orbi-weekly-6/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://orbi.build/blog/orbi-weekly-6/"/>
+  </url>
+  <url>
     <loc>https://orbi.build/zh/blog/best-ai-agent-for-coding/</loc>
     <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/blog/best-ai-agent-for-coding/"/>
     <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/blog/best-ai-agent-for-coding/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://orbi.build/blog/best-ai-agent-for-coding/"/>
+  </url>
+  <url>
+    <loc>https://orbi.build/zh/blog/orbi-weekly-6/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/blog/orbi-weekly-6/"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/blog/orbi-weekly-6/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://orbi.build/blog/orbi-weekly-6/"/>
   </url>
   <url>
     <loc>https://orbi.build/blog/opencode-vs-codex/</loc>
@@ -488,10 +500,22 @@
     <xhtml:link rel="alternate" hreflang="x-default" href="https://orbi.build/blog/best-pi-extensions/"/>
   </url>
   <url>
+    <loc>https://orbi.build/blog/orbi-weekly-5/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/blog/orbi-weekly-5/"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/blog/orbi-weekly-5/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://orbi.build/blog/orbi-weekly-5/"/>
+  </url>
+  <url>
     <loc>https://orbi.build/zh/blog/best-pi-extensions/</loc>
     <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/blog/best-pi-extensions/"/>
     <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/blog/best-pi-extensions/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://orbi.build/blog/best-pi-extensions/"/>
+  </url>
+  <url>
+    <loc>https://orbi.build/zh/blog/orbi-weekly-5/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/blog/orbi-weekly-5/"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/blog/orbi-weekly-5/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://orbi.build/blog/orbi-weekly-5/"/>
   </url>
   <url>
     <loc>https://orbi.build/blog/ai-code-review-bottleneck/</loc>
@@ -556,6 +580,18 @@
     <xhtml:link rel="alternate" hreflang="x-default" href="https://orbi.build/blog/pi-extensions-in-production/"/>
   </url>
   <url>
+    <loc>https://orbi.build/blog/orbi-weekly-4/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/blog/orbi-weekly-4/"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/blog/orbi-weekly-4/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://orbi.build/blog/orbi-weekly-4/"/>
+  </url>
+  <url>
+    <loc>https://orbi.build/zh/blog/orbi-weekly-4/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/blog/orbi-weekly-4/"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/blog/orbi-weekly-4/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://orbi.build/blog/orbi-weekly-4/"/>
+  </url>
+  <url>
     <loc>https://orbi.build/blog/pi-coding-agent-worktree/</loc>
     <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/blog/pi-coding-agent-worktree/"/>
     <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/blog/pi-coding-agent-worktree/"/>
@@ -566,6 +602,18 @@
     <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/blog/pi-coding-agent-worktree/"/>
     <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/blog/pi-coding-agent-worktree/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://orbi.build/blog/pi-coding-agent-worktree/"/>
+  </url>
+  <url>
+    <loc>https://orbi.build/blog/orbi-weekly-3/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/blog/orbi-weekly-3/"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/blog/orbi-weekly-3/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://orbi.build/blog/orbi-weekly-3/"/>
+  </url>
+  <url>
+    <loc>https://orbi.build/zh/blog/orbi-weekly-3/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/blog/orbi-weekly-3/"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/blog/orbi-weekly-3/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://orbi.build/blog/orbi-weekly-3/"/>
   </url>
   <url>
     <loc>https://orbi.build/blog/aider-vs-opencode/</loc>
@@ -664,6 +712,18 @@
     <xhtml:link rel="alternate" hreflang="x-default" href="https://orbi.build/blog/codex-yolo-mode/"/>
   </url>
   <url>
+    <loc>https://orbi.build/blog/orbi-weekly-2/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/blog/orbi-weekly-2/"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/blog/orbi-weekly-2/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://orbi.build/blog/orbi-weekly-2/"/>
+  </url>
+  <url>
+    <loc>https://orbi.build/zh/blog/orbi-weekly-2/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/blog/orbi-weekly-2/"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/blog/orbi-weekly-2/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://orbi.build/blog/orbi-weekly-2/"/>
+  </url>
+  <url>
     <loc>https://orbi.build/blog/claude-code-yolo-mode/</loc>
     <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/blog/claude-code-yolo-mode/"/>
     <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/blog/claude-code-yolo-mode/"/>
@@ -722,6 +782,18 @@
     <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/blog/write-a-request/"/>
     <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/blog/write-a-request/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://orbi.build/blog/write-a-request/"/>
+  </url>
+  <url>
+    <loc>https://orbi.build/blog/orbi-weekly-1/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/blog/orbi-weekly-1/"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/blog/orbi-weekly-1/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://orbi.build/blog/orbi-weekly-1/"/>
+  </url>
+  <url>
+    <loc>https://orbi.build/zh/blog/orbi-weekly-1/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/blog/orbi-weekly-1/"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/blog/orbi-weekly-1/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://orbi.build/blog/orbi-weekly-1/"/>
   </url>
   <url>
     <loc>https://orbi.build/blog/pi-agent-harness/</loc>
@@ -904,6 +976,18 @@
     <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/blog/docker-image-third-try/"/>
     <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/blog/docker-image-third-try/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://orbi.build/blog/docker-image-third-try/"/>
+  </url>
+  <url>
+    <loc>https://orbi.build/guides/newsletter/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/guides/newsletter/"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/guides/newsletter/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://orbi.build/guides/newsletter/"/>
+  </url>
+  <url>
+    <loc>https://orbi.build/zh/guides/newsletter/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/guides/newsletter/"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/guides/newsletter/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://orbi.build/guides/newsletter/"/>
   </url>
   <url>
     <loc>https://orbi.build/guides/pi-coding-agent/</loc>
