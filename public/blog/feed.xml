@@ -6,13 +6,6 @@
     <description>Notes from shipping Orbi in the open: delivery runs, failures, fixes, and measurements.</description>
     <language>en</language>
     <item>
-      <title>AI-generated tests: what I found in 5,087 cases</title>
-      <link>https://orbi.build/blog/ai-generated-tests/</link>
-      <guid isPermaLink="true">https://orbi.build/blog/ai-generated-tests/</guid>
-      <pubDate>Fri, 20 Nov 2026 00:00:00 GMT</pubDate>
-      <description>A strict count found that a third of 5,087 Orbi Cloud Vitest cases pinned implementation details. I trace why, add a repo rule and speed up the test step.</description>
-    </item>
-    <item>
       <title>When an AI coding run stops and needs your answer</title>
       <link>https://orbi.build/blog/stuck-delivery-one-click/</link>
       <guid isPermaLink="true">https://orbi.build/blog/stuck-delivery-one-click/</guid>
