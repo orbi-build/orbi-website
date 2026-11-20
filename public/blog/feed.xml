@@ -6,11 +6,11 @@
     <description>Notes from shipping Orbi in the open: delivery runs, failures, fixes, and measurements.</description>
     <language>en</language>
     <item>
-      <title>AI-generated tests: what auditing 5,087 of ours found</title>
+      <title>AI-generated tests: what I found in 5,087 cases</title>
       <link>https://orbi.build/blog/ai-generated-tests/</link>
       <guid isPermaLink="true">https://orbi.build/blog/ai-generated-tests/</guid>
       <pubDate>Fri, 20 Nov 2026 00:00:00 GMT</pubDate>
-      <description>I classified 5,087 Vitest cases in Orbi Cloud's repo, most last written by our bot. A third pinned implementation: why, the rule I added, how CI time fell.</description>
+      <description>Of 5,087 Orbi Cloud Vitest cases, a third pinned implementation details. Our bot last changed most registration lines. I cover the cause, my rule and faster CI.</description>
     </item>
     <item>
       <title>Antigravity vs Claude Code: headless CLI test</title>
