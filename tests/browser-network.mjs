@@ -358,6 +358,11 @@ export const BADGE_PLACEHOLDER_SIZES = [
   // height = "54px" width = "auto" (spacing kept exact), so the source
   // file decides the placeholder box. The listing /item/orbi returns 200.
   { host: "newtool.site", width: 210, height: 54 },
+  // 2026-11-21 StartupTrusted verified badge, measured on the live URL:
+  // startuptrusted.com /api/badge?type=verified&style=light 240x54
+  // (SVG, 889 bytes, width/height and viewBox 0 0 240 54; the official
+  // vendor snippet declares the same 240x54 box).
+  { host: "startuptrusted.com", width: 240, height: 54 },
 ];
 const FALLBACK_PLACEHOLDER_SIZE = { width: 1, height: 1 };
 
