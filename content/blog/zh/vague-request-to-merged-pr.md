@@ -26,7 +26,7 @@ Orbi Cloud 是托管版，替你运行同一个开源引擎。「写需求」页
 
 - 只缺验收条件。Orbi 把拟定的条件写进 Issue 的 `## Acceptance` 小节，同一次认领直接继续交付。
 - 一张 Issue 要做几件事。Orbi 按结果拆成子 Issue，分别排队。父 Issue 加上 `ai-epic` 标签，本身不交付。
-- 缺少 Orbi 无法补齐的信息。Orbi 留评论说明缺什么，把 `ai-ready` 换成 `ai-needs-detail`，等待补充。补齐后，再加上 `ai-ready` 就能重新排队。
+- 缺少 Orbi 无法补齐的信息。Orbi 留评论说明缺什么，把 `ai-ready` 换成 `ai-needs-detail`，等待补充。补齐后，把 `ai-needs-detail` 换回 `ai-ready` 就能重新排队。
 
 检查依据是 Issue 的内容，不要求使用模板。如果检查本身报错或超时，Orbi 会跳过检查，继续交付。Orbi Cloud 为每个接入的仓库开启这项检查；自托管引擎默认关闭，需要使用 v0.7.44 或更新版本，并在 `.github/orbi.toml` 中设置 `clarify_thin_tickets = true`。
 
@@ -51,7 +51,7 @@ Issue #21 的标题是「I lose count of my open todos」，正文只有一句�
 
 > The list is a mess and I want to start over.
 
-#25 的评审发现了一个问题，在同一轮修好后合并。
+#25 的评审会话在同一分支上修掉了一处问题再判通过，前后只用了一轮评审。
 
 <figure class="post-media">
 <img src="/img/blog-vague-criteria-zh.webp" alt="GitHub Issue #19：中文标题和一句话正文下，「验收」小节新增两条中文条件，Orbi 的中文评论确认已追加条件。" width="912" height="782">
@@ -75,11 +75,11 @@ Issue #21 的标题是「I lose count of my open todos」，正文只有一句�
 
 ## 修改 Issue 后，哪次会话能读到
 
-Orbi 补上的验收条件只是提议，你可以改，编码开始后改也有用。编码会话运行期间，Orbi 默认每 60 秒看一次 Issue 正文；有仓库写入权限的人改了正文，Orbi 就带着新内容重启编码会话，默认最多重启三次。
+Orbi 补上的验收条件只是提议，你可以改，编码开始后改也有用。编码会话运行期间，Orbi 默认每 60 秒看一次 Issue 正文；有仓库写入权限的人改了正文，Orbi 就带着新内容重启编码会话，默认最多重启三次。次数用完后，Orbi 会在 Issue 上说明这条修正未被执行，正在运行的会话按原有内容继续；评审仍读最新正文。
 
 评审会话每轮都会重新读取当前 Issue 正文，并以其中的验收条件为准，所以评审检查的就是那一刻 Issue 上写的内容。
 
-不过中途改一次就要重启一次，而 #21 从补完条件到开始编码只隔了 4 秒。如果你很在意「做完」的标准，更省事的做法是打上 `ai-ready` 之前就把验收条件写进 Issue，Orbi 会直接用你写的，不再另提。
+不过中途改一次就要重启一次，而 #21 从补完条件到开始编码只隔了 4 秒。如果你很在意「做完」的标准，更省事的做法是打上 `ai-ready` 之前就把验收条件写进 Issue，只要写清怎样算做完，Orbi 就直接用你写的，不再另提。
 
 ## 一张需求包含两个结果时
 
@@ -90,7 +90,7 @@ Orbi 补上的验收条件只是提议，你可以改，编码开始后改也有
 <figcaption>11 月 18 日的自动拆分记录。</figcaption>
 </figure>
 
-子 Issue 使用 GitHub 原生的子 Issue 功能，Orbi 先建立父子关联，再排队。一次拆分至少产生两个子 Issue。如果其中一张依赖另一张，Orbi 会用 GitHub 原生的 `blockedBy` 关系记录，在 GitHub 上就能看到先后顺序。子 Issue 继承父 Issue 的里程碑，以及 `p0` 或 `bug` 标签。此前，拆分要等维护者回复 `/orbi split`；从引擎 v0.7.44 起，Orbi 会自行拆分。
+子 Issue 使用 GitHub 原生的子 Issue 功能，Orbi 先建立父子关联，再排队。一次拆分至少产生两个子 Issue。如果其中一张依赖另一张，Orbi 会用 GitHub 原生的 `blockedBy` 关系记录，在 GitHub 上就能看到先后顺序。子 Issue 继承父 Issue 的里程碑，以及 `p0` 或 `bug` 标签。此前，拆分要等维护者回复 `/orbi split`；从引擎 v0.7.44 起，只要这项检查开着（Orbi Cloud 上一直开着），Orbi 会自行拆分。
 
 ## 起草需求时，哪些问题会交给你
 
@@ -99,15 +99,15 @@ Orbi 补上的验收条件只是提议，你可以改，编码开始后改也有
 ## 怎样写一张能交付的 Issue
 
 - 写出想看到的结果，例如剩余待办数量，或清空后的空列表。Orbi 据此拟定验收条件。
-- 已经知道需求包含几个独立部分，就分别创建 Issue。顺序由你决定，也省去等待拆分的时间。
+- 已经知道需求包含几个独立部分，就分别创建 Issue。顺序由你定：在 GitHub 上把后一张设为 `blockedBy` 前一张，或者等前一张合并后再给后一张加 `ai-ready`。
 - 在意完成标准时，先写好验收条件，再加 `ai-ready`。之后也能改，代价是编码会话重启一次。
 
-交付开始后停下来、需要你回答的情况，见[交付卡住了，在状态页上点一下](/zh/blog/stuck-delivery-one-click/)。
+交付开始后停下来、需要你回答的情况，见[AI 编码交付卡住后，怎么让 Orbi 继续](/zh/blog/stuck-delivery-one-click/)。
 
 ## 相关
 
 - [在 Orbi Cloud 里写需求](/zh/blog/write-a-request/)
 - [Orbi 的高频开发：让自动交付持续运行](/zh/blog/high-frequency-agent-development/)
-- [交付卡住了，在状态页上点一下](/zh/blog/stuck-delivery-one-click/)
+- [AI 编码交付卡住后，怎么让 Orbi 继续](/zh/blog/stuck-delivery-one-click/)
 - [Orbi 和编程 agent 的对比](/zh/compare/?ref=blog-vague)
 - [Orbi Cloud](/zh/cloud/?ref=blog-vague)

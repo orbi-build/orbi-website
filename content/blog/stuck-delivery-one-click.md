@@ -40,15 +40,15 @@ The two kinds of buttons work differently, and that difference explains what you
 
 "Fixed — let Orbi continue" acts at once. Cloud changes the labels on GitHub immediately: it adds `ai-fix-needed` if an Orbi pull request is open, or `ai-ready` if not, leaves a comment, and removes `ai-blocked`. The Issue is back in the queue.
 
-An answer button only posts a comment. Cloud writes one structured answer on the Issue, and the engine carries it out the next time its scheduler looks at stopped Issues. In the companion post's demo runs on Orbi Cloud, each new Issue had been picked up and checked within about three and a half minutes of being opened, which gives a sense of the wait.
+An answer button only posts a comment. Cloud writes one structured answer on the Issue, and the engine carries it out the next time its scheduler looks at stopped Issues. There is no measured figure for answers yet; for scale, in the demo runs of [the companion post](/blog/vague-request-to-merged-pr/) the same scheduler picked up each new Issue within about three and a half minutes of it being opened.
 
 For #394 the three answers are:
 
-- "Review and merge on GitHub" opens the pull request. The merge is yours to do there; Orbi takes no action.
+- "Review and merge on GitHub" opens the pull request. The merge is yours to do there; this button records no answer and Orbi takes no action. After merging, close #394 yourself if the merge did not close it.
 - "Don't take it — let Orbi do it" closes the outside pull request and queues the Issue so Orbi writes the change itself.
 - "Drop this task" closes the Issue and its pull request.
 
-None of the three is pre-selected and none runs on its own. Closing happens on the engine's next pass and only while the Issue is still stopped; if you requeued it in the meantime, the engine posts a note that the answer was not carried out. A closed pull request can be reopened on GitHub.
+None of the three is pre-selected and none runs on its own. Closing happens on the engine's next pass and only while the Issue is still stopped; if you requeued it in the meantime, the engine later posts a note that the answer was not carried out. A closed pull request can be reopened on GitHub.
 
 A passing review does not oblige you to accept a contribution. You might still decline because the change adds maintenance you do not want, or because it belongs in a later release.
 
@@ -64,7 +64,7 @@ Showing both states matters because the gap is real. If the page said "done" on 
 
 Some questions only choose between ways to do the work, and Orbi already has a recommendation with a reason. For those, Orbi takes the recommendation at the moment it stops: it writes the chosen option into the Issue as an acceptance criterion and queues the Issue again, so the next session reads the amended ticket.
 
-It does this at most once per Issue. An automatic requeue after a temporary GitHub error uses the same single allowance, so automatic retries cannot run in a loop. Orbi never makes this choice on decisions about outside code, about money, prices or plans, or on anything that would override a maintainer instruction written in the Issue or AGENTS.md. Questions that would open a link or close something, yes-or-no confirmations and free-text questions also always wait for you.
+It does this at most once per Issue. An automatic requeue after a temporary GitHub error uses the same single allowance, so these automatic resumes cannot run in a loop; if an Issue already used it that way, later questions on it wait for you. Orbi never makes this choice on decisions about outside code, about money, prices or plans, or on anything that would override a maintainer instruction written in the Issue or AGENTS.md. Questions that would open a link or close something, yes-or-no confirmations and free-text questions also always wait for you.
 
 When Orbi decides for you, Cloud shows "Orbi decided for you: …, because: …" with a "Change it" link that brings back the answer buttons. On GitHub, the engine's comment ends with "Not right? Reply with another option." That reply has to be a structured answer, described at the end of this post; an ordinary text comment is not read as an answer.
 
@@ -78,7 +78,7 @@ If a session is still running, a changed answer reaches it too: the engine updat
 
 ## Out of model balance
 
-The card for this stop gives the reason and a "Switch to a key with balance" link to model settings, but no requeue button. Top up the provider account or switch to a key that has balance, then queue the Issue again on GitHub: replace `ai-blocked` with `ai-fix-needed` if an Orbi pull request is open, or with `ai-ready` otherwise. That is also what the engine's own failure note says. Saving a new key does not requeue the Issue by itself.
+The card for this stop gives the reason and a "Switch to a key with balance" link to model settings, but no requeue button. Top up the provider account or switch to a key that has balance, then queue the Issue again on GitHub: replace `ai-blocked` with `ai-fix-needed` if an Orbi pull request is open, or with `ai-ready` otherwise. The engine's own failure note also asks you to requeue it. Saving a new key does not requeue the Issue by itself.
 
 ## The same controls in task history
 
@@ -103,7 +103,7 @@ The question sits in a hidden `orbi:question:v1` block. Note its `question.id` (
 <!-- orbi:answer:v1 {"q":"q1","action":"accept","value":"<the option's label>","by":"<your GitHub login>","reason":"optional reason"} -->
 ```
 
-To pick an option that Orbi carries out, `action` is always `"accept"`, even for an option that closes a pull request; the option itself goes in `value`. An option that is only a link, like "Review and merge on GitHub", is not answered this way: open its URL and act on GitHub, because the engine does nothing with it. Copy the label exactly as it appears in the question block, in the question's language, because the engine matches the text. Set `by` to your login and post from an account with write access. Leave `reason` out if you have nothing to add, since an empty string is rejected. Two other actions exist: `"decline"` uses your own words from `reason` as the new acceptance criterion, and `"cancel"` closes the Issue and its pull request while the Issue is stopped. To change an answer, post a new comment for the same `q`.
+To pick an option that Orbi carries out, `action` is always `"accept"`, even for an option that closes a pull request; the option itself goes in `value`. An option that is only a link, like "Review and merge on GitHub", is not answered this way: open its URL and act on GitHub, because the engine does nothing with it. Copy the label exactly as it appears in the question block, in the question's language, because the engine matches the text. Set `by` to your login and post from an account with write access. Leave `reason` out if you have nothing to add, since an empty string is rejected. Two other actions exist: `"decline"` uses your own words from `reason` as the new acceptance criterion (so include `reason` with it), and `"cancel"` closes the Issue and its pull request while the Issue is stopped. To change an answer, post a new comment for the same `q`.
 
 For an Issue that needs editing, like #390, edit it and then swap the label yourself: `ai-blocked` becomes `ai-fix-needed` if an Orbi pull request is open, or `ai-ready` otherwise. Removing `ai-blocked` alone does nothing, because the engine only picks up Issues that carry a queue label.
 

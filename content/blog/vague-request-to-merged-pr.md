@@ -26,7 +26,7 @@ There are three ways this can go when something is missing:
 
 - **Only the acceptance condition is missing.** Orbi writes proposed criteria into the Issue under `## Acceptance` and the same claim goes straight on to delivery.
 - **The Issue asks for several things.** Orbi creates one child Issue per outcome and queues them. The parent gets the `ai-epic` label and is not delivered itself.
-- **Something is missing that Orbi cannot fill in.** Orbi comments with what it needs, swaps `ai-ready` for `ai-needs-detail`, and waits. Add the detail and put `ai-ready` back to queue it again.
+- **Something is missing that Orbi cannot fill in.** Orbi comments with what it needs, swaps `ai-ready` for `ai-needs-detail`, and waits. Add the detail, then swap `ai-needs-detail` back to `ai-ready` to queue it again.
 
 The check reads what the Issue says, so you do not need a template. If the check itself errors or times out, Orbi skips it and delivers anyway, so a broken check never blocks work. Orbi Cloud turns the check on for every connected repository; on a self-hosted engine it is off until you set `clarify_thin_tickets = true` in `.github/orbi.toml` (engine v0.7.44 or later).
 
@@ -52,7 +52,7 @@ The second criterion keeps the situation the person described, a long list, whic
 
 Four seconds later a coding session started from the amended Issue. PR #22 opened at 00:00:12 UTC on 20 November, changing `index.html` and two test files (+28/−1). The review session checked it against the two criteria and CI, and Orbi merged it after one review round at 00:03:22 UTC, 8 minutes 26 seconds after the sentence was written.
 
-Two more requests went the same way. #19 asked for the same count in Chinese ("待办一多就数不过来了。", roughly "once there are many todos I can't keep count"). #25, "Let me clear the whole list", said only "The list is a mess and I want to start over."; its review found one problem, which was fixed in the same round before the merge.
+Two more requests went the same way. #19 asked for the same count in Chinese ("待办一多就数不过来了。", roughly "once there are many todos I can't keep count"). #25, "Let me clear the whole list", said only "The list is a mess and I want to start over."; its review session fixed one finding on the same branch and then passed it, all within one review round.
 
 | Request | Opened | Criteria added | Merged | Opened to merged |
 |---|---|---|---|---|
@@ -71,9 +71,9 @@ The criteria come back in the repository's configured message language, not the 
 
 ## Who sees an edit, and when
 
-The criteria Orbi writes are a proposal you can edit, and edits keep working after the coding session has started. While it runs, Orbi checks the Issue body every 60 seconds by default. When someone with write access changes it, Orbi restarts the coding session with the new text, up to three times by default. The review session reads the current Issue body fresh on every review round and treats it as the authoritative acceptance criteria, so the review checks whatever the Issue says at that point.
+The criteria Orbi writes are a proposal you can edit, and edits keep working after the coding session has started. While it runs, Orbi checks the Issue body every 60 seconds by default. When someone with write access changes it, Orbi restarts the coding session with the new text, up to three times by default. After that Orbi says on the Issue that the correction was not applied, and the running session carries on with what it has; review still reads the latest body. The review session reads the current Issue body fresh on every review round and treats it as the authoritative acceptance criteria, so the review checks whatever the Issue says at that point.
 
-Editing mid-run costs a restart, though, and in #21 the coding session started four seconds after the criteria appeared. If the exact definition of done matters to you, the cheaper path is to write your own acceptance criteria into the Issue before you add `ai-ready`; Orbi then uses them instead of proposing its own.
+Editing mid-run costs a restart, though, and in #21 the coding session started four seconds after the criteria appeared. If the exact definition of done matters to you, the cheaper path is to write your own acceptance criteria into the Issue before you add `ai-ready`; if they give a concrete way to tell done from not done, Orbi uses them instead of proposing its own.
 
 ## When one request is really two
 
@@ -84,7 +84,7 @@ A request in Orbi Cloud's own repository on 18 November asked to make the test s
 <figcaption>The automatic split on 18 November.</figcaption>
 </figure>
 
-The children are GitHub's native sub-issues, and Orbi links them before queuing them. A split always has at least two. If one child depends on another, Orbi records it with GitHub's native `blockedBy` relationship, so the order is visible on GitHub. Children inherit the parent's milestone and its `p0` or `bug` labels. Splitting this way used to wait for a maintainer to reply `/orbi split`; since engine v0.7.44 Orbi does it itself.
+The children are GitHub's native sub-issues, and Orbi links them before queuing them. A split always has at least two. If one child depends on another, Orbi records it with GitHub's native `blockedBy` relationship, so the order is visible on GitHub. Children inherit the parent's milestone and its `p0` or `bug` labels. Splitting this way used to wait for a maintainer to reply `/orbi split`; since engine v0.7.44 Orbi does it itself whenever the check is on (always, on Orbi Cloud).
 
 ## Questions while drafting
 
@@ -93,7 +93,7 @@ The children are GitHub's native sub-issues, and Orbi links them before queuing 
 ## Writing a request Orbi can deliver
 
 - Say what you want to see, such as the number of todos left or an empty list after clearing. A visible result is what Orbi turns into acceptance criteria.
-- If you already know a request has separate parts, open separate Issues. You then decide their order, and nothing waits on a split.
+- If you already know a request has separate parts, open separate Issues. You decide the order: mark the later one as `blockedBy` the earlier one on GitHub, or add `ai-ready` to the second only after the first merges.
 - If the definition of done matters, write the criteria yourself before adding `ai-ready`. You can still edit them later, at the cost of a restart.
 
 What happens after delivery starts and then stops is covered in [When an AI coding run stops and needs your answer](/blog/stuck-delivery-one-click/).
