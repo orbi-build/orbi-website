@@ -1,5 +1,13 @@
 [
   {
+    "slug": "ai-generated-tests",
+    "title": "AI-generated tests: what I found in 5,087 cases",
+    "summary": "A strict count found that a third of 5,087 Orbi Cloud Vitest cases pinned implementation details. I trace why, add a repo rule and speed up the test step.",
+    "zhSlug": "ai-generated-tests",
+    "zhTitle": "AI 写的测试：5,087 条用例的审查结果",
+    "related": []
+  },
+  {
     "slug": "stuck-delivery-one-click",
     "title": "When an AI coding run stops and needs your answer",
     "summary": "A stopped Orbi delivery needs either an answer or an edited Issue. Which Cloud button to press, what it changes on GitHub, and how to change your mind.",
@@ -64,6 +72,14 @@
     "related": []
   },
   {
+    "slug": "orbi-weekly-6",
+    "title": "Orbi weekly #6: write one sentence, Orbi starts",
+    "summary": "Write one sentence and Orbi starts. Empty repositories can start from an example.",
+    "zhSlug": "orbi-weekly-6",
+    "zhTitle": "Orbi 周报 #6：写一句话，Orbi 直接开工",
+    "related": []
+  },
+  {
     "slug": "opencode-vs-codex",
     "title": "OpenCode vs Codex CLI: same model, headless",
     "summary": "With Codex on workspace-write, all 24 DeepSeek runs passed; it sent more input and ran longer at each task median. Its default read-only run fixed nothing.",
@@ -93,6 +109,14 @@
     "summary": "20 Pi coding agent extensions tested without a terminal or desktop bus: which to use for MCP, web search and subagents, and which change config.",
     "zhSlug": "best-pi-extensions",
     "zhTitle": "Pi 扩展推荐：20 个扩展的无人值守实测",
+    "related": []
+  },
+  {
+    "slug": "orbi-weekly-5",
+    "title": "Orbi weekly #5: Orbi splits a big request for you",
+    "summary": "Describe a big request in one sentence; Orbi splits it into several Issues and creates them when you confirm.",
+    "zhSlug": "orbi-weekly-5",
+    "zhTitle": "Orbi 周报 #5：大需求一句话写，Orbi 拆成几张票一次建好",
     "related": []
   },
   {
@@ -136,11 +160,27 @@
     "related": []
   },
   {
+    "slug": "orbi-weekly-4",
+    "title": "Orbi weekly #4: vague tickets come back with a plan",
+    "summary": "A rough request now comes back with a plan, a red base branch pauses with a fix path, and Orbi merged 60 PRs in 2.5 days for its first heavy user.",
+    "zhSlug": "orbi-weekly-4",
+    "zhTitle": "Orbi 周报 #4：需求没写清，Orbi 先替您拆好、补全",
+    "related": []
+  },
+  {
     "slug": "pi-coding-agent-worktree",
     "title": "Pi coding agent worktree: a failed recovery",
     "summary": "A surviving branch stalled Orbi's queue after a failed run. How Pi sessions, worktrees and a stable branch help recover work before a pull request exists.",
     "zhSlug": "pi-coding-agent-worktree",
     "zhTitle": "Pi coding agent worktree：失败的交付怎么继续",
+    "related": []
+  },
+  {
+    "slug": "orbi-weekly-3",
+    "title": "Orbi weekly #3: Telegram alerts and Follow mode",
+    "summary": "This week: Telegram delivery notifications and Follow mode in your terminal. Keep up with Orbi wherever you work.",
+    "zhSlug": "orbi-weekly-3",
+    "zhTitle": "Orbi 周报 #3：Telegram 通知与终端 Follow 模式",
     "related": []
   },
   {
@@ -208,6 +248,14 @@
     "related": []
   },
   {
+    "slug": "orbi-weekly-2",
+    "title": "Orbi weekly #2: connect a repo, see suggestions",
+    "summary": "See what Orbi suggests doing first. Suggestions from several repos now appear together, with a filter for each project.",
+    "zhSlug": "orbi-weekly-2",
+    "zhTitle": "Orbi 周报 #2：连上仓库，Orbi 先给您几条建议",
+    "related": []
+  },
+  {
     "slug": "claude-code-yolo-mode",
     "title": "YOLO mode Claude Code vs auto mode: what I measured",
     "summary": "YOLO mode in Claude Code is --dangerously-skip-permissions. I tested it against auto mode and the safer modes on 2.1.287: what runs, what stops injection.",
@@ -245,6 +293,14 @@
     "summary": "Write a request in Orbi Cloud: describe a change, review a GitHub Issue draft, answer open questions, and hand it off. See merge controls and trial costs.",
     "zhSlug": "write-a-request",
     "zhTitle": "写需求：说一句话，Orbi Cloud 替你写好 GitHub Issue",
+    "related": []
+  },
+  {
+    "slug": "orbi-weekly-1",
+    "title": "Orbi weekly #1: k8e's etcd tests, sent back first",
+    "summary": "Last week of September: the k8e etcd tests that were sent back and then merged, the Orbi plugin for Claude is out, and DeepSeek at 1M context.",
+    "zhSlug": "orbi-weekly-1",
+    "zhTitle": "Orbi 周报 #1：k8e 的 etcd 测试先被打回，以及 9 月最后一周的新东西",
     "related": []
   },
   {

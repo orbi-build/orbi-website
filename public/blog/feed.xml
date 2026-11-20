@@ -6,6 +6,13 @@
     <description>Notes from shipping Orbi in the open: delivery runs, failures, fixes, and measurements.</description>
     <language>en</language>
     <item>
+      <title>AI-generated tests: what I found in 5,087 cases</title>
+      <link>https://orbi.build/blog/ai-generated-tests/</link>
+      <guid isPermaLink="true">https://orbi.build/blog/ai-generated-tests/</guid>
+      <pubDate>Fri, 20 Nov 2026 00:00:00 GMT</pubDate>
+      <description>A strict count found that a third of 5,087 Orbi Cloud Vitest cases pinned implementation details. I trace why, add a repo rule and speed up the test step.</description>
+    </item>
+    <item>
       <title>When an AI coding run stops and needs your answer</title>
       <link>https://orbi.build/blog/stuck-delivery-one-click/</link>
       <guid isPermaLink="true">https://orbi.build/blog/stuck-delivery-one-click/</guid>
@@ -62,6 +69,13 @@
       <description>Six agents sorted by what you hand over, a one-week trial on your own repo, and a gh script that scores it from GitHub's issue and pull request records.</description>
     </item>
     <item>
+      <title>Orbi weekly #6: write one sentence, Orbi starts</title>
+      <link>https://orbi.build/blog/orbi-weekly-6/</link>
+      <guid isPermaLink="true">https://orbi.build/blog/orbi-weekly-6/</guid>
+      <pubDate>Thu, 12 Nov 2026 00:00:00 GMT</pubDate>
+      <description>Write one sentence and Orbi starts. Empty repositories can start from an example.</description>
+    </item>
+    <item>
       <title>OpenCode vs Codex CLI: same model, headless</title>
       <link>https://orbi.build/blog/opencode-vs-codex/</link>
       <guid isPermaLink="true">https://orbi.build/blog/opencode-vs-codex/</guid>
@@ -88,6 +102,13 @@
       <guid isPermaLink="true">https://orbi.build/blog/best-pi-extensions/</guid>
       <pubDate>Thu, 05 Nov 2026 00:00:00 GMT</pubDate>
       <description>20 Pi coding agent extensions tested without a terminal or desktop bus: which to use for MCP, web search and subagents, and which change config.</description>
+    </item>
+    <item>
+      <title>Orbi weekly #5: Orbi splits a big request for you</title>
+      <link>https://orbi.build/blog/orbi-weekly-5/</link>
+      <guid isPermaLink="true">https://orbi.build/blog/orbi-weekly-5/</guid>
+      <pubDate>Thu, 05 Nov 2026 00:00:00 GMT</pubDate>
+      <description>Describe a big request in one sentence; Orbi splits it into several Issues and creates them when you confirm.</description>
     </item>
     <item>
       <title>AI code review bottleneck? Our PRs wait after merge</title>
@@ -125,11 +146,25 @@
       <description>How Orbi runs Pi extensions and Pi agent skills unattended: a --no-extensions allowlist, where Pi looks for skills, and the flags that limit each session.</description>
     </item>
     <item>
+      <title>Orbi weekly #4: vague tickets come back with a plan</title>
+      <link>https://orbi.build/blog/orbi-weekly-4/</link>
+      <guid isPermaLink="true">https://orbi.build/blog/orbi-weekly-4/</guid>
+      <pubDate>Thu, 29 Oct 2026 00:00:00 GMT</pubDate>
+      <description>A rough request now comes back with a plan, a red base branch pauses with a fix path, and Orbi merged 60 PRs in 2.5 days for its first heavy user.</description>
+    </item>
+    <item>
       <title>Pi coding agent worktree: a failed recovery</title>
       <link>https://orbi.build/blog/pi-coding-agent-worktree/</link>
       <guid isPermaLink="true">https://orbi.build/blog/pi-coding-agent-worktree/</guid>
       <pubDate>Mon, 26 Oct 2026 00:00:00 GMT</pubDate>
       <description>A surviving branch stalled Orbi's queue after a failed run. How Pi sessions, worktrees and a stable branch help recover work before a pull request exists.</description>
+    </item>
+    <item>
+      <title>Orbi weekly #3: Telegram alerts and Follow mode</title>
+      <link>https://orbi.build/blog/orbi-weekly-3/</link>
+      <guid isPermaLink="true">https://orbi.build/blog/orbi-weekly-3/</guid>
+      <pubDate>Thu, 22 Oct 2026 00:00:00 GMT</pubDate>
+      <description>This week: Telegram delivery notifications and Follow mode in your terminal. Keep up with Orbi wherever you work.</description>
     </item>
     <item>
       <title>Aider vs OpenCode: context, commits and checks</title>
@@ -188,6 +223,13 @@
       <description>Codex YOLO mode skips approvals and the local sandbox. Linux tests show what it allows; the guide also explains Codex auto mode and the full-auto removal.</description>
     </item>
     <item>
+      <title>Orbi weekly #2: connect a repo, see suggestions</title>
+      <link>https://orbi.build/blog/orbi-weekly-2/</link>
+      <guid isPermaLink="true">https://orbi.build/blog/orbi-weekly-2/</guid>
+      <pubDate>Thu, 15 Oct 2026 00:00:00 GMT</pubDate>
+      <description>See what Orbi suggests doing first. Suggestions from several repos now appear together, with a filter for each project.</description>
+    </item>
+    <item>
       <title>YOLO mode Claude Code vs auto mode: what I measured</title>
       <link>https://orbi.build/blog/claude-code-yolo-mode/</link>
       <guid isPermaLink="true">https://orbi.build/blog/claude-code-yolo-mode/</guid>
@@ -221,6 +263,13 @@
       <guid isPermaLink="true">https://orbi.build/blog/write-a-request/</guid>
       <pubDate>Fri, 09 Oct 2026 00:00:00 GMT</pubDate>
       <description>Write a request in Orbi Cloud: describe a change, review a GitHub Issue draft, answer open questions, and hand it off. See merge controls and trial costs.</description>
+    </item>
+    <item>
+      <title>Orbi weekly #1: k8e's etcd tests, sent back first</title>
+      <link>https://orbi.build/blog/orbi-weekly-1/</link>
+      <guid isPermaLink="true">https://orbi.build/blog/orbi-weekly-1/</guid>
+      <pubDate>Thu, 08 Oct 2026 00:00:00 GMT</pubDate>
+      <description>Last week of September: the k8e etcd tests that were sent back and then merged, the Orbi plugin for Claude is out, and DeepSeek at 1M context.</description>
     </item>
     <item>
       <title>Pi agent harness: CLI, AI SDK, Pi Durable vs kill -9</title>

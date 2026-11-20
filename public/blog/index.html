@@ -72,11 +72,17 @@
         <p class="eyebrow">orbi.build · field notes</p>
         <h1 id="blog-title">Blog</h1>
         <p class="hero-lede">Delivery notes, industry analysis, architecture trade-offs, and technical judgment from building Orbi in public. Every number traces to an issue, run, or source line you can inspect.</p>
+        <p class="hero-lede">Series: <a href="/guides/newsletter/">Orbi weekly, every issue</a> · <a href="/guides/pi-coding-agent/">the Pi series</a></p>
       </section>
     </div>
 
     <section class="compare-section shell" aria-label="Posts">
       <div class="post-list">
+    <article class="post-entry">
+      <h2 class="post-entry-title"><a href="/blog/ai-generated-tests/">AI-generated tests: what I found in 5,087 cases</a></h2>
+      <p class="post-entry-meta"><time datetime="2026-11-20">2026-11-20</time></p>
+      <p class="post-entry-summary">A strict count found that a third of 5,087 Orbi Cloud Vitest cases pinned implementation details. I trace why, add a repo rule and speed up the test step.</p>
+    </article>
     <article class="post-entry">
       <h2 class="post-entry-title"><a href="/blog/stuck-delivery-one-click/">When an AI coding run stops and needs your answer</a></h2>
       <p class="post-entry-meta"><time datetime="2026-11-20">2026-11-20</time></p>
@@ -118,6 +124,11 @@
       <p class="post-entry-summary">Six agents sorted by what you hand over, a one-week trial on your own repo, and a gh script that scores it from GitHub's issue and pull request records.</p>
     </article>
     <article class="post-entry">
+      <h2 class="post-entry-title"><a href="/blog/orbi-weekly-6/">Orbi weekly #6: write one sentence, Orbi starts</a></h2>
+      <p class="post-entry-meta"><time datetime="2026-11-12">2026-11-12</time></p>
+      <p class="post-entry-summary">Write one sentence and Orbi starts. Empty repositories can start from an example.</p>
+    </article>
+    <article class="post-entry">
       <h2 class="post-entry-title"><a href="/blog/opencode-vs-codex/">OpenCode vs Codex CLI: same model, headless</a></h2>
       <p class="post-entry-meta"><time datetime="2026-11-11">2026-11-11</time></p>
       <p class="post-entry-summary">With Codex on workspace-write, all 24 DeepSeek runs passed; it sent more input and ran longer at each task median. Its default read-only run fixed nothing.</p>
@@ -136,6 +147,11 @@
       <h2 class="post-entry-title"><a href="/blog/best-pi-extensions/">Best Pi extensions for unattended runs: 20 tested</a></h2>
       <p class="post-entry-meta"><time datetime="2026-11-05">2026-11-05</time></p>
       <p class="post-entry-summary">20 Pi coding agent extensions tested without a terminal or desktop bus: which to use for MCP, web search and subagents, and which change config.</p>
+    </article>
+    <article class="post-entry">
+      <h2 class="post-entry-title"><a href="/blog/orbi-weekly-5/">Orbi weekly #5: Orbi splits a big request for you</a></h2>
+      <p class="post-entry-meta"><time datetime="2026-11-05">2026-11-05</time></p>
+      <p class="post-entry-summary">Describe a big request in one sentence; Orbi splits it into several Issues and creates them when you confirm.</p>
     </article>
     <article class="post-entry">
       <h2 class="post-entry-title"><a href="/blog/ai-code-review-bottleneck/">AI code review bottleneck? Our PRs wait after merge</a></h2>
@@ -163,9 +179,19 @@
       <p class="post-entry-summary">How Orbi runs Pi extensions and Pi agent skills unattended: a --no-extensions allowlist, where Pi looks for skills, and the flags that limit each session.</p>
     </article>
     <article class="post-entry">
+      <h2 class="post-entry-title"><a href="/blog/orbi-weekly-4/">Orbi weekly #4: vague tickets come back with a plan</a></h2>
+      <p class="post-entry-meta"><time datetime="2026-10-29">2026-10-29</time></p>
+      <p class="post-entry-summary">A rough request now comes back with a plan, a red base branch pauses with a fix path, and Orbi merged 60 PRs in 2.5 days for its first heavy user.</p>
+    </article>
+    <article class="post-entry">
       <h2 class="post-entry-title"><a href="/blog/pi-coding-agent-worktree/">Pi coding agent worktree: a failed recovery</a></h2>
       <p class="post-entry-meta"><time datetime="2026-10-26">2026-10-26</time></p>
       <p class="post-entry-summary">A surviving branch stalled Orbi's queue after a failed run. How Pi sessions, worktrees and a stable branch help recover work before a pull request exists.</p>
+    </article>
+    <article class="post-entry">
+      <h2 class="post-entry-title"><a href="/blog/orbi-weekly-3/">Orbi weekly #3: Telegram alerts and Follow mode</a></h2>
+      <p class="post-entry-meta"><time datetime="2026-10-22">2026-10-22</time></p>
+      <p class="post-entry-summary">This week: Telegram delivery notifications and Follow mode in your terminal. Keep up with Orbi wherever you work.</p>
     </article>
     <article class="post-entry">
       <h2 class="post-entry-title"><a href="/blog/aider-vs-opencode/">Aider vs OpenCode: context, commits and checks</a></h2>
@@ -208,6 +234,11 @@
       <p class="post-entry-summary">Codex YOLO mode skips approvals and the local sandbox. Linux tests show what it allows; the guide also explains Codex auto mode and the full-auto removal.</p>
     </article>
     <article class="post-entry">
+      <h2 class="post-entry-title"><a href="/blog/orbi-weekly-2/">Orbi weekly #2: connect a repo, see suggestions</a></h2>
+      <p class="post-entry-meta"><time datetime="2026-10-15">2026-10-15</time></p>
+      <p class="post-entry-summary">See what Orbi suggests doing first. Suggestions from several repos now appear together, with a filter for each project.</p>
+    </article>
+    <article class="post-entry">
       <h2 class="post-entry-title"><a href="/blog/claude-code-yolo-mode/">YOLO mode Claude Code vs auto mode: what I measured</a></h2>
       <p class="post-entry-meta"><time datetime="2026-10-13">2026-10-13</time></p>
       <p class="post-entry-summary">YOLO mode in Claude Code is --dangerously-skip-permissions. I tested it against auto mode and the safer modes on 2.1.287: what runs, what stops injection.</p>
@@ -231,6 +262,11 @@
       <h2 class="post-entry-title"><a href="/blog/write-a-request/">Write a request: Orbi Cloud drafts your GitHub Issue</a></h2>
       <p class="post-entry-meta"><time datetime="2026-10-09">2026-10-09</time></p>
       <p class="post-entry-summary">Write a request in Orbi Cloud: describe a change, review a GitHub Issue draft, answer open questions, and hand it off. See merge controls and trial costs.</p>
+    </article>
+    <article class="post-entry">
+      <h2 class="post-entry-title"><a href="/blog/orbi-weekly-1/">Orbi weekly #1: k8e's etcd tests, sent back first</a></h2>
+      <p class="post-entry-meta"><time datetime="2026-10-08">2026-10-08</time></p>
+      <p class="post-entry-summary">Last week of September: the k8e etcd tests that were sent back and then merged, the Orbi plugin for Claude is out, and DeepSeek at 1M context.</p>
     </article>
     <article class="post-entry">
       <h2 class="post-entry-title"><a href="/blog/pi-agent-harness/">Pi agent harness: CLI, AI SDK, Pi Durable vs kill -9</a></h2>

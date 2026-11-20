@@ -256,10 +256,14 @@ Shipping notes from the root domain: what each delivery run hit, what fixed
 it, and the numbers behind both, traced to the issues they came from. RSS
 feed of the English posts: https://orbi.build/blog/feed.xml
 
+- AI-generated tests: what I found in 5,087 cases (English):
+  https://orbi.build/blog/ai-generated-tests/
 - When an AI coding run stops and needs your answer (English):
   https://orbi.build/blog/stuck-delivery-one-click/
 - From a vague request to a merged PR with Orbi (English):
   https://orbi.build/blog/vague-request-to-merged-pr/
+- AI 写的测试：5,087 条用例的审查结果 (Chinese):
+  https://orbi.build/zh/blog/ai-generated-tests/
 - AI 编码交付卡住后，怎么让 Orbi 继续 (Chinese):
   https://orbi.build/zh/blog/stuck-delivery-one-click/
 - 一句话需求，怎么走到 PR 合并 (Chinese):
@@ -286,8 +290,12 @@ feed of the English posts: https://orbi.build/blog/feed.xml
   https://orbi.build/zh/blog/devin-vs-cursor/
 - Best AI agent for coding: test them on your own repo (English):
   https://orbi.build/blog/best-ai-agent-for-coding/
+- Orbi weekly #6: write one sentence, Orbi starts (English):
+  https://orbi.build/blog/orbi-weekly-6/
 - 最好的 AI 编程 agent 怎么选：在自己的仓库上试一周 (Chinese):
   https://orbi.build/zh/blog/best-ai-agent-for-coding/
+- Orbi 周报 #6：写一句话，Orbi 直接开工 (Chinese):
+  https://orbi.build/zh/blog/orbi-weekly-6/
 - OpenCode vs Codex CLI: same model, headless (English):
   https://orbi.build/blog/opencode-vs-codex/
 - OpenCode vs Codex CLI：同一模型，无人值守实测 (Chinese):
@@ -302,8 +310,12 @@ feed of the English posts: https://orbi.build/blog/feed.xml
   https://orbi.build/zh/blog/cursor-alternatives/
 - Best Pi extensions for unattended runs: 20 tested (English):
   https://orbi.build/blog/best-pi-extensions/
+- Orbi weekly #5: Orbi splits a big request for you (English):
+  https://orbi.build/blog/orbi-weekly-5/
 - Pi 扩展推荐：20 个扩展的无人值守实测 (Chinese):
   https://orbi.build/zh/blog/best-pi-extensions/
+- Orbi 周报 #5：大需求一句话写，Orbi 拆成几张票一次建好 (Chinese):
+  https://orbi.build/zh/blog/orbi-weekly-5/
 - AI code review bottleneck? Our PRs wait after merge (English):
   https://orbi.build/blog/ai-code-review-bottleneck/
 - AI 代码评审是瓶颈吗？我们的 PR 卡在合并之后 (Chinese):
@@ -324,10 +336,18 @@ feed of the English posts: https://orbi.build/blog/feed.xml
   https://orbi.build/blog/pi-extensions-in-production/
 - Orbi 怎么在生产里隔离加载 Pi 扩展和技能，又自己写了哪两个扩展 (Chinese):
   https://orbi.build/zh/blog/pi-extensions-in-production/
+- Orbi weekly #4: vague tickets come back with a plan (English):
+  https://orbi.build/blog/orbi-weekly-4/
+- Orbi 周报 #4：需求没写清，Orbi 先替您拆好、补全 (Chinese):
+  https://orbi.build/zh/blog/orbi-weekly-4/
 - Pi coding agent worktree: a failed recovery (English):
   https://orbi.build/blog/pi-coding-agent-worktree/
 - Pi coding agent worktree：失败的交付怎么继续 (Chinese):
   https://orbi.build/zh/blog/pi-coding-agent-worktree/
+- Orbi weekly #3: Telegram alerts and Follow mode (English):
+  https://orbi.build/blog/orbi-weekly-3/
+- Orbi 周报 #3：Telegram 通知与终端 Follow 模式 (Chinese):
+  https://orbi.build/zh/blog/orbi-weekly-3/
 - Aider vs OpenCode: context, commits and checks (English):
   https://orbi.build/blog/aider-vs-opencode/
 - Aider vs OpenCode：上下文、提交和测试怎么选 (Chinese):
@@ -360,6 +380,10 @@ feed of the English posts: https://orbi.build/blog/feed.xml
   https://orbi.build/blog/codex-yolo-mode/
 - Codex YOLO mode 会放开什么权限 (Chinese):
   https://orbi.build/zh/blog/codex-yolo-mode/
+- Orbi weekly #2: connect a repo, see suggestions (English):
+  https://orbi.build/blog/orbi-weekly-2/
+- Orbi 周报 #2：连上仓库，Orbi 先给您几条建议 (Chinese):
+  https://orbi.build/zh/blog/orbi-weekly-2/
 - YOLO mode Claude Code vs auto mode: what I measured (English):
   https://orbi.build/blog/claude-code-yolo-mode/
 - Claude Code 的 YOLO 模式和 auto 模式：我实测了一遍 (Chinese):
@@ -380,6 +404,10 @@ feed of the English posts: https://orbi.build/blog/feed.xml
   https://orbi.build/blog/write-a-request/
 - 写需求：说一句话，Orbi Cloud 替你写好 GitHub Issue (Chinese):
   https://orbi.build/zh/blog/write-a-request/
+- Orbi weekly #1: k8e's etcd tests, sent back first (English):
+  https://orbi.build/blog/orbi-weekly-1/
+- Orbi 周报 #1：k8e 的 etcd 测试先被打回，以及 9 月最后一周的新东西 (Chinese):
+  https://orbi.build/zh/blog/orbi-weekly-1/
 - Pi agent harness: CLI, AI SDK, Pi Durable vs kill -9 (English):
   https://orbi.build/blog/pi-agent-harness/
 - Pi agent harness 三种跑法：kill -9 后如何恢复 (Chinese):
