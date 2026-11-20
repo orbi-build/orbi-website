@@ -1,125 +1,110 @@
 ---
 title: From a vague request to a merged PR with Orbi
 date: 2026-11-20
-summary: Real runs show Orbi adding acceptance criteria to one-line GitHub Issues, splitting larger requests into queued child tickets and recording its decisions.
+summary: Requests show how Orbi adds acceptance criteria to GitHub Issues, splits multi-outcome requests into queued children, and reviews changes before merge.
 lang: en
 author: Larry 🍀 Orbi
 image: /img/blog-vague-request-to-merged-pr-card.png
 mirror: vague-request-to-merged-pr
 ---
 
-Orbi is an open-source system that takes a one-sentence request through code, independent review, merge and release. If you use coding agents with GitHub and want to queue a change in plain language, these real runs show how Orbi turns a vague request into acceptance criteria, or a larger request into child tickets, before delivery starts.
+Orbi is an open-source system that takes a GitHub Issue labeled `ai-ready` in a connected repository through a delivery session that writes code and a separate delivery session that reviews it against the Issue's acceptance criteria and CI, then merges when review passes and CI is green; a separate Release task ships versions. A short request can leave the definition of done unwritten, or combine several outcomes in one Issue. This post shows how Orbi handles both, with a design idea you can reuse: record proposed decisions in the Issue so you can edit what later review checks.
 
-I'm Larry 🍀 Orbi, the creator of Orbi. The behavior here spans engine v0.7.44 through v0.7.52; the production demo requests below ran on v0.7.52.
+I'm Larry 🍀 Orbi, the creator of Orbi.
 
-## What Orbi checks before starting a GitHub Issue
+Orbi Cloud is the hosted version that runs the same open-source engine for you. To queue work, open an Issue in a connected repository and add the `ai-ready` label. Orbi Cloud's "Write a request" can draft the Issue and queue it for you.
 
-Orbi's pre-claim check reads a queued ticket for three things:
+Orbi tracks delivery state with GitHub labels: `ai-ready` means queued, `ai-in-progress` means delivery is running, `ai-blocked` means stopped, `ai-fix-needed` means the existing change needs further work, and `ai-merged` means merged. During review, Orbi resolves findings on the same branch before merging.
 
-- An observable result: what someone will see or be able to do when the change is delivered.
-- An acceptance condition: a concrete way to distinguish a finished delivery from an unfinished one.
+## What Orbi checks before claiming an Issue
+
+A claim is the runner picking up a queued Issue. Before that claim proceeds to delivery, a model reads the Issue for three things:
+
+- An observable result: what someone will see or be able to do after delivery.
+- An acceptance condition: a concrete way to tell whether delivery is finished.
 - A single outcome: one change that can be delivered on its own.
 
-The check judges what the ticket says. Separate template headings are optional. Orbi Cloud turns it on for every connected repository. On a self-hosted engine it is off by default; set `clarify_thin_tickets = true` in `.github/orbi.toml` to use it. A model error, timeout or malformed answer is logged as a skipped check and lets delivery proceed.
+If something is missing, Orbi handles it as follows:
 
-Here, a claim means the runner picking up a queued ticket to work on it. When the only missing part is the acceptance condition and Orbi has a usable criteria proposal, the engine appends those criteria to the Issue body. The criteria, their heading (`## Acceptance` or `## 验收`) and Orbi's comment are written in the repository's configured message language, English or Chinese, regardless of the ticket's language.
+- If only acceptance criteria are missing and there is a usable proposal, Orbi appends the criteria to the Issue body and continues the same claim.
+- If the Issue contains several outcomes and there is a usable split, Orbi creates and queues child Issues. The parent gets `ai-epic` and loses `ai-ready`; Orbi delivers the children, with no delivery or PR for the parent itself.
+- If detail is missing and there is no usable proposal, Orbi comments with what is missing, removes `ai-ready` and adds `ai-needs-detail`. Fill in the missing detail, then add `ai-ready` again to queue the Issue.
 
-The same claim continues to delivery right away. The implementation session receives the amended body from this step, without a second queue entry or approval exchange. Orbi leaves a comment beginning:
+The model judges what the Issue says, so separate template headings are optional. If the check itself errors, times out or returns a malformed answer, Orbi skips it and delivery proceeds. A failure of the check itself never blocks work.
 
-> Added the proposed acceptance criteria to this ticket.
+## A one-line todo request
 
-After listing the criteria, it says:
+Acceptance criteria and comments follow the repository's configured message language. Orbi's demo repository is set to Chinese, so #19 received Chinese criteria and a Chinese comment; I switched it to English messages for #21 and #25.
 
-> They are under `## Acceptance`, and this claim continues to delivery. Editing this ticket changes them.
+Orbi's demo repository contains a small todo app; it is private, and these deliveries ran on Orbi Cloud's production service. I opened all three requests myself. These are small changes on a small app, not a benchmark.
 
-## A one-sentence todo request, merged in 8 minutes 26 seconds
-
-On 19 November 2026 at 23:54:56 UTC, Issue #21 in Orbi's own production demo repository, `orbi-build/orbi-e2e-prod`, opened with the title "I lose count of my open todos". Its entire body was:
+Issue #21 was titled "I lose count of my open todos". Its entire body was:
 
 > Once the list gets long I can't tell how many are left.
 
-At 23:58:28 UTC, Orbi added these two acceptance criteria:
+Orbi added these acceptance criteria at 23:58:28 UTC:
 
 > - The todo list shows how many open todos are left, and that number matches the actual count of open items
 > - The count stays visible and correct once the list gets long
 
-The first criterion defines what the count measures. The second preserves the situation that prompted the request: a long list.
-
 <figure class="post-media">
-<img src="/img/blog-vague-criteria-en.webp" alt="GitHub Issue #21, I lose count of my open todos, showing the one-sentence body, two bullets under Acceptance, and the bot comment confirming the criteria were added." width="912" height="782">
-<figcaption>Issue #21 after Orbi appended the criteria. This is Orbi's private demo repository, so the evidence here is a screenshot.</figcaption>
+<img src="/img/blog-vague-criteria-en.webp" alt="GitHub Issue #21, I lose count of my open todos, showing the one-sentence body, two bullets under Acceptance, and Orbi's comment confirming the criteria were added." width="912" height="782">
+<figcaption>Issue #21 after Orbi appended the acceptance criteria.</figcaption>
 </figure>
 
-Orbi started at 23:58:32 UTC, four seconds after adding the criteria. PR #22 opened at 00:00:12 UTC on 20 November and merged at 00:03:22 UTC after one review round. From the original sentence to merge: 8 minutes 26 seconds. Times in this section are the Issue's creation time and the PR's merge time as GitHub records them.
+At 23:58:32 UTC, four seconds later, a delivery session read the amended Issue and began implementation. PR #22 opened at 00:00:12 UTC on 20 November and changed `index.html` plus two test files (+28/−1). A separate delivery session checked the change against the Issue's acceptance criteria and CI. Orbi merged after one review round with CI green, 8 minutes 26 seconds after the request was opened.
 
-Two other production requests show the same preparation step:
+Issue #19 asked for a todo count with the title "待办多了想知道还剩几个没做" and the body "待办一多就数不过来了。": once there are many todos, it is hard to count what remains.
 
-| Request | Opened, UTC | Criteria added, UTC | Merged, UTC | Sentence to merge |
+<figure class="post-media">
+<img src="/img/blog-vague-criteria-zh.webp" alt="GitHub Issue #19 with a Chinese title and one-sentence body, two Chinese criteria under 验收, and Orbi's Chinese comment confirming their addition." width="912" height="782">
+<figcaption>Issue #19 received criteria in the repository's configured Chinese message language.</figcaption>
+</figure>
+
+Issue #25 was titled "Let me clear the whole list", with the body "The list is a mess and I want to start over."
+
+Column note: dates are in 2026 and clock times are UTC. "Opened" is Issue creation; "Merged" is PR merge.
+
+| Request | Opened | Criteria added | Merged | Sentence to merge |
 |---|---|---|---|---|
-| #19, Chinese todo count | Nov 19, 23:46:05 | Nov 19, 23:48:42 | Nov 19, 23:52:52 | 6 min 47 s |
+| #19, todo count | Nov 19, 23:46:05 | Nov 19, 23:48:42 | Nov 19, 23:52:52 | 6 min 47 s |
+| #21, todo count | Nov 19, 23:54:56 | Nov 19, 23:58:28 | Nov 20, 00:03:22 | 8 min 26 s |
 | #25, clear the list | Nov 20, 00:20:07 | Nov 20, 00:23:38 | Nov 20, 00:30:02 | 9 min 55 s |
 
-Issue #19's title was "待办多了想知道还剩几个没做", with the body "待办一多就数不过来了。" The demo repository's message language is Chinese, so the criteria and comment came back in Chinese. For #21 and #25 the repository was temporarily switched to English messages, which is why those two runs answered in English.
+## When edits reach a delivery session
 
-<figure class="post-media">
-<img src="/img/blog-vague-criteria-zh.webp" alt="GitHub Issue #19 with a Chinese title and one-sentence body, two Chinese criteria under 验收, and a Chinese bot comment confirming their addition." width="912" height="782">
-<figcaption>Issue #19 in the demo repository, whose message language is Chinese.</figcaption>
-</figure>
+Implementation starts with a delivery session reading the Issue. In #21 that was four seconds after Orbi added the criteria, so there was little time to edit them before work began. Edits do not reach that delivery session once it is running.
 
-Issue #25 was titled "Let me clear the whole list", with the body "The list is a mess and I want to start over." One review finding was resolved in the same session before merge. These are three recorded runs on a demo application; their elapsed times describe those requests.
+For every review round, a separate delivery session reads the current Issue body fresh and treats it as the authoritative acceptance criteria. Edits made before that round are what the review checks.
+
+If you want to set the criteria yourself, write them into the Issue before adding `ai-ready`.
 
 ## How Orbi splits a request with several outcomes
 
-The pre-claim check can also produce a split proposal. When the ticket contains several outcomes and the proposal is usable, Orbi creates child Issues and queues them in the same claim. Before engine v0.7.44 the proposal waited for a maintainer to reply `/orbi split`; since v0.7.44 the engine applies it itself.
-
-A public example from the earlier flow shows what the children look like. [Issue #263](https://github.com/xqliu/orbi-e2e-2609260042/issues/263) in a public test repository asked for three CLI changes in one sentence: `export` should take `--email`, `summary` should take `--by-month`, and `refunds-summary` should count per week instead of per month.
+On 18 November at 17:26:06 UTC, Orbi automatically split a request to speed up the test suite in Orbi Cloud's own repository. One child addressed test setup time; the other addressed running tests in parallel on CI. Both were delivered and merged the next day, by 02:42:40 UTC. The split gave the setup and CI changes their own acceptance criteria and separate deliveries. That repository is private and uses Chinese messages.
 
 <figure class="post-media">
-<img src="/img/blog-vague-split-request-263.webp" alt="GitHub Issue #263 with a one-sentence body asking for three CLI changes, labeled ai-epic, and a Sub-issues panel listing #266, #267 and #268, all closed." width="922" height="525">
-<figcaption>Issue #263: one request, three native sub-issues.</figcaption>
+<img src="/img/blog-vague-split-auto-zh.webp" alt="Orbi's Chinese comment saying the Issue was split into two child Issues, #3508 and #3509, with the parent now ai-epic and both children queued; no maintainer command precedes it." width="922" height="382">
+<figcaption>The automatic split on 18 November.</figcaption>
 </figure>
 
-On 28 October 2026 at 14:20:04 UTC, after the `/orbi split` reply, Orbi posted "Split into 3 child tickets." and listed #266 (`export --email`), #267 (`summary --by-month`) and #268 (weekly refunds), ending with:
+A split needs at least two children, each with its own result and acceptance criteria so it can be delivered on its own. Orbi links them using GitHub's native sub-issues, then adds `ai-ready` after the links are in place. Dependencies between children use GitHub's native `blockedBy` relationship, which records which child must come first. Children inherit the parent's milestone and its `p0` or `bug` labels when present. The parent gets `ai-epic` and loses `ai-ready` because delivery now belongs to the children.
 
-> This ticket is now their parent (`ai-epic`) and every child is queued.
+## "Write a request" on Orbi Cloud
 
-<figure class="post-media">
-<img src="/img/blog-vague-split-comment-263.webp" alt="Orbi's GitHub comment saying Split into 3 child tickets, listing #266, #267 and #268, and confirming the parent is ai-epic and every child is queued." width="922" height="322">
-<figcaption>The split comment on Issue #263.</figcaption>
-</figure>
+"Write a request" is Orbi Cloud's page where you describe a change and Orbi reads the repository and drafts the Issue.
 
-#266 was delivered and its PR merged at 14:36:05 UTC, 16 minutes after the split. #263 was a test ticket, so #267 and #268 were closed by hand without delivery.
+When Orbi poses a question with a recommended option while drafting the Issue, it answers that question itself. The drafting instructions require that choice and its reason to be recorded under the affected Issue's `Assumptions` section, so you can see what was decided. Questions without a recommended option come back to you. A request that only asks for an explanation gets a reply and no Issue.
 
-With v0.7.44 and later, the same comment appears without the `/orbi split` reply. On 18 November at 17:26:06 UTC, a speed-up ticket in Orbi Cloud's own repository was split into two children this way, one for test setup time and one for running tests in parallel on CI. Both were delivered and merged by 02:42:40 UTC the next morning. That repository is private and writes Chinese messages, so here is a screenshot:
+## Writing a request
 
-<figure class="post-media">
-<img src="/img/blog-vague-split-auto-zh.webp" alt="Chinese Orbi comment on a private Orbi Cloud Issue saying it was split into 2 child tickets, #3508 and #3509, with the parent now ai-epic and both children queued; no maintainer command precedes it." width="922" height="382">
-<figcaption>An automatic split on 18 November, in a repository whose message language is Chinese.</figcaption>
-</figure>
+State the visible result you need, such as seeing how many todos remain or clearing the list to start over. That gives Orbi something concrete to turn into acceptance criteria.
 
-Each child gets its own result and acceptance criteria. Orbi attaches the children using GitHub's native sub-issues, then applies the queue label after linking them. The parent receives `ai-epic` and loses `ai-ready`; delivery proceeds through the children, with no PR for the parent.
+When you already know the pieces, write separate requests so you control their order and dependencies. If the exact definition of done matters to you, write your own criteria before queueing. Later edits still steer review through the current Issue body.
 
-A split must have at least two children. The engine sets no maximum of its own and asks for the fewest slices that cover every goal; GitHub allows up to 100 sub-issues per parent. If a child depends on another, the proposal can refer to an earlier item, and Orbi records that dependency through GitHub's native `blockedBy` relationship. Children also inherit the parent's milestone and its `p0` or `bug` labels when present.
+Orbi Cloud enables the pre-claim check for every connected repository. On a self-hosted engine it is off by default; set `clarify_thin_tickets = true` in `.github/orbi.toml` to enable it.
 
-When required detail is missing and no usable proposal can supply it, Orbi explains the missing detail, removes the queue label and adds `ai-needs-detail`.
-
-## What happens in "Write a request" on Orbi Cloud
-
-Preparation can begin before a GitHub Issue exists. In Orbi Cloud's "Write a request", when Orbi's drafting session proposes a question with a recommended option, the engine chooses that option itself. This behavior shipped in engine v0.7.44.
-
-The engine feeds the decision into the same drafting session. Its instructions require each decision to appear under `Assumptions` in the affected Issue, saying what was chosen and why; the reply also lists the decisions. Questions without a recommended option go to the person.
-
-An explicit request such as "only explain" or "don't touch the code" takes the reply-only route. Orbi returns what it found without drafting or creating an Issue.
-
-For what happens after an active delivery stops, see [how Orbi handles a stuck delivery](/blog/stuck-delivery-one-click/).
-
-## How to get the most out of a one-line request
-
-State the visible result you need. The todo examples give Orbi something concrete to turn into an acceptance condition: knowing how many items remain, or starting over with an empty list.
-
-Keep one change in each request. If you already know the work has separate outcomes, write separate requests; Orbi's split path handles a combined ticket when its pre-claim check identifies those outcomes.
-
-Keep the ticket's acceptance criteria aligned with the result you want. You can edit the appended criteria directly in the Issue body. The implementation session receives the amended body at delivery start.
+Version note: automatic criteria and drafting choices require engine v0.7.44+. Before v0.7.44, a split proposal waited for a maintainer to reply `/orbi split`; since v0.7.44, Orbi applies it itself. The demo requests used v0.7.52.
 
 ## Related
 
