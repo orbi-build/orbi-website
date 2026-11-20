@@ -8,7 +8,7 @@ image: /img/blog-ai-generated-tests-card.png
 mirror: ai-generated-tests
 ---
 
-Orbi is an open-source system that takes a GitHub Issue through implementation, review, merge and release. I audited the Vitest suites in Orbi Cloud's own repository, where Orbi's delivery bot last changed most test registration lines. Engineering leads and solo maintainers who use coding agents to write code and AI-generated tests can use these counts and the repository rule to check the suite they rely on for merge decisions. I also trace where the implementation-coupled tests came from, and show the setup and parallelism changes behind a CI test-step median that fell from 271 s to 102 s.
+Orbi is an open-source system that takes a GitHub Issue through implementation, review, merge and release. I audited the Vitest suites in the private repository of Orbi Cloud, its hosted service, where Orbi's delivery bot last changed most test registration lines. Engineering leads and solo maintainers who use coding agents to write code and AI-generated tests can use these counts and the repository rule to check the suite they rely on for merge decisions. I also trace where the implementation-coupled tests came from, and show the setup and parallelism changes behind a CI test-step median that fell from 271 s to 102 s.
 
 I'm Larry 🍀 Orbi, the creator of Orbi.
 
@@ -22,7 +22,7 @@ Reading business records from a database or checking content sent to an external
 
 I spot-checked the source at 5 locations. Only one was ambiguous: a test that counted the deactivate buttons by their form's submit address, which can reasonably identify the controls a user sees. The spot-check was too small to estimate a classification error rate for the whole audit. I reviewed the tests statically, without measuring how well they detected defects or the cost of each failure.
 
-To check the labels, I gave a separate DeepSeek session the same definitions and 60 test registrations drawn at random from the main directory (seed 20261120), without the audit's labels. It agreed on 48 of 60 (80%, Cohen's kappa 0.60), including all 18 cases the audit had marked implementation-coupled. In all 12 disagreements, it marked a case as implementation-coupled where the audit had called it behavior. Most involved exact comparisons of HTML fragments such as hidden inputs, or direct calls to internal helpers. The check found no inflation in the audit's count on this sample. A first attempt was discarded because that session found and read the file holding the audit's labels.
+To check the labels, I gave a separate DeepSeek session the same definitions and 60 test registrations drawn at random from the main directory (seed 20261120), without the audit's labels. It agreed on 48 of 60 (80%; Cohen's kappa 0.60, usually read as moderate agreement), including all 18 cases the audit had marked implementation-coupled. In all 12 disagreements, it marked a case as implementation-coupled where the audit had called it behavior. Most involved exact comparisons of HTML fragments such as hidden inputs, or direct calls to internal helpers. On this main-directory sample the second rater was stricter, never calling a case behavior that the audit had marked implementation-coupled, so it shows no overstatement there. A first attempt was discarded because that session found and read the file holding the audit's labels.
 
 ## A third of the cases pinned implementation
 
@@ -36,7 +36,7 @@ The strict count classified 1,739 of 5,087 cases as implementation-coupled, or 3
 
 The audit grouped implementation assertions into the categories below. A case can appear in several categories, so adding category rows within a suite would count some cases more than once.
 
-| Assertion category | Main | Browser | Operational scripts |
+| Assertion category | Main | Browser | Operational scripts (`test/runbook/`) |
 |---|---:|---:|---:|
 | Reading source text | 15 | 360 | 112 |
 | Internal call arguments or counts | 47 | 1 | 49 |
@@ -99,11 +99,13 @@ The cleanup still violates the new rule: the rewrite contains `expect(SUGGESTION
 
 The timing work applies to Cloudflare Workers + Vitest with `@cloudflare/vitest-plugin` 1.x and Vitest 4. The changes to how the tests ran were separate from the assertion cleanup. Issue #3493 measured initialization and parallelism; its only assertion change removed a redundant timing check.
 
-Each test file's setup imported `applyD1Migrations` from `cloudflare:test` to initialize its test database. In a single-file measurement, that import alone cost 1.78 s of setup. Without it, running the same logic for all 86 migrations directly against `env.DB` took about 0.06 s.
+Each test file's setup imported `applyD1Migrations` from `cloudflare:test` to initialize its test database. Measured on one file, that import alone added 1.78 s of setup. Without it, running the same logic for all 86 migrations directly against `env.DB` took about 0.06 s.
 
-The replacement in `test/apply-migrations.ts` keeps the same four steps: create the migration ledger, read applied names, skip applied migrations, and batch each remaining migration with its ledger entry. After preparing the ledger and statement, it runs this loop:
+The replacement in `test/apply-migrations.ts` keeps the same four steps: create the migration ledger, read applied names, skip applied migrations, and batch each remaining migration with its ledger entry. `recordApplied` is a D1 prepared statement, so its `.bind()` fills the `?` placeholder with the migration name; it is not `Function.prototype.bind`. The line before the loop, then the loop:
 
 ```typescript
+const recordApplied = env.DB.prepare(`INSERT INTO ${MIGRATIONS_TABLE} (name) VALUES (?);`);
+
 for (const migration of env.TEST_MIGRATIONS) {
 	if (applied.has(migration.name)) continue;
 	const queries = migration.queries.map((query) => env.DB.prepare(query));
@@ -123,9 +125,9 @@ The local measurements in #3493 used the same 32-core machine with coverage enab
 
 Cumulative setup sums the time spent across files and workers, so it can exceed elapsed time. Increasing parallelism alone finished the run sooner but spent more time on setup in total.
 
-CI now sets `VITEST_MAX_WORKERS=8`; the delivery sandbox keeps its default of 2. At 8 workers, an assertion on request duration failed with `expected 2216 to be less than 2000`. The test already blocked a database write until it received the response, then released the write, proving that the response did not wait for the write. I removed the redundant elapsed-time assertion rather than raising its threshold.
+CI now sets `VITEST_MAX_WORKERS=8`; the delivery sandbox keeps its default of 2. At 8 workers, an assertion on request duration failed with `expected 2216 to be less than 2000` (milliseconds, against a 2-second limit). The test already blocked a database write until it received the response, then released the write, proving that the response did not wait for the write. I removed the redundant elapsed-time assertion rather than raising its threshold.
 
-The GitHub Actions `Run npm test` step had a median of 271 s across 60 successful PR runs on 18 November 2026 (UTC). The query covered 17–18 November but hit its 60-run cap, with all results from the 18th, so the sample did not cover every run that day. Across 80 successful PR runs after the changes, the median was 102 s. Both medians measure the test step, including the test command's overhead; they do not measure full workflow times.
+The GitHub Actions `Run npm test` step had a median of 271 s across the 60 most recent successful PR runs in the query window, all on 18 November 2026 (UTC). The query covered 17–18 November but hit its 60-run cap, with all results from the 18th, so the sample did not cover every run that day. Across the 80 most recent successful PR runs after the changes, the median was 102 s. The suite did not shrink in between: test registration lines went from 4,687 at the audit commit to 4,952 on beta at 00:53 UTC on 20 November, just after that sample. Both medians measure the test step, including the test command's overhead; they do not measure full workflow times.
 
 The post-change sample spans 19 November 2026, 15:40 UTC through 20 November 2026, 00:46 UTC. The repository kept changing between the samples, and cleanup work overlapped the post-change sample: the last cleanup PR merged at 00:15 UTC on 20 November. Only the local table separates the effects of setup and parallelism. The speedup PRs, #3527 and #3533, merged on 19 November 2026 at 08:36 and 10:42 (UTC+8), before that sample.
 
