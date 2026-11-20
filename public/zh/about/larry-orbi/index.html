@@ -90,6 +90,16 @@
     <section class="compare-section shell" aria-label="Larry 🍀 Orbi 的文章">
       <div class="post-list">
     <article class="post-entry">
+      <h2 class="post-entry-title"><a href="/zh/blog/stuck-delivery-one-click/">AI 编码交付卡住后，怎么让 Orbi 继续</a></h2>
+      <p class="post-entry-meta"><time datetime="2026-11-20">2026-11-20</time></p>
+      <p class="post-entry-summary">Orbi 交付停下后，看清原因再处理：回答问题、修改 Issue 或补模型余额。文中讲每个按钮何时生效、怎样改答，以及不用 Cloud 时怎样在 GitHub 上回答。</p>
+    </article>
+    <article class="post-entry">
+      <h2 class="post-entry-title"><a href="/zh/blog/vague-request-to-merged-pr/">一句话需求，怎么走到 PR 合并</a></h2>
+      <p class="post-entry-meta"><time datetime="2026-11-20">2026-11-20</time></p>
+      <p class="post-entry-summary">三次真实需求记录了 Orbi 给一句话 Issue 补验收条件、交付并合并的过程，以及自动拆分需求和修改验收条件的规则。</p>
+    </article>
+    <article class="post-entry">
       <h2 class="post-entry-title"><a href="/zh/blog/antigravity-vs-claude-code/">Antigravity vs Claude Code：无人值守修复与 API 错误实测</a></h2>
       <p class="post-entry-meta"><time datetime="2026-11-19">2026-11-19</time></p>
       <p class="post-entry-summary">Antigravity 和 Claude Code 在同一个失败的 Python 测试上实测：Claude Code 要显式放行写入才能修好；用免费 Gemini API 密钥跑的 Antigravity 修复尝试没有一次成功。</p>
@@ -120,6 +130,11 @@
       <p class="post-entry-summary">按交接方式把六种 AI 编程 agent 分成三组，给出在自己仓库上试用一周的做法，附一个用 GitHub Issue 和 PR 记录统计结果的 gh 脚本。</p>
     </article>
     <article class="post-entry">
+      <h2 class="post-entry-title"><a href="/zh/blog/orbi-weekly-6/">Orbi 周报 #6：写一句话，Orbi 直接开工</a></h2>
+      <p class="post-entry-meta"><time datetime="2026-11-12">2026-11-12</time></p>
+      <p class="post-entry-summary">这周起，写一句话 Orbi 就开工；空仓库点个例子也行。</p>
+    </article>
+    <article class="post-entry">
       <h2 class="post-entry-title"><a href="/zh/blog/opencode-vs-codex/">OpenCode vs Codex CLI：同一模型，无人值守实测</a></h2>
       <p class="post-entry-meta"><time datetime="2026-11-11">2026-11-11</time></p>
       <p class="post-entry-summary">Codex 开 workspace-write 后，24 次 DeepSeek 编程运行全部通过；按各任务中位数比，Codex 输入更多、耗时更长。默认只读沙箱那次没改成文件。</p>
@@ -138,6 +153,11 @@
       <h2 class="post-entry-title"><a href="/zh/blog/best-pi-extensions/">Pi 扩展推荐：20 个扩展的无人值守实测</a></h2>
       <p class="post-entry-meta"><time datetime="2026-11-05">2026-11-05</time></p>
       <p class="post-entry-summary">20 个 Pi 扩展的无人值守实测：MCP、联网搜索、子代理各用哪个，哪些会改配置。</p>
+    </article>
+    <article class="post-entry">
+      <h2 class="post-entry-title"><a href="/zh/blog/orbi-weekly-5/">Orbi 周报 #5：大需求一句话写，Orbi 拆成几张票一次建好</a></h2>
+      <p class="post-entry-meta"><time datetime="2026-11-05">2026-11-05</time></p>
+      <p class="post-entry-summary">一句话写下大需求，Orbi 先拆成几张能开工的票，您确认后一次建好。</p>
     </article>
     <article class="post-entry">
       <h2 class="post-entry-title"><a href="/zh/blog/ai-code-review-bottleneck/">AI 代码评审是瓶颈吗？我们的 PR 卡在合并之后</a></h2>
@@ -165,9 +185,19 @@
       <p class="post-entry-summary">Orbi 无人值守跑 Pi 时怎么加载扩展和技能（skills）：扩展白名单、Pi 去哪找技能、怎么按会话关掉，以及我们自己写的两个扩展。</p>
     </article>
     <article class="post-entry">
+      <h2 class="post-entry-title"><a href="/zh/blog/orbi-weekly-4/">Orbi 周报 #4：需求没写清，Orbi 先替您拆好、补全</a></h2>
+      <p class="post-entry-meta"><time datetime="2026-10-29">2026-10-29</time></p>
+      <p class="post-entry-summary">本周：需求写得粗，Orbi 先给拆分方案和验收条件；默认分支 CI 失败时先暂停，恢复后自动合并；Orbi 两天半为第一位重度用户合并了 60 个 PR；从 GitHub 一点回到项目页；Orbi 给自己做了一次大重构。</p>
+    </article>
+    <article class="post-entry">
       <h2 class="post-entry-title"><a href="/zh/blog/pi-coding-agent-worktree/">Pi coding agent worktree：失败的交付怎么继续</a></h2>
       <p class="post-entry-meta"><time datetime="2026-10-26">2026-10-26</time></p>
       <p class="post-entry-summary">一次 GitHub 连接失败后，代码已经推到远端，PR 还没开出来。Orbi 恢复任务时误判了已有分支，反复让出执行，后面三张任务也跟着等。这篇从那次故障讲起，说明 Pi 会话、worktree 和交付分支怎样配合，以及回归测试为什么要覆盖到真正消费状态的那一步。</p>
+    </article>
+    <article class="post-entry">
+      <h2 class="post-entry-title"><a href="/zh/blog/orbi-weekly-3/">Orbi 周报 #3：Telegram 通知与终端 Follow 模式</a></h2>
+      <p class="post-entry-meta"><time datetime="2026-10-22">2026-10-22</time></p>
+      <p class="post-entry-summary">本周重点：Telegram 交付通知、终端 Follow 模式。进展直接送到您手边。</p>
     </article>
     <article class="post-entry">
       <h2 class="post-entry-title"><a href="/zh/blog/aider-vs-opencode/">Aider vs OpenCode：上下文、提交和测试怎么选</a></h2>
@@ -210,6 +240,11 @@
       <p class="post-entry-summary">Codex YOLO mode 会跳过审批和本地沙箱。本文用 Linux 实测它放开了哪些操作，并说明 Codex auto mode 是什么、旧 full-auto 命令怎样迁移。</p>
     </article>
     <article class="post-entry">
+      <h2 class="post-entry-title"><a href="/zh/blog/orbi-weekly-2/">Orbi 周报 #2：连上仓库，Orbi 先给您几条建议</a></h2>
+      <p class="post-entry-meta"><time datetime="2026-10-15">2026-10-15</time></p>
+      <p class="post-entry-summary">连上仓库，看看 Orbi 建议先做什么。现在多个仓库的建议也能一起看，再按项目挑。</p>
+    </article>
+    <article class="post-entry">
       <h2 class="post-entry-title"><a href="/zh/blog/claude-code-yolo-mode/">Claude Code 的 YOLO 模式和 auto 模式：我实测了一遍</a></h2>
       <p class="post-entry-meta"><time datetime="2026-10-13">2026-10-13</time></p>
       <p class="post-entry-summary">YOLO 模式就是 --dangerously-skip-permissions。我在 2.1.287 上把它和 auto 等五种模式一起实测，看各自放过什么。挡住注入的其实是模型，不是任何一种权限模式。</p>
@@ -233,6 +268,11 @@
       <h2 class="post-entry-title"><a href="/zh/blog/write-a-request/">写需求：说一句话，Orbi Cloud 替你写好 GitHub Issue</a></h2>
       <p class="post-entry-meta"><time datetime="2026-10-09">2026-10-09</time></p>
       <p class="post-entry-summary">在 Orbi Cloud 里说一句想改什么，Orbi 先读你的仓库，写出 Issue 草稿，要你决定的地方用选择题问你，你确认后才开始做。每一步都配了截图。</p>
+    </article>
+    <article class="post-entry">
+      <h2 class="post-entry-title"><a href="/zh/blog/orbi-weekly-1/">Orbi 周报 #1：k8e 的 etcd 测试先被打回，以及 9 月最后一周的新东西</a></h2>
+      <p class="post-entry-meta"><time datetime="2026-10-08">2026-10-08</time></p>
+      <p class="post-entry-summary">9 月最后一周：k8e 的 etcd 测试被打回又合进去了；Orbi 的 Claude 插件发布了；Cloud 支持支付宝 / 微信开通。</p>
     </article>
     <article class="post-entry">
       <h2 class="post-entry-title"><a href="/zh/blog/pi-agent-harness/">Pi agent harness 三种跑法：kill -9 后如何恢复</a></h2>

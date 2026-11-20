@@ -18,7 +18,7 @@ import { paidPriceReplacements } from "../src/pricing-tokens.js";
 const pricingReplacements = {
   // Issue #1237: the founding price and the struck-through list price state.
   ...paidPriceReplacements(pricing),
-  [pricing.freeDeliveriesToken]: pricing.freeDeliveries,
+  [pricing.freeTrialDaysToken]: String(pricing.freeTrialDays),
   [pricing.monthlyUsdToken]: pricing.cloudMonthlyUsd,
   [pricing.soloMonthlyUsdToken]: pricing.soloMonthlyUsd,
   [pricing.soloAnnualUsdToken]: pricing.soloAnnualUsd,

@@ -1,6 +1,7 @@
 ---
 title: Write a request: Orbi Cloud drafts your GitHub Issue
 date: 2026-10-09
+updated: 2026-11-20
 summary: Write a request in Orbi Cloud: describe a change, review a GitHub Issue draft, answer open questions, and hand it off. See merge controls and trial costs.
 lang: en
 author: Larry 🍀 Orbi
@@ -100,6 +101,8 @@ For anything the options don't cover, use the box under the draft (**Anything to
 
 Read the rewritten draft before you hand it off. In this run, the rewrite dropped the priority line even though that question was still on its recommended answer, Include it; the Issue Orbi worked from has no priority section. At the time, the page sent only the answers you changed, not the ones you left on Orbi's recommendation. Orbi Cloud v0.7.19, released October 9, fixes this: a rewrite now sends every answer and marks the ones you kept.
 
+Update, 20 November 2026: since engine v0.7.44, a drafting question that has a recommended option is answered by the engine itself and recorded under the Issue's Assumptions section, so only questions without a recommendation come back to you. [From a vague request to a merged PR with Orbi](/blog/vague-request-to-merged-pr/) shows the current behavior.
+
 ## Before you hand it off
 
 Under **Hand off to Orbi**, the page says what happens next. The middle sentences depend on branch protection on the branch the task merges into. You pick that branch when you connect the repository; usually it is the default branch. This test repository has none, so it reads: "Once its checks pass, Orbi merges right away. To review changes first, set your repository to require 1 approval before merging." When that branch requires an approving review, it says Orbi will wait for you to approve the pull request on GitHub, and when the page can't read the setting, it doesn't claim either way. "Its checks" means your CI plus Orbi's review session.
@@ -136,17 +139,17 @@ The third request, which actually ran first, on the evening of October 8, was wr
 The new check did what the Issue asked: with no key configured it failed, so CI stayed red, and Orbi does not merge on red CI. The draft listed the secret and variables the check needs, but it didn't ask whether they were configured; Write a request doesn't check whether the secrets or variables a task needs actually exist. Orbi's review stopped the task for a human decision, labeled the Issue `ai-blocked`, and left the failing check in its pull request, unmerged.
 
 <figure class="post-media">
-<img src="/img/blog-write-request-blocked.webp" alt="Blocked. Orbi stopped: you need to make a call on something. The change was not merged into your project. This doesn't use a free run. Contact us: Telegram group, support@orbi.build. Buttons: See Orbi's note and Write another request." width="1200" height="751">
+<img src="/img/blog-write-request-blocked.webp" alt="Blocked. Orbi stopped: you need to make a call on something. The change was not merged into your project. Contact us: Telegram group, support@orbi.build. Buttons: See Orbi's note and Write another request." width="1200" height="751">
 <figcaption>The stuck task. Its title is Chinese because the request was written in Chinese; the page is in English.</figcaption>
 </figure>
 
 The card only says Orbi needs a decision from you. **See Orbi's note** opens [the comment Orbi left on the Issue](https://github.com/xqliu/orbi-e2e-2609260042/issues/71#issuecomment-6063352853), which has the actual reason: the Stripe key is missing. It offered two ways forward: add the Stripe key the Issue requires as a repository secret, plus the payment method as repository variables; or change the Issue's rule that a missing secret must fail CI. Either way, a stuck task doesn't restart on its own: re-running CI, removing the `ai-blocked` label or commenting won't move it. Fix the cause, then swap the label on the Issue, which has to be open. If its pull request is still open, replace `ai-blocked` with `ai-fix-needed`, and Orbi continues on that pull request and its branch. If there is no pull request yet, replace it with `ai-ready`. We didn't recover this one: it was a staged failure, so after the test we closed [Issue #71](https://github.com/xqliu/orbi-e2e-2609260042/issues/71) and its pull request.
 
+Update, 20 November 2026: since Orbi Cloud v0.8.61, a stuck task's card shows the reason in plain words and, when Orbi has a question, the options as buttons. Pick an answer that continues the work and Orbi resumes the task from your answer, with no label swapping by hand. [When an AI coding run stops and needs your answer](/blog/stuck-delivery-one-click/) walks through it.
+
 ## What it costs
 
-On the free trial you get \_\_FREE\_DELIVERIES\_\_ free deliveries (the page calls them free runs). A task that fails, gets stuck like request 3, or ends without a merge doesn't use one, so only merged deliveries count. Drafts never use a free delivery, and you can keep drafting after the free deliveries are gone.
-
-If you hand one off after the free deliveries are gone, the Issue is still created right away, but Orbi removes its `ai-ready` label at once and leaves a comment saying why. After you subscribe, click **Try →** next to that Issue on the status page; it adds `ai-ready`, and that is when Orbi starts. The status page lists that button only when no other task is running; if one is, wait for it to finish, or add `ai-ready` to the Issue on GitHub yourself.
+Your \_\_FREE\_TRIAL\_\_ starts when you sign up, with no credit card required. The Cloud docs' [Limits and quotas](https://cloud-docs.orbi.build/limits-and-quotas) page covers what the trial includes and what happens when it ends.
 
 Paying monthly, Solo is US$\_\_SOLO\_MONTHLY\_USD\_\_ (\_\_SOLO\_INCLUDED\_TOKENS\_\_ tokens of model usage a month) and Pro is US$\_\_CLOUD\_MONTHLY\_USD\_\_ (\_\_INCLUDED\_TOKENS\_\_ tokens). Drafts count toward that monthly usage, the same as deliveries. Once the month's usage runs out, new drafts and new deliveries pause (running ones finish) until the 1st (months are counted in UTC); there is no overage charge, and accounts that bring their own model API key aren't paused this way. Details are on the [Orbi Cloud page](/cloud/?ref=blog-write-request).
 
@@ -157,7 +160,7 @@ If you already know exactly what should change and how to check it, creating the
 Some things that make drafts better:
 
 - Lead with the outcome. A line like "Bug reports should ask for steps to reproduce" lets Orbi pick the change that fits your repository. If you already know the file or a constraint, add it too.
-- Keep one request to one change. Orbi checks an Issue before it starts, and when it judges that an Issue asks for several unrelated things, it comments asking you to split it, removes `ai-ready`, and pauses the task. The check is a model's judgment, so don't count on it to catch every mixed request. Once you've split or clarified it, add `ai-ready` again.
+- Keep one request to one change. Orbi checks an Issue before it starts. Since engine v0.7.44, when it judges that an Issue asks for several separate things and can propose a split, it creates the child Issues and queues them itself; when it cannot, it comments asking for the missing detail and pauses the task. The check is a model's judgment, so don't count on it to catch every mixed request.
 - Read the assumptions in the reply before you hand off. A misreading is cheapest to fix there.
 
 ## Related

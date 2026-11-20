@@ -1830,7 +1830,7 @@ describe("Cloud hero single CTA (Issue #741)", () => {
       expect(hero).toContain(`class="button button-signal hero-cta" data-cta="cloud-hero" href="${expected.href}"`);
       // Issue #1216: the note under the hero button reassures, it no longer
       // promises a delivery count.
-      expect(hero, `${output}: no trial count beside the CTA`).not.toMatch(/__FREE_DELIVERIES__|__FREE_TRIAL__/);
+      expect(hero, `${output}: no trial term beside the CTA`).not.toMatch(/__FREE_(?:DELIVERIES|TRIAL_DAYS|TRIAL)__/);
     }
   });
 });
@@ -2246,7 +2246,7 @@ describe("homepage closing Cloud CTA (Issue #714)", () => {
       const html = shipped.get(output);
       const closing = region(html, '<section class="closing shell"', "</section>");
       expect(closing, `${output}: closing section`).toContain('id="closing-title"');
-      expect(closing, `${output}: no trial count in the closing CTA`).not.toMatch(/__FREE_DELIVERIES__|__FREE_TRIAL__/);
+      expect(closing, `${output}: no trial term in the closing CTA`).not.toMatch(/__FREE_(?:DELIVERIES|TRIAL_DAYS|TRIAL)__/);
       const heroCta = cta(html, "cloud-start");
       const closingCta = cta(closing, "closing-start");
       expect(closingCta, `${output}: closing CTA exists`).toBeTruthy();
@@ -2329,13 +2329,13 @@ describe("cloud buyer FAQ (Issue #166)", () => {
     for (const output of ["cloud/index.html", "zh/cloud/index.html"]) {
       const html = shipped.get(output);
       const faqAnswer = cloudFaqItems(html)[0]?.answer ?? "";
-      expect(faqAnswer, `${output}: no trial count in the FAQ`).not.toMatch(/__FREE_DELIVERIES__|__FREE_TRIAL__/);
+      expect(faqAnswer, `${output}: no trial term in the FAQ`).not.toMatch(/__FREE_(?:DELIVERIES|TRIAL_DAYS|TRIAL)__/);
       expect(faqAnswer, `${output}: FAQ names both paid plans`).toMatch(/Solo[\s\S]*Pro|Pro[\s\S]*Solo/);
       const share = html.match(/<meta (?:property="og:description"|name="twitter:description") content="([^"]+)"/g) ?? [];
       expect(share, `${output}: sharing descriptions`).toHaveLength(2);
       for (const meta of share) {
         expect(meta, `${output}: sharing price placeholders`).toContain("US$");
-        expect(meta, `${output}: no trial count in the share card`).not.toMatch(/__FREE_DELIVERIES__|__FREE_TRIAL__/);
+        expect(meta, `${output}: no trial term in the share card`).not.toMatch(/__FREE_(?:DELIVERIES|TRIAL_DAYS|TRIAL)__/);
       }
     }
   });
@@ -2380,13 +2380,13 @@ describe("Devin comparison SEO and pricing (Issue #511)", () => {
   });
 
   // Issue #795: the page claimed a "Free, Solo, Pro" Cloud tier, while /cloud/
-  // sells two paid plans (Solo, Pro) each starting with a __FREE_DELIVERIES__
-  // successful-merged-delivery trial. Issue #1212: the sentence stating that
-  // is copy; what is pinned is the placeholder and the absence of a Free tier.
+  // sells two paid plans (Solo, Pro) each starting with a __FREE_TRIAL__.
+  // Issue #1212: the sentence stating that is copy; what is pinned is the
+  // placeholder and the absence of a Free tier.
   it("describes Cloud as two paid plans with a trial, never a Free tier (Issue #795)", () => {
     for (const output of ["compare/devin/index.html", "zh/compare/devin/index.html"]) {
       const html = shipped.get(output);
-      expect(html, `${output}: no trial count on the comparison page`).not.toMatch(/__FREE_DELIVERIES__|__FREE_TRIAL__/);
+      expect(html, `${output}: no trial term on the comparison page`).not.toMatch(/__FREE_(?:DELIVERIES|TRIAL_DAYS|TRIAL)__/);
       // The only remaining "Free" mentions are Devin's own plan names in the
       // dated source list, never Orbi's Cloud tiers (Issue #795).
       expect(html, `${output}: no Free Cloud tier`).not.toMatch(/Free,\s*Solo|Free、Solo/);

@@ -1,12 +1,15 @@
 import { describe, expect, it } from "vitest";
 import { readdir, readFile } from "node:fs/promises";
+import { extname } from "node:path";
 import { fileURLToPath } from "node:url";
 import pricing from "../src/pricing.json";
 import { handleFetch } from "../src/worker.js";
 import { foundingDiscountNote, paidPriceReplacements } from "../src/pricing-tokens.js";
 
 const PUBLIC_DIR = fileURLToPath(new URL("../public/", import.meta.url));
+const SITE_DIR = fileURLToPath(new URL("../site/", import.meta.url));
 const SITE_PAGES_DIR = fileURLToPath(new URL("../site/pages/", import.meta.url));
+const SRC_DIR = fileURLToPath(new URL("../src/", import.meta.url));
 const TOKEN = pricing.monthlyUsdToken;
 const USD = String(pricing.cloudMonthlyUsd);
 const SOLO_USD = String(pricing.soloMonthlyUsd);
@@ -27,8 +30,8 @@ const FOUNDING_PROMO_QUERY = `&amp;promo=${FOUNDING_PROMO_CODE}`;
 // Hoisted so a test that shadows `pricing` with a page section can still name
 // the token.
 const FOUNDING_PROMO_QUERY_TOKEN = pricing.foundingPromoQueryToken;
-const FREE_DELIVERIES = String(pricing.freeDeliveries);
-const FREE_DELIVERIES_TOKEN = pricing.freeDeliveriesToken;
+const FREE_TRIAL_DAYS = String(pricing.freeTrialDays);
+const FREE_TRIAL_DAYS_TOKEN = pricing.freeTrialDaysToken;
 const FREE_TRIAL_TOKEN = pricing.freeTrialCopyToken;
 const MEASURED_SMALL_REPOSITORY_DELIVERY_RANGE = pricing.measuredSmallRepositoryDeliveryRange;
 const MEASURED_SMALL_REPOSITORY_DELIVERY_RANGE_TOKEN = pricing.measuredSmallRepositoryDeliveryRangeToken;
@@ -102,6 +105,22 @@ async function listHtmlFiles(dir = PUBLIC_DIR) {
       const path = `${dir}${entry.name}`;
       if (entry.isDirectory()) return listHtmlFiles(`${path}/`);
       return entry.name.endsWith(".html") ? [path] : [];
+    }),
+  );
+  return files.flat();
+}
+
+// Acceptance 2 (Issue #1351): every text file the retired per-delivery
+// wording could hide in — page sources, llms prose, worker copy, built pages.
+const TEXT_EXTENSIONS = new Set([".html", ".md", ".txt", ".json", ".js", ".mjs", ".xml", ".css"]);
+
+async function listTextFiles(dir) {
+  const entries = await readdir(dir, { withFileTypes: true });
+  const files = await Promise.all(
+    entries.map(async (entry) => {
+      const path = `${dir}${entry.name}`;
+      if (entry.isDirectory()) return listTextFiles(`${path}/`);
+      return TEXT_EXTENSIONS.has(extname(entry.name)) ? [path] : [];
     }),
   );
   return files.flat();
@@ -197,15 +216,16 @@ describe("Cloud monthly price constant (Issue #102)", () => {
 
 });
 
-// Issue #1216: the free allowance stopped being a per-page promise. One
+// Issue #1216: the free trial stopped being a per-page promise. One
 // sentence, defined once in pricing.json, appears only in the two pricing notes
-// and on the terms pages; no other product page states a delivery count.
+// and on the terms pages; no other product page states its own trial terms.
 // Blog articles under content/blog/ are dated writing, not product pages: the
 // ticket's audit covered the 44 non-blog pages, and two articles explain the
-// trial on purpose, so the scans below read the built non-blog pages.
+// trial on purpose, so the scans below read the built non-blog pages and the
+// two articles Issue #1351 rewrites, never the dated archive.
 describe("free trial copy (Issue #1216)", () => {
-  const EN = `First ${FREE_DELIVERIES} merged pull requests free`;
-  const ZH = `前 ${FREE_DELIVERIES} 个合并的 PR 免费`;
+  const EN = `${FREE_TRIAL_DAYS}-day free trial`;
+  const ZH = `免费试用 ${FREE_TRIAL_DAYS} 天`;
   const ALLOWED = {
     "index.html": { note: "pricing-summary-trial", copy: EN },
     "zh/index.html": { note: "pricing-summary-trial", copy: ZH },
@@ -214,13 +234,22 @@ describe("free trial copy (Issue #1216)", () => {
     "terms/index.html": { copy: EN },
     "zh/terms/index.html": { copy: ZH },
   };
-  const RETIRED = ["deliveries free", "3-delivery", "FREE_DELIVERY_ALLOWANCE", "免费试 3 次"];
+  const RETIRED = [
+    "merged pull requests free",
+    "个合并的 PR 免费",
+    "free deliveries",
+    "免费次数",
+    "deliveries free",
+    "3-delivery",
+    "FREE_DELIVERY_ALLOWANCE",
+    "免费试 3 次",
+  ];
   const isBlog = (path) => path.includes("/blog/");
 
-  it("defines the sentence once, with the count filled from pricing.json", () => {
-    expect(pricing.freeDeliveries).toBe(3);
-    expect(pricing.freeTrialCopy.replace(FREE_DELIVERIES_TOKEN, FREE_DELIVERIES)).toBe(EN);
-    expect(pricing.freeTrialCopyZh.replace(FREE_DELIVERIES_TOKEN, FREE_DELIVERIES)).toBe(ZH);
+  it("defines the sentence once, with the trial days filled from pricing.json", () => {
+    expect(pricing.freeTrialDays).toBe(14);
+    expect(pricing.freeTrialCopy.replace(FREE_TRIAL_DAYS_TOKEN, FREE_TRIAL_DAYS)).toBe(EN);
+    expect(pricing.freeTrialCopyZh.replace(FREE_TRIAL_DAYS_TOKEN, FREE_TRIAL_DAYS)).toBe(ZH);
   });
 
   it("carries the sentence token exactly once on the pricing notes and terms pages, nowhere else", async () => {
@@ -245,7 +274,7 @@ describe("free trial copy (Issue #1216)", () => {
       const response = await serve(await rawPage(relativePath), `/${relativePath.replace(/index\.html$/, "")}`);
       const body = await response.text();
       expect(body, relativePath).not.toContain(pricing.freeTrialCopyToken);
-      expect(body, relativePath).not.toContain(FREE_DELIVERIES_TOKEN);
+      expect(body, relativePath).not.toContain(FREE_TRIAL_DAYS_TOKEN);
       expect(body.split(expected.copy).length - 1, `${relativePath}: sentence count`).toBe(1);
       if (expected.note) {
         const note = body.match(new RegExp(`<p class="${expected.note}">[\\s\\S]*?</p>`))?.[0] ?? "";
@@ -254,13 +283,14 @@ describe("free trial copy (Issue #1216)", () => {
     }
   });
 
-  // Acceptance 1: no delivery count next to the homepage and Cloud buttons.
-  it("states no delivery count beside the homepage and Cloud CTAs", async () => {
+  // Acceptance 1: no trial term next to the homepage and Cloud buttons.
+  it("states no trial term beside the homepage and Cloud CTAs", async () => {
     for (const relativePath of ["index.html", "zh/index.html", "cloud/index.html", "zh/cloud/index.html"]) {
       const body = await (await serve(await rawPage(relativePath), `/${relativePath.replace(/index\.html$/, "")}`)).text();
       const note = body.match(/<p class="hero-cta-note">[\s\S]*?<\/p>/)?.[0] ?? "";
       expect(note, `${relativePath}: hero CTA note`).toBeTruthy();
-      expect(note, `${relativePath}: hero CTA note`).not.toContain(FREE_DELIVERIES_TOKEN);
+      expect(note, `${relativePath}: hero CTA note`).not.toContain(FREE_TRIAL_TOKEN);
+      expect(note, `${relativePath}: hero CTA note`).not.toContain(FREE_TRIAL_DAYS_TOKEN);
       expect(note, `${relativePath}: hero CTA note`).not.toMatch(/[0-9]/);
       const blocks = [
         note,
@@ -268,23 +298,55 @@ describe("free trial copy (Issue #1216)", () => {
         ...(body.match(/<div class="cta-row">[\s\S]*?<\/div>/g) ?? []),
       ];
       for (const block of blocks) {
-        expect(block, `${relativePath}: no count beside a CTA`).not.toContain(FREE_DELIVERIES_TOKEN);
+        expect(block, `${relativePath}: no trial term beside a CTA`).not.toContain(FREE_TRIAL_TOKEN);
+        expect(block, `${relativePath}: no trial term beside a CTA`).not.toContain(FREE_TRIAL_DAYS_TOKEN);
         // Issue #1281: the checkout href carries the promo code (FOUNDING50),
-        // so the count check reads the block without its hrefs.
-        expect(block.replace(/href="[^"]*"/g, ""), `${relativePath}: no count beside a CTA`).not.toMatch(/[0-9]/);
+        // so the term check reads the block without its hrefs.
+        expect(block.replace(/href="[^"]*"/g, ""), `${relativePath}: no term beside a CTA`).not.toMatch(/[0-9]/);
       }
     }
   });
 
-  it("ships none of the retired phrases on any built non-blog page or llms file", async () => {
-    for (const path of await listHtmlFiles(PUBLIC_DIR)) {
-      if (isBlog(path)) continue;
-      const html = await readFile(path, "utf8");
-      for (const phrase of RETIRED) expect(html, `${path}: ${phrase}`).not.toContain(phrase);
+  // Acceptance 2: the retired per-delivery rule must not survive in the copy
+  // the build ships as product text — the page sources, the llms prose, the
+  // Worker's copy table and every built non-blog page.
+  //
+  // Dated blog articles stay out, which is the scope Issue #1216 set and the
+  // repository still keeps: the newsletter archive republishes each issue
+  // verbatim (Issue #1405) and says so in its own lead — "Prices, free
+  // allowances and screens are as of that day; see Orbi Cloud for how things
+  // stand now" — so an archived issue states what was true the day it was
+  // sent, not what the product promises today. Rewriting those originals is a
+  // decision for the archive's own ticket, not this one. The two articles
+  // this ticket rewrites are checked by name below.
+  it("ships none of the retired per-delivery phrases in the page sources, the Worker copy or the non-blog build", async () => {
+    for (const root of [SITE_DIR, SRC_DIR, PUBLIC_DIR]) {
+      for (const path of await listTextFiles(root)) {
+        if (isBlog(path)) continue;
+        const text = await readFile(path, "utf8");
+        for (const phrase of RETIRED) expect(text, `${path}: ${phrase}`).not.toContain(phrase);
+      }
     }
-    for (const name of ["llms.txt", "llms-full.txt"]) {
-      const text = await readFile(`${PUBLIC_DIR}${name}`, "utf8");
-      for (const phrase of RETIRED) expect(text, `${name}: ${phrase}`).not.toContain(phrase);
+  });
+
+  // Issue #1351 items 2 and 3: the two articles that explained how the free
+  // count was spent now state the trial, and the "write a request" article in
+  // each language links the Cloud docs' limits page for the rest.
+  it("states the trial, not a delivery count, in the two articles that explained it", async () => {
+    for (const [relativePath, expected] of Object.entries({
+      "blog/write-a-request": { copy: EN, link: "https://cloud-docs.orbi.build/limits-and-quotas" },
+      "zh/blog/write-a-request": { copy: ZH, link: "https://cloud-docs.orbi.build/zh/limits-and-quotas" },
+      "blog/watch-the-six-steps": { copy: EN },
+      "zh/blog/watch-the-six-steps": { copy: ZH },
+    })) {
+      const body = await (await serve(await rawPage(`${relativePath}/index.html`), `/${relativePath}/`)).text();
+      expect(body, `${relativePath}: sentence token`).not.toContain(FREE_TRIAL_TOKEN);
+      expect(body, `${relativePath}: day token`).not.toContain(FREE_TRIAL_DAYS_TOKEN);
+      expect(body, `${relativePath}: the served sentence`).toContain(expected.copy);
+      for (const phrase of RETIRED) expect(body, `${relativePath}: ${phrase}`).not.toContain(phrase);
+      if (expected.link) {
+        expect(body, `${relativePath}: limits page link`).toContain(`href="${expected.link}"`);
+      }
     }
   });
 });

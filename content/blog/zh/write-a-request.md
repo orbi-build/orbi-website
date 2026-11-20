@@ -1,6 +1,7 @@
 ---
 title: 写需求：说一句话，Orbi Cloud 替你写好 GitHub Issue
 date: 2026-10-09
+updated: 2026-11-20
 summary: 在 Orbi Cloud 里说一句想改什么，Orbi 先读你的仓库，写出 Issue 草稿，要你决定的地方用选择题问你，你确认后才开始做。每一步都配了截图。
 lang: zh
 author: Larry 🍀 Orbi
@@ -85,6 +86,8 @@ Orbi 照着 Issue 做事。Issue 只有一句话，Orbi 就得自己猜：改哪
 
 草稿本身不能直接手改；选项里没有的要求，写在草稿下方的输入框里（「要补充或修改，写在这里」），Orbi 重写时会带着你在输入框里说过的所有话。
 
+2026 年 11 月 20 日更新：引擎 v0.7.44 起，起草时带推荐选项的问题由引擎直接按推荐定下，写进 Issue 的「假设」一节，只有没有推荐项的问题才会问你。现在的做法见[《一句话需求，怎么走到 PR 合并》](/zh/blog/vague-request-to-merged-pr/)。
+
 ## 交给 Orbi 之前看清楚
 
 「交给 Orbi 开始做」按钮下面有几行字，说明交出去以后会发生什么。其中讲合并的那句，写成什么样取决于任务要合入的分支是否要求合并前至少 1 个批准。这个分支是连接仓库时设的，一般就是默认分支。
@@ -96,8 +99,8 @@ Orbi 照着 Issue 做事。Issue 只有一句话，Orbi 就得自己猜：改哪
 「自检」指你仓库的 CI 加上 Orbi 自己的评审。
 
 <figure class="post-media">
-<img src="/img/blog-write-request-zh-handoff.webp" alt="「交给 Orbi 开始做」按钮下面：会在你的 GitHub 仓库里建一个 Issue，Orbi 照它去做。Orbi 自检通过后会直接合并。想先看再合并，可以在 GitHub 给仓库设置合并前需要 1 个批准（怎么设置）。再下面一行说明免费次数已经用完。" width="1200" height="989">
-<figcaption>这张还是上面 README 那个需求。截图时测试账户的免费次数刚好用完，所以最后多了一行：现在交给 Orbi 也行，Issue 会先建好，订阅后才能开工。这个需求我们没有交出去。</figcaption>
+<img src="/img/blog-write-request-zh-handoff.webp" alt="「交给 Orbi 开始做」按钮下面：会在你的 GitHub 仓库里建一个 Issue，Orbi 照它去做。Orbi 自检通过后会直接合并。想先看再合并，可以在 GitHub 给仓库设置合并前需要 1 个批准（怎么设置）。" width="1200" height="989">
+<figcaption>这张还是上面 README 那个需求。这个需求我们没有交出去。</figcaption>
 </figure>
 
 Orbi 的评审会读改动、要求修改，但它不是 GitHub 上的那种批准。Orbi 不会批准自己的 PR，所以要求 1 个批准的仓库里，任务会停在「等你批准」，你批准后它才合并。「怎么设置」链到 GitHub 讲分支保护规则的官方文档。
@@ -127,7 +130,7 @@ Orbi 的评审会读改动、要求修改，但它不是 GitHub 上的那种批�
 新加的检查照 Issue 的要求做了：没配密钥就失败，CI 一直是红的，而 Orbi 不会在 CI 红的时候合并。草稿里列出了这项检查需要的 secret 和变量，但写需求不会替你核对它们配好没有。检查失败后，Orbi 的评审把任务停下来等人决定，Issue 被打上 `ai-blocked` 标签。Orbi 没有为了让 CI 变绿去删检查或改测试，PR 里它们都原样留着。
 
 <figure class="post-media">
-<img src="/img/blog-write-request-zh-blocked.webp" alt="卡住了：CI 在 push 和 PR 上执行 Stripe 扣款验证，密钥取自仓库 secret STRIPE_SECRET_KEY，缺密钥时直接失败。Orbi 已停下：有件事需要你拿主意。改动没有合并到项目。不算免费次数。联系我们：Telegram 群、support@orbi.build。按钮：查看 Orbi 的说明、再写一个需求。" width="1200" height="721">
+<img src="/img/blog-write-request-zh-blocked.webp" alt="卡住了：CI 在 push 和 PR 上执行 Stripe 扣款验证，密钥取自仓库 secret STRIPE_SECRET_KEY，缺密钥时直接失败。Orbi 已停下：有件事需要你拿主意。改动没有合并到项目。联系我们：Telegram 群、support@orbi.build。按钮：查看 Orbi 的说明、再写一个需求。" width="1200" height="721">
 <figcaption>卡住的任务，主按钮直达 Orbi 的说明。</figcaption>
 </figure>
 
@@ -137,11 +140,11 @@ Orbi 的评审会读改动、要求修改，但它不是 GitHub 上的那种批�
 
 这个任务我们没有恢复：它是故意造的失败，测完就把 [Issue #71](https://github.com/xqliu/orbi-e2e-2609260042/issues/71) 和它的 PR 关掉了。
 
+2026 年 11 月 20 日更新：Orbi Cloud v0.8.61 起，卡住的任务卡片上直接写明原因；Orbi 有问题要问时，选项就是按钮，在状态页上直接回答；选的是继续交付的答案，Orbi 就按你的回答接着做，不用再手动换标签。具体见[《AI 编码交付卡住后，怎么让 Orbi 继续》](/zh/blog/stuck-delivery-one-click/)。
+
 ## 要花多少
 
-免费试用有 \_\_FREE\_DELIVERIES\_\_ 次交付。失败的、卡住的（比如上面那个，卡片上也写着「不算免费次数」）、没合并就结束的都不占次数，只有合并了的才算。写草稿不占免费交付次数。
-
-免费次数用完后照样能写草稿。这时交给 Orbi 会马上建好 Issue，但 Orbi 随即摘掉它的 `ai-ready` 标签，并在 Issue 里留言说明原因。订阅后到状态页，点这个 Issue 旁边的「试试 →」，它会给 Issue 打上 `ai-ready`，Orbi 这才开始做。这个按钮只在没有别的任务在跑时列出来。有任务在跑，就等它结束，或者直接在 GitHub 上给这个 Issue 打 `ai-ready`。
+注册后即可\_\_FREE\_TRIAL\_\_，不用绑卡。[额度与限制](https://cloud-docs.orbi.build/zh/limits-and-quotas)写了试用包含什么、结束后会怎样。
 
 按月付费的话，Solo 每月 US$\_\_SOLO\_MONTHLY\_USD\_\_（含 \_\_SOLO\_INCLUDED\_TOKENS\_\_ tokens 模型用量），Pro 每月 US$\_\_CLOUD\_MONTHLY\_USD\_\_（含 \_\_INCLUDED\_TOKENS\_\_ tokens）。写草稿和交付一样计入每月用量。当月用量用完后，新草稿和新交付都会暂停（进行中的会做完），下个月 1 号恢复（按 UTC 算月份），不会额外扣钱。接了自己模型 API key 的账户不受这个限制。详情看 [Orbi Cloud 页面](/zh/cloud/?ref=blog-write-request)。
 
@@ -152,7 +155,7 @@ Orbi 的评审会读改动、要求修改，但它不是 GitHub 上的那种批�
 三个让草稿更好用的习惯：
 
 - 先说你想要的结果。比如写「提建议的人要写清楚想解决什么问题」这样一句，Orbi 会自己在代码里找最合适的改法；你已经知道要改哪个文件、有什么限制，也一并写上。
-- 一次只提一件事。Orbi 动工前会先检查 Issue，它判断一张票里塞了几件不相干的事时，会在 Issue 里留言让你拆开，任务先停着；拆开后重新打上 `ai-ready`。这一步是模型的判断，不保证每次都能拦下。
+- 一次只提一件事。Orbi 动工前会先检查 Issue。引擎 v0.7.44 起，它判断一张票里塞了几件事、又能给出拆法时，会自己建好子票排队；给不出拆法时，才在 Issue 里留言说缺什么，任务先停着。这一步是模型的判断，不保证每次都能拦下。
 - 交给 Orbi 之前，读一读回复里写的假设。读偏了，在输入框里补一句就行。
 
 ## 相关
