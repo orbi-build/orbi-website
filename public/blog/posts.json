@@ -1,5 +1,13 @@
 [
   {
+    "slug": "ai-generated-tests",
+    "title": "AI-generated tests: what auditing 5,087 of ours found",
+    "summary": "I classified all 5,087 tests in Orbi's repo, mostly bot-written. About a third pinned implementation: why, the rule I added and how CI test time fell.",
+    "zhSlug": null,
+    "zhTitle": null,
+    "related": []
+  },
+  {
     "slug": "antigravity-vs-claude-code",
     "title": "Antigravity vs Claude Code: headless CLI test",
     "summary": "Antigravity vs Claude Code on one failing Python test: Claude Code needs explicit permissions to fix it; Antigravity hit errors on a free Gemini API key.",

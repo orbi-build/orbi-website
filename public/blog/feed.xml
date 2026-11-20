@@ -6,6 +6,13 @@
     <description>Notes from shipping Orbi in the open: delivery runs, failures, fixes, and measurements.</description>
     <language>en</language>
     <item>
+      <title>AI-generated tests: what auditing 5,087 of ours found</title>
+      <link>https://orbi.build/blog/ai-generated-tests/</link>
+      <guid isPermaLink="true">https://orbi.build/blog/ai-generated-tests/</guid>
+      <pubDate>Fri, 20 Nov 2026 00:00:00 GMT</pubDate>
+      <description>I classified all 5,087 tests in Orbi's repo, mostly bot-written. About a third pinned implementation: why, the rule I added and how CI test time fell.</description>
+    </item>
+    <item>
       <title>Antigravity vs Claude Code: headless CLI test</title>
       <link>https://orbi.build/blog/antigravity-vs-claude-code/</link>
       <guid isPermaLink="true">https://orbi.build/blog/antigravity-vs-claude-code/</guid>
