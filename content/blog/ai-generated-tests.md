@@ -1,19 +1,19 @@
 ---
 title: AI-generated tests: what auditing 5,087 of ours found
 date: 2026-11-20
-summary: I classified all 5,087 tests in Orbi's repo, mostly bot-written. About a third pinned implementation: why, the rule I added and how CI test time fell.
+summary: I classified 5,087 Vitest cases in Orbi Cloud's repo, most last written by our bot. A third pinned implementation: why, the rule I added, how CI time fell.
 lang: en
 author: Larry 🍀 Orbi
 image: /img/blog-ai-generated-tests-card.png
 ---
 
-Orbi is an open-source system that takes a GitHub Issue through implementation, review, merge and release; this post audits the tests in Orbi Cloud's own repository, most of which Orbi's delivery bot wrote. It is for engineering leads and solo maintainers who use coding agents to write code and AI-generated tests, then let the suite gate merges. You get the counts, where the implementation tests came from, a repository rule to copy, and how the measured CI test-step median fell from 271 s to 102 s after setup and parallelism changes.
+Orbi is an open-source system that takes a GitHub Issue through implementation, review, merge and release; this post audits the Vitest suites in Orbi Cloud's own repository, where Orbi's delivery bot last wrote most of the test registrations. It is for engineering leads and solo maintainers who use coding agents to write code and AI-generated tests, then let the suite gate merges. You get the counts, where the implementation tests came from, a repository rule to copy, and how the measured CI test-step median fell from 271 s to 102 s after setup and parallelism changes.
 
 I'm Larry 🍀 Orbi, the creator of Orbi.
 
 ## How the audit counted
 
-On 18 November 2026, I had independent, read-only Codex sessions classify the tests in Orbi Cloud's repository at beta commit `4619a9fc`. The work covered the main test directory, browser tests and operational-script tests. The orbi-cloud repository is private, so I quote the audit's numbers and name its issues without links. An internal discussion records every classification and the counting scripts.
+On 18 November 2026, I had independent, read-only Codex sessions classify the tests in Orbi Cloud's repository at beta commit `4619a9fc`. The work covered the three TypeScript suites run by Vitest: the main test directory, browser tests and operational-script tests. The repository's 5 Python test files (32 test methods) were not part of the audit. The orbi-cloud repository is private, so I quote the audit's numbers and name its issues without links. An internal discussion records every classification and the counting scripts.
 
 The audit counted expanded test cases: parameterized registrations and loops that registered tests were expanded; a loop checking several inputs inside a test body stayed a single case. A case containing both observable-behavior assertions and implementation assertions counted as implementation-coupled. Categories could overlap.
 
@@ -44,9 +44,9 @@ The categories explain what the audit called testing implementation details. A c
 | Snapshots pinning internal structure | 18 | 0 | 0 |
 | Calling internal helpers to inspect intermediate values | 74 | 0 | 57 |
 
-In the browser suite, 244 cases qualified solely because a shared mounting helper checked a source marker. They meet the strict definition, although repairing the helper removes that dependency across all of them. Some internal-shape cases also used class names as locators or counted controls a user could click, which makes their classification debatable.
+In the browser suite, 244 cases qualified solely because a mounting helper looked for a source marker in the page's script before running it. They meet the strict definition. The helpers are file-local copies (72 browser test files define their own `mount`), so the repair was to let the page run its own scripts, applied file by file. Some internal-shape cases also used class names as locators or counted controls a user could click, which makes their classification debatable.
 
-Excluding helper-only source checks and ambiguous locator uses gives a narrower classification. On that basis, the audit estimated roughly 1,300–1,500 clearly implementation-coupled cases, or 25%–30%. This is an approximate reclassification, without a second exact case-by-case tally or a statistical confidence interval. The full report retains 34% as the strict result; sharing a repair point does not invalidate that count.
+Excluding those helper-only source checks and ambiguous locator uses gives a narrower classification. On that basis, the audit estimated roughly 1,300–1,500 clearly implementation-coupled cases, or 25%–30%. This is an approximate reclassification, without a second exact case-by-case tally or a statistical confidence interval. The full report retains 34% as the strict result; a shared repair pattern does not invalidate that count.
 
 ## Who wrote them
 
@@ -60,7 +60,7 @@ My ticket-writing rules told me to write acceptance criteria such as "only one r
 
 Issue #3355 asked for shared billing logic for the initial page and the polling response, and its acceptance included that the source keep only one implementation of the free-runs count. Issue #3436 required retired copy to disappear from the source. Its `proof-receipt-source-3436.test.ts` recursively scanned every `.ts` file under `src` for the retired sentence. Passing it established that the phrase was absent from those files; it could not establish what a visitor saw on the page.
 
-The Cloud status page's main card had readable text fixtures alongside a whole-page SHA-256 snapshot. The snapshot lived for about eight days, from 11 November 2026, 02:24 (UTC+8) to 19 November 2026, 12:50 (UTC+8). During that lifetime, 36 non-merge commits rewrote `page-sha256.json`, all attributed to the bot. Of those, 28 changed no main-card text fixture, 1 created the snapshot, and 7 deliberately changed the main card. Comments in the test recorded rebuilds where the card text stayed identical while the whole-page hash changed.
+The Cloud status page's main card had readable text fixtures alongside a whole-page SHA-256 snapshot. The snapshot lived for about eight days, from 11 November 2026, 02:24 (UTC+8) to 19 November 2026, 12:50 (UTC+8). During that lifetime, 36 non-merge commits touched `page-sha256.json`, all attributed to the bot: 1 created it and 35 rewrote it. Of the 35 rewrites, 28 changed no main-card text fixture and 7 deliberately changed the main card. Comments in the test recorded rebuilds where the card text stayed identical while the whole-page hash changed.
 
 The hash also covered the rest of the page. These counts do not establish whether each update was worthwhile or how many defects the snapshot caught. I changed the [ticket-writing approach](/blog/write-a-request/) because my own acceptance wording had asked the agent to preserve these implementation checks.
 
@@ -80,7 +80,7 @@ I added this rule to `AGENTS.md` on 18 November 2026, in commit `62738cff`. This
 >
 > The repository-wide audit on 18 November 2026 found that these categories accounted for roughly 30 percent of all cases. Renaming something or adjusting styling makes them fail, and they also slow every test run.
 
-The audit did not isolate the runtime cost of those assertion categories. The timing work below measured migration setup and parallelism.
+The rule's 30 percent is the rounded narrower estimate; the strict count is 34%. The claim that these tests slow every run is the rule's rationale, not something the audit measured: it did not isolate the runtime cost of those assertion categories. The timing work below measured migration setup and parallelism.
 
 The corresponding ticket-writing rule is to require that, given the same data, both places show the same result, checked on the rendered page or API response. Requiring that only a single implementation exists makes code organization part of the merge contract. A reviewer can inspect whether logic is shared without making that structure a permanent assertion.
 
@@ -124,7 +124,7 @@ Cumulative setup adds work across files and workers, so it can exceed elapsed ti
 
 CI now sets `VITEST_MAX_WORKERS=8`; the delivery sandbox keeps its default of 2. At 8 workers, a request-duration assertion failed with `expected 2216 to be less than 2000`. The test already held a database write behind a gate, received the response, then released the write. That ordering proved the response did not wait for the write. I removed the redundant elapsed-time assertion instead of giving it a larger threshold.
 
-The GitHub Actions `Run npm test` step had a median of 271 s across 60 successful PR runs selected from 17–18 November 2026 (UTC). Across 80 successful PR runs after the changes, its median was 102 s. These are step durations, including the test command's overhead, not full workflow times. The before query was capped at 60 runs; it was not a census of that date window.
+The GitHub Actions `Run npm test` step had a median of 271 s across 60 successful PR runs on 18 November 2026 (UTC); the query asked for 17–18 November and returned its 60-run cap, all from the 18th. Across 80 successful PR runs after the changes, its median was 102 s. These are step durations, including the test command's overhead, not full workflow times. The before sample is therefore not a census of that day.
 
 The after sample spans 19 November 2026, 15:40 UTC through 20 November 2026, 00:46 UTC. Repository changes continued between the samples, including cleanup work. The CI comparison is an observed before-and-after result; the local table separates the effects of setup and parallelism. The speedup PRs, #3527 and #3533, merged on 19 November 2026 at 08:36 and 10:42 (UTC+8), before that sample.
 
@@ -139,4 +139,4 @@ The after sample spans 19 November 2026, 15:40 UTC through 20 November 2026, 00:
 
 ## Related
 
-The [review and merge waiting analysis](/blog/ai-code-review-bottleneck/) measures another part of Orbi's delivery loop. The [Claude Code comparison](/compare/claude-code/?ref=blog-ai-tests) and [Orbi Cloud](/cloud/?ref=blog-ai-tests) describe the tools and hosted workflow.
+The [analysis of PRs waiting after merge](/blog/ai-code-review-bottleneck/) measures another part of Orbi's delivery loop. The [Claude Code comparison](/compare/claude-code/?ref=blog-ai-tests) and [Orbi Cloud](/cloud/?ref=blog-ai-tests) describe the tools and hosted workflow.

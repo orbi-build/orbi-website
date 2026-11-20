@@ -10,7 +10,7 @@
       <link>https://orbi.build/blog/ai-generated-tests/</link>
       <guid isPermaLink="true">https://orbi.build/blog/ai-generated-tests/</guid>
       <pubDate>Fri, 20 Nov 2026 00:00:00 GMT</pubDate>
-      <description>I classified all 5,087 tests in Orbi's repo, mostly bot-written. About a third pinned implementation: why, the rule I added and how CI test time fell.</description>
+      <description>I classified 5,087 Vitest cases in Orbi Cloud's repo, most last written by our bot. A third pinned implementation: why, the rule I added, how CI time fell.</description>
     </item>
     <item>
       <title>Antigravity vs Claude Code: headless CLI test</title>
