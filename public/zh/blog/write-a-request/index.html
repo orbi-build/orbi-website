@@ -266,7 +266,7 @@
 </figure><p>卡片上没写具体原因，点「查看 Orbi 的说明」会打开 Orbi 在 Issue 里写的<a href="https://github.com/xqliu/orbi-e2e-2609260042/issues/71#issuecomment-6063352853">那条评论</a>，原因在那里：缺 Stripe 密钥。这次它给了两条路：按 Issue 的要求，把 Stripe 密钥配成仓库 secret、付款方式配成仓库变量；或者改掉 Issue 里「缺密钥就必须让 CI 失败」这条决定。不管选哪条，卡住的任务都不会自己接着做：重跑 CI、只摘掉 <code class="post-code--single">ai-blocked</code> 标签或者留评论都没用。</p>
 <p>先把原因修好，再在 Issue 上换标签（Issue 得是打开的）：PR 还开着的，把 <code class="post-code--single">ai-blocked</code> 换成 <code class="post-code--single">ai-fix-needed</code>，Orbi 在原来的 PR 和分支上接着改；还没有 PR 的，换成 <code class="post-code--single">ai-ready</code>。</p>
 <p>这个任务我们没有恢复：它是故意造的失败，测完就把 <a href="https://github.com/xqliu/orbi-e2e-2609260042/issues/71">Issue #71</a> 和它的 PR 关掉了。</p>
-<p>2026 年 11 月 20 日更新：Orbi Cloud v0.8.61 起，卡住的任务卡片上直接写明原因；Orbi 有问题要问时，选项就是按钮，在状态页上直接回答；选的是继续交付的答案，Orbi 就按你的回答接着做，不用再手动换标签。具体见<a href="/zh/blog/stuck-delivery-one-click/">《交付卡住了，在状态页上点一下》</a>。</p>
+<p>2026 年 11 月 20 日更新：Orbi Cloud v0.8.61 起，卡住的任务卡片上直接写明原因；Orbi 有问题要问时，选项就是按钮，在状态页上直接回答；选的是继续交付的答案，Orbi 就按你的回答接着做，不用再手动换标签。具体见<a href="/zh/blog/stuck-delivery-one-click/">《AI 编码交付卡住后，怎么让 Orbi 继续》</a>。</p>
 <h2 id="要花多少">要花多少</h2>
 <p>免费试用有 __FREE_DELIVERIES__ 次交付。失败的、卡住的（比如上面那个，卡片上也写着「不算免费次数」）、没合并就结束的都不占次数，只有合并了的才算。写草稿不占免费交付次数。</p>
 <p>免费次数用完后照样能写草稿。这时交给 Orbi 会马上建好 Issue，但 Orbi 随即摘掉它的 <code class="post-code--single">ai-ready</code> 标签，并在 Issue 里留言说明原因。订阅后到状态页，点这个 Issue 旁边的「试试 →」，它会给 Issue 打上 <code class="post-code--single">ai-ready</code>，Orbi 这才开始做。这个按钮只在没有别的任务在跑时列出来。有任务在跑，就等它结束，或者直接在 GitHub 上给这个 Issue 打 <code class="post-code--single">ai-ready</code>。</p>
