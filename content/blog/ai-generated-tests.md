@@ -1,7 +1,7 @@
 ---
 title: AI-generated tests: what I found in 5,087 cases
 date: 2026-11-20
-summary: Of 5,087 Orbi Cloud Vitest cases, a strict count found a third pinned implementation details. Where they came from, the rule I added, and faster CI runs.
+summary: A strict count found that a third of 5,087 Orbi Cloud Vitest cases pinned implementation details. I trace why, add a repo rule and speed up the test step.
 lang: en
 author: Larry 🍀 Orbi
 image: /img/blog-ai-generated-tests-card.png
@@ -14,13 +14,13 @@ I'm Larry 🍀 Orbi, the creator of Orbi.
 
 ## How the audit counted
 
-On 18 November 2026, I had independent, read-only Codex sessions classify the tests in Orbi Cloud's repository at beta commit `4619a9fc`. They covered the three TypeScript suites run by Vitest: the main test directory, browser tests and operational-script tests. The audit excluded the repository's 5 Python test files (32 test methods). The orbi-cloud repository is private, so I quote the audit's numbers and name its issues without links. Every classification and the counting scripts are saved in an internal discussion.
+On 18 November 2026, I had independent, read-only Codex sessions classify the tests in Orbi Cloud's repository at beta commit `4619a9fc`. They covered the three TypeScript suites run by Vitest: the main test directory, browser tests and operational-script tests. The audit excluded the repository's 5 Python test files (32 test methods). The orbi-cloud repository is private, so I quote the audit's numbers and name its issues without links.
 
 The audit counted each case registered through parameters or loops separately. A loop checking several inputs inside a test body still counted as a single case. A case with both observable-behavior assertions and implementation assertions counted as implementation-coupled. Implementation-assertion categories could overlap.
 
 Reading business records from a database or checking content sent to an external service counted as behavior. So did using a selector to extract visible text. I asked whether an assertion could fail when the implementation changed but the result visible to a user or caller stayed the same.
 
-I spot-checked the source at 5 locations. Only the example counting disabled controls by their form submission address was ambiguous: the address could reasonably identify the rendered controls. The spot-check was too small to estimate a classification error rate for the whole audit. I reviewed the tests statically, without measuring how well they detected defects or the cost of each failure.
+I spot-checked the source at 5 locations. Only one was ambiguous: a test that counted the deactivate buttons by their form's submit address, which can reasonably identify the controls a user sees. The spot-check was too small to estimate a classification error rate for the whole audit. I reviewed the tests statically, without measuring how well they detected defects or the cost of each failure.
 
 To check the labels, I gave a separate DeepSeek session the same definitions and 60 test registrations drawn at random from the main directory (seed 20261120), without the audit's labels. It agreed on 48 of 60 (80%, Cohen's kappa 0.60), including all 18 cases the audit had marked implementation-coupled. In all 12 disagreements, it marked a case as implementation-coupled where the audit had called it behavior. Most involved exact comparisons of HTML fragments such as hidden inputs, or direct calls to internal helpers. The check found no inflation in the audit's count on this sample. A first attempt was discarded because that session found and read the file holding the audit's labels.
 
@@ -51,7 +51,7 @@ After excluding source checks introduced only by the helpers and ambiguous uses 
 
 ## Who wrote them
 
-Git blame attributed 3,576 of 4,687 test registration lines to `orbi-build[bot]`, or 76% rounded to a whole percent. It identifies who last changed each registration line; it cannot tell me who wrote every assertion. A parameterized registration can register several cases, so this denominator differs from the audit's 5,087 cases.
+Git blame attributed 3,576 of 4,687 test registration lines to `orbi-build[bot]`, or 76%. It identifies who last changed each registration line; it cannot tell me who wrote every assertion. A parameterized registration can register several cases, so this denominator differs from the audit's 5,087 cases.
 
 The bot maintained most of this suite, but I have no human-written control group and did not compare equivalent tasks assigned to people and agents. I cannot conclude from this audit that agents write worse tests than people. If you have AI writing unit tests, audit the browser and operational-script suites too: by share of cases, that is where the coupling was densest.
 

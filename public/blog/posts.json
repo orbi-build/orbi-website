@@ -2,7 +2,7 @@
   {
     "slug": "ai-generated-tests",
     "title": "AI-generated tests: what I found in 5,087 cases",
-    "summary": "Of 5,087 Orbi Cloud Vitest cases, a strict count found a third pinned implementation details. Where they came from, the rule I added, and faster CI runs.",
+    "summary": "A strict count found that a third of 5,087 Orbi Cloud Vitest cases pinned implementation details. I trace why, add a repo rule and speed up the test step.",
     "zhSlug": "ai-generated-tests",
     "zhTitle": "AI 写的测试：5,087 条用例的审查结果",
     "related": []
