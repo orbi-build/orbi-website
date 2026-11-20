@@ -1,128 +1,113 @@
 ---
-title: When an AI coding delivery needs your answer
+title: When an AI coding run stops and needs your answer
 date: 2026-11-20
-summary: A stopped Orbi delivery may need an answer or an Issue edit. See which Cloud buttons change labels, which post answers, and how to change a choice safely.
+summary: A stopped Orbi delivery needs either an answer or an edited Issue. Which Cloud button to press, what it changes on GitHub, and how to change your mind.
 lang: en
 author: Larry 🍀 Orbi
 image: /img/blog-stuck-delivery-one-click-card.png
 mirror: stuck-delivery-one-click
 ---
 
-Orbi is an open-source engine that takes a GitHub Issue labeled `ai-ready` in a connected repository, uses one delivery session to write code and a separate delivery session to review it against the Issue and CI, then merges the PR; a separate Release task ships versions. When delivery stops, you need to know whether to answer a question or change something before trying again. This post shows both paths in Orbi Cloud, with a design idea you can reuse: acknowledge an answer separately from carrying it out.
+Every coding agent eventually stops on something it should not decide alone. Orbi is an open-source system that turns a GitHub Issue into a merged pull request: you add the `ai-ready` label, one AI coding session writes the change, a second session reviews it against the Issue and CI, and Orbi merges it. This post is about the moment that run stops, and it covers which answer to give in Orbi Cloud, what each button changes on GitHub, and one design rule worth copying into any agent tool: tell people their answer arrived separately from telling them it was carried out.
 
 I'm Larry 🍀 Orbi, the creator of Orbi.
 
-Orbi Cloud is the hosted version that runs the same engine for you. An Issue is the task; a delivery session is an agent's work period on it. Orbi tracks state with GitHub labels: `ai-ready` means queued, `ai-in-progress` means work is underway, `ai-blocked` means stopped, `ai-fix-needed` queues another round on an existing delivery PR, and `ai-merged` records a merged delivery.
+Some vocabulary first. Orbi Cloud is the hosted version that runs the open-source engine for you. Orbi records where an Issue stands with GitHub labels: `ai-ready` means queued, `ai-in-progress` means a session is working on it, `ai-blocked` means it stopped, `ai-fix-needed` queues another round on an existing pull request, and `ai-merged` means done.
 
-## Two buttons, two ways to continue
+## Three kinds of stop
 
-Open [Orbi Cloud](/cloud/?ref=blog-stuck), sign in with GitHub, and open your connected project's status page. The card "Orbi is stuck and needs you" gives the stop reason and the controls for that situation.
-
-- A requeue button, "Fixed — let Orbi continue", changes GitHub labels immediately through Cloud. If an Orbi delivery PR is open, Cloud adds `ai-fix-needed`; otherwise it adds `ai-ready`. It leaves a requeue comment, then removes `ai-blocked`, putting the Issue back where the engine can pick it up.
-- A question's answer button posts one structured answer comment on the Issue. The engine carries out that answer on its next scheduler pass, including any label changes the answer calls for. The acknowledgement tells you the answer arrived; execution follows separately.
+Open [Orbi Cloud](/cloud/?ref=blog-stuck), sign in with GitHub and go to your project's status page. A stopped Issue shows up on a card titled "Orbi is stuck and needs you", with the reason in plain words. The reason tells you which of three situations you are in.
 
 <figure class="post-media">
 <img src="/img/blog-stuck-flow-en.webp" alt="Animated English status page showing answer buttons on a stopped Issue, then the Needs your attention task-history filter and an expanded stop reason." width="1280" height="913">
-<figcaption>On beta: the answer controls and the same question expanded in task history.</figcaption>
+<figcaption>On beta: the stopped-Issue card, then the same question opened from task history.</figcaption>
 </figure>
 
-## Read the stop reason before choosing
+**Orbi needs a decision.** The card shows one question with two to four buttons and an "Optional: add a reason" field. In the test repository `xqliu/orbi-e2e-2609260042`, Issue #394 is about PR #393, which was opened outside Orbi to play the part of an outside contribution. Orbi reviewed it and the review passed, but Orbi never merges an outside contributor's code by itself, so it asks the maintainer.
 
-A decision stop presents a choice about how to proceed. In the test repository `xqliu/orbi-e2e-2609260042`, Issue #394 tracks PR #393, opened outside Orbi to simulate an outside contribution. Orbi's review passed. The engine never merges outside contributors' code by itself, so it asks the maintainer what to do. As general advice, a passing review can still leave a reason to decline: a contribution may add maintenance work you do not want to take on.
+**The Issue needs editing.** [Issue #390](https://github.com/xqliu/orbi-e2e-2609260042/issues/390) stopped because "Orbi delivered no change at all", which usually means the Issue did not say clearly enough what should change. Its card offers "Edit the ticket on GitHub" and "Fixed — let Orbi continue".
 
-A stop can also call for an edit. [Issue #390](https://github.com/xqliu/orbi-e2e-2609260042/issues/390) says "Orbi delivered no change at all." Its card directs you to "Edit the ticket on GitHub", then choose "Fixed — let Orbi continue". Use the stop note's instructions to edit the Issue and say what should change, then requeue it. A model-provider balance stop calls for attention to the provider account, covered below.
-
-A decision stop can carry one structured question, with two to four buttons for a choice question and an "Optional: add a reason" field. An Issue can accumulate questions if it stops more than once. The `ai-blocked` label alone says nothing about whether there is a question to answer. Questions asked before delivery starts are covered in [From a vague request to a merged PR](/blog/vague-request-to-merged-pr/).
+**An account needs attention.** When the model provider reports that the account is out of balance, the card says so and links to model settings. That case has its own section below.
 
 <figure class="post-media">
 <img src="/img/blog-stuck-cards-en.webp" alt="English status page listing four stopped Issues, with Issue 394's Chinese question and English action buttons above Issue 390's edit-and-continue controls." width="1280" height="913">
-<figcaption>#394 needs a decision; #390 needs an edited Issue. The question stays in the repository's language, Chinese here, while Cloud's fixed controls use English.</figcaption>
+<figcaption>#394 needs a decision and #390 needs an edited Issue. The question text is written in the repository's message language, Chinese in this test repository; Cloud's own buttons follow your interface language.</figcaption>
 </figure>
 
-For #394, the controls are:
+## What each button does
 
-- "Review and merge on GitHub" opens the PR so you can handle the merge there.
-- "Don't take it — let Orbi do it" asks the engine to close the outside PR and requeue the Issue for Orbi to do the work.
-- "Drop this task" asks the engine to close the Issue and its target PR.
+The two kinds of buttons work differently, and that difference explains what you see afterwards.
 
-The engine carries out the closing actions on its next pass while the Issue is stopped. None of these choices is recommended or taken automatically. A closed PR can be reopened on GitHub.
+"Fixed — let Orbi continue" acts at once. Cloud changes the labels on GitHub immediately: it adds `ai-fix-needed` if an Orbi pull request is open, or `ai-ready` if not, leaves a comment, and removes `ai-blocked`. The Issue is back in the queue.
 
-## What an answer acknowledgement means
+An answer button only posts a comment. Cloud writes one structured answer on the Issue, and the engine carries it out the next time its scheduler looks at stopped Issues. In the companion post's demo runs on Orbi Cloud, each new Issue had been picked up and checked within about three and a half minutes of being opened, which gives a sense of the wait.
 
-After you answer a stopped Issue, the card title reads "Your answer is in. Orbi will continue". The project row reads "Answer received: … Orbi will continue". The engine still has to read and apply the answer on its next scheduler pass.
+For #394 the three answers are:
 
-For an answer that adds an acceptance criterion and resumes delivery, you can see execution on GitHub: the criterion appears in the Issue, and `ai-blocked` changes to `ai-fix-needed` if an Orbi delivery PR is open, or `ai-ready` otherwise.
+- "Review and merge on GitHub" opens the pull request. The merge is yours to do there; Orbi takes no action.
+- "Don't take it — let Orbi do it" closes the outside pull request and queues the Issue so Orbi writes the change itself.
+- "Drop this task" closes the Issue and its pull request.
 
-Cloud first checks that your signed-in GitHub account has repository write access. It then posts the answer as the Orbi GitHub App, the account the runner itself uses and the engine trusts. On GitHub directly, the engine checks the comment author's own write permission. The answer's `by` field records who answered and grants no permission by itself.
+None of the three is pre-selected and none runs on its own. Closing happens on the engine's next pass and only while the Issue is still stopped; if you requeued it in the meantime, the engine posts a note that the answer was not carried out. A closed pull request can be reopened on GitHub.
 
-## When Orbi can choose a recommendation
+A passing review does not oblige you to accept a contribution. You might still decline because the change adds maintenance you do not want, or because it belongs in a later release.
 
-If your question is about choosing between ways to do the work, Orbi can pick a recommended answer itself when the answer only adds an acceptance criterion to the Issue and resumes delivery. The recommendation must include a reason. The next delivery session reads that criterion in the amended Issue.
+Who may answer: before posting, Cloud checks that your GitHub account has write access to the repository, then posts as the Orbi GitHub App, which the engine accepts. An answer typed directly on GitHub is checked against its author's own write access.
 
-This automatic resume is allowed at most once per Issue. An automatic requeue after a temporary GitHub error uses the same single allowance, so automatic retries cannot loop. A new delivery session does not reset it.
+## Why "received" and "done" are separate messages
 
-Orbi leaves decisions about outside code, money, prices or plans to you, as well as any choice that would override a maintainer instruction written in the Issue or AGENTS.md. It never automatically follows a link or closes anything, and never automatically answers confirmation or text questions. A choice without a recommendation also waits for you.
+After you answer a stopped Issue, the card title changes to "Your answer is in. Orbi will continue", and the project row reads "Answer received: … Orbi will continue". At that moment nothing has happened on GitHub yet. When the engine applies the answer, the Issue changes: for an answer that adds an acceptance criterion, the criterion appears in the Issue body and `ai-blocked` turns into `ai-fix-needed` or `ai-ready`.
 
-The engine's comment explains its choice and says:
+Showing both states matters because the gap is real. If the page said "done" on click, people would refresh GitHub, see no change, and click again or pick a different answer. If it said nothing, they would assume the click failed. Saying "your answer is in" and letting the label change speak for execution keeps both promises honest. The same pattern fits any tool where a person answers an agent that runs on a schedule.
 
-> Not right? Reply with another option.
+## When Orbi answers its own question
 
-In Cloud, use "Change it" to reopen the answer controls. On GitHub, post a new structured answer comment using the format below. Ordinary text replies are not read as answers: the structured comment identifies the question and the exact choice to apply.
+Some questions only choose between ways to do the work, and Orbi already has a recommendation with a reason. For those, Orbi takes the recommendation at the moment it stops: it writes the chosen option into the Issue as an acceptance criterion and queues the Issue again, so the next session reads the amended ticket.
 
-## Change an answer before merge
+It does this at most once per Issue. An automatic requeue after a temporary GitHub error uses the same single allowance, so automatic retries cannot run in a loop. Orbi never makes this choice on decisions about outside code, about money, prices or plans, or on anything that would override a maintainer instruction written in the Issue or AGENTS.md. Questions that would open a link or close something, yes-or-no confirmations and free-text questions also always wait for you.
 
-For an answer that amends the Issue and resumes delivery, a newer valid answer from a trusted author replaces the earlier answer to the same question. Orbi replaces that question's acceptance criterion in place and preserves criteria from other questions, avoiding conflicting instructions in the Issue.
+When Orbi decides for you, Cloud shows "Orbi decided for you: …, because: …" with a "Change it" link that brings back the answer buttons. On GitHub, the engine's comment ends with "Not right? Reply with another option." That reply has to be a structured answer, described at the end of this post; an ordinary text comment is not read as an answer.
 
-If the delivery has not merged, a newer answer waiting to be applied holds the merge and sends the delivery back to apply the change. An answer after merge cannot undo the merged PR. The [merge check](/blog/high-frequency-agent-development/) explains where Orbi checks for a newer answer.
+## Changing your mind
 
-A changed structured answer can also steer a running delivery session: the engine updates the Issue with the new criterion so the restarted delivery session reads it. The default settings check for new trusted answer comments every 60 seconds and allow up to three restarts; both settings are configurable. A stopped Issue uses the scheduler path described above.
+A newer answer to the same question from someone with write access replaces the earlier one. If the earlier answer already added a criterion, Orbi swaps that criterion in place and keeps the criteria that came from other questions, so the Issue never asks for two contradictory things.
 
-## Model-provider balance needs an account change
+If the delivery has not merged yet, a pending newer answer holds the merge and sends the work back for another round with the new choice. The [merge check](/blog/high-frequency-agent-development/) explains where that happens. An answer that arrives after the merge cannot undo the merged pull request.
 
-For a model-provider balance stop, the card states the reason and links "Switch to a key with balance" to model settings. Cloud uses your own model key or the default key, as configured.
+If a session is still running, a changed answer reaches it too: the engine updates the Issue and restarts the session so it reads the new criterion. By default a running session looks for new answers every 60 seconds and restarts at most three times (`steering_poll_seconds` and `steering_max_rounds` in the engine configuration).
 
-You can top up a provider account you control, or switch to a key with balance in model settings. Then requeue the Issue on GitHub, as the engine's failure note instructs: replace `ai-blocked` with `ai-fix-needed` if an Orbi delivery PR is open, or `ai-ready` otherwise. Saving a key alone does not requeue a balance-stopped Issue.
+## Out of model balance
 
-## Find the same controls in task history
+The card for this stop gives the reason and a "Switch to a key with balance" link to model settings, but no requeue button. Top up the provider account or switch to a key that has balance, then queue the Issue again on GitHub: replace `ai-blocked` with `ai-fix-needed` if an Orbi pull request is open, or with `ai-ready` otherwise. That is also what the engine's own failure note says. Saving a new key does not requeue the Issue by itself.
 
-Task history filters are "All", "In progress", "Queued", "Needs your attention" and "Done", with All selected initially. For an open stopped Issue, "View failure reasons and repair steps" opens the reason inline and, when a question exists, the same answer controls under "Next step: answer it".
+## The same controls in task history
 
-After you answer, the row counts under In progress even while GitHub still shows `ai-blocked`, because your answer is waiting for Orbi to take over.
+Task history at the bottom of the status page can be filtered to "Needs your attention". For a stopped Issue, "View failure reasons and repair steps" opens the reason in place and, when there is a question, the same answer buttons under "Next step: answer it". Once you have answered, the row moves to "In progress" even though GitHub still shows `ai-blocked`, because the answer is waiting for the engine.
 
 <figure class="post-media">
 <img src="/img/blog-stuck-record-reason-en.webp" alt="Task history filtered to Needs your attention, with Issue 394 expanded to show Next step: answer it, its Chinese question and English answer buttons." width="1280" height="913">
-<figcaption>You can answer #394 from the expanded task-history row.</figcaption>
+<figcaption>#394 can be answered from its task-history row.</figcaption>
 </figure>
 
-## Answer and requeue without Cloud
+## Answering without Cloud
 
-Self-hosted users can post the [structured answer](https://github.com/orbi-build/orbi/blob/v0.7.52/src/orbi/answer.py) as a new Issue comment. To find the question comment's ID, list the Issue's comments:
+On a self-hosted engine you answer by posting a structured comment. First find Orbi's question comment and read its raw body, because GitHub's web view hides HTML comments:
 
 ```sh
 gh api --paginate repos/OWNER/REPO/issues/ISSUE_NUMBER/comments --jq '.[] | {id, body}'
 ```
 
-Use that comment's numeric `id` as `COMMENT_ID` to read its raw body. GitHub's web view hides HTML comments:
-
-```sh
-gh api repos/OWNER/REPO/issues/comments/COMMENT_ID --jq .body
-```
-
-Find `question.id` in the hidden `orbi:question:v1` block, then use it for `q`:
+The question sits in a hidden `orbi:question:v1` block. Note its `question.id` (for example `q1`) and the exact label of the option you want. Then post a new comment:
 
 ```html
-<!-- orbi:answer:v1 {"q":"q1","action":"accept","value":"<the option's full label>","by":"<your GitHub login>","reason":"optional reason"} -->
+<!-- orbi:answer:v1 {"q":"q1","action":"accept","value":"<the option's label>","by":"<your GitHub login>","reason":"optional reason"} -->
 ```
 
-When picking an option, `action` is always `"accept"`, including for an option that closes a PR. The choice goes in `value`: copy the option's label exactly as written in the question, in the question's language. This matters when Cloud's controls and the question use different languages, since the engine matches the label.
+To pick an option that Orbi carries out, `action` is always `"accept"`, even for an option that closes a pull request; the option itself goes in `value`. An option that is only a link, like "Review and merge on GitHub", is not answered this way: open its URL and act on GitHub, because the engine does nothing with it. Copy the label exactly as it appears in the question block, in the question's language, because the engine matches the text. Set `by` to your login and post from an account with write access. Leave `reason` out if you have nothing to add, since an empty string is rejected. Two other actions exist: `"decline"` uses your own words from `reason` as the new acceptance criterion, and `"cancel"` closes the Issue and its pull request while the Issue is stopped. To change an answer, post a new comment for the same `q`.
 
-With the separate `"decline"` action, the engine takes your nonempty `reason`, or the text in `value` if `reason` is absent, and adds it as an acceptance criterion before resuming. The `"cancel"` action closes the Issue and its target PR only while the Issue is stopped.
+For an Issue that needs editing, like #390, edit it and then swap the label yourself: `ai-blocked` becomes `ai-fix-needed` if an Orbi pull request is open, or `ai-ready` otherwise. Removing `ai-blocked` alone does nothing, because the engine only picks up Issues that carry a queue label.
 
-Set `by` to your GitHub login and submit from an account with repository write access. Delete `reason` if you have none; an empty string is rejected. To change an answer, post a new structured comment for the same `q`.
-
-For an Issue that needs editing, such as #390, edit it and replace `ai-blocked` with `ai-fix-needed` when an Orbi delivery PR is open, or `ai-ready` otherwise. Removing `ai-blocked` alone does nothing: the engine needs a queue label to pick the Issue up.
-
-Version scope: examples are from beta with Cloud v0.8.61 and engine v0.7.52; answering requires engine v0.7.46+, and changed-answer handling requires v0.7.47+.
+The examples above come from Orbi's beta site running Cloud v0.8.61 and engine v0.7.52. Answering stops needs engine v0.7.46 or later, and changed-answer handling needs v0.7.47 or later.
 
 ## Related
 

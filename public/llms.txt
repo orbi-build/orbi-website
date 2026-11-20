@@ -256,11 +256,11 @@ Shipping notes from the root domain: what each delivery run hit, what fixed
 it, and the numbers behind both, traced to the issues they came from. RSS
 feed of the English posts: https://orbi.build/blog/feed.xml
 
-- When an AI coding delivery needs your answer (English):
+- When an AI coding run stops and needs your answer (English):
   https://orbi.build/blog/stuck-delivery-one-click/
 - From a vague request to a merged PR with Orbi (English):
   https://orbi.build/blog/vague-request-to-merged-pr/
-- 交付卡住了，在状态页上点一下 (Chinese):
+- AI 编码交付卡住后，怎么让 Orbi 继续 (Chinese):
   https://orbi.build/zh/blog/stuck-delivery-one-click/
 - 一句话需求，怎么走到 PR 合并 (Chinese):
   https://orbi.build/zh/blog/vague-request-to-merged-pr/

@@ -1,16 +1,16 @@
 [
   {
     "slug": "stuck-delivery-one-click",
-    "title": "When an AI coding delivery needs your answer",
-    "summary": "A stopped Orbi delivery may need an answer or an Issue edit. See which Cloud buttons change labels, which post answers, and how to change a choice safely.",
+    "title": "When an AI coding run stops and needs your answer",
+    "summary": "A stopped Orbi delivery needs either an answer or an edited Issue. Which Cloud button to press, what it changes on GitHub, and how to change your mind.",
     "zhSlug": "stuck-delivery-one-click",
-    "zhTitle": "交付卡住了，在状态页上点一下",
+    "zhTitle": "AI 编码交付卡住后，怎么让 Orbi 继续",
     "related": []
   },
   {
     "slug": "vague-request-to-merged-pr",
     "title": "From a vague request to a merged PR with Orbi",
-    "summary": "Requests show how Orbi adds acceptance criteria to GitHub Issues, splits multi-outcome requests into queued children, and reviews changes before merge.",
+    "summary": "Three real requests show how Orbi writes acceptance criteria into a one-line GitHub Issue, splits multi-outcome requests, and still merges in minutes.",
     "zhSlug": "vague-request-to-merged-pr",
     "zhTitle": "一句话需求，怎么走到 PR 合并",
     "related": []

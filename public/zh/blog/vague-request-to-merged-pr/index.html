@@ -4,19 +4,19 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>一句话需求，怎么走到 PR 合并 | Orbi</title>
-  <meta name="description" content="三次待办改动和一次自动拆分的实际记录：Orbi 怎样给一句话需求补验收条件，把包含多个结果的需求拆成子 Issue，以及修改条件后评审会读到什么。">
+  <meta name="description" content="三次真实需求记录了 Orbi 给一句话 Issue 补验收条件、交付并合并的过程，以及自动拆分需求和修改验收条件的规则。">
   <link rel="canonical" href="https://orbi.build/zh/blog/vague-request-to-merged-pr/">
   <link rel="alternate" hreflang="en" href="https://orbi.build/blog/vague-request-to-merged-pr/">
   <link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/blog/vague-request-to-merged-pr/">
   <link rel="alternate" hreflang="x-default" href="https://orbi.build/blog/vague-request-to-merged-pr/">
   <meta property="og:type" content="article">
   <meta property="og:title" content="一句话需求，怎么走到 PR 合并">
-  <meta property="og:description" content="三次待办改动和一次自动拆分的实际记录：Orbi 怎样给一句话需求补验收条件，把包含多个结果的需求拆成子 Issue，以及修改条件后评审会读到什么。">
+  <meta property="og:description" content="三次真实需求记录了 Orbi 给一句话 Issue 补验收条件、交付并合并的过程，以及自动拆分需求和修改验收条件的规则。">
   <meta property="og:url" content="https://orbi.build/zh/blog/vague-request-to-merged-pr/">
   <meta property="og:image" content="https://orbi.build/img/blog-vague-request-to-merged-pr-card.png">
   <meta property="og:image:alt" content="一句话需求，怎么走到 PR 合并">
   <meta property="article:published_time" content="2026-11-20">
-  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"一句话需求，怎么走到 PR 合并","datePublished":"2026-11-20","author":{"@type":"Person","name":"Larry 🍀 Orbi","url":"https://orbi.build/zh/about/larry-orbi/","sameAs":["https://github.com/xqliu","https://x.com/xqliu"]},"publisher":{"@type":"Organization","name":"Orbi","url":"https://orbi.build/","logo":{"@type":"ImageObject","url":"https://orbi.build/logo-mark.svg"}},"mainEntityOfPage":"https://orbi.build/zh/blog/vague-request-to-merged-pr/","image":"https://orbi.build/img/blog-vague-request-to-merged-pr-card.png","inLanguage":"zh-CN","description":"三次待办改动和一次自动拆分的实际记录：Orbi 怎样给一句话需求补验收条件，把包含多个结果的需求拆成子 Issue，以及修改条件后评审会读到什么。","url":"https://orbi.build/zh/blog/vague-request-to-merged-pr/"}</script>
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"一句话需求，怎么走到 PR 合并","datePublished":"2026-11-20","author":{"@type":"Person","name":"Larry 🍀 Orbi","url":"https://orbi.build/zh/about/larry-orbi/","sameAs":["https://github.com/xqliu","https://x.com/xqliu"]},"publisher":{"@type":"Organization","name":"Orbi","url":"https://orbi.build/","logo":{"@type":"ImageObject","url":"https://orbi.build/logo-mark.svg"}},"mainEntityOfPage":"https://orbi.build/zh/blog/vague-request-to-merged-pr/","image":"https://orbi.build/img/blog-vague-request-to-merged-pr-card.png","inLanguage":"zh-CN","description":"三次真实需求记录了 Orbi 给一句话 Issue 补验收条件、交付并合并的过程，以及自动拆分需求和修改验收条件的规则。","url":"https://orbi.build/zh/blog/vague-request-to-merged-pr/"}</script>
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <meta name="theme-color" content="#06151b">
 
@@ -155,7 +155,7 @@
           <h1 id="post-title">一句话需求，怎么走到 PR 合并</h1>
           <p class="post-byline"><a href="/zh/about/larry-orbi/">Larry 🍀 Orbi</a> · <time datetime="2026-11-20">2026-11-20</time></p>
 
-          <p class="hero-lede">三次待办改动和一次自动拆分的实际记录：Orbi 怎样给一句话需求补验收条件，把包含多个结果的需求拆成子 Issue，以及修改条件后评审会读到什么。</p>
+          <p class="hero-lede">三次真实需求记录了 Orbi 给一句话 Issue 补验收条件、交付并合并的过程，以及自动拆分需求和修改验收条件的规则。</p>
         </section>
       </div>
     </div>
@@ -164,12 +164,12 @@
         <nav class="post-toc" aria-label="本页目录">
           <h2>本页目录</h2>
           <ol>
-          <li><a class="post-toc-link" href="#认领-issue-前检查什么">认领 Issue 前检查什么</a></li>
-          <li><a class="post-toc-link" href="#一句话的待办需求">一句话的待办需求</a></li>
-          <li><a class="post-toc-link" href="#改过的条件-哪次会话能读到">改过的条件，哪次会话能读到</a></li>
-          <li><a class="post-toc-link" href="#多个结果怎样拆成子-issue">多个结果怎样拆成子 Issue</a></li>
-          <li><a class="post-toc-link" href="#orbi-cloud-的-写需求">Orbi Cloud 的「写需求」</a></li>
-          <li><a class="post-toc-link" href="#写需求时写什么">写需求时写什么</a></li>
+          <li><a class="post-toc-link" href="#开始交付前的检查">开始交付前的检查</a></li>
+          <li><a class="post-toc-link" href="#一句话的待办需求-8-分-26-秒合并">一句话的待办需求，8 分 26 秒合并</a></li>
+          <li><a class="post-toc-link" href="#修改-issue-后-哪次会话能读到">修改 Issue 后，哪次会话能读到</a></li>
+          <li><a class="post-toc-link" href="#一张需求包含两个结果时">一张需求包含两个结果时</a></li>
+          <li><a class="post-toc-link" href="#起草需求时-哪些问题会交给你">起草需求时，哪些问题会交给你</a></li>
+          <li><a class="post-toc-link" href="#怎样写一张能交付的-issue">怎样写一张能交付的 Issue</a></li>
           <li><a class="post-toc-link" href="#相关">相关</a></li>
           </ol>
         </nav>
@@ -177,69 +177,67 @@
         <details class="post-toc-inline">
           <summary>本页目录 · 7 节</summary>
           <ol>
-          <li><a class="post-toc-link" href="#认领-issue-前检查什么">认领 Issue 前检查什么</a></li>
-          <li><a class="post-toc-link" href="#一句话的待办需求">一句话的待办需求</a></li>
-          <li><a class="post-toc-link" href="#改过的条件-哪次会话能读到">改过的条件，哪次会话能读到</a></li>
-          <li><a class="post-toc-link" href="#多个结果怎样拆成子-issue">多个结果怎样拆成子 Issue</a></li>
-          <li><a class="post-toc-link" href="#orbi-cloud-的-写需求">Orbi Cloud 的「写需求」</a></li>
-          <li><a class="post-toc-link" href="#写需求时写什么">写需求时写什么</a></li>
+          <li><a class="post-toc-link" href="#开始交付前的检查">开始交付前的检查</a></li>
+          <li><a class="post-toc-link" href="#一句话的待办需求-8-分-26-秒合并">一句话的待办需求，8 分 26 秒合并</a></li>
+          <li><a class="post-toc-link" href="#修改-issue-后-哪次会话能读到">修改 Issue 后，哪次会话能读到</a></li>
+          <li><a class="post-toc-link" href="#一张需求包含两个结果时">一张需求包含两个结果时</a></li>
+          <li><a class="post-toc-link" href="#起草需求时-哪些问题会交给你">起草需求时，哪些问题会交给你</a></li>
+          <li><a class="post-toc-link" href="#怎样写一张能交付的-issue">怎样写一张能交付的 Issue</a></li>
           <li><a class="post-toc-link" href="#相关">相关</a></li>
           </ol>
         </details>
-<p>Orbi 是开源的代码交付系统：你在已接入的仓库创建 GitHub Issue，加上 <code class="post-code--single">ai-ready</code> 标签，一次交付会话负责编码，另一次交付会话按 Issue 的验收条件和 CI 评审，评审通过且 CI 全绿后由 Orbi 合并，发版则交给单独的 Release 任务。一句话需求可能说清了想要什么，却没写怎样才算做完，也可能把几个结果放进同一张 Issue。这篇用实际记录说明 Orbi 怎样处理这些情况，其中一个可以借用的设计是：把自动提出的决定写进 Issue，让你能修改后续评审采用的条件。</p>
+<p>交给编码 agent 的需求，常常只有一句话。想改什么说了，怎样算做完却没写。Orbi 是把 GitHub Issue 交付成已合并 PR 的开源系统。加上 <code class="post-code--single">ai-ready</code> 标签，AI 编码会话就会实现改动。另一个评审会话对照 Issue 和 CI 检查，再由 Orbi 合并。下面有三张一句话 Issue 从补验收条件到合并的记录。自动拆分需求另有一个实例。</p>
 <p>我是 Larry 🍀 Orbi，Orbi 的创始人。</p><aside class="post-cta-inline"><span>Orbi 把你的 Issue 一路做到发版。</span><a class="button button-signal" data-cta="post-inline-start" href="/zh/cloud/login">免费试用 Orbi Cloud →</a></aside>
-<p>Orbi Cloud 是托管版，替你运行同一个开源引擎。你可以直接在已接入的仓库创建 Issue，加上 <code class="post-code--single">ai-ready</code> 标签排队；也可以在 Orbi Cloud 的「写需求」页面描述改动，由 Orbi 起草 Issue 并放进队列。</p>
-<p>Orbi 用 GitHub 标签记录交付状态：<code class="post-code--single">ai-ready</code> 表示已排队，<code class="post-code--single">ai-in-progress</code> 表示正在交付，<code class="post-code--single">ai-blocked</code> 表示已停止，<code class="post-code--single">ai-fix-needed</code> 表示现有改动还需要继续处理，<code class="post-code--single">ai-merged</code> 表示已合并。负责评审的独立交付会话会在同一分支上处理评审发现的问题，再由 Orbi 合并。</p>
-<h2 id="认领-issue-前检查什么">认领 Issue 前检查什么</h2>
-<p>「认领」指 runner 从队列里接下一张 Issue。进入交付前，模型会读 Issue，检查三件事：</p>
+<p>Orbi Cloud 是托管版，替你运行同一个开源引擎。「写需求」页面可以替你起草 Issue 并排队。Orbi 用 GitHub 标签记录每张 Issue 的状态：<code class="post-code--single">ai-ready</code> 表示已排队，<code class="post-code--single">ai-in-progress</code> 表示正在交付，<code class="post-code--single">ai-blocked</code> 表示已停止，<code class="post-code--single">ai-fix-needed</code> 表示已有 PR 需要再处理一轮，<code class="post-code--single">ai-merged</code> 表示已完成。</p>
+<h2 id="开始交付前的检查">开始交付前的检查</h2>
+<p>调度器从队列里接下一张 Issue，Orbi 把这一步称为「认领」。开始交付前，模型先读 Issue，检查三件事：</p>
 <ul>
-<li>结果能否观察到：交付后，用户能看到什么，或能做什么。</li>
+<li>结果能否观察到：改完后，用户能看到什么，或能做什么。</li>
 <li>有没有验收条件：用什么具体办法判断已经做完。</li>
 <li>是否只有一个结果：这项改动能否独立交付。</li>
 </ul>
-<p>发现缺项时，Orbi 按下面的情况处理：</p>
+<p>发现缺项时，有三种处理方式：</p>
 <ul>
-<li>只缺验收条件，而且能提出可用的条件：直接追加到 Issue 正文，同一次认领继续交付。</li>
-<li>包含多个结果，而且能提出可用的拆分方案：创建子 Issue 并排队，父 Issue 加上 <code class="post-code--single">ai-epic</code>、移除 <code class="post-code--single">ai-ready</code>。交付在子 Issue 上进行，父 Issue 本身不交付，也不创建 PR。</li>
-<li>缺少细节，又没有可用的提案：评论说明缺什么，移除 <code class="post-code--single">ai-ready</code>，加上 <code class="post-code--single">ai-needs-detail</code>。你补齐后，再加一次 <code class="post-code--single">ai-ready</code> 就能重新排队。</li>
+<li>只缺验收条件。Orbi 把拟定的条件写进 Issue 的 <code class="post-code--spaced">## Acceptance</code> 小节，同一次认领直接继续交付。</li>
+<li>一张 Issue 要做几件事。Orbi 按结果拆成子 Issue，分别排队。父 Issue 加上 <code class="post-code--single">ai-epic</code> 标签，本身不交付。</li>
+<li>缺少 Orbi 无法补齐的信息。Orbi 留评论说明缺什么，把 <code class="post-code--single">ai-ready</code> 换成 <code class="post-code--single">ai-needs-detail</code>，等待补充。补齐后，再加上 <code class="post-code--single">ai-ready</code> 就能重新排队。</li>
 </ul>
-<p>模型看的是 Issue 写了什么，因此不要求套用固定的小节标题。如果检查本身报错、超时或返回格式不对，Orbi 会跳过检查，继续交付；检查程序自身失败不会挡住工作。</p>
-<h2 id="一句话的待办需求">一句话的待办需求</h2>
-<p>验收条件和评论使用仓库配置的消息语言。Orbi 的演示仓库设为中文，所以 #19 收到的是中文条件和评论；运行 #21 和 #25 时，我把它切成了英文消息。</p>
-<p>Orbi 的演示仓库是私有的，里面是一个小型待办应用，这几次交付都运行在 Orbi Cloud 的生产服务上。三张 Issue 都是我自己开的。这些是小应用上的小改动，不是性能基准测试。</p>
-<p>先看 #21。标题是「I lose count of my open todos」，正文只有一句，想解决列表变长后数不清剩余待办的问题：</p>
+<p>检查依据是 Issue 的内容，不要求使用模板。如果检查本身报错或超时，Orbi 会跳过检查，继续交付。Orbi Cloud 为每个接入的仓库开启这项检查；自托管引擎默认关闭，需要使用 v0.7.44 或更新版本，并在 <code class="post-code--single">.github/orbi.toml</code> 中设置 <code class="post-code--spaced">clarify_thin_tickets = true</code>。</p>
+<h2 id="一句话的待办需求-8-分-26-秒合并">一句话的待办需求，8 分 26 秒合并</h2>
+<p>Orbi 的演示仓库里是一个小型待办应用。仓库私有，运行在 Orbi Cloud 的生产服务上。下面三张 Issue 都是我自己开的，只涉及小应用上的小改动，不作为性能基准。</p>
+<p>Issue #21 的标题是「I lose count of my open todos」，正文只有一句：</p>
 <blockquote>
 <p>Once the list gets long I can&#39;t tell how many are left.</p>
 </blockquote>
-<p>23:58:28 UTC，Orbi 给它补上两条验收条件，译成中文是：</p>
+<p>创建约三分半后，23:58:28 UTC，Orbi 已认领这张 Issue，并补上两条验收条件。译成中文是：</p>
 <blockquote>
 <ul>
 <li>待办列表显示剩余未完成项的数量，与实际数量一致。</li>
 <li>列表变长后，这个数字仍然可见且正确。</li>
 </ul>
 </blockquote>
+<p>第二条保留了原需求中「列表变长」的使用场景。只加一个计数，很容易漏掉列表很长时还能否看到它。</p>
+<p>4 秒后，编码会话从补过条件的 Issue 开始实现。11 月 20 日 00:00:12 UTC，PR #22 创建，修改了 <code class="post-code--single">index.html</code> 和两个测试文件（+28/−1）。评审会话对照这两条条件和 CI 检查。经过一轮评审，Orbi 在 00:03:22 UTC 合并了 PR，距创建 Issue 共 8 分 26 秒。</p>
+<p>另外两张 Issue 也走完了这个流程。#19 用中文提出同样的计数需求：「待办一多就数不过来了。」#25 的标题是「Let me clear the whole list」，正文只有一句：</p>
+<blockquote>
+<p>The list is a mess and I want to start over.</p>
+</blockquote>
+<p>#25 的评审发现了一个问题，在同一轮修好后合并。</p>
 <figure class="post-media">
-<img src="/img/blog-vague-criteria-en.webp" alt="GitHub Issue #21，标题为 I lose count of my open todos，一句话正文下的 Acceptance 小节新增两条条件，Orbi 评论确认已追加条件。" width="912" height="782">
-<figcaption>Issue #21 追加验收条件后的记录。</figcaption>
-</figure><p>23:58:32 UTC，补完条件 4 秒后，负责编码的交付会话读到更新后的 Issue，开始实现。11 月 20 日 00:00:12 UTC 创建的 PR #22 改了 <code class="post-code--single">index.html</code> 和两个测试文件（+28/−1）。另一次独立交付会话按 Issue 的验收条件和 CI 评审，经过一轮评审、CI 全绿后，Orbi 合并了 PR。从创建需求到合并共 8 分 26 秒。</p>
-<p>#19 提的也是待办计数，标题是「待办多了想知道还剩几个没做」，正文只有「待办一多就数不过来了。」</p>
-<figure class="post-media">
-<img src="/img/blog-vague-criteria-zh.webp" alt="GitHub Issue #19：中文标题和一句话正文下，「验收」小节新增两条中文条件，Orbi 的中文评论说明已追加验收条件。" width="912" height="782">
-<figcaption>Issue #19 按仓库的中文消息配置收到了验收条件。</figcaption>
-</figure><p>#25 想清空列表重新开始，标题是「Let me clear the whole list」，正文是「The list is a mess and I want to start over.」。</p>
-<p>表格说明：日期均为 2026 年，时刻均为 UTC；「创建」取 Issue 创建时间，「合并」取 PR 合并时间。北京时间是 UTC+8。</p>
-<p class="post-table-hint" hidden>左右滑动查看所有列。</p><div class="post-table-scroll" tabindex="0" role="region" aria-label="左右滑动查看所有列。"><table class="table-comparison">
+<img src="/img/blog-vague-criteria-zh.webp" alt="GitHub Issue #19：中文标题和一句话正文下，「验收」小节新增两条中文条件，Orbi 的中文评论确认已追加条件。" width="912" height="782">
+<figcaption>Issue #19 补上中文验收条件后的记录。仓库私有，因此用截图展示。</figcaption>
+</figure><p class="post-table-hint" hidden>左右滑动查看所有列。</p><div class="post-table-scroll" tabindex="0" role="region" aria-label="左右滑动查看所有列。"><table class="table-comparison">
 <thead>
 <tr>
 <th scope="col">需求</th>
 <th scope="col">创建</th>
 <th scope="col">补上验收条件</th>
 <th scope="col">合并</th>
-<th scope="col">从一句话到合并</th>
+<th scope="col">创建到合并</th>
 </tr>
 </thead>
 <tbody><tr>
-<th scope="row">#19，待办计数</th>
+<th scope="row">#19，待办计数（中文）</th>
 <td>11 月 19 日 23:46:05</td>
 <td>11 月 19 日 23:48:42</td>
 <td>11 月 19 日 23:52:52</td>
@@ -260,24 +258,30 @@
 <td>9 分 55 秒</td>
 </tr>
 </tbody></table></div>
-<h2 id="改过的条件-哪次会话能读到">改过的条件，哪次会话能读到</h2>
-<p>负责编码的交付会话在启动时读取 Issue。#21 从补完条件到开始编码只隔了 4 秒，留给你改条件的时间很短；会话已经运行后，再编辑 Issue，修改不会传进正在编码的会话。</p>
-<p>评审每一轮都会由独立交付会话重新读取当前 Issue 正文，以其中的验收条件为准。你在这一轮开始前改过的条件，就是这一轮评审检查的条件。</p>
-<p>要自己定验收条件，就在加 <code class="post-code--single">ai-ready</code> 之前写进 Issue。</p>
-<h2 id="多个结果怎样拆成子-issue">多个结果怎样拆成子 Issue</h2>
-<p>11 月 18 日 17:26:06 UTC，Orbi Cloud 自己仓库里一张加快测试套件的需求被自动拆成了两个子 Issue：一个处理测试准备耗时，另一个让 CI 并行跑测试。两张都在第二天完成交付并合并，最晚到 02:42:40 UTC。拆分后，测试准备和 CI 改动分别有自己的验收条件，各自交付。这个仓库是私有的，消息语言为中文。</p>
+<p>日期均为 2026 年，时刻均为 UTC。「创建」取 Issue 创建时间，「合并」取 PR 合并时间。补上验收条件前的时间，包含了等待认领的时间。</p>
+<p>验收条件使用仓库配置的消息语言，不随需求所用的语言变化。演示仓库配置为中文，所以 #19 收到中文条件；运行 #21 和 #25 时，我把消息语言切成了英文。</p>
+<figure class="post-media">
+<img src="/img/blog-vague-criteria-en.webp" alt="GitHub Issue #21，标题为 I lose count of my open todos，一句话正文下的 Acceptance 小节新增两条英文条件，Orbi 评论确认已追加条件。" width="912" height="782">
+<figcaption>Issue #21，当时仓库的消息语言已切成英文。</figcaption>
+</figure><h2 id="修改-issue-后-哪次会话能读到">修改 Issue 后，哪次会话能读到</h2>
+<p>Orbi 补上的验收条件只是提议，你可以改，编码开始后改也有用。编码会话运行期间，Orbi 默认每 60 秒看一次 Issue 正文；有仓库写入权限的人改了正文，Orbi 就带着新内容重启编码会话，默认最多重启三次。</p>
+<p>评审会话每轮都会重新读取当前 Issue 正文，并以其中的验收条件为准，所以评审检查的就是那一刻 Issue 上写的内容。</p>
+<p>不过中途改一次就要重启一次，而 #21 从补完条件到开始编码只隔了 4 秒。如果你很在意「做完」的标准，更省事的做法是打上 <code class="post-code--single">ai-ready</code> 之前就把验收条件写进 Issue，Orbi 会直接用你写的，不再另提。</p>
+<h2 id="一张需求包含两个结果时">一张需求包含两个结果时</h2>
+<p>11 月 18 日，Orbi Cloud 自己仓库里的一张 Issue 要用两项改动加快测试：不再让每个测试文件都加载测试数据库，并让 CI 并行运行更多测试。17:26:06 UTC，Orbi 自动把它拆成两个子 Issue，每项改动一张，无需人发出拆分指令。两张子 Issue 各有验收条件，分别交付，都在第二天合并。这个仓库私有，消息语言为中文。</p>
 <figure class="post-media">
 <img src="/img/blog-vague-split-auto-zh.webp" alt="Orbi 的中文评论说明已拆成两个子 Issue #3508 和 #3509，父 Issue 标为 ai-epic，两个子 Issue 已排队，前面没有维护者的拆分命令。" width="922" height="382">
 <figcaption>11 月 18 日的自动拆分记录。</figcaption>
-</figure><p>拆分至少需要两个子 Issue，每个都有自己的结果和验收条件，才能各自交付。Orbi 先通过 GitHub 原生子 Issue 功能建立父子关联，再给子 Issue 加 <code class="post-code--single">ai-ready</code>。子 Issue 之间的依赖用 GitHub 原生的 <code class="post-code--single">blockedBy</code> 关系记录，明确哪张必须先完成；父 Issue 有里程碑或带有 <code class="post-code--single">p0</code>、<code class="post-code--single">bug</code> 标签时，子 Issue 会继承。交付已转到子 Issue，父 Issue 因此加上 <code class="post-code--single">ai-epic</code>，移除 <code class="post-code--single">ai-ready</code>。</p>
-<h2 id="orbi-cloud-的-写需求">Orbi Cloud 的「写需求」</h2>
-<p>「写需求」（Write a request）是 Orbi Cloud 的一个页面，你描述想改什么，Orbi 读取仓库并起草 Issue。</p>
-<p>Orbi 起草 Issue 时，提出的问题若带有推荐选项，就会自行采用推荐项。起草指令要求把选择和理由写进受影响 Issue 的 <code class="post-code--single">Assumptions</code>（假设）小节，方便你查看决定；没有推荐项的问题才会交给你。只要求解释的请求会得到回复，不创建 Issue。</p>
-<h2 id="写需求时写什么">写需求时写什么</h2>
-<p>写出你想看到的结果，例如显示剩余待办数量，或清空列表重新开始。这样 Orbi 才有具体目标可以转成验收条件。</p>
-<p>已经知道要分成哪几项，就分别提需求，顺序和依赖也由你掌握。如果你在意精确的完成标准，就在排队前写好自己的验收条件。之后修改 Issue，仍然能影响读取最新正文的评审。</p>
-<p>Orbi Cloud 为每个接入的仓库开启认领前检查。自托管引擎默认关闭这项检查，在 <code class="post-code--single">.github/orbi.toml</code> 里设置 <code class="post-code--spaced">clarify_thin_tickets = true</code> 就能开启。</p>
-<p>版本说明：自动补验收条件、起草时自动选择推荐项需要引擎 v0.7.44 及以上版本；v0.7.44 之前，拆分方案要等维护者回复 <code class="post-code--spaced">/orbi split</code>，从 v0.7.44 起由 Orbi 自行执行。演示请求使用 v0.7.52。</p>
+</figure><p>子 Issue 使用 GitHub 原生的子 Issue 功能，Orbi 先建立父子关联，再排队。一次拆分至少产生两个子 Issue。如果其中一张依赖另一张，Orbi 会用 GitHub 原生的 <code class="post-code--single">blockedBy</code> 关系记录，在 GitHub 上就能看到先后顺序。子 Issue 继承父 Issue 的里程碑，以及 <code class="post-code--single">p0</code> 或 <code class="post-code--single">bug</code> 标签。此前，拆分要等维护者回复 <code class="post-code--spaced">/orbi split</code>；从引擎 v0.7.44 起，Orbi 会自行拆分。</p>
+<h2 id="起草需求时-哪些问题会交给你">起草需求时，哪些问题会交给你</h2>
+<p>在 Orbi Cloud 的「写需求」页面，你可以用一句话描述改动，Orbi 会读取仓库并起草 Issue。起草时遇到需要选择的地方，如果有推荐项，Orbi 会采用推荐项，把选择和理由写进 Issue 的 <code class="post-code--single">Assumptions</code> 小节。没有推荐项的问题才会交给你回答。如果消息只要求解释，Orbi 会直接回答，不创建 Issue。</p>
+<h2 id="怎样写一张能交付的-issue">怎样写一张能交付的 Issue</h2>
+<ul>
+<li>写出想看到的结果，例如剩余待办数量，或清空后的空列表。Orbi 据此拟定验收条件。</li>
+<li>已经知道需求包含几个独立部分，就分别创建 Issue。顺序由你决定，也省去等待拆分的时间。</li>
+<li>在意完成标准时，先写好验收条件，再加 <code class="post-code--single">ai-ready</code>。之后也能改，代价是编码会话重启一次。</li>
+</ul>
+<p>交付开始后停下来、需要你回答的情况，见<a href="/zh/blog/stuck-delivery-one-click/">交付卡住了，在状态页上点一下</a>。</p>
 <aside class="post-cta">
   <h2>Orbi 把你的 Issue 一路做到发版。</h2>
   <a class="button button-signal" data-cta="post-start" href="/zh/cloud/login">免费试用 Orbi Cloud →</a>

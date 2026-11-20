@@ -1,124 +1,115 @@
 ---
-title: 交付卡住了，在状态页上点一下
+title: AI 编码交付卡住后，怎么让 Orbi 继续
 date: 2026-11-20
-summary: Orbi 交付停下后，先看是要回答、改 Issue，还是处理模型账户。分清两类按钮何时生效，了解改答、重新排队和自托管操作。
+summary: Orbi 交付停下后，按原因回答问题、修改 Issue 或处理模型账户。说明按钮何时生效、怎样改答，以及自托管时的操作。
 lang: zh
 author: Larry 🍀 Orbi
 image: /img/blog-stuck-delivery-one-click-card.png
 mirror: stuck-delivery-one-click
 ---
 
-Orbi 是一个开源引擎，在已连接仓库里接收带 `ai-ready` 标签的 GitHub Issue，由一个交付会话写代码，另一个交付会话对照 Issue 和 CI 独立评审，再由 Orbi 合并 PR；版本发布交给单独的 Release 任务。交付停下后，你需要先判断是缺一个决定，还是要改 Issue、处理账户后才能继续。下面用 Orbi Cloud 的实际例子说明怎么接续交付，也介绍一个可以用在自己产品里的设计做法：把「收到回答」和「执行回答」分开呈现。
+编码 agent 总会遇到不该独自决定的事。Orbi 是开源的代码交付系统。你给 GitHub Issue 加上 `ai-ready` 标签，一个编码会话负责写代码。另一个评审会话对照 Issue 和 CI 检查，随后由 Orbi 合并 PR。这篇讲交付停下后，该在 Orbi Cloud 怎样回答，每个按钮会在 GitHub 上改什么。做 agent 工具时，也可以借用这里的设计：把收到回答与执行回答分开显示。
 
 我是 Larry 🍀 Orbi，Orbi 的创始人。
 
-Orbi Cloud 是托管版，替你运行同一个开源引擎。Issue 承载任务，交付会话是 agent 在这个任务上的一段工作过程。Orbi 用 GitHub 标签记录状态：`ai-ready` 表示排队中，`ai-in-progress` 表示正在做，`ai-blocked` 表示已停止，`ai-fix-needed` 表示已有交付 PR 要再做一轮，`ai-merged` 表示交付已合并。
+Orbi Cloud 是托管版，替你运行开源引擎。Orbi 用 GitHub 标签记录 Issue 的状态：`ai-ready` 表示排队中，`ai-in-progress` 表示有会话正在处理，`ai-blocked` 表示已停止，`ai-fix-needed` 表示已有 PR 要再做一轮，`ai-merged` 表示已完成。
 
-## 先分清：交回 Orbi，还是回答问题
+## 三种停止原因
 
-打开 [Orbi Cloud](/zh/cloud/?ref=blog-stuck)，用 GitHub 登录，进入已连接项目的状态页。「Orbi 卡住了，需要您看一下」卡片会显示原因，并给出相应操作。
-
-- 「已改好，让 Orbi 继续」是重新排队按钮。Cloud 会立即修改 GitHub 标签：有开放的 Orbi 交付 PR，就先加 `ai-fix-needed`；没有就加 `ai-ready`。随后留一条重新排队的评论，再移除 `ai-blocked`，让引擎能再次接手这个 Issue。
-- 问题下面的回答按钮，会在 Issue 上发布一条结构化回答评论。引擎到下一次调度才执行回答，包括回答所需的标签变更。页面先确认收到，执行随后发生。
+打开 [Orbi Cloud](/zh/cloud/?ref=blog-stuck)，用 GitHub 登录，进入项目状态页。已停止的 Issue 会出现在「Orbi 卡住了，需要您看一下」卡片里，原因用直白的文字写明。先看原因，判断自己遇到的是哪一种情况。
 
 <figure class="post-media">
-<img src="/img/blog-stuck-flow-zh.webp" alt="中文状态页动图：查看已停止 Issue 的回答选项，把任务记录筛选为「需要您处理」，再展开 #394 的原因和回答按钮。" width="1280" height="913">
-<figcaption>beta 站实拍：卡片上的回答入口，以及任务记录里展开的同一道问题。</figcaption>
+<img src="/img/blog-stuck-flow-zh.webp" alt="中文状态页动图：查看已停止 Issue 的回答按钮，把任务记录筛选为「需要您处理」，再展开停止原因。" width="1280" height="913">
+<figcaption>beta 站实拍：已停止 Issue 的卡片，以及从任务记录展开的同一道问题。</figcaption>
 </figure>
 
-## 有些要改 Issue，有些要你决定
+**需要你做决定。** 卡片显示一道问题，下面有 2 到 4 个按钮，还可以在「（选填）一句理由」里补充背景。测试仓库 `xqliu/orbi-e2e-2609260042` 的 Issue #394 对应 PR #393。这个 PR 在 Orbi 之外创建，作为外部贡献的测试示例。Orbi 对它的评审已经通过，但不会自行合并外部贡献者的代码，所以要请维护者决定。
 
-[Issue #390](https://github.com/xqliu/orbi-e2e-2609260042/issues/390) 的原因是「Orbi 没有交出任何改动」。这张卡片给出的恢复步骤是「在 GitHub 上改票」，再点「已改好，让 Orbi 继续」。先按停止原因和处理说明修改 Issue，写清楚该改成什么，再重新排队。
+**需要修改 Issue。** [Issue #390](https://github.com/xqliu/orbi-e2e-2609260042/issues/390) 停下的原因是「Orbi 没有交出任何改动」，通常是 Issue 没写清楚要改什么。卡片上有「在 GitHub 上改票」和「已改好，让 Orbi 继续」两个按钮。
 
-Issue #394 则停在一个决定上。它来自测试仓库 `xqliu/orbi-e2e-2609260042`，对应的 PR #393 在 Orbi 之外创建，用来模拟外部贡献。Orbi 的评审已经通过，但引擎从不自行合并外部贡献者的代码，所以要问维护者收不收。一般来说，即使评审通过，你也可能不愿接受贡献带来的长期维护工作，这仍是拒收的合理理由。
-
-每次决策停点可以带一道结构化问题；选择题有 2 到 4 个按钮，也可以在「（选填）一句理由」里补充背景。同一个 Issue 多次停下，就可能留下多道问题。`ai-blocked` 标签本身并不代表有问题可答，模型服务商余额不足这样的账户问题有自己的处理方式。交付开始前的提问，见[《一句话需求，怎么走到 PR 合并》](/zh/blog/vague-request-to-merged-pr/)。
+**需要处理账户。** 模型服务商报告账户余额不足时，卡片会写明原因，并提供模型设置的链接。后面有单独一节说明怎么处理。
 
 <figure class="post-media">
-<img src="/img/blog-stuck-cards-zh.webp" alt="中文状态页列出 4 个已停止的 Issue：#394 显示处理外部贡献的选项，#390 显示改 Issue 后交回 Orbi 的按钮。" width="1280" height="913">
-<figcaption>#394 等你做决定，#390 要先改 Issue。问题按仓库规定的消息语言撰写，这个测试仓库用中文。</figcaption>
+<img src="/img/blog-stuck-cards-zh.webp" alt="中文状态页列出 4 个已停止的 Issue：#394 显示处理外部贡献的选项，#390 显示修改 Issue 后继续的按钮。" width="1280" height="913">
+<figcaption>#394 需要你做决定，#390 需要先改 Issue。问题使用仓库规定的消息语言，这个测试仓库用中文；Cloud 自己的按钮跟随界面语言。</figcaption>
 </figure>
 
-#394 的三个操作分别是：
+## 点按钮后，GitHub 上会发生什么
 
-- 「去 GitHub 审阅合并」打开 PR，由你在 GitHub 上处理合并。
-- 「不收，让 Orbi 自己做」让引擎关闭外部 PR，再把 Issue 重新排队，交给 Orbi 完成。
-- 「这件事不做了」让引擎关闭 Issue 和它指向的 PR。
+重新排队按钮和回答按钮生效的时间不同。
 
-这两种关闭操作要等引擎下一次调度、在 Issue 仍处于停止状态时执行。三个选项都没有推荐项，也不会自动执行。已关闭的 PR 可以在 GitHub 上重新打开。
+点「已改好，让 Orbi 继续」，Cloud 会立即修改 GitHub 标签：有开放的 Orbi PR 就加 `ai-fix-needed`，没有就加 `ai-ready`，然后留一条评论，移除 `ai-blocked`。这个 Issue 随即回到队列。
 
-## 收到回执后，引擎怎样接手
+点回答按钮后，Cloud 会把一条结构化回答写到 Issue 评论里。引擎下次调度检查已停止的 Issue 时，才按回答处理交付。作为调度等待的参考，配套文章记录的是新 Issue 从创建到被接手检查的时间：在 Orbi Cloud 演示里，每张都在约三分半钟内完成了这一步。
 
-回答已停止的 Issue 后，卡片标题会变成「已收到您的回答，Orbi 会接着做」，项目行显示「已收到您的回答：…等 Orbi 继续」。引擎要到下一次调度才读取并执行这条回答。
+#394 的三个回答分别是：
 
-如果回答是补充验收条件、恢复交付，执行后的变化可以在 GitHub 上看到：Issue 出现这条条件，`ai-blocked` 换成 `ai-fix-needed` 或 `ai-ready`，分别对应有开放的 Orbi 交付 PR、没有交付 PR 的情况。
+- 「去 GitHub 审阅合并」打开 PR 页面。合并要由你在 GitHub 上完成，Orbi 不会代你操作。
+- 「不收，让 Orbi 自己做」关闭外部 PR，再把 Issue 重新排队，让 Orbi 自己写代码。
+- 「这件事不做了」关闭 Issue 和它对应的 PR。
 
-谁有权回答，由账号权限决定。Cloud 先核对当前登录用户有没有仓库写入权限，再以 Orbi GitHub App 的身份发布评论。Runner 本身使用的就是这个账号，引擎信任这个身份。直接在 GitHub 上回答时，引擎检查评论作者自己的仓库写入权限。回答里的 `by` 只记录是谁回答，不授予权限。
+三个选项都不会预先选中，必须由你选择。关闭操作要等引擎下一次调度，而且执行时 Issue 必须仍处于停止状态。如果你已经把它重新排队，引擎会留言说明这条回答没有执行。已关闭的 PR 可以在 GitHub 上重新打开。
 
-## Orbi 什么时候可以自己选推荐项
+评审通过后，你仍然可以拒收贡献。比如改动带来了你不想承担的维护工作，或者你打算留到后续版本再做。
 
-如果问题是在几种实现办法之间做选择，而答案只会给 Issue 增加一条验收条件、恢复交付，Orbi 可以自行采用带理由的推荐项。下一段交付会话会从修改后的 Issue 读到这条条件。
+回答需要仓库写入权限。Cloud 发布前会核对你的 GitHub 账号权限，再以 Orbi GitHub App 的身份发表评论，引擎接受这个身份的回答。直接在 GitHub 上回答时，引擎检查评论作者自己的写入权限。
 
-每个 Issue 从开到关，最多自动恢复一次。GitHub 临时错误后的自动重新排队也占用同一次机会，防止自动重试循环。新开交付会话不会重置次数。
+## 为什么收到回答和执行完成要分开显示
 
-接受外部代码、涉及钱、价格或套餐，以及推翻维护者在 Issue 或 AGENTS.md 中明确写下的要求，都留给你决定。Orbi 不会自动打开链接或执行关闭操作，也不会自动回答确认题、文本题。选择题没有推荐项时，同样要等你回答。
+回答已停止的 Issue 后，卡片标题变成「已收到您的回答，Orbi 会接着做」，项目行显示「已收到您的回答：…等 Orbi 继续」。此时，引擎还没在 GitHub 上执行回答。等它执行后，Issue 才会发生相应变化：如果回答要补充验收条件，条件会写进 Issue 正文，`ai-blocked` 会换成 `ai-fix-needed` 或 `ai-ready`。
 
-引擎会在评论里说明选了什么、为什么选，并写着「不合适？回复另一个选项即可」。在 Cloud 上，点「改选」就能重新展开回答控件。在 GitHub 上，要按文末格式发一条新的结构化回答评论；普通文字回复不会作为答案读取，因为引擎需要从结构化评论里确定对应的问题和选项。
+其他按周期运行、需要人回答的 agent 工具，也可以先确认收到回答，再用标签变化表示执行结果。如果点击后就显示完成，用户刷新 GitHub 却看不到变化，可能会再点一次，或者换个回答。页面毫无反应，又会让人以为点击失败。
 
-## 合并前改答，会先落实新选择
+## Orbi 什么时候会自己选答案
 
-对于修改 Issue、恢复交付这类回答，同一道题有了新的有效可信回答，旧答案就会被替代。如果旧答案已经写入 Issue，Orbi 会原位替换这道题的验收条件，保留其他问题的条件，避免同一道题留下相互冲突的要求。
+有些问题只是在几种实现办法之间做选择，Orbi 也已经给出了推荐项和理由。遇到这类问题，Orbi 会在停下时直接采用推荐项，把选项写成 Issue 的验收条件，再将 Issue 排队。下一个会话读取的就是修改后的 Issue。
 
-交付还没合并时，新回答如果尚未落实，会挡住合并，让交付回去应用新选择。PR 合并以后，回答不能撤销已经合并的改动。合并前在哪里检查新回答，见[高频开发一文](/zh/blog/high-frequency-agent-development/)。
+这种自己采用推荐答案的做法，每个 Issue 最多一次；GitHub 临时出错后的自动重新排队也占用这一次，所以自动重试不会循环下去。涉及外部代码、钱、价格或套餐的决定，以及会推翻维护者在 Issue 或 AGENTS.md 中明确要求的选择，Orbi 都不会自行处理。会打开链接或执行关闭操作的问题、确认题和文本题，也要等你回答。
 
-运行中的交付会话也能接收结构化改答：引擎先把新验收条件写进 Issue，让重启后的交付会话读到它。默认每 60 秒检查一次可信的回答评论，最多重启三次；检查间隔和次数都可配置。已停止的 Issue 则走前面所说的调度流程。
+Orbi 自己做了决定时，Cloud 会显示「Orbi 替你做了决定：…，理由：…」，点「改选」能重新展开回答按钮。在 GitHub 上，引擎的评论以「不合适？回复另一个选项即可」结尾。这里需要按文末格式发结构化回答，普通文字评论不会被读作答案。
 
-## 模型服务商余额不足，先处理账户
+## 怎样改答
 
-这类停止会在卡片上写明原因，并用「换一把有余额的 key」链接打开模型设置。Cloud 按配置使用你自己的模型 key 或默认 key。
+有仓库写入权限的人对同一道问题提交新回答，旧回答就会被替代。如果旧回答已经写成验收条件，Orbi 会原位替换这道问题的条件，保留其他问题的条件，避免 Issue 同时要求两件相互矛盾的事。
 
-你可以给有权管理的服务商账户充值，也可以在模型设置里换一把有余额的 key。完成后，仍要按引擎的失败说明，在 GitHub 上把 Issue 重新排队：有开放的 Orbi 交付 PR，就用 `ai-fix-needed` 替换 `ai-blocked`；没有则换成 `ai-ready`。只保存新 key 不会让余额不足的 Issue 重新排队。
+交付还没合并时，如果新回答尚未执行，Orbi 会先拦住合并，让交付按新选择再做一轮。具体在哪一步检查，见[合并检查的说明](/zh/blog/high-frequency-agent-development/)。PR 合并后才收到的回答，无法撤销已合并的改动。
+
+会话还在运行时也能改答。引擎更新 Issue，再重启会话，让它读到新的验收条件。默认每 60 秒检查一次新回答，最多重启三次，对应引擎配置项 `steering_poll_seconds` 和 `steering_max_rounds`。
+
+## 模型账户余额不足
+
+这类卡片会写明原因，并用「换一把有余额的 key」链接打开模型设置，但不会提供重新排队按钮。给服务商账户充值，或换一把有余额的 key 后，还要在 GitHub 上重新排队：有开放的 Orbi PR，就用 `ai-fix-needed` 替换 `ai-blocked`；没有则换成 `ai-ready`。引擎的失败说明里也写了这一步。只保存新 key 不会让 Issue 自动重新排队。
 
 ## 任务记录里也能回答
 
-任务记录可以按「全部」「进行中」「排队中」「需要您处理」「已完成」筛选，初始选中「全部」。开放且已停止的 Issue，点「查看原因与处理方法」会在当前行展开原因；有问题时，「下一步：去回答」下面就是同一组回答控件。
-
-答完后，这一行归入「进行中」，即使 GitHub 仍显示 `ai-blocked`，因为回答已经提交，正在等 Orbi 接手。
+状态页底部的任务记录可以筛选为「需要您处理」。对于已停止的 Issue，点「查看原因与处理方法」会在当前行展开原因；如果有问题，「下一步：去回答」下面就是同一组回答按钮。答完后，这一行归入「进行中」，即使 GitHub 还显示 `ai-blocked`，因为回答正在等引擎执行。
 
 <figure class="post-media">
-<img src="/img/blog-stuck-record-reason-zh.webp" alt="任务记录筛选为「需要您处理」，#394 展开后，在「下一步：去回答」下面显示问题和回答按钮。" width="1280" height="913">
-<figcaption>在任务记录展开 #394，也能回答同一道题。</figcaption>
+<img src="/img/blog-stuck-record-reason-zh.webp" alt="任务记录筛选为「需要您处理」，#394 展开后，在「下一步：去回答」下面显示中文问题和回答按钮。" width="1280" height="913">
+<figcaption>展开任务记录里的 #394，也能回答同一道问题。</figcaption>
 </figure>
 
-## 自托管：发结构化评论，或手动重新排队
+## 不用 Cloud，怎样回答
 
-自托管用户可以直接在 Issue 上发一条[结构化回答评论](https://github.com/orbi-build/orbi/blob/v0.7.52/src/orbi/answer.py)。先列出 Issue 的评论，找到 Orbi 提问的那一条：
+自托管引擎需要在 Issue 上发结构化评论。先找到 Orbi 提问的评论，读取原始正文，因为 GitHub 网页会隐藏 HTML 注释：
 
 ```sh
 gh api --paginate repos/OWNER/REPO/issues/ISSUE_NUMBER/comments --jq '.[] | {id, body}'
 ```
 
-把那条评论的数字 `id` 填入 `COMMENT_ID`，读取原始正文。GitHub 网页会隐藏 HTML 注释：
-
-```sh
-gh api repos/OWNER/REPO/issues/comments/COMMENT_ID --jq .body
-```
-
-在隐藏的 `orbi:question:v1` 块里找到 `question.id`，填入回答的 `q`：
+问题放在隐藏的 `orbi:question:v1` 块里。记下 `question.id`，例如 `q1`，以及你要选的选项原文，再发一条新评论：
 
 ```html
-<!-- orbi:answer:v1 {"q":"q1","action":"accept","value":"<the option's full label>","by":"<your GitHub login>","reason":"optional reason"} -->
+<!-- orbi:answer:v1 {"q":"q1","action":"accept","value":"<the option's label>","by":"<your GitHub login>","reason":"optional reason"} -->
 ```
 
-选择任意一个选项时，`action` 都填 `"accept"`，包括会关闭 PR 的选项。具体选哪个，由 `value` 携带：照抄问题里选项的完整文字，保留问题使用的语言。即使 Cloud 的固定按钮用了另一种语言，也要以问题里的选项为准，因为引擎按选项文字匹配。
+选择要由 Orbi 执行的选项时，`action` 都填 `"accept"`，包括会关闭 PR 的选项。「去 GitHub 审阅合并」这类只是链接的选项不这样回答：直接打开链接在 GitHub 上操作，引擎不会处理这类回答。具体选项填进 `value`，逐字复制问题块中的选项原文，保留问题使用的语言，引擎按文字匹配。`by` 填你的 GitHub 登录名，发表评论的账号必须有仓库写入权限。没有理由就删掉整个 `reason` 字段，空字符串会被拒绝。
 
-另外两种动作有各自的用途。使用 `"decline"` 时，引擎取非空的 `reason`，没有这个字段才取 `value` 中的文字，写成验收条件后恢复交付。`"cancel"` 只在 Issue 停止时关闭 Issue 和它指向的 PR。
+另外还有两种动作：`"decline"` 把你在 `reason` 里写的内容作为新验收条件；`"cancel"` 在 Issue 停止时关闭 Issue 和它对应的 PR。要改答，就针对同一个 `q` 发一条新评论。
 
-`by` 填你的 GitHub 登录名，发表评论的账号必须有仓库写入权限。没有理由就删除整个 `reason` 字段，空字符串会被拒绝。要改答，就针对同一个 `q` 发一条新的结构化评论。
+遇到 #390 这类需要修改 Issue 的情况，改好后手动换标签：有开放的 Orbi PR，就用 `ai-fix-needed` 替换 `ai-blocked`；没有则换成 `ai-ready`。只移除 `ai-blocked` 没有作用，引擎只接手带有排队标签的 Issue。
 
-遇到 #390 这类需要改 Issue 的情况，改好后手动换标签：有开放的 Orbi 交付 PR，就用 `ai-fix-needed` 替换 `ai-blocked`；没有则换成 `ai-ready`。只摘掉 `ai-blocked` 没有作用，引擎需要排队标签才能再次接手。
-
-版本范围：示例来自使用 Cloud v0.8.61、引擎 v0.7.52 的 beta 站；回答流程要求引擎 v0.7.46+，改答处理要求 v0.7.47+。
+以上示例来自运行 Cloud v0.8.61、引擎 v0.7.52 的 Orbi beta 站。回答已停止的 Issue 需要引擎 v0.7.46 或以上版本，处理改答需要 v0.7.47 或以上版本。
 
 ## 相关
 
