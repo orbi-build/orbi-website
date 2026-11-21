@@ -16,7 +16,7 @@
   <meta property="og:image" content="https://orbi.build/img/blog-headless-card.png">
   <meta property="og:image:alt" content="Claude Code headless 模式下操作被拒，退出码还是 0">
   <meta property="article:published_time" content="2026-10-01">
-  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"Claude Code headless 模式下操作被拒，退出码还是 0","datePublished":"2026-10-01","author":{"@type":"Person","name":"Larry 🍀 Orbi","url":"https://orbi.build/zh/about/larry-orbi/","sameAs":["https://github.com/xqliu","https://x.com/xqliu"]},"publisher":{"@type":"Organization","name":"Orbi","url":"https://orbi.build/","logo":{"@type":"ImageObject","url":"https://orbi.build/logo-mark.svg"}},"mainEntityOfPage":"https://orbi.build/zh/blog/run-claude-code-unattended/","image":"https://orbi.build/img/blog-headless-card.png","inLanguage":"zh-CN","description":"Claude Code 的 headless 模式就是 claude -p。没预先放行的操作被拒后，运行照样算成功，脚本得自己查 permission_denials 才知道。","url":"https://orbi.build/zh/blog/run-claude-code-unattended/"}</script>
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"Claude Code headless 模式下操作被拒，退出码还是 0","datePublished":"2026-10-01","dateModified":"2026-11-21","author":{"@type":"Person","name":"Larry 🍀 Orbi","url":"https://orbi.build/zh/about/larry-orbi/","sameAs":["https://github.com/xqliu","https://x.com/xqliu"]},"publisher":{"@type":"Organization","name":"Orbi","url":"https://orbi.build/","logo":{"@type":"ImageObject","url":"https://orbi.build/logo-mark.svg"}},"mainEntityOfPage":"https://orbi.build/zh/blog/run-claude-code-unattended/","image":"https://orbi.build/img/blog-headless-card.png","inLanguage":"zh-CN","description":"Claude Code 的 headless 模式就是 claude -p。没预先放行的操作被拒后，运行照样算成功，脚本得自己查 permission_denials 才知道。","url":"https://orbi.build/zh/blog/run-claude-code-unattended/"}</script>
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <meta name="theme-color" content="#06151b">
 
@@ -153,7 +153,7 @@
         <section class="post-hero" aria-labelledby="post-title">
           <p class="eyebrow">博客</p>
           <h1 id="post-title">Claude Code headless 模式下操作被拒，退出码还是 0</h1>
-          <p class="post-byline"><a href="/zh/about/larry-orbi/">Larry 🍀 Orbi</a> · <time datetime="2026-10-01">2026-10-01</time></p>
+          <p class="post-byline"><a href="/zh/about/larry-orbi/">Larry 🍀 Orbi</a> · <time datetime="2026-10-01">2026-10-01</time> · <time class="post-updated" datetime="2026-11-21">更新于 2026-11-21</time></p>
 
           <p class="hero-lede">Claude Code 的 headless 模式就是 claude -p。没预先放行的操作被拒后，运行照样算成功，脚本得自己查 permission_denials 才知道。</p>
         </section>
@@ -373,7 +373,7 @@ gh pr merge &quot;$PR&quot; --squash --match-head-commit &quot;$REVIEWED_SHA&quo
 <p>能自己恢复的，Orbi 把 Issue 转成 <code class="post-code--single">ai-fix-needed</code>，下一轮在同一个分支、同一个 PR 上接着做。需要人拍板的，就加上 <code class="post-code--single">ai-blocked</code>（同时摘掉 <code class="post-code--single">ai-in-progress</code>），留一条评论说明发生了什么。</p>
 <p>9 月 28 日，<a href="https://github.com/orbi-build/orbi/issues/1482">#1482</a> 的第一轮不到三分钟就结束了，一个提交都没有，Orbi 打上了 <code class="post-code--single">ai-blocked</code>：</p>
 <p><img src="/img/headless-1482-blocked.webp" alt="Issue #1482：Orbi 启动 Pi 之后贴出「Orbi blocked — waiting on a human decision」，说明 agent 没有交付提交，HEAD 还停在起点"></p>
-<p>这条评论只说了没提交，没说为什么。我判断 Issue 本身没问题，就摘掉了 <code class="post-code--single">ai-blocked</code>。<code class="post-code--single">ai-ready</code> 一直没摘，runner 下一轮就重新认领了它，第二轮开了 <a href="https://github.com/orbi-build/orbi/pull/1491">PR #1491</a>，当天合并。</p>
+<p>这条评论只说了没提交，没说为什么。我判断 Issue 本身没问题，就摘掉了 <code class="post-code--single">ai-blocked</code>。<code class="post-code--single">ai-ready</code> 一直没摘，runner 下一轮就重新认领了它，第二轮开了 <a href="https://github.com/orbi-build/orbi/pull/1491">PR #1491</a>，当天合并。那时的引擎认领后不摘 <code class="post-code--single">ai-ready</code>；从 v0.7.54（2026-11-21）起，Orbi 认领时就会摘掉它，现在要让这样的 Issue 重做，得把 <code class="post-code--single">ai-blocked</code> 换成 <code class="post-code--single">ai-ready</code>。</p>
 <p>自己搭的循环失败时，至少把 JSON 里的 <code class="post-code--single">result</code> 和 <code class="post-code--single">permission_denials</code> 贴回 Issue，看的人就不用去翻日志。</p>
 <h3 id="谁来发版">谁来发版</h3>
 <p>Orbi 里发版也是一个 Issue，打 <code class="post-code--single">ai-release</code> 标签，写明版本号和里程碑。Orbi 等里程碑里其余的 Issue 都关了，发版提交上的 CI 通过后打 tag。自己搭的话，最低限度也是让发版走一张票，等里程碑清空、CI 通过再打 tag。这是 v0.5.58 的发版 Issue，#1504 的修复就是随它发出去的：</p>

@@ -268,7 +268,7 @@ review_pi_model = &quot;deepseek-flash&quot;         # 可选，不写就回退�
 <h3 id="从-commit-到-pr">从 commit 到 PR</h3>
 <p><code class="post-code--single">implement</code> 会话停在 commit 上，剩下的事 runner 来做，按这个顺序：</p>
 <ol>
-<li>检查产出。这一步只看会话自己退出的情况（被 runner 结束的会话见下文「会话没声音了」）。对普通的 <code class="post-code--single">ai-ready</code> issue（不是下文的 ops 票）：如果会话留下了未提交的改动（不管有没有 commit），issue 保持 <code class="post-code--single">ai-in-progress</code>，之后某次 tick（按上文的续跑条件）接着做同一次运行；如果工作区是干净的、HEAD 仍等于本次运行开始时记下的 base 分支 commit，issue 直接进 <code class="post-code--single">ai-blocked</code>。HEAD 前进了、但文件树和当时的 base 相同（比如只做了空提交），也一样。复用的分支即使带着之前的 commit，只要文件树和当时的 base 不同，就不会这样进 <code class="post-code--single">ai-blocked</code>。</li>
+<li>检查产出。这一步只看会话自己退出的情况（被 runner 结束的会话见下文「会话没声音了」）。对普通的开发 issue（不是下文的 ops 票）：如果会话留下了未提交的改动（不管有没有 commit），issue 保持 <code class="post-code--single">ai-in-progress</code>，之后某次 tick（按上文的续跑条件）接着做同一次运行；如果工作区是干净的、HEAD 仍等于本次运行开始时记下的 base 分支 commit，issue 直接进 <code class="post-code--single">ai-blocked</code>。HEAD 前进了、但文件树和当时的 base 相同（比如只做了空提交），也一样。复用的分支即使带着之前的 commit，只要文件树和当时的 base 不同，就不会这样进 <code class="post-code--single">ai-blocked</code>。</li>
 <li>合 base。如果 base 分支上有新东西，先合进任务分支；如果这一步有冲突，就撤销它，先不带 base 的新 commit 继续，冲突留给第一个评审会话去解。</li>
 <li>push。普通 push（不 force），再确认远端分支确实指向刚 push 的 commit，免得 push 悄悄失败了还接着开 PR。</li>
 <li>开 PR，正文写上 <code class="post-code--spaced">Fixes #N</code> 和 <code class="post-code--single">run_id</code>。</li>
@@ -308,7 +308,7 @@ review_pi_model = &quot;deepseek-flash&quot;         # 可选，不写就回退�
 </thead>
 <tbody><tr>
 <th scope="row"><code class="post-code--single">ai-ready</code></th>
-<td>队列标签：单独挂着时表示等认领；认领后也会保留，所以正在交付的 issue 会同时带着它和 <code class="post-code--single">ai-in-progress</code>、<code class="post-code--single">ai-pr-opened</code> 或 <code class="post-code--single">ai-fix-needed</code></td>
+<td>排队标签，只表示还没开工；Orbi 认领时摘掉它，所以正在交付的 issue 不再带着它</td>
 </tr>
 <tr>
 <th scope="row"><code class="post-code--single">ai-in-progress</code></th>
