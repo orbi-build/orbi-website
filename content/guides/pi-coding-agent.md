@@ -85,7 +85,7 @@ The claimed issue gets a git worktree on a branch named `orbi/<owner>-<repo>-iss
 
 The `implement` session stops at a commit, and the runner does the rest, in this order:
 
-1. Check the output once the session has exited on its own (a session the runner kills is handled under "When a session goes silent" below). For a plain `ai-ready` issue (not an ops issue, see below): if the session left uncommitted changes, with or without commits, the issue stays `ai-in-progress` and a later tick resumes the same run, under the resume condition above; if the worktree is clean and HEAD is still the base branch commit recorded when the run started, the issue goes straight to `ai-blocked`. The same applies if HEAD has advanced but its tree is identical to that base, as with empty commits. A reused branch carrying earlier commits with a different tree does not hit these cases.
+1. Check the output once the session has exited on its own (a session the runner kills is handled under "When a session goes silent" below). For a plain development issue (not an ops issue, see below): if the session left uncommitted changes, with or without commits, the issue stays `ai-in-progress` and a later tick resumes the same run, under the resume condition above; if the worktree is clean and HEAD is still the base branch commit recorded when the run started, the issue goes straight to `ai-blocked`. The same applies if HEAD has advanced but its tree is identical to that base, as with empty commits. A reused branch carrying earlier commits with a different tree does not hit these cases.
 2. Merge the base. If the base branch has moved, merge it into the task branch; if that conflicts, abort the merge, carry on without the new base commits, and leave the conflict to the first review session.
 3. Push without force, then check that the remote branch now points at the commit just pushed, so a push that silently failed is caught before a pull request exists.
 4. Open the pull request with `Fixes #N` and the `run_id` in the body.
@@ -130,7 +130,7 @@ Three labels, added alongside `ai-ready`, choose the path: `ai-content-only` swi
 
 | Label | Meaning |
 |---|---|
-| `ai-ready` | the queue label: waiting to be claimed on its own; it stays on after the claim, so a delivery in progress carries it beside `ai-in-progress`, `ai-pr-opened` or `ai-fix-needed` |
+| `ai-ready` | the queue label: the issue is waiting and work has not started; Orbi removes it when it claims the issue, so an issue in delivery no longer carries it |
 | `ai-in-progress` | claimed; a run is working on it |
 | `ai-pr-opened` | pull request open, waiting for checks or review |
 | `ai-fix-needed` | review, CI, a base conflict or a failed review session left problems; the next tick starts another review round. It also stays on an issue that later passed review and is only waiting for checks (see the merge gate) |

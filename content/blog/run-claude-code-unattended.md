@@ -1,6 +1,7 @@
 ---
 title: Claude Code headless mode exits 0 despite denials
 date: 2026-10-01
+updated: 2026-11-21
 summary: In Claude Code headless mode, a claude -p run with denied tool calls still exits 0. Use --output-format json and check permission_denials to catch it.
 lang: en
 author: Larry 🍀 Orbi
@@ -226,7 +227,7 @@ On September 28 the first run on [#1482](https://github.com/orbi-build/orbi/issu
 
 ![Issue #1482: Orbi started Pi, then posted "Orbi blocked — waiting on a human decision": the agent delivered no commit and HEAD is still the frozen base](/img/headless-1482-blocked.webp)
 
-The comment said there was no commit, not why. I judged the Issue itself was fine and removed `ai-blocked`. `ai-ready` was still on it, so the runner picked it up again on its next pass, and the second run opened [PR #1491](https://github.com/orbi-build/orbi/pull/1491), merged the same day.
+The comment said there was no commit, not why. I judged the Issue itself was fine and removed `ai-blocked`. `ai-ready` was still on it, so the runner picked it up again on its next pass, and the second run opened [PR #1491](https://github.com/orbi-build/orbi/pull/1491), merged the same day. The engine at the time left `ai-ready` on a claimed issue. Since v0.7.54 (November 21, 2026), Orbi removes `ai-ready` when it claims an issue, so to send an issue like this back today you replace `ai-blocked` with `ai-ready`.
 
 When your own loop fails, post the JSON's `result` and `permission_denials` back to the Issue at least, so whoever looks next doesn't have to dig through logs.
 
