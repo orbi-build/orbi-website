@@ -1,6 +1,7 @@
 ---
 title: Best Pi extensions for unattended runs: 20 tested
 date: 2026-11-05
+updated: 2026-11-22
 summary: 20 Pi coding agent extensions tested without a terminal or desktop bus: which to use for MCP, web search and subagents, and which change config.
 lang: en
 author: Larry 🍀 Orbi
@@ -23,7 +24,17 @@ The results below explain those choices. You can test any package yourself with 
 
 ### Pi MCP extensions
 
-For MCP, my candidates for unattended use are `pi-mcp-extension` or `@fitchmultz/pi-mcp-adapter`, or `pi-mcp-adapter` with an agent directory rewritten per run. I didn't connect any of them to a server, so the only difference I measured in what they leave behind is the settings side effect: `pi-mcp-adapter` rewrote settings, the other two didn't.
+You may not need an extension for MCP. Pi agent MCP support has been built in since Pi 0.99.0 ([changelog](https://github.com/earendil-works/pi/blob/main/packages/coding-agent/CHANGELOG.md)), and `pi mcp add` writes the server into `~/.pi/agent/mcp.json`. On Pi 1.6.0 I added a local stdio server and a remote one, then checked both:
+
+```bash
+pi mcp add everything -- npx -y @modelcontextprotocol/server-everything stdio
+pi mcp add deepwiki --url https://mcp.deepwiki.com/mcp
+pi mcp list
+```
+
+`pi mcp list` printed `everything: connected, 17 tools` and `deepwiki: connected, 3 tools`. With an unreachable server in the file it exited 1, so it works as a pre-flight check before an unattended run. In a `pi -p` session the model called the `everything` server's `get-sum` tool and returned 5; with `--no-mcp` it had no such tool. `-l` writes to the project's `.pi/mcp.json` instead, which Pi reads only in trusted projects, and `pi mcp login` handles servers that need OAuth.
+
+If you'd rather use an extension, my candidates for unattended use are `pi-mcp-extension` or `@fitchmultz/pi-mcp-adapter`, or `pi-mcp-adapter` with an agent directory rewritten per run. I didn't connect any of them to a server, so the only difference I measured in what they leave behind is the settings side effect: `pi-mcp-adapter` rewrote settings to switch the built-in MCP off, the other two didn't ([details below](#the-adapter-changes-the-next-session-s-mcp-settings)).
 
 ### Pi web search extensions
 

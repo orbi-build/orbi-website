@@ -1,6 +1,7 @@
 ---
 title: Pi 扩展推荐：20 个扩展的无人值守实测
 date: 2026-11-05
+updated: 2026-11-22
 summary: 20 个 Pi 扩展的无人值守实测：MCP、联网搜索、子代理各用哪个，哪些会改配置。
 lang: zh
 author: Larry 🍀 Orbi
@@ -23,7 +24,17 @@ Pi 是一个开源的编程 agent，Pi 扩展给它加上 MCP、联网搜索、�
 
 ### Pi MCP 扩展
 
-需要 MCP 时，`pi-mcp-extension` 和 `@fitchmultz/pi-mcp-adapter` 会是我的候选；也可以用 `pi-mcp-adapter`，每次运行前重建 agent 目录。这次三个扩展都没连接服务器，在留下的东西上，测到的区别只有设置文件副作用：`pi-mcp-adapter` 改了设置，另外两个没有。
+接 MCP 不一定要装扩展。Pi 从 0.99.0 起自带 MCP 支持（见[更新日志](https://github.com/earendil-works/pi/blob/main/packages/coding-agent/CHANGELOG.md)），用 `pi mcp add` 就能把服务器写进 `~/.pi/agent/mcp.json`。我在 Pi 1.6.0 上加了一个本地 stdio 服务器、一个远程服务器，再检查一遍：
+
+```bash
+pi mcp add everything -- npx -y @modelcontextprotocol/server-everything stdio
+pi mcp add deepwiki --url https://mcp.deepwiki.com/mcp
+pi mcp list
+```
+
+`pi mcp list` 输出 `everything: connected, 17 tools` 和 `deepwiki: connected, 3 tools`。文件里有一个连不上的服务器时，它的退出码是 1，所以无人值守运行前可以拿它做检查。在 `pi -p` 会话里，模型调用了 `everything` 的 `get-sum` 工具，返回 5；加上 `--no-mcp` 后，模型就没有这个工具了。加 `-l` 会改写项目里的 `.pi/mcp.json`，Pi 只在受信任的项目里读它；需要 OAuth 的服务器用 `pi mcp login` 登录。
+
+如果还是想用扩展，`pi-mcp-extension` 和 `@fitchmultz/pi-mcp-adapter` 会是我的候选；也可以用 `pi-mcp-adapter`，每次运行前重建 agent 目录。这次三个扩展都没连接服务器，在留下的东西上，测到的区别只有设置文件副作用：`pi-mcp-adapter` 改了设置、关掉了自带的 MCP，另外两个没有（[细节见下文](#mcp-适配器改的设置会影响下次会话)）。
 
 ### Pi 联网搜索扩展
 
