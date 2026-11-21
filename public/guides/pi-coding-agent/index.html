@@ -268,7 +268,7 @@ review_pi_model = &quot;deepseek-flash&quot;         # optional; falls back to p
 <h3 id="from-commit-to-pull-request">From commit to pull request</h3>
 <p>The <code class="post-code--single">implement</code> session stops at a commit, and the runner does the rest, in this order:</p>
 <ol>
-<li>Check the output once the session has exited on its own (a session the runner kills is handled under &quot;When a session goes silent&quot; below). For a plain <code class="post-code--single">ai-ready</code> issue (not an ops issue, see below): if the session left uncommitted changes, with or without commits, the issue stays <code class="post-code--single">ai-in-progress</code> and a later tick resumes the same run, under the resume condition above; if the worktree is clean and HEAD is still the base branch commit recorded when the run started, the issue goes straight to <code class="post-code--single">ai-blocked</code>. The same applies if HEAD has advanced but its tree is identical to that base, as with empty commits. A reused branch carrying earlier commits with a different tree does not hit these cases.</li>
+<li>Check the output once the session has exited on its own (a session the runner kills is handled under &quot;When a session goes silent&quot; below). For a plain development issue (not an ops issue, see below): if the session left uncommitted changes, with or without commits, the issue stays <code class="post-code--single">ai-in-progress</code> and a later tick resumes the same run, under the resume condition above; if the worktree is clean and HEAD is still the base branch commit recorded when the run started, the issue goes straight to <code class="post-code--single">ai-blocked</code>. The same applies if HEAD has advanced but its tree is identical to that base, as with empty commits. A reused branch carrying earlier commits with a different tree does not hit these cases.</li>
 <li>Merge the base. If the base branch has moved, merge it into the task branch; if that conflicts, abort the merge, carry on without the new base commits, and leave the conflict to the first review session.</li>
 <li>Push without force, then check that the remote branch now points at the commit just pushed, so a push that silently failed is caught before a pull request exists.</li>
 <li>Open the pull request with <code class="post-code--spaced">Fixes #N</code> and the <code class="post-code--single">run_id</code> in the body.</li>
@@ -307,7 +307,7 @@ review_pi_model = &quot;deepseek-flash&quot;         # optional; falls back to p
 </thead>
 <tbody><tr>
 <th scope="row"><code class="post-code--single">ai-ready</code></th>
-<td>the queue label: waiting to be claimed on its own; it stays on after the claim, so a delivery in progress carries it beside <code class="post-code--single">ai-in-progress</code>, <code class="post-code--single">ai-pr-opened</code> or <code class="post-code--single">ai-fix-needed</code></td>
+<td>the queue label: the issue is waiting and work has not started; Orbi removes it when it claims the issue, so an issue in delivery no longer carries it</td>
 </tr>
 <tr>
 <th scope="row"><code class="post-code--single">ai-in-progress</code></th>

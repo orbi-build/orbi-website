@@ -84,7 +84,7 @@ tick 手上没有已开的 PR 或被打断的运行要接着做时，才按优�
 
 `implement` 会话停在 commit 上，剩下的事 runner 来做，按这个顺序：
 
-1. 检查产出。这一步只看会话自己退出的情况（被 runner 结束的会话见下文「会话没声音了」）。对普通的 `ai-ready` issue（不是下文的 ops 票）：如果会话留下了未提交的改动（不管有没有 commit），issue 保持 `ai-in-progress`，之后某次 tick（按上文的续跑条件）接着做同一次运行；如果工作区是干净的、HEAD 仍等于本次运行开始时记下的 base 分支 commit，issue 直接进 `ai-blocked`。HEAD 前进了、但文件树和当时的 base 相同（比如只做了空提交），也一样。复用的分支即使带着之前的 commit，只要文件树和当时的 base 不同，就不会这样进 `ai-blocked`。
+1. 检查产出。这一步只看会话自己退出的情况（被 runner 结束的会话见下文「会话没声音了」）。对普通的开发 issue（不是下文的 ops 票）：如果会话留下了未提交的改动（不管有没有 commit），issue 保持 `ai-in-progress`，之后某次 tick（按上文的续跑条件）接着做同一次运行；如果工作区是干净的、HEAD 仍等于本次运行开始时记下的 base 分支 commit，issue 直接进 `ai-blocked`。HEAD 前进了、但文件树和当时的 base 相同（比如只做了空提交），也一样。复用的分支即使带着之前的 commit，只要文件树和当时的 base 不同，就不会这样进 `ai-blocked`。
 2. 合 base。如果 base 分支上有新东西，先合进任务分支；如果这一步有冲突，就撤销它，先不带 base 的新 commit 继续，冲突留给第一个评审会话去解。
 3. push。普通 push（不 force），再确认远端分支确实指向刚 push 的 commit，免得 push 悄悄失败了还接着开 PR。
 4. 开 PR，正文写上 `Fixes #N` 和 `run_id`。
@@ -130,7 +130,7 @@ GitHub App 没有读取检查结果的权限，也会让 issue 阻塞；权限�
 
 | 标签 | 含义 |
 |---|---|
-| `ai-ready` | 队列标签：单独挂着时表示等认领；认领后也会保留，所以正在交付的 issue 会同时带着它和 `ai-in-progress`、`ai-pr-opened` 或 `ai-fix-needed` |
+| `ai-ready` | 排队标签，只表示还没开工；Orbi 认领时摘掉它，所以正在交付的 issue 不再带着它 |
 | `ai-in-progress` | 已认领，有运行在做 |
 | `ai-pr-opened` | PR 已开，在等检查或评审 |
 | `ai-fix-needed` | 评审、CI、base 冲突或评审会话失败留下了问题，下一次 tick 开新一轮评审。之后评审通过、只在等检查的 issue 也会一直挂着它（见合并闸门） |

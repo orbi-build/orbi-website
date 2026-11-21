@@ -1,6 +1,7 @@
 ---
 title: Claude Code headless 模式下操作被拒，退出码还是 0
 date: 2026-10-01
+updated: 2026-11-21
 summary: Claude Code 的 headless 模式就是 claude -p。没预先放行的操作被拒后，运行照样算成功，脚本得自己查 permission_denials 才知道。
 lang: zh
 author: Larry 🍀 Orbi
@@ -230,7 +231,7 @@ Issue、PR、评审通过的 SHA 缺一个，`:` 那一行就退出；读不到�
 
 ![Issue #1482：Orbi 启动 Pi 之后贴出「Orbi blocked — waiting on a human decision」，说明 agent 没有交付提交，HEAD 还停在起点](/img/headless-1482-blocked.webp)
 
-这条评论只说了没提交，没说为什么。我判断 Issue 本身没问题，就摘掉了 `ai-blocked`。`ai-ready` 一直没摘，runner 下一轮就重新认领了它，第二轮开了 [PR #1491](https://github.com/orbi-build/orbi/pull/1491)，当天合并。
+这条评论只说了没提交，没说为什么。我判断 Issue 本身没问题，就摘掉了 `ai-blocked`。`ai-ready` 一直没摘，runner 下一轮就重新认领了它，第二轮开了 [PR #1491](https://github.com/orbi-build/orbi/pull/1491)，当天合并。那时的引擎认领后不摘 `ai-ready`；从 v0.7.54（2026-11-21）起，Orbi 认领时就会摘掉它，现在要让这样的 Issue 重做，得把 `ai-blocked` 换成 `ai-ready`。
 
 自己搭的循环失败时，至少把 JSON 里的 `result` 和 `permission_denials` 贴回 Issue，看的人就不用去翻日志。
 
