@@ -363,6 +363,16 @@ export const BADGE_PLACEHOLDER_SIZES = [
   // (SVG, 889 bytes, width/height and viewBox 0 0 240 54; the official
   // vendor snippet declares the same 240x54 box).
   { host: "startuptrusted.com", width: 240, height: 54 },
+  // 2026-11-21 SaasHunt featured badge (official snippet from
+  // saashunt.best/legal/badges), measured on the live URL:
+  // /images/badges/featured-on-light.svg 150x44 (SVG, viewBox 0 0 150 44).
+  { host: "saashunt.best", width: 150, height: 44 },
+  // 2026-11-21 Shipstry backlink badge (snippet from the Shipstry submit
+  // form), measured on the live URL: /badges/featured.svg 220x52.
+  { host: "shipstry.com", width: 220, height: 52 },
+  // 2026-11-21 Toolhunter badge (/badge/<slug>.svg format used by verified
+  // listings), measured on the live URL: /badge/orbi.svg 200x50.
+  { host: "toolhunter.ai", width: 200, height: 50 },
 ];
 const FALLBACK_PLACEHOLDER_SIZE = { width: 1, height: 1 };
 
