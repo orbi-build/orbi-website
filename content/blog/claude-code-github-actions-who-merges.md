@@ -28,7 +28,7 @@ A verdict is not enough by itself, because time passes between the review and th
 
 - Continuous integration is green on the exact head that was reviewed.
 - The head has not moved since the verdict. A push after the review invalidates it.
-- The base is current. The pull request must contain the latest `main`, merged into the branch with a plain merge (the final squash happens later, at the merge step), not a rebase that rewrites what was reviewed.
+- The base is current. The pull request must contain the latest `main`, absorbed by a plain merge, not a rebase that rewrites what was reviewed.
 
 In the merge step that is one command, and `--match-head-commit` pins it to the reviewed head:
 

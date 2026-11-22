@@ -28,7 +28,7 @@ image: /img/blog-claude-actions-card.png
 
 - CI 是绿的，而且是评审过的那个 head 上的绿。
 - head 没动过。评审之后有人推了东西，这个结论就作废。
-- base 是最新的。PR 必须包含最新的 main，用普通 merge 合进 PR 分支（最后合入 main 时再 squash），不用 rebase，因为 rebase 会改写被评审过的那些提交。
+- base 是最新的。PR 必须包含最新的 main，用普通 merge 吸收，不用 rebase，因为 rebase 会改写被评审过的那些提交。
 
 落到命令上就是一行，关键在那个 pin：
 
