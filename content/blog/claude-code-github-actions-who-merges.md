@@ -1,6 +1,7 @@
 ---
 title: Claude Code in Actions: who presses merge?
 date: 2026-09-19
+updated: 2026-11-23
 summary: Claude Code Action can implement and review pull requests in your runner. It stops before merge and release. Here is the evidence-backed layer for both.
 lang: en
 author: Larry 🍀 Orbi
@@ -38,6 +39,20 @@ gh pr merge "$PR" --squash --match-head-commit "$REVIEWED_HEAD"
 If the remote head moved after the review, that call fails instead of merging something nobody reviewed. Only then does the merge land, pinned to that exact commit. If any condition fails the Issue moves to a state that waits for the next tick, or stops for a human. There is no path where a delivery merges because it looked fine.
 
 These are ordinary conditions. Any team would say them out loud in a code review conversation. The difference is that they are three lines in a state machine rather than three habits in a person's head, so they hold at 3 a.m. on the ninetieth pull request.
+
+## Why GitHub won't let you approve your own pull request
+
+GitHub enforces the same rule from the other side. Its documentation says plainly that "pull request authors cannot approve their own pull requests." The approve option is simply not offered to the author, and a repository that requires one approving review will not merge until someone else gives it. [Approving a pull request with required reviews](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/reviewing-changes-in-pull-requests/approving-a-pull-request-with-required-reviews)
+
+That rule lands differently once an agent writes the code. Who counts as the author depends on how the agent reaches GitHub:
+
+- **The agent pushes and opens the pull request with your token.** GitHub sees you as the author, so you cannot approve it. Someone else on the repository has to.
+- **You assign an Issue to Copilot.** GitHub's documentation adds that you cannot approve the pull request Copilot raises for an Issue you assigned to it.
+- **Copilot opens a pull request under its own app identity**, not on behalf of a person (for example, prompted from a shared Slack or Teams thread). Rulesets now require one approval more than the number you configured for these, on by default and still in public preview. [Available rules for rulesets](https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-rulesets/available-rules-for-rulesets)
+
+Two more settings decide who can merge. "Require approval of the most recent reviewable push" means the approval must come from someone other than whoever pushed last, so a reviewer that pushes a fix to the branch cannot approve its own fix. And classic branch protection does not apply to repository admins unless "Do not allow bypassing the above settings" is turned on, so an admin can merge without the approval. [About protected branches](https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-protected-branches/about-protected-branches)
+
+Orbi follows the rule rather than working around it. Its reviewer is a separate session, but the pull request and the merge come from the same GitHub identity, so an approval from Orbi would be the author approving itself. When the target branch requires one or more approving reviews, the merge step does not try. The Issue goes to `ai-awaiting-merge`, and the comment names the pull request head and the one action needed, such as adding a different approving reviewer. Once a person approves, Orbi merges the pull request itself on the next tick with nothing else queued. `orbi doctor` reports the same check for each repository before any delivery runs, as a `merge_gate:` line. On my own repository I removed the required-approval rule and let the three conditions above stand in for it; a team that wants a person on every merge keeps the rule, and Orbi waits for that person.
 
 ## What a person still does
 

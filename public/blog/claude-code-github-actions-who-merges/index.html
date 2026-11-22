@@ -16,7 +16,7 @@
   <meta property="og:image" content="https://orbi.build/img/blog-claude-actions-card.png">
   <meta property="og:image:alt" content="Claude Code in Actions: who presses merge?">
   <meta property="article:published_time" content="2026-09-19">
-  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"Claude Code in Actions: who presses merge?","datePublished":"2026-09-19","author":{"@type":"Person","name":"Larry 🍀 Orbi","url":"https://orbi.build/about/larry-orbi/","sameAs":["https://github.com/xqliu","https://x.com/xqliu"]},"publisher":{"@type":"Organization","name":"Orbi","url":"https://orbi.build/","logo":{"@type":"ImageObject","url":"https://orbi.build/logo-mark.svg"}},"mainEntityOfPage":"https://orbi.build/blog/claude-code-github-actions-who-merges/","image":"https://orbi.build/img/blog-claude-actions-card.png","inLanguage":"en","description":"Claude Code Action can implement and review pull requests in your runner. It stops before merge and release. Here is the evidence-backed layer for both.","url":"https://orbi.build/blog/claude-code-github-actions-who-merges/"}</script>
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"Claude Code in Actions: who presses merge?","datePublished":"2026-09-19","dateModified":"2026-11-23","author":{"@type":"Person","name":"Larry 🍀 Orbi","url":"https://orbi.build/about/larry-orbi/","sameAs":["https://github.com/xqliu","https://x.com/xqliu"]},"publisher":{"@type":"Organization","name":"Orbi","url":"https://orbi.build/","logo":{"@type":"ImageObject","url":"https://orbi.build/logo-mark.svg"}},"mainEntityOfPage":"https://orbi.build/blog/claude-code-github-actions-who-merges/","image":"https://orbi.build/img/blog-claude-actions-card.png","inLanguage":"en","description":"Claude Code Action can implement and review pull requests in your runner. It stops before merge and release. Here is the evidence-backed layer for both.","url":"https://orbi.build/blog/claude-code-github-actions-who-merges/"}</script>
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <meta name="theme-color" content="#06151b">
 
@@ -153,7 +153,7 @@
         <section class="post-hero" aria-labelledby="post-title">
           <p class="eyebrow">Blog</p>
           <h1 id="post-title">Claude Code in Actions: who presses merge?</h1>
-          <p class="post-byline"><a href="/about/larry-orbi/">Larry 🍀 Orbi</a> · <time datetime="2026-09-19">2026-09-19</time></p>
+          <p class="post-byline"><a href="/about/larry-orbi/">Larry 🍀 Orbi</a> · <time datetime="2026-09-19">2026-09-19</time> · <time class="post-updated" datetime="2026-11-23">Updated 23 Nov 2026</time></p>
 
           <p class="hero-lede">Claude Code Action can implement and review pull requests in your runner. It stops before merge and release. Here is the evidence-backed layer for both.</p>
         </section>
@@ -166,6 +166,7 @@
           <ol>
           <li><a class="post-toc-link" href="#the-model-is-not-the-bottleneck">The model is not the bottleneck</a></li>
           <li><a class="post-toc-link" href="#three-conditions-checked-at-the-moment-of-merge">Three conditions, checked at the moment of merge</a></li>
+          <li><a class="post-toc-link" href="#why-github-won-t-let-you-approve-your-own-pull-request">Why GitHub won't let you approve your own pull request</a></li>
           <li><a class="post-toc-link" href="#what-a-person-still-does">What a person still does</a></li>
           <li><a class="post-toc-link" href="#if-you-are-running-the-action-today">If you are running the action today</a></li>
           <li><a class="post-toc-link" href="#related">Related</a></li>
@@ -173,10 +174,11 @@
         </nav>
       <article class="post-body">
         <details class="post-toc-inline">
-          <summary>On this page · 5 sections</summary>
+          <summary>On this page · 6 sections</summary>
           <ol>
           <li><a class="post-toc-link" href="#the-model-is-not-the-bottleneck">The model is not the bottleneck</a></li>
           <li><a class="post-toc-link" href="#three-conditions-checked-at-the-moment-of-merge">Three conditions, checked at the moment of merge</a></li>
+          <li><a class="post-toc-link" href="#why-github-won-t-let-you-approve-your-own-pull-request">Why GitHub won't let you approve your own pull request</a></li>
           <li><a class="post-toc-link" href="#what-a-person-still-does">What a person still does</a></li>
           <li><a class="post-toc-link" href="#if-you-are-running-the-action-today">If you are running the action today</a></li>
           <li><a class="post-toc-link" href="#related">Related</a></li>
@@ -201,6 +203,16 @@
 </code></pre></div>
 <p>If the remote head moved after the review, that call fails instead of merging something nobody reviewed. Only then does the merge land, pinned to that exact commit. If any condition fails the Issue moves to a state that waits for the next tick, or stops for a human. There is no path where a delivery merges because it looked fine.</p>
 <p>These are ordinary conditions. Any team would say them out loud in a code review conversation. The difference is that they are three lines in a state machine rather than three habits in a person&#39;s head, so they hold at 3 a.m. on the ninetieth pull request.</p>
+<h2 id="why-github-won-t-let-you-approve-your-own-pull-request">Why GitHub won&#39;t let you approve your own pull request</h2>
+<p>GitHub enforces the same rule from the other side. Its documentation says plainly that &quot;pull request authors cannot approve their own pull requests.&quot; The approve option is simply not offered to the author, and a repository that requires one approving review will not merge until someone else gives it. <a href="https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/reviewing-changes-in-pull-requests/approving-a-pull-request-with-required-reviews">Approving a pull request with required reviews</a></p>
+<p>That rule lands differently once an agent writes the code. Who counts as the author depends on how the agent reaches GitHub:</p>
+<ul>
+<li><strong>The agent pushes and opens the pull request with your token.</strong> GitHub sees you as the author, so you cannot approve it. Someone else on the repository has to.</li>
+<li><strong>You assign an Issue to Copilot.</strong> GitHub&#39;s documentation adds that you cannot approve the pull request Copilot raises for an Issue you assigned to it.</li>
+<li><strong>Copilot opens a pull request under its own app identity</strong>, not on behalf of a person (for example, prompted from a shared Slack or Teams thread). Rulesets now require one approval more than the number you configured for these, on by default and still in public preview. <a href="https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-rulesets/available-rules-for-rulesets">Available rules for rulesets</a></li>
+</ul>
+<p>Two more settings decide who can merge. &quot;Require approval of the most recent reviewable push&quot; means the approval must come from someone other than whoever pushed last, so a reviewer that pushes a fix to the branch cannot approve its own fix. And classic branch protection does not apply to repository admins unless &quot;Do not allow bypassing the above settings&quot; is turned on, so an admin can merge without the approval. <a href="https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-protected-branches/about-protected-branches">About protected branches</a></p>
+<p>Orbi follows the rule rather than working around it. Its reviewer is a separate session, but the pull request and the merge come from the same GitHub identity, so an approval from Orbi would be the author approving itself. When the target branch requires one or more approving reviews, the merge step does not try. The Issue goes to <code class="post-code--single">ai-awaiting-merge</code>, and the comment names the pull request head and the one action needed, such as adding a different approving reviewer. Once a person approves, Orbi merges the pull request itself on the next tick with nothing else queued. <code class="post-code--spaced">orbi doctor</code> reports the same check for each repository before any delivery runs, as a <code class="post-code--single">merge_gate:</code> line. On my own repository I removed the required-approval rule and let the three conditions above stand in for it; a team that wants a person on every merge keeps the rule, and Orbi waits for that person.</p>
 <h2 id="what-a-person-still-does">What a person still does</h2>
 <p>I write the Issue. That is the whole job, and it is more work than it sounds: one runtime outcome, the acceptance conditions written so that &quot;done&quot; is checkable by something that cannot ask me what I meant. A vague ticket produces a confident wrong delivery, and no gate downstream catches that, because the gate checks whether the code does what the ticket said.</p>
 <p>I also write the release ticket: a version number and a scope. The release itself is a deterministic state machine, not a model session. It freezes the base, waits for green CI, bumps the version, tags, publishes and closes the milestone. Any failure stops and waits for me.</p>
