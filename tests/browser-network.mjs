@@ -373,6 +373,11 @@ export const BADGE_PLACEHOLDER_SIZES = [
   // 2026-11-21 Toolhunter badge (/badge/<slug>.svg format used by verified
   // listings), measured on the live URL: /badge/orbi.svg 200x50.
   { host: "toolhunter.ai", width: 200, height: 50 },
+  // 2026-11-22 BuiltByIndies badge, measured on the live URL:
+  // /badge/fc534ac5-27de-42de-ad1e-078f3151c36e.svg 250x60 (SVG, 15868
+  // bytes, width/height and viewBox 0 0 250 60; the official vendor snippet
+  // declares height 60 and the same file, Issue #1429).
+  { host: "builtbyindies.com", width: 250, height: 60 },
 ];
 const FALLBACK_PLACEHOLDER_SIZE = { width: 1, height: 1 };
 
