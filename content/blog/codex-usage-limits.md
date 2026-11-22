@@ -1,6 +1,7 @@
 ---
 title: How to check and reset Codex usage limits
 date: 2026-10-17
+updated: 2026-11-23
 summary: Codex usage limits use five-hour and weekly windows set by plan. Check them on the Usage page or with /status, see when they reset, and keep runs going.
 lang: en
 author: Larry 🍀 Orbi
@@ -10,7 +11,7 @@ mirror: codex-usage-limits
 
 Codex usage limits are the allowance included with your ChatGPT plan. On most plans it is measured in a five-hour window, a weekly window, or both. Your remaining balance and reset times are on the [Codex usage dashboard](https://chatgpt.com/codex/settings/usage) (Settings → Usage), and `/status` shows your remaining limits inside a CLI session. If you hit a limit mid-turn, Codex lets the agent keep working on that turn, subject to fair-use limits. After that you wait for the reset, use a reset or credits if your account has them, or switch the CLI to API billing.
 
-Every OpenAI fact below links to the official page it comes from. All were retrieved on 17 October 2026, and OpenAI changes these terms often, so your own Usage page wins whenever it disagrees with this post.
+Every OpenAI fact below links to the official page it comes from. Most were retrieved on 17 October 2026; the December change, the credits section and the plan-end section were checked on 23 November 2026. OpenAI changes these terms often, so your own Usage page wins whenever it disagrees with this post.
 
 ## How Codex usage limits work
 
@@ -29,6 +30,8 @@ Which windows apply depends on the plan:
 Free and Go also include Codex, on GPT-6 Luna in the desktop app (subject to rollout); check their limits on the Usage page. Sources: [Codex pricing FAQ](https://learn.chatgpt.com/docs/pricing#what-are-the-usage-limits-for-my-plan), [managing usage in Work and Codex](https://help.openai.com/en/articles/20001516-managing-usage-with-gpt-6-astra-in-work-and-codex), [ChatGPT Business models and limits](https://help.openai.com/en/articles/12003714-chatgpt-business-models-and-limits), [ChatGPT Business FAQ](https://help.openai.com/en/articles/8542115-chatgpt-business-general-faq).
 
 OpenAI does not publish a fixed message count for any plan. Its estimate table for Plus and Business Standard gives a range per model instead: 15 to 160 local messages per five hours on GPT-6.1 Sol, and 350 to 3,000 on GPT-6 Luna. The page calls these estimates, "not fixed message limits." Fast mode spends included usage at 2.5 times the rate of Standard speed, and Ultrafast at 8 times. [Codex pricing FAQ](https://learn.chatgpt.com/docs/pricing#what-are-the-usage-limits-for-my-plan)
+
+A change is coming in December. OpenAI says that from then on, the allowance on Plus, Pro and Business plans "will be shared across ChatGPT and Codex" and measured in tokens, so heavy agent work in ChatGPT and in Codex will draw on one balance. Instant chat will not draw from it. Settings → Usage will show the combined remaining usage and reset times. [Understanding ChatGPT and Codex usage limits](https://help.openai.com/en/articles/20001625-understanding-chatgpt-and-codex-usage-limits)
 
 ## How to check your Codex usage limit
 
@@ -57,11 +60,46 @@ Eligible personal Plus and Pro accounts may see "Buy an instant reset" in the de
 
 ### Buy credits or upgrade
 
-Plus and Pro users can buy credits to keep working after the included allowance runs out, without changing plans. Business, Edu and Enterprise workspaces on flexible pricing buy workspace credits instead ([what happens when you hit usage limits](https://learn.chatgpt.com/docs/pricing#what-happens-when-you-hit-usage-limits)). The other route is a plan with a larger allowance; the [Pro plans page](https://help.openai.com/en/articles/9793128-about-chatgpt-pro-plans) compares the tiers.
+Plus and Pro users can buy credits to keep working after the included allowance runs out, without changing plans; [how long Codex credits last](#how-long-codex-credits-last) below covers what a balance buys. Business, Edu and Enterprise workspaces on flexible pricing buy workspace credits instead ([what happens when you hit usage limits](https://learn.chatgpt.com/docs/pricing#what-happens-when-you-hit-usage-limits)). The other route is a plan with a larger allowance; the [Pro plans page](https://help.openai.com/en/articles/9793128-about-chatgpt-pro-plans) compares the tiers.
 
 ### Check for Luna Reserve
 
 Some personal Plus and Pro accounts, chosen by OpenAI, get Luna Reserve: after regular usage runs out, a separate allowance with its own limit lets them keep working on a Luna model. When regular usage runs out, look for a Luna Reserve notice or a moon icon in the usage warning; if none appears, your account probably does not have it. [Luna Reserve](https://help.openai.com/en/articles/20001499-luna-reserve-in-codex-and-chatgpt-work)
+
+## How long Codex credits last
+
+Credits are a separate balance from your included allowance. Codex spends the included five-hour and weekly allowance first and draws on credits only after that runs out. Buy them, and see the balance and recent usage, in Settings → Usage in ChatGPT or Usage & Billing in the Codex app. [Credits on personal plans](https://help.openai.com/en/articles/12642688-using-credits-for-flexible-usage-in-chatgpt-personal-plans)
+
+There is no fixed number of credits per message. OpenAI prices credits per million tokens, by model, with separate rates for fresh input, cached input and output. A few rows of its Standard-speed table: [Token rates](https://learn.chatgpt.com/docs/pricing)
+
+| Model | Input | Cached input | Output |
+|---|---|---|---|
+| GPT-6.2 Astra | 200 | 10 | 1,000 |
+| GPT-6.1 Sol | 50 | 2.5 | 250 |
+| GPT-6 Luna | 2.5 | 0.25 | 12.5 |
+
+*Credits per 1 million tokens, Standard speed.*
+
+To turn a balance into a number of tasks, price one task. Say a task sends 50,000 fresh input tokens, 150,000 cached input tokens and gets 10,000 output tokens back. On GPT-6.1 Sol that costs 2.5 + 0.375 + 2.5, about 5.4 credits. The same task on GPT-6 Luna costs about 0.29 credits. Fast mode doubles what credits pay for these models, and Ultrafast costs more again. Your own tasks will differ from this example, so take the per-task figure from your recent usage on the Usage page and divide your balance by it.
+
+Four rules worth knowing before you buy:
+
+- **They expire.** Credits expire 12 months after purchase and do not roll over; credits bought in Japan after 13 November 2026 expire after 180 days.
+- **They are not refundable**, apart from cases required by law or contract and a short list of exceptions such as a verified billing error.
+- **The balance can go negative.** A task that starts with a positive balance can finish below zero if other usage drains it at the same time; the next purchase pays that off first.
+- **They are not API credits.** They do not pay for API-key usage, and they are a separate balance from the US-dollar ChatGPT wallet that gift cards top up.
+
+Credits work across Codex, ChatGPT Work, Word, Excel and PowerPoint on the same account. If you turn on automatic reload, OpenAI buys credits for you whenever the balance falls below the minimum you set, and a saved instruction such as "ask me before using credits" does not stop it. [Credits on personal plans](https://help.openai.com/en/articles/12642688-using-credits-for-flexible-usage-in-chatgpt-personal-plans)
+
+## What happens when your ChatGPT plan ends
+
+After an ordinary cancellation, paid features stay available until the end of the current billing period; if a refund is granted, access covered by that charge normally ends sooner. You cancel where you subscribed: in ChatGPT under Settings → Billing, or in the Apple or Google store. [Canceling your ChatGPT subscription](https://help.openai.com/en/articles/7232927-canceling-your-chatgpt-subscription)
+
+Three balances behave differently, so check each one in Settings → Usage before the period ends:
+
+- **Included allowance** comes with the plan. OpenAI does not describe any carry-over, so plan on losing what is left when the plan ends.
+- **Purchased credits** keep their 12-month expiry. OpenAI's FAQ for Free and Go accounts says you "may still be able to view and use an existing credit balance," which suggests a balance can outlast the plan. Check your own Usage page rather than assuming it.
+- **Banked resets** carry the expiry date shown next to them in Settings → Usage, and that date is the deadline to redeem one. OpenAI does not extend or replace resets that expire. [How banked Codex resets work](https://help.openai.com/en/articles/20001498-how-banked-codex-resets-work)
 
 ## Keep a long Codex run from stopping at the limit
 

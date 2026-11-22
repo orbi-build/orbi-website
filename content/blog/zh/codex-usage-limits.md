@@ -1,6 +1,7 @@
 ---
 title: Codex 额度怎么查、何时重置、用完了怎么办
 date: 2026-10-17
+updated: 2026-11-23
 summary: Codex 用量限制按套餐分 5 小时窗口和每周窗口。在 Usage 页面和 /status 查剩余额度，弄清额度何时重置，长时间无人值守跑 Codex 时也不被额度卡住。
 lang: zh
 author: Larry 🍀 Orbi
@@ -10,7 +11,7 @@ mirror: codex-usage-limits
 
 Codex 用量限制，指 ChatGPT 套餐里包含的 Codex 额度。大多数套餐用 5 小时窗口、每周窗口或两者同时计量。剩余额度和重置时间在 [Codex 用量页面](https://chatgpt.com/codex/settings/usage)（Settings → Usage）里看，CLI 会话里输入 `/status` 也能看到剩余额度。如果一轮任务进行到一半撞上限额，Codex 会让 agent 继续这一轮的工作，但要受公平使用限制约束。之后有几条路：等重置；账户有可用的重置或 credits 就用掉；或者把 CLI 换成 API 按量计费。
 
-下文每条 OpenAI 的说法都附了官方页面链接，抓取日期都是 2026 年 10 月 17 日。OpenAI 经常调整这些规则，和你自己的 Usage 页面对不上时，以 Usage 页面为准。
+下文每条 OpenAI 的说法都附了官方页面链接。大部分抓取于 2026 年 10 月 17 日；12 月的额度调整、credits 和套餐到期两节，是 2026 年 11 月 23 日核对的。OpenAI 经常调整这些规则，和你自己的 Usage 页面对不上时，以 Usage 页面为准。
 
 ## Codex 用量限制怎么算
 
@@ -29,6 +30,8 @@ Codex 用量限制，指 ChatGPT 套餐里包含的 Codex 额度。大多数套�
 Free 和 Go 用户也能在桌面应用里用 GPT-6 Luna 跑 Codex（逐步开放），额度同样看 Usage 页面。出处：[Codex 定价 FAQ](https://learn.chatgpt.com/docs/pricing#what-are-the-usage-limits-for-my-plan)、[Work 与 Codex 用量管理](https://help.openai.com/en/articles/20001516-managing-usage-with-gpt-6-astra-in-work-and-codex)、[ChatGPT Business 模型与限制](https://help.openai.com/en/articles/12003714-chatgpt-business-models-and-limits)、[ChatGPT Business FAQ](https://help.openai.com/en/articles/8542115-chatgpt-business-general-faq)。
 
 OpenAI 没有给任何套餐公布固定的消息条数，只给了 Plus 和 Business Standard 按模型分的估算范围：GPT-6.1 Sol 每 5 小时 15 到 160 条本地消息，GPT-6 Luna 每 5 小时 350 到 3,000 条。页面写明这些只是估算，不是固定的消息上限。Fast 模式消耗包含额度的速度是标准速度的 2.5 倍，Ultrafast 是 8 倍。[Codex 定价 FAQ](https://learn.chatgpt.com/docs/pricing#what-are-the-usage-limits-for-my-plan)
+
+12 月起规则会变。OpenAI 说，Plus、Pro、Business 套餐的额度将由 ChatGPT 和 Codex 共用，按 token 计量：在 ChatGPT 里跑重活和在 Codex 里跑任务，扣的是同一份余额。Instant 聊天不扣这份额度。届时 Settings → Usage 会显示合并后的剩余额度和重置时间。[ChatGPT 与 Codex 用量限制说明](https://help.openai.com/en/articles/20001625-understanding-chatgpt-and-codex-usage-limits)
 
 ## 怎么查 Codex 剩余额度
 
@@ -57,11 +60,46 @@ OpenAI 建议每一两周看一次用量页面。用量比预想的高，可以�
 
 ### 买 credits 或升级套餐
 
-Plus 和 Pro 用户可以买 credits，在包含额度用完后继续用，不必换套餐；采用弹性计费的 Business、Edu、Enterprise 工作区则购买工作区 credits（[撞上限额后会怎样](https://learn.chatgpt.com/docs/pricing#what-happens-when-you-hit-usage-limits)）。另一条路是换额度更大的套餐，各档对比见 [Pro 套餐说明](https://help.openai.com/en/articles/9793128-about-chatgpt-pro-plans)。
+Plus 和 Pro 用户可以买 credits，在包含额度用完后继续用，不必换套餐（一份 credits 能用多久，见下文 [Codex credits 能用多久](#codex-credits-能用多久)）；采用弹性计费的 Business、Edu、Enterprise 工作区则购买工作区 credits（[撞上限额后会怎样](https://learn.chatgpt.com/docs/pricing#what-happens-when-you-hit-usage-limits)）。另一条路是换额度更大的套餐，各档对比见 [Pro 套餐说明](https://help.openai.com/en/articles/9793128-about-chatgpt-pro-plans)。
 
 ### 看看有没有 Luna Reserve
 
 OpenAI 选定的部分个人 Plus、Pro 账户有 Luna Reserve：常规额度用完后，还有一份单独计限的额度，可以继续用 Luna 模型。常规额度用完时，留意用量提示里有没有 Luna Reserve 的通知或月亮图标；没有出现，你的账户多半不在范围内。[Luna Reserve](https://help.openai.com/en/articles/20001499-luna-reserve-in-codex-and-chatgpt-work)
+
+## Codex credits 能用多久
+
+Usage 页面上那个 credits 数字，和套餐自带的 5 小时、每周额度是两份账。Codex 先扣套餐额度，扣完了才动 credits。买 credits、看余额和最近的消耗，都在 ChatGPT 的 Settings → Usage，或 Codex 应用的 Usage & Billing 里。[个人套餐的 credits 说明](https://help.openai.com/en/articles/12642688-using-credits-for-flexible-usage-in-chatgpt-personal-plans)
+
+一条消息花多少 credits 没有固定数，OpenAI 按模型、按每百万 token 计价，新输入、缓存命中的输入、输出三种 token 分开算。标准速度下的几行：[Token 费率](https://learn.chatgpt.com/docs/pricing)
+
+| 模型 | 输入 | 缓存输入 | 输出 |
+|---|---|---|---|
+| GPT-6.2 Astra | 200 | 10 | 1,000 |
+| GPT-6.1 Sol | 50 | 2.5 | 250 |
+| GPT-6 Luna | 2.5 | 0.25 | 12.5 |
+
+*单位：每百万 token 的 credits，标准速度。*
+
+所以「5 万 credits 能用多久」要先算一个任务花多少。举个例子：一个任务发出 5 万新输入 token、15 万缓存输入 token，拿回 1 万输出 token。用 GPT-6.1 Sol，是 2.5 + 0.375 + 2.5，约 5.4 credits；同一个任务换成 GPT-6 Luna，约 0.29 credits。开 Fast 模式，这几个模型扣 credits 翻倍，Ultrafast 更多。你的任务和例子不会一样，最靠谱的办法是在 Usage 页面看最近几个任务实际花了多少，用余额去除。
+
+买之前先知道四件事：
+
+- **会过期**：credits 自购买起 12 个月过期，没用完不结转；2026 年 11 月 13 日之后在日本购买的，180 天过期。
+- **不退款**：除非法律或合同要求，或属于计费错误这类少数例外。
+- **余额可能变负**：任务开始时余额是正的，跑的过程中其他任务也在扣，结束时可能扣到负数；下次购买先补上负数部分。
+- **不是 API 额度**：它不能付 API key 的费用，也和礼品卡充值的美元钱包是两份钱。
+
+同一账户的 credits 在 Codex、ChatGPT Work、Word、Excel、PowerPoint 之间通用。打开自动充值后，余额低于你设的下限就会自动购买；在 ChatGPT 里存一句「用 credits 前先问我」拦不住它。[个人套餐的 credits 说明](https://help.openai.com/en/articles/12642688-using-credits-for-flexible-usage-in-chatgpt-personal-plans)
+
+## 套餐到期或退订后，额度怎么办
+
+正常退订后，付费功能可以用到当前计费周期结束；如果退了款，退款覆盖的那段权益通常会提前结束。退订要回到当初订阅的地方：网页版在 Settings → Billing，App Store 或 Google Play 订阅的去商店里退。[取消 ChatGPT 订阅](https://help.openai.com/en/articles/7232927-canceling-your-chatgpt-subscription)
+
+到期前，在 Settings → Usage 把三份余额各看一眼，它们的规则不一样：
+
+- **套餐自带额度**：跟着套餐走。OpenAI 没提过可以结转，按到期就没了来打算。
+- **买的 credits**：照旧是购买后 12 个月过期。OpenAI 给 Free 和 Go 用户的说明里写着，即使不能买，仍可能查看和使用已有的 credits 余额，可见余额有可能比套餐活得久。以你自己的 Usage 页面为准，别想当然。
+- **banked reset**：Settings → Usage 里每个重置旁边写着过期时间，那就是兑换截止时间。过期的重置 OpenAI 不补、不延期。[banked reset 说明](https://help.openai.com/en/articles/20001498-how-banked-codex-resets-work)
 
 ## 长时间跑 Codex，怎样不被额度卡住
 
