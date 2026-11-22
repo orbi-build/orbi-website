@@ -1671,6 +1671,23 @@ describe("one unified footer on every content page", () => {
     }
   });
 
+  // Issue #1429: Builtbyindies verifies the badge from the server-rendered
+  // page before it moves Orbi's launch earlier, so the shared badge track
+  // ships the embed once on each language's home page — the link and the image
+  // URL verbatim from the directory's snippet, in the file's own 250x60 box.
+  it("carries the BuiltByIndies badge in the footer, on en and zh (Issue #1429)", () => {
+    const badge = '<a href="https://builtbyindies.com/products/orbi?utm_source=badge&amp;utm_medium=embed&amp;utm_campaign=live" target="_blank" rel="noopener noreferrer">'
+      + '<img src="https://builtbyindies.com/badge/fc534ac5-27de-42de-ad1e-078f3151c36e.svg" alt="BuiltByIndies" width="250" height="60" /></a>';
+    for (const output of ["index.html", "zh/index.html"]) {
+      const footer = footerRegion(shipped.get(output));
+      const occurrences = footer.split(badge).length - 1;
+      expect(occurrences, `${output}: the BuiltByIndies badge must ship exactly once in the footer`)
+        .toBe(1);
+      expect(footerAnchorTag(footer, "https://builtbyindies.com/products/orbi"), `${output}: the badge must stay a crawlable backlink`)
+        .not.toContain("nofollow");
+    }
+  });
+
   it("carries the 11 compare deep dives, in the right language tree", () => {
     for (const page of content()) {
       const footer = footerRegion(shipped.get(page.output));
