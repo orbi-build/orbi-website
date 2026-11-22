@@ -11,7 +11,7 @@ mirror: codex-usage-limits
 
 Codex 用量限制，指 ChatGPT 套餐里包含的 Codex 额度。大多数套餐用 5 小时窗口、每周窗口或两者同时计量。剩余额度和重置时间在 [Codex 用量页面](https://chatgpt.com/codex/settings/usage)（Settings → Usage）里看，CLI 会话里输入 `/status` 也能看到剩余额度。如果一轮任务进行到一半撞上限额，Codex 会让 agent 继续这一轮的工作，但要受公平使用限制约束。之后有几条路：等重置；账户有可用的重置或 credits 就用掉；或者把 CLI 换成 API 按量计费。
 
-下文每条 OpenAI 的说法都附了官方页面链接。大部分抓取于 2026 年 10 月 17 日；12 月的额度调整、credits 和套餐到期两节，是 2026 年 11 月 23 日核对的。OpenAI 经常调整这些规则，和你自己的 Usage 页面对不上时，以 Usage 页面为准。
+下文每条 OpenAI 的说法都附了官方页面链接。大部分抓取于 2026 年 10 月 17 日；2026 年 12 月的额度调整、credits 和套餐到期两节，是 2026 年 11 月 23 日核对的。OpenAI 经常调整这些规则，和你自己的 Usage 页面对不上时，以 Usage 页面为准。
 
 ## Codex 用量限制怎么算
 
@@ -31,7 +31,7 @@ Free 和 Go 用户也能在桌面应用里用 GPT-6 Luna 跑 Codex（逐步开�
 
 OpenAI 没有给任何套餐公布固定的消息条数，只给了 Plus 和 Business Standard 按模型分的估算范围：GPT-6.1 Sol 每 5 小时 15 到 160 条本地消息，GPT-6 Luna 每 5 小时 350 到 3,000 条。页面写明这些只是估算，不是固定的消息上限。Fast 模式消耗包含额度的速度是标准速度的 2.5 倍，Ultrafast 是 8 倍。[Codex 定价 FAQ](https://learn.chatgpt.com/docs/pricing#what-are-the-usage-limits-for-my-plan)
 
-12 月起规则会变。OpenAI 说，Plus、Pro、Business 套餐的额度将由 ChatGPT 和 Codex 共用，按 token 计量：在 ChatGPT 里跑重活和在 Codex 里跑任务，扣的是同一份余额。Instant 聊天不扣这份额度。届时 Settings → Usage 会显示合并后的剩余额度和重置时间。[ChatGPT 与 Codex 用量限制说明](https://help.openai.com/en/articles/20001625-understanding-chatgpt-and-codex-usage-limits)
+2026 年 12 月起规则会变。OpenAI 说，Plus、Pro、Business 套餐的额度将由 ChatGPT 和 Codex 共用，按 token 计量：在 ChatGPT 里跑重活和在 Codex 里跑任务，扣的是同一份余额。Instant 聊天不扣这份额度。届时 Settings → Usage 会显示合并后的剩余额度和重置时间；用完之后的出路不变：等重置、升级套餐，或者买 credits。[ChatGPT 与 Codex 用量限制说明](https://help.openai.com/en/articles/20001625-understanding-chatgpt-and-codex-usage-limits)
 
 ## 怎么查 Codex 剩余额度
 
@@ -80,7 +80,7 @@ Usage 页面上那个 credits 数字，和套餐自带的 5 小时、每周额�
 
 *单位：每百万 token 的 credits，标准速度。*
 
-所以「几万 credits 能用多久」要先算一个任务花多少。举个例子：一个任务发出 5 万新输入 token、15 万缓存输入 token，拿回 1 万输出 token。用 GPT-6.1 Sol，是 2.5 + 0.375 + 2.5，约 5.4 credits；同一个任务换成 GPT-6 Luna，约 0.29 credits。开 Fast 模式，这几个模型扣 credits 翻倍；Ultrafast（GPT-6.1 Sol 有，Luna 没有）扣得更多。按这个例子算，1000 credits 在 GPT-6.1 Sol 上大约够 186 个这样的任务，在 GPT-6 Luna 上大约 3,480 个。至于 1000 credits 要花多少钱，OpenAI 没公布统一单价，价格和折扣看套餐，结账页付款前会显示。你的任务和例子不会一样，最靠谱的办法是在 Usage 页面看最近几个任务实际花了多少，用余额去除。
+所以「几万 credits 能用多久」要先算一个任务花多少。举个例子：一个任务发出 5 万新输入 token、15 万缓存输入 token，拿回 1 万输出 token。用 GPT-6.1 Sol，是 2.5 + 0.375 + 2.5，约 5.4 credits；同一个任务换成 GPT-6 Luna，约 0.29 credits。用 credits 付费时，Fast 模式在这几个模型上扣得翻倍（扣套餐额度时是前面说的 2.5 倍）；Ultrafast（GPT-6.1 Sol 有，Luna 没有）扣得更多。按这个例子算，1000 credits 在 GPT-6.1 Sol 上大约够 186 个这样的任务，在 GPT-6 Luna 上大约 3,480 个。至于 1000 credits 要花多少钱，OpenAI 没公布统一单价，价格和折扣看套餐，结账页付款前会显示。你的任务和例子不会一样，最靠谱的办法是在 Usage 页面看最近几个任务实际花了多少，用余额去除。
 
 买之前先知道四件事：
 
@@ -93,7 +93,7 @@ Usage 页面上那个 credits 数字，和套餐自带的 5 小时、每周额�
 
 ## 套餐到期或退订后，额度怎么办
 
-正常退订后，付费功能可以用到当前计费周期结束；如果退了款，退款覆盖的那段权益通常会提前结束。退订要回到当初订阅的地方：网页版在 Settings → Billing，App Store 或 Google Play 订阅的去商店里退。[取消 ChatGPT 订阅](https://help.openai.com/en/articles/7232927-canceling-your-chatgpt-subscription)
+正常退订后，付费功能可以用到当前计费周期结束；如果 OpenAI 退还了最后那笔费用，它对应的权益通常会提前结束。退订要回到当初订阅的地方：网页版在 Settings → Billing，App Store 或 Google Play 订阅的去商店里退。[取消 ChatGPT 订阅](https://help.openai.com/en/articles/7232927-canceling-your-chatgpt-subscription)
 
 到期前，在 Settings → Usage 把三份余额各看一眼，它们的规则不一样：
 

@@ -10,25 +10,25 @@ image: /img/blog-claude-actions-card.png
 
 把 Claude Code 接进 GitHub Actions，或者写个循环让它自己跑，并不难。难的是它跑完以后：PR 在那里，测试是绿的，代码和评审都来自它，合并按钮该由谁来按。
 
-我这边现在的答案是没有人按。一个月 431 个 PR 合进主干，416 张 Issue 走完全流程，发了 40 个版本。代码我基本不读。
+这篇 2026 年 9 月首发时，我这边的答案是没有人按：发文前一个月，431 个 PR 合进主干，416 张 Issue 走完全流程，发了 40 个版本。代码我基本不读。
 
 听起来像在赌。要让这件事站得住，流程里得补上几道具体的检查。
 
-## 模型不是瓶颈
+## 谁来判断一个 PR 可以合并
 
 大家担心的是模型写错。这确实会发生，测试能拦住大部分。真正贵的是另一种：判断「这东西可以合了」的，还是写它的那个会话；或者是一个三周前就不再认真看了的人。
 
 所以第一条：评审的不能是写代码的那一个。同一个会话里换个 prompt 再跑一遍不算，得另起一个进程、全新上下文、等 PR 建好之后读冻结的 diff。它不知道实现时在想什么。我一开始觉得这是缺点，后来发现正好：一段代码要是非得知道作者当时怎么想才看得懂，那它还没写完。
 
-评审发现问题可以自己改、推到同一个分支，然后对新的 head 重新出结论。带着问题结束的那一轮不叫合并，叫下一轮。轮次上限是五轮，用完还没过就停下来等人，不会含糊过去。
+评审发现问题可以自己改、推到同一个分支，然后对新的 head 重新出结论。这一轮如果还留着问题，就不合并，进入下一轮。轮次上限是五轮，用完还没过就停下来等人，不会含糊过去。
 
 ## 合并的瞬间重查三个条件
 
 光有评审结论不够，因为评审和合并之间隔着时间。合并前对着远端重新查三件事：
 
-- **CI 是绿的**，而且是评审过的那个 head 上的绿。
-- **head 没动过**。评审之后有人推了东西，这个结论就作废。
-- **base 是最新的**。PR 必须包含最新的 main，用普通 merge 吸收，不用 rebase，因为 rebase 会改写被评审过的那些提交。
+- CI 是绿的，而且是评审过的那个 head 上的绿。
+- head 没动过。评审之后有人推了东西，这个结论就作废。
+- base 是最新的。PR 必须包含最新的 main，用普通 merge 合进 PR 分支（最后合入 main 时再 squash），不用 rebase，因为 rebase 会改写被评审过的那些提交。
 
 落到命令上就是一行，关键在那个 pin：
 
@@ -38,7 +38,7 @@ gh pr merge "$PR" --squash --match-head-commit "$REVIEWED_HEAD"
 
 评审之后远端的 head 要是动过，这条命令直接失败，而不是把没人看过的东西合进去。三条都过，才按评审过的那个 commit 合进去。任何一条不过，票要么等下一跳，要么停下来等人。没有一条路径是「看起来没问题」就合的。
 
-这三条本身很普通，任何团队在代码评审时都会念叨。区别只在于它们是状态机里的三行代码，不是某个人脑子里的三个习惯，所以第九十个 PR 在凌晨三点也照样生效。
+这三条本身很普通，任何团队在代码评审时都会念叨。区别是它们写在状态机里自动检查，不靠人记得，所以凌晨三点的第九十个 PR 也照样检查。
 
 ## 为什么 GitHub 不让你批准自己的 PR
 
@@ -46,9 +46,9 @@ GitHub 从另一头执行同一条规则。它的文档写得很直白：PR 的�
 
 代码换成 agent 写以后，这条规则落在谁头上，要看 agent 用什么身份连 GitHub：
 
-- **agent 用你的 token 推代码、开 PR**：GitHub 认为作者是你，你批不了，得由仓库里的另一个人批。
-- **你把 Issue 指派给 Copilot**：GitHub 文档另外写明，你指派的 Issue 由 Copilot 开出的 PR，你也不能批准。
-- **Copilot 用它自己的应用身份开 PR**，不代表任何一个人（比如在 Slack 或 Teams 的群聊里让它干活）：规则集对这类 PR 默认多要求一个批准，这个功能还在公开预览阶段。[规则集可用的规则](https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-rulesets/available-rules-for-rulesets)
+- agent 用你的 token 推代码、开 PR：GitHub 认为作者是你，你批不了，得由仓库里的另一个人批。
+- 你把 Issue 指派给 Copilot：GitHub 文档另外写明，你指派的 Issue 由 Copilot 开出的 PR，你也不能批准。
+- Copilot 用它自己的应用身份开 PR，不代表任何一个人（比如在 Slack 或 Teams 的群聊里让它干活）：规则集对这类 PR 默认多要求一个批准，这个功能还在公开预览阶段。[规则集可用的规则](https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-rulesets/available-rules-for-rulesets)
 
 还有两项设置决定谁能合并。打开「Require approval of the most recent reviewable push」后，批准必须来自最后一次推送者以外的人，所以评审方往分支上推了修复，就批不了自己的修复。另外，经典分支保护默认不约束仓库管理员，除非打开「Do not allow bypassing the above settings」，否则管理员不需要批准也能合并。[关于受保护分支](https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-protected-branches/about-protected-branches)
 
@@ -66,9 +66,9 @@ Orbi 照这条规则办，不绕开它。它的评审是独立会话，但开 PR
 
 不用换掉现在用的东西。Claude Code 是执行层，缺的是做决定那一层。按收益排，加三样：
 
-1. **评审换一个会话**，读冻结的 diff，有权判交付失败。
-2. **合并前重查 CI、head、base**，不信任十分钟前的结论。
-3. **发版走确定性流程**，别让模型决定「应该可以发了吧」。
+1. 评审换一个会话，读冻结的 diff，有权判交付失败。
+2. 合并前重查 CI、head、base，不信任十分钟前的结论。
+3. 发版走确定性流程，别让模型决定「应该可以发了吧」。
 
 [Orbi](https://github.com/orbi-build/orbi) 就是我按这三条做的实现，开源（AGPL-3.0），可以自己部署，而且它在自己身上跑：上面那 431 个 PR 全是公开的，每一轮评审结论也都在 Issue 的评论里，随便点开一张看。它跑在 Pi 上，模型用你自己的：任何 OpenAI 兼容的接口，或者 Codex 订阅。它不能拿 Claude Code 当引擎。
 

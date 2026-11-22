@@ -11,7 +11,7 @@ mirror: codex-usage-limits
 
 Codex usage limits are the allowance included with your ChatGPT plan. On most plans it is measured in a five-hour window, a weekly window, or both. Your remaining balance and reset times are on the [Codex usage dashboard](https://chatgpt.com/codex/settings/usage) (Settings → Usage), and `/status` shows your remaining limits inside a CLI session. If you hit a limit mid-turn, Codex lets the agent keep working on that turn, subject to fair-use limits. After that you wait for the reset, use a reset or credits if your account has them, or switch the CLI to API billing.
 
-Every OpenAI fact below links to the official page it comes from. Most were retrieved on 17 October 2026; the December change, the credits section and the plan-end section were checked on 23 November 2026. OpenAI changes these terms often, so your own Usage page wins whenever it disagrees with this post.
+Every OpenAI fact below links to the official page it comes from. Most were retrieved on 17 October 2026; the December 2026 change, the credits section and the plan-end section were checked on 23 November 2026. OpenAI changes these terms often, so your own Usage page wins whenever it disagrees with this post.
 
 ## How Codex usage limits work
 
@@ -31,7 +31,7 @@ Free and Go also include Codex, on GPT-6 Luna in the desktop app (subject to rol
 
 OpenAI does not publish a fixed message count for any plan. Its estimate table for Plus and Business Standard gives a range per model instead: 15 to 160 local messages per five hours on GPT-6.1 Sol, and 350 to 3,000 on GPT-6 Luna. The page calls these estimates, "not fixed message limits." Fast mode spends included usage at 2.5 times the rate of Standard speed, and Ultrafast at 8 times. [Codex pricing FAQ](https://learn.chatgpt.com/docs/pricing#what-are-the-usage-limits-for-my-plan)
 
-A change is coming in December. OpenAI says that from then on, the allowance on Plus, Pro and Business plans "will be shared across ChatGPT and Codex" and measured in tokens, so heavy agent work in ChatGPT and in Codex will draw on one balance. Instant chat will not draw from it. Settings → Usage will show the combined remaining usage and reset times. [Understanding ChatGPT and Codex usage limits](https://help.openai.com/en/articles/20001625-understanding-chatgpt-and-codex-usage-limits)
+A change is coming in December 2026. OpenAI says that from then on, the allowance on Plus, Pro and Business plans "will be shared across ChatGPT and Codex" and measured in tokens, so heavy agent work in ChatGPT and in Codex will draw on one balance. Instant chat will not draw from it. Settings → Usage will show the combined remaining usage and reset times, and once it runs out the options stay the same: wait for the reset, upgrade, or buy credits. [Understanding ChatGPT and Codex usage limits](https://help.openai.com/en/articles/20001625-understanding-chatgpt-and-codex-usage-limits)
 
 ## How to check your Codex usage limit
 
@@ -80,7 +80,7 @@ There is no fixed number of credits per message. OpenAI prices credits per milli
 
 *Credits per 1 million tokens, Standard speed.*
 
-To turn a balance into a number of tasks, price one task. Say a task sends 50,000 fresh input tokens, 150,000 cached input tokens and gets 10,000 output tokens back. On GPT-6.1 Sol that costs 2.5 + 0.375 + 2.5, about 5.4 credits. The same task on GPT-6 Luna costs about 0.29 credits. Fast mode doubles the credit cost on these models, and Ultrafast (offered on GPT-6.1 Sol, not Luna) costs more again. At those example rates, 1,000 credits cover about 186 such tasks on GPT-6.1 Sol, or about 3,480 on GPT-6 Luna. OpenAI does not publish a single price per credit; purchase prices and discounts depend on your plan, and checkout shows the price before you pay. Your own tasks will differ from this example, so take the per-task figure from your recent usage on the Usage page and divide your balance by it.
+To turn a balance into a number of tasks, price one task. Say a task sends 50,000 fresh input tokens, 150,000 cached input tokens and gets 10,000 output tokens back. On GPT-6.1 Sol that costs 2.5 + 0.375 + 2.5, about 5.4 credits. The same task on GPT-6 Luna costs about 0.29 credits. Paid from credits, Fast mode doubles the cost on these models (against included usage it counts 2.5 times, as noted earlier), and Ultrafast (offered on GPT-6.1 Sol, not Luna) costs more again. At those example rates, 1,000 credits cover about 186 such tasks on GPT-6.1 Sol, or about 3,480 on GPT-6 Luna. OpenAI does not publish a single price per credit; purchase prices and discounts depend on your plan, and checkout shows the price before you pay. Your own tasks will differ from this example, so take the per-task figure from your recent usage on the Usage page and divide your balance by it.
 
 Four rules worth knowing before you buy:
 
@@ -93,7 +93,7 @@ Credits work across Codex, ChatGPT Work, Word, Excel and PowerPoint on the same 
 
 ## What happens when your ChatGPT plan ends
 
-After an ordinary cancellation, paid features stay available until the end of the current billing period; if a refund is granted, access covered by that charge normally ends sooner. You cancel where you subscribed: in ChatGPT under Settings → Billing, or in the Apple or Google store. [Canceling your ChatGPT subscription](https://help.openai.com/en/articles/7232927-canceling-your-chatgpt-subscription)
+After an ordinary cancellation, paid features stay available until the end of the current billing period; if OpenAI refunds that last charge, the access it paid for normally ends earlier. You cancel where you subscribed: in ChatGPT under Settings → Billing, or in the Apple or Google store. [Canceling your ChatGPT subscription](https://help.openai.com/en/articles/7232927-canceling-your-chatgpt-subscription)
 
 Three balances behave differently, so check each one in Settings → Usage before the period ends:
 
