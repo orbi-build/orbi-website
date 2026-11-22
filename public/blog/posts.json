@@ -418,7 +418,7 @@
   {
     "slug": "claude-code-github-actions-who-merges",
     "title": "Claude Code in Actions: who presses merge?",
-    "summary": "Claude Code Action can implement and review pull requests in your runner. It stops before merge and release. Here is the evidence-backed layer for both.",
+    "summary": "Claude Code Action implements and reviews pull requests in your runner but stops before merge and release. These are the gates I added to close that gap.",
     "zhSlug": "claude-code-github-actions-who-merges",
     "zhTitle": "Claude Code 跑完之后，谁来合并 PR",
     "related": []
