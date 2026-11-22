@@ -374,7 +374,7 @@
       <link>https://orbi.build/blog/claude-code-github-actions-who-merges/</link>
       <guid isPermaLink="true">https://orbi.build/blog/claude-code-github-actions-who-merges/</guid>
       <pubDate>Sat, 19 Sep 2026 00:00:00 GMT</pubDate>
-      <description>Claude Code Action can implement and review pull requests in your runner. It stops before merge and release. Here is the evidence-backed layer for both.</description>
+      <description>Claude Code Action implements and reviews pull requests in your runner but stops before merge and release. These are the gates I added to close that gap.</description>
     </item>
     <item>
       <title>The Docker image made it out on try three</title>
