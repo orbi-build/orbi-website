@@ -1,6 +1,7 @@
 ---
 title: Claude Code 跑完之后，谁来合并 PR
 date: 2026-09-19
+updated: 2026-11-23
 summary: Claude Code 会写代码、评审 PR，却不会替你合并或发版。从 431 个已合并 PR 的记录看，独立评审、合并门禁和发版流程怎样补上剩余链路。
 lang: zh
 author: Larry 🍀 Orbi
@@ -38,6 +39,20 @@ gh pr merge "$PR" --squash --match-head-commit "$REVIEWED_HEAD"
 评审之后远端的 head 要是动过，这条命令直接失败，而不是把没人看过的东西合进去。三条都过，才按评审过的那个 commit 合进去。任何一条不过，票要么等下一跳，要么停下来等人。没有一条路径是「看起来没问题」就合的。
 
 这三条本身很普通，任何团队在代码评审时都会念叨。区别只在于它们是状态机里的三行代码，不是某个人脑子里的三个习惯，所以第九十个 PR 在凌晨三点也照样生效。
+
+## 为什么 GitHub 不让你批准自己的 PR
+
+GitHub 从另一头执行同一条规则。它的文档写得很直白：PR 的作者不能批准自己的 PR。仓库要求至少一个批准时，这个批准只能来自别人；能绕过去的只有管理员豁免，下面会说。[用必需审查批准 PR](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/reviewing-changes-in-pull-requests/approving-a-pull-request-with-required-reviews)
+
+代码换成 agent 写以后，这条规则落在谁头上，要看 agent 用什么身份连 GitHub：
+
+- **agent 用你的 token 推代码、开 PR**：GitHub 认为作者是你，你批不了，得由仓库里的另一个人批。
+- **你把 Issue 指派给 Copilot**：GitHub 文档另外写明，你指派的 Issue 由 Copilot 开出的 PR，你也不能批准。
+- **Copilot 用它自己的应用身份开 PR**，不代表任何一个人（比如在 Slack 或 Teams 的群聊里让它干活）：规则集对这类 PR 默认多要求一个批准，这个功能还在公开预览阶段。[规则集可用的规则](https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-rulesets/available-rules-for-rulesets)
+
+还有两项设置决定谁能合并。打开「Require approval of the most recent reviewable push」后，批准必须来自最后一次推送者以外的人，所以评审方往分支上推了修复，就批不了自己的修复。另外，经典分支保护默认不约束仓库管理员，除非打开「Do not allow bypassing the above settings」，否则管理员不需要批准也能合并。[关于受保护分支](https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-protected-branches/about-protected-branches)
+
+Orbi 照这条规则办，不绕开它。它的评审是独立会话，但开 PR 和合并用的是同一个 GitHub 身份，由 Orbi 来批准就等于作者批准自己。目标分支要求至少一个批准时，GitHub 会拒绝 Orbi 的合并。Orbi 随后读取导致拒绝的分支保护设置，把 Issue 转到 `ai-awaiting-merge`，在评论里写明 PR 的 head 和唯一需要做的那一步，比如加一个别的批准人。有人批准之后，等到队列里没有别的活的那一轮，Orbi 自己合并。这个等待状态的前提是 token 能读到分支保护设置；读不到的话，交付会停在 `ai-blocked`，报一行 `merge_gate: UNKNOWN`，要求授予仓库管理权限。想在交付走到合并之前就看到这项检查，运行 `orbi doctor`，它会给每个源仓库打出同样的 `merge_gate:` 结果。我自己的仓库去掉了必需批准这条规则，用上面三个条件代替它；想让每次合并都有人过目的团队，保留这条规则，Orbi 就等那个人来批。
 
 ## 人还剩下什么活
 
