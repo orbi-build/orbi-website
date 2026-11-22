@@ -80,7 +80,7 @@ Usage 页面上那个 credits 数字，和套餐自带的 5 小时、每周额�
 
 *单位：每百万 token 的 credits，标准速度。*
 
-所以「5 万 credits 能用多久」要先算一个任务花多少。举个例子：一个任务发出 5 万新输入 token、15 万缓存输入 token，拿回 1 万输出 token。用 GPT-6.1 Sol，是 2.5 + 0.375 + 2.5，约 5.4 credits；同一个任务换成 GPT-6 Luna，约 0.29 credits。开 Fast 模式，这几个模型扣 credits 翻倍，Ultrafast 更多。你的任务和例子不会一样，最靠谱的办法是在 Usage 页面看最近几个任务实际花了多少，用余额去除。
+所以「5 万 credits 能用多久」要先算一个任务花多少。举个例子：一个任务发出 5 万新输入 token、15 万缓存输入 token，拿回 1 万输出 token。用 GPT-6.1 Sol，是 2.5 + 0.375 + 2.5，约 5.4 credits；同一个任务换成 GPT-6 Luna，约 0.29 credits。开 Fast 模式，这几个模型扣 credits 翻倍；Ultrafast（GPT-6.1 Sol 有，Luna 没有）扣得更多。按这个例子算，1000 credits 在 GPT-6.1 Sol 上大约够 186 个这样的任务，在 GPT-6 Luna 上大约 3,480 个。至于 1000 credits 要花多少钱，OpenAI 没公布统一单价，价格和折扣看套餐，结账页付款前会显示。你的任务和例子不会一样，最靠谱的办法是在 Usage 页面看最近几个任务实际花了多少，用余额去除。
 
 买之前先知道四件事：
 
@@ -89,7 +89,7 @@ Usage 页面上那个 credits 数字，和套餐自带的 5 小时、每周额�
 - **余额可能变负**：任务开始时余额是正的，跑的过程中其他任务也在扣，结束时可能扣到负数；下次购买先补上负数部分。
 - **不是 API 额度**：它不能付 API key 的费用，也和礼品卡充值的美元钱包是两份钱。
 
-同一账户的 credits 在 Codex、ChatGPT Work、Word、Excel、PowerPoint 之间通用。打开自动充值后，余额低于你设的下限就会自动购买；在 ChatGPT 里存一句「用 credits 前先问我」拦不住它。[个人套餐的 credits 说明](https://help.openai.com/en/articles/12642688-using-credits-for-flexible-usage-in-chatgpt-personal-plans)
+同一账户的 credits 在 Codex、ChatGPT Work、Word、Excel、PowerPoint 之间通用。在 ChatGPT 里存一句「用 credits 前先问我」不会多出一道确认：套餐额度用完后，已有的 credits 会被直接扣用。如果还打开了自动充值，余额低于你设的下限时会自动再买。[个人套餐的 credits 说明](https://help.openai.com/en/articles/12642688-using-credits-for-flexible-usage-in-chatgpt-personal-plans)
 
 ## 套餐到期或退订后，额度怎么办
 

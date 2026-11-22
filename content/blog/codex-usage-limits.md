@@ -80,7 +80,7 @@ There is no fixed number of credits per message. OpenAI prices credits per milli
 
 *Credits per 1 million tokens, Standard speed.*
 
-To turn a balance into a number of tasks, price one task. Say a task sends 50,000 fresh input tokens, 150,000 cached input tokens and gets 10,000 output tokens back. On GPT-6.1 Sol that costs 2.5 + 0.375 + 2.5, about 5.4 credits. The same task on GPT-6 Luna costs about 0.29 credits. Fast mode doubles what credits pay for these models, and Ultrafast costs more again. Your own tasks will differ from this example, so take the per-task figure from your recent usage on the Usage page and divide your balance by it.
+To turn a balance into a number of tasks, price one task. Say a task sends 50,000 fresh input tokens, 150,000 cached input tokens and gets 10,000 output tokens back. On GPT-6.1 Sol that costs 2.5 + 0.375 + 2.5, about 5.4 credits. The same task on GPT-6 Luna costs about 0.29 credits. Fast mode doubles the credit cost on these models, and Ultrafast (offered on GPT-6.1 Sol, not Luna) costs more again. At those example rates, 1,000 credits cover about 186 such tasks on GPT-6.1 Sol, or about 3,480 on GPT-6 Luna. OpenAI does not publish a single price per credit; purchase prices and discounts depend on your plan, and checkout shows the price before you pay. Your own tasks will differ from this example, so take the per-task figure from your recent usage on the Usage page and divide your balance by it.
 
 Four rules worth knowing before you buy:
 
@@ -89,7 +89,7 @@ Four rules worth knowing before you buy:
 - **The balance can go negative.** A task that starts with a positive balance can finish below zero if other usage drains it at the same time; the next purchase pays that off first.
 - **They are not API credits.** They do not pay for API-key usage, and they are a separate balance from the US-dollar ChatGPT wallet that gift cards top up.
 
-Credits work across Codex, ChatGPT Work, Word, Excel and PowerPoint on the same account. If you turn on automatic reload, OpenAI buys credits for you whenever the balance falls below the minimum you set, and a saved instruction such as "ask me before using credits" does not stop it. [Credits on personal plans](https://help.openai.com/en/articles/12642688-using-credits-for-flexible-usage-in-chatgpt-personal-plans)
+Credits work across Codex, ChatGPT Work, Word, Excel and PowerPoint on the same account. A saved instruction such as "ask me before using credits" does not add an approval step: once the included allowance is used up, Codex spends available credits automatically. If you also turn on automatic reload, OpenAI buys more whenever the balance falls below the minimum you set. [Credits on personal plans](https://help.openai.com/en/articles/12642688-using-credits-for-flexible-usage-in-chatgpt-personal-plans)
 
 ## What happens when your ChatGPT plan ends
 
