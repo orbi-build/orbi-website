@@ -5,6 +5,7 @@ summary: Same model, same task: omp used 3.9× Pi's tokens but cost 1.2× at Dee
 lang: en
 author: Larry 🍀 Orbi
 image: /img/blog-pi-vs-omp-card.png
+mirror: pi-vs-oh-my-pi
 series: pi
 ---
 

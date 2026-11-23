@@ -258,6 +258,8 @@ feed of the English posts: https://orbi.build/blog/feed.xml
 
 - Pi vs omp (Oh My Pi): same model, run unattended (English):
   https://orbi.build/blog/pi-vs-oh-my-pi/
+- Pi vs omp（Oh My Pi）：同一模型，无人值守实测 (Chinese):
+  https://orbi.build/zh/blog/pi-vs-oh-my-pi/
 - Make AI agents test behavior, not implementation (English):
   https://orbi.build/blog/ai-generated-tests/
 - Orbi weekly #7: 14-day trial, hand-back, Prioritize (English):
