@@ -378,6 +378,13 @@ export const BADGE_PLACEHOLDER_SIZES = [
   // bytes, width/height and viewBox 0 0 250 60; the official vendor snippet
   // declares height 60 and the same file, Issue #1429).
   { host: "builtbyindies.com", width: 250, height: 60 },
+  // 2026-11-22 LaunchOnIt featured badge, measured on the live URL:
+  // /api/badge/orbi?theme=light&size=md&type=featured 151x48 (SVG, 2210 bytes,
+  // width/height and role="img"; the official vendor snippet declares no box,
+  // so the source file decides the placeholder). The listing
+  // /products/orbi answers 200 and is expected to go dofollow after the
+  // crawler finds this badge (Issue #1435).
+  { host: "launchon.it", width: 151, height: 48 },
 ];
 const FALLBACK_PLACEHOLDER_SIZE = { width: 1, height: 1 };
 
