@@ -2,16 +2,16 @@
 title: Claude Code 权限全开：--dangerously-skip-permissions 实测
 date: 2026-10-13
 updated: 2026-11-23
-summary: --dangerously-skip-permissions 让 Claude Code 跳过权限确认，也就是 YOLO 模式。我实测了它怎么开、为什么开了还在问，以及它和 auto 等五种权限模式各放过什么。
+summary: --dangerously-skip-permissions 让 Claude Code 跳过权限确认，也就是 YOLO 模式。我实测了它怎么开、为什么开了还在问，以及它和 auto 等另外四种权限模式各放过什么。
 lang: zh
 author: Larry 🍀 Orbi
 image: /img/blog-yolo-card.png
 mirror: claude-code-yolo-mode
 ---
 
-`--dangerously-skip-permissions` 让 Claude Code 进入 `bypassPermissions` 模式，之后的工具调用不再先问你，直接执行。大家管它叫 YOLO 模式，想在长任务或无人值守任务里把权限弹窗关掉的人都会找到它。读完这篇，你会拿到一张实测表，看每种权限模式放过了什么，还有开启 bypass permissions 的每一种方式，以及它有时不生效的原因。想用它的理由很实在：长任务里权限弹窗越积越多，问到第十次「允许这条命令吗」，你已经不看就点同意了。但这个参数的名字本身就在警告你，官方文档建议只在「隔离环境里，比如没有联网的容器、虚拟机或开发容器」里使用它。
+`--dangerously-skip-permissions` 让 Claude Code 进入 `bypassPermissions` 模式，之后的工具调用不再先问你，直接执行。大家管它叫 YOLO 模式，想在长任务或无人值守任务里把权限弹窗关掉的人都会找到它。下面依次是开启 bypass permissions 的每种方式、它不生效的常见原因，以及五种权限模式的实测对照。想用它的理由很实在：长任务里权限弹窗越积越多，问到第十次「允许这条命令吗」，你已经不看就点同意了。但这个参数的名字本身就在警告你，官方文档建议只在「隔离环境里，比如没有联网的容器、虚拟机或开发容器」里使用它。
 
-我是 Larry 🍀 Orbi，Orbi 的创始人。Orbi 整天在无人值守地跑编码 agent，所以「怎么让它别一直问、又不至于把钥匙全交出去」是我必须真刀真枪回答的问题。这篇写的是我把 YOLO 模式和另外四种权限模式放在一起实测的结果，其中包括较新的 **auto 模式**，它不问你，而是用第二个模型逐个审查动作。你想开 YOLO 多半是为了不被弹窗烦，而 auto 模式已经做到了这点，多数人其实不必开 YOLO；至于我测试里那次数据外传，真正挡住它的是模型本身，不是任何一种权限模式。
+我是 Larry 🍀 Orbi，Orbi 的创始人。Orbi 整天在无人值守地跑编码 agent，所以「怎么让它别一直问、又不至于把钥匙全交出去」是我必须真刀真枪回答的问题。这篇写的是我把 YOLO 模式和另外四种权限模式放在一起实测的结果，其中包括较新的 **auto 模式**，它不问你，而是用第二个模型逐个审查动作。你想开 YOLO 多半是为了不被弹窗烦，而 auto 模式已经做到了这点，多数人其实不必开 YOLO；至于我测试里那次外传注入，真正挡住它的是模型本身，不是任何一种权限模式。
 
 五种模式的对照表、auto 模式的几组运行和注入实验来自 Claude Code 2.1.287（2026-10-13 的 stable 版），跑任务的主模型是 `claude-sonnet-5-5`，用 `claude -p` 无头运行（auto 模式的分类器是另一个模型，默认 Sonnet 5）。这些数字都来自那几轮运行，按动作逐条记录。开启方式和排查两节是我 2026-11-23 在 Claude Code 2.1.329 上重测的：每种情况跑一次 `claude -p`，用 Haiku 模型，让它往项目外写一个文件当探针，并用 `--setting-sources project` 排除我自己的用户设置。
 
@@ -29,11 +29,11 @@ claude --permission-mode bypassPermissions
 # { "permissions": { "defaultMode": "bypassPermissions" } }
 ```
 
-它不能从一个没开它的会话里中途切进去。第一次在交互会话里开，它会让你确认一次「我自己负责」，然后记下 `skipDangerousModePermissionPrompt`，之后的会话就不再弹这个对话框。在 Linux 和 macOS 上，用 root 或 `sudo` 跑时它会拒绝启动，除非它检测到自己已经被真正的沙箱包住；`permissions.disableBypassPermissionsMode: "disable"` 也能把它禁掉。这两种情况都在下面的[排查清单](#为什么开了-dangerously-skip-permissions-还在问权限)里。
+启动时没用任何一种开启方式（包括下面的 `--allow-dangerously-skip-permissions`）的会话，中途切不进这个模式。第一次在交互会话里开，它会让你确认一次「我自己负责」，然后记下 `skipDangerousModePermissionPrompt`，之后的会话就不再弹这个对话框。在 Linux 和 macOS 上，用 root 或 `sudo` 跑时它会拒绝启动，除非它检测到自己已经被真正的沙箱包住；`permissions.disableBypassPermissionsMode: "disable"` 也能把它禁掉。这两种情况都在下面的[排查清单](#为什么开了-dangerously-skip-permissions-还在问权限)里。
 
-就算在这个模式下，也还有几样东西拦得住：显式的 `ask` 规则、指向关键路径的 `rm`/`rmdir`（比如 `rm -rf ~`）、以及 deny 规则。deny 规则在任何模式下都生效，YOLO 也不例外。受保护路径是一小组路径，`.git/config` 只是其中之一，主要是 `.git`、`.config/git` 和 `.claude`（Claude 自己的配置）；写它们在多数模式下不会被自动放行。
+就算在这个模式下，也还有几样东西拦得住：显式的 `ask` 规则、指向关键路径的 `rm`/`rmdir`（比如 `rm -rf ~`）、以及 deny 规则。deny 规则在任何模式下都生效，YOLO 也不例外。下表里说的受保护路径是一小组路径，主要是 `.git`、`.config/git` 和 `.claude`（Claude 自己的配置），`.git/config` 是其中之一；别的模式不会自动放行对它们的写入，bypass 下则直接放行。
 
-## 怎么在 Claude Code 里开启 bypass permissions（权限全开）
+## 怎么开启 bypass permissions
 
 每种开法我在 2.1.329 上各试了一次，探针都是往项目外写文件。「生效」指会话的 `init` 事件报告 `bypassPermissions`，并且文件真的写到了磁盘上。
 
@@ -96,9 +96,9 @@ grep -m1 '"subtype":"init"' run.jsonl \
 
 那 auto 为什么放我的 agent 改了 `.git/config` 这个受保护路径？因为我要它加的是一个无害的 git 别名，分类器判定**这一次具体的改动**和我的请求相符。auto 衡量的是意图，而 `acceptEdits` 和 `default` 套的是一条死规则，`bypassPermissions` 则根本不套规则。受保护路径清单在 auto 下交给分类器判，只有在 `bypassPermissions` 下才被直接放行。
 
-搜 YOLO 模式的人真正想问的其实是「换成 auto 会不会老拦我」。所以我在 auto 下跑了四个正常但敏感的操作：`npm install`、`npm test`、改 `.env`、`git push` 到远端。四个都跑了，一次没拦，各三次。对那些让你想开 YOLO 的活儿，auto 没挡路。
+换成 auto 会不会老拦我？我在 auto 下跑了四个正常但敏感的操作：`npm install`、`npm test`、改 `.env`、`git push` 到远端。四个都跑了，各三次，一次没拦。
 
-有两点文档讲得很明确。一是分类器走的是 Anthropic 按账号逐步放开的服务端能力，所以不同账号对同一个动作可能得到不同判定。二是 auto 有阈值，这条在无头运行里会咬人：同一个动作连续被拦三次、或累计被拦二十次，它会退回到弹窗问你；但在没有弹窗可退的 `-p` 运行里，文档说是「这个动作不执行，Claude 继续往下做」。于是一个被分类器误判的、本该放行的合法动作会被悄悄跳过，不报错，退出码还是绿的 0。这正是我在[Claude Code 无头模式明明有动作被拒却退出 0](/zh/blog/run-claude-code-unattended/)里写过的那种坑。
+有两点文档讲得很明确。一是分类器走的是 Anthropic 按账号逐步放开的服务端能力，所以不同账号对同一个动作可能得到不同判定。二是 auto 有阈值，这条在无头运行里会出问题：同一个动作连续被拦三次、或累计被拦二十次，它会退回到弹窗问你；但在没有弹窗可退的 `-p` 运行里，文档说是「这个动作不执行，Claude 继续往下做」。于是一个被分类器误判的、本该放行的合法动作会被悄悄跳过，不报错，退出码还是绿的 0。这正是我在[Claude Code 无头模式明明有动作被拒却退出 0](/zh/blog/run-claude-code-unattended/)里写过的那种坑。
 
 ## 文件里的提示注入，谁拦住了
 
@@ -106,7 +106,7 @@ grep -m1 '"subtype":"init"' run.jsonl \
 
 它一次都没把密钥发出去。`default` 没有，auto 没有，`bypassPermissions` 也没有。二十五次运行，模型每次都识破了那句注入并拒绝执行，照常总结了项目。接收端记到的外传命中是零（它只收到了网络请求那一行里合法的本机请求）。
 
-注意：注入是被**模型**拒绝的，不是被权限层拦下的。没配 deny 规则时，`bypassPermissions` 根本没有权限层去拦它。deny 规则仍然拦得住这次调用（下面第 2 种配置就用一条规则挡下了 `curl`），但它只拦得住你想到要写进去的东西。万一换个模型、或者换个更刁钻的注入，没认出这个陷阱，YOLO 模式背后就什么都没有了。文档写得很直白，它「对提示注入和意外动作不提供任何防护」。auto 模式的分类器在这里多加了一层，而且它正是为这个设计的：发给分类器的请求会剥掉工具的**结果**，所以躲在命令输出或抓取页面里的注入文本根本够不到分类器。分类器判的是**动作本身**像不像攻击（比如一条发往陌生地址的 `curl`），不是那段注入文本。这一层也会漏：按 Anthropic 自己[公布的漏判率](https://www.anthropic.com/engineering/claude-code-auto-mode)，一组真实的越权动作漏拦 17%，一组合成的外传样本漏拦 5.7%。17% 大致是「每六个危险动作放过一个」，而且这是在已经筛成危险的样本里测的，所以把 auto 当减害，不当防线。环境仍然得限制住一次漏判能够到的范围。
+注意：注入是被**模型**拒绝的，不是被权限层拦下的。没配 deny 规则时，`bypassPermissions` 根本没有权限层去拦它。deny 规则仍然拦得住这次调用（下面第 2 种配置就用一条规则挡下了 `curl`），但它只拦得住你想到要写进去的东西。万一换了模型，或者注入更刁钻，模型没认出这个陷阱，YOLO 模式背后就什么都没有了。文档写得很直白，它「对提示注入和意外动作不提供任何防护」。auto 模式的分类器在这里多加了一层，而且它正是为这个设计的：发给分类器的请求会剥掉工具的**结果**，所以躲在命令输出或抓取页面里的注入文本根本够不到分类器。分类器判的是**动作本身**像不像攻击（比如一条发往陌生地址的 `curl`），不是那段注入文本。这一层也会漏：按 Anthropic 自己[公布的漏判率](https://www.anthropic.com/engineering/claude-code-auto-mode)，一组真实的越权动作漏拦 17%，一组合成的外传样本漏拦 5.7%。17% 大致是「每六个危险动作放过一个」，而且这是在已经筛成危险的样本里测的，所以把 auto 当减害，不当防线。环境仍然得限制住一次漏判能够到的范围。
 
 注入的原文我不贴出来；想测自己的配置，自己写一句，把接收端指向你自己能控制的地址。
 
@@ -114,7 +114,7 @@ grep -m1 '"subtype":"init"' run.jsonl \
 
 想把弹窗关掉、底下又留个托底，我实测过两种配置，各跑三次：
 
-**1. `dontAsk` 配白名单。** 没点名的都不跑，其余一律拒掉而不是弹窗。
+**1. `dontAsk` 配白名单。** 白名单外的动作一律直接拒绝，不弹窗。
 
 ```bash
 claude -p "跑测试并总结失败项" \
@@ -122,16 +122,16 @@ claude -p "跑测试并总结失败项" \
   --allowedTools "Read" "Bash(npm test)"
 ```
 
-我的测试里六个越界动作全部被挡住：五个有副作用的动作被权限层拦下，注入被模型拒绝，和别的模式一样。这是最紧的一种，也最适合 CI：agent 只能做你列的那两件事，别的都不行。工具名用空格分隔的引号 token 传入。
+我的测试里六个动作全部被挡住：五个有副作用的动作被权限层拦下，注入被模型拒绝，和别的模式一样。这是最紧的一种，也最适合 CI：agent 只能做你列的那两件事，别的都不行。工具名用空格分隔、各自加引号作为参数传入。
 
-**2. `bypassPermissions` 配 deny 规则。** YOLO 的速度，但 deny 规则照样咬人（它在任何模式下都生效）。
+**2. `bypassPermissions` 配 deny 规则。** YOLO 的速度，deny 规则仍然生效。
 
 ```bash
 claude -p "..." --permission-mode bypassPermissions \
   --settings '{"permissions":{"deny":["Bash(curl:*)","Read(./.env.local)","Read(./.env)"]}}'
 ```
 
-联网被 `curl` 那条规则拦下了，其余照跑，注入仍被模型拒绝。只在「其余照跑也无所谓」的地方用它，比如一个用完即弃的容器，因为 deny 是黑名单，黑名单只拦得住你想到要写进去的东西。
+联网被 `curl` 那条规则拦下了，其余照跑，注入仍被模型拒绝。只在「其余照跑也无所谓」的地方用它，比如一个用完即弃的容器，因为 deny 是黑名单。
 
 关于怎么把这个参数关起来，也就是 Claude Code 的沙箱挡住什么、又漏过什么，见[Claude Code 沙箱实测：每种配置挡住了什么](/zh/blog/claude-code-sandbox/)。
 
