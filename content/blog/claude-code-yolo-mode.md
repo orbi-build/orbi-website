@@ -9,7 +9,7 @@ image: /img/blog-yolo-card.png
 mirror: claude-code-yolo-mode
 ---
 
-`--dangerously-skip-permissions` switches Claude Code into `bypassPermissions` mode, so tool calls run without asking you first. People call it YOLO mode, and it's for anyone who wants the permission prompts gone on long or unattended tasks. Below you get a measured table of what each permission mode lets through, every way to turn bypass permissions mode on, and why it sometimes doesn't take effect. The reason to reach for it is real. On a long task the prompts pile up, and after the tenth "allow this command?" you stop reading them. But the flag's own name warns you, and the docs say to use it only in "isolated environments like containers, VMs, or dev containers without internet access."
+`--dangerously-skip-permissions` switches Claude Code into `bypassPermissions` mode, so tool calls run without asking you first. People call it YOLO mode, and it's for anyone who wants the permission prompts gone on long or unattended tasks. Below you get a measured table of what each permission mode lets through, each way to turn bypass permissions mode on (noting which I measured and which come from the docs), and why it sometimes doesn't take effect. The reason to reach for it is real. On a long task the prompts pile up, and after the tenth "allow this command?" you stop reading them. But the flag's own name warns you, and the docs say to use it only in "isolated environments like containers, VMs, or dev containers without internet access."
 
 I'm Larry 🍀 Orbi, the creator of Orbi. Orbi runs coding agents unattended all day, so "how do I stop the prompts without handing over the keys" is a question I have to answer for real. This post is what I found when I tested YOLO mode against the four other permission modes, including the newer **auto mode**, which reviews each action with a second model instead of asking you. Auto mode handles most of what people open YOLO mode for, and the thing that actually stopped a data-exfiltration attempt in my tests was the model itself, not the permission mode.
 
@@ -24,12 +24,15 @@ The documented equivalents:
 ```bash
 claude --dangerously-skip-permissions
 claude --permission-mode bypassPermissions
-# or in user settings, ~/.claude/settings.json (or pass it with --settings);
-# the project's .claude/settings.json ignores this value:
-# { "permissions": { "defaultMode": "bypassPermissions" } }
 ```
 
-You can't switch into it from a session you didn't start with it enabled. The first interactive session asks you to accept responsibility once, then records `skipDangerousModePermissionPrompt` so later sessions skip the dialog. On Linux and macOS it refuses to start as root or under `sudo` unless it detects a real sandbox around it, and `permissions.disableBypassPermissionsMode: "disable"` blocks it; both show up in the [troubleshooting list](#why-dangerously-skip-permissions-still-asks-for-permission) below.
+Or put this in your user settings, `~/.claude/settings.json` (or pass it with `--settings`). The project's `.claude/settings.json` ignores this value:
+
+```json
+{ "permissions": { "defaultMode": "bypassPermissions" } }
+```
+
+You can't switch into it mid-session unless you started with one of the enabling options; `--allow-dangerously-skip-permissions` is the one that only adds it to the Shift+Tab cycle so you can switch later. The first interactive session asks you to accept responsibility once, then records `skipDangerousModePermissionPrompt` so later sessions skip the dialog. On Linux and macOS it refuses to start as root or under `sudo` unless it detects a real sandbox around it, and `permissions.disableBypassPermissionsMode: "disable"` blocks it; both show up in the [troubleshooting list](#why-dangerously-skip-permissions-still-asks-for-permission) below.
 
 Even in this mode, a few things still stop: an explicit `ask` rule, an `rm`/`rmdir` that targets a critical path like `rm -rf ~`, and a deny rule. Deny rules win in every mode, YOLO included. (The protected paths the table below refers to are a small set, chiefly `.git`, `.config/git` and `.claude`.)
 
@@ -88,7 +91,7 @@ I gave the same six actions to five permission modes and recorded what actually 
 
 Three columns hold no surprises and are here as the baseline. In `default` (called **Manual** in the UI), a `-p` run denies anything that would otherwise prompt. `dontAsk` denies everything that isn't on an allow list. `acceptEdits` auto-approves edits and common file commands but still stops network calls, writes outside the project, and protected-path edits.
 
-The two that matter are `auto` and `bypassPermissions`. In my runs they let through the same five actions. The difference is *how* they decide.
+The two that matter are `auto` and `bypassPermissions`. In my runs they let through the same five actions, with the `.git/config` caveat in the footnote. The difference is *how* they decide.
 
 ## How auto mode decides
 

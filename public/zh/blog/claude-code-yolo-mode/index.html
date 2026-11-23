@@ -200,11 +200,11 @@
 <p>文档里这几种写法等价：</p>
 <div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="已复制">复制</button><pre><code class="language-bash" data-copy-source>claude --dangerously-skip-permissions
 claude --permission-mode bypassPermissions
-# 或写进用户级设置 ~/.claude/settings.json（也可以用 --settings 传入）；
-# 项目里的 .claude/settings.json 不认这个值：
-# { &quot;permissions&quot;: { &quot;defaultMode&quot;: &quot;bypassPermissions&quot; } }
 </code></pre></div>
-<p>启动时没用任何一种开启方式（包括下面的 <code class="post-code--single">--allow-dangerously-skip-permissions</code>）的会话，中途切不进这个模式。第一次在交互会话里开，它会让你确认一次「我自己负责」，然后记下 <code class="post-code--single">skipDangerousModePermissionPrompt</code>，之后的会话就不再弹这个对话框。在 Linux 和 macOS 上，用 root 或 <code class="post-code--single">sudo</code> 跑时它会拒绝启动，除非它检测到自己已经被真正的沙箱包住；<code class="post-code--spaced">permissions.disableBypassPermissionsMode: &quot;disable&quot;</code> 也能把它禁掉。这两种情况都在下面的<a href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E5%BC%80%E4%BA%86-dangerously-skip-permissions-%E8%BF%98%E5%9C%A8%E9%97%AE%E6%9D%83%E9%99%90">排查清单</a>里。</p>
+<p>也可以写进用户级设置 <code class="post-code--single">~/.claude/settings.json</code>（或用 <code class="post-code--single">--settings</code> 传入）。项目里的 <code class="post-code--single">.claude/settings.json</code> 不认这个值：</p>
+<div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="已复制">复制</button><pre><code class="language-json" data-copy-source>{ &quot;permissions&quot;: { &quot;defaultMode&quot;: &quot;bypassPermissions&quot; } }
+</code></pre></div>
+<p>启动时没用任何一种开启方式的会话，中途切不进这个模式；其中 <code class="post-code--single">--allow-dangerously-skip-permissions</code> 只把它加进 Shift+Tab 循环，启动后可以再切过去。第一次在交互会话里开，它会让你确认一次「我自己负责」，然后记下 <code class="post-code--single">skipDangerousModePermissionPrompt</code>，之后的会话就不再弹这个对话框。在 Linux 和 macOS 上，用 root 或 <code class="post-code--single">sudo</code> 跑时它会拒绝启动，除非它检测到自己已经被真正的沙箱包住；<code class="post-code--spaced">permissions.disableBypassPermissionsMode: &quot;disable&quot;</code> 也能把它禁掉。这两种情况都在下面的<a href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E5%BC%80%E4%BA%86-dangerously-skip-permissions-%E8%BF%98%E5%9C%A8%E9%97%AE%E6%9D%83%E9%99%90">排查清单</a>里。</p>
 <p>就算在这个模式下，也还有几样东西拦得住：显式的 <code class="post-code--single">ask</code> 规则、指向关键路径的 <code class="post-code--single">rm</code>/<code class="post-code--single">rmdir</code>（比如 <code class="post-code--spaced">rm -rf ~</code>）、以及 deny 规则。deny 规则在任何模式下都生效，YOLO 也不例外。下表里说的受保护路径是一小组路径，主要是 <code class="post-code--single">.git</code>、<code class="post-code--single">.config/git</code> 和 <code class="post-code--single">.claude</code>（Claude 自己的配置），<code class="post-code--single">.git/config</code> 是其中之一；别的模式不会自动放行对它们的写入，bypass 下则直接放行。</p>
 <h2 id="怎么开启-bypass-permissions">怎么开启 bypass permissions</h2>
 <p>每种开法我在 2.1.329 上各试了一次，探针都是往项目外写文件。「生效」指会话的 <code class="post-code--single">init</code> 事件报告 <code class="post-code--single">bypassPermissions</code>，并且文件真的写到了磁盘上。</p>
@@ -300,7 +300,7 @@ grep -m1 &#39;&quot;subtype&quot;:&quot;init&quot;&#39; run.jsonl \
 </tbody></table></div>
 <p>* 这一格不是同一个输入跑三次。我在 auto 模式下让它做的是一次无害的改动（加个 git 别名），分类器放行了；而 <code class="post-code--single">bypassPermissions</code> 对这个文件的任何改动都放行，不管危不危险，所以两列测的根本不是同一件事。auto 模式下更危险的改动可能被拦，这正是 auto 这一列的看点，<a href="#auto-%E6%A8%A1%E5%BC%8F%E6%80%8E%E4%B9%88%E5%88%A4">下文专门讲</a>。</p>
 <p>有三列没什么悬念，放在这里当基准。<code class="post-code--single">default</code>（界面上叫 <strong>Manual</strong>）下，<code class="post-code--single">-p</code> 运行会拒掉一切本来要弹窗的动作。<code class="post-code--single">dontAsk</code> 拒掉一切不在白名单上的动作。<code class="post-code--single">acceptEdits</code> 放行编辑和常见文件命令，但仍然挡住联网、写到项目外、改受保护路径。</p>
-<p>真正要看的是 <code class="post-code--single">auto</code> 和 <code class="post-code--single">bypassPermissions</code>。在我的测试里它们放过的是同样五个动作，区别在于<strong>怎么</strong>决定。</p>
+<p>真正要看的是 <code class="post-code--single">auto</code> 和 <code class="post-code--single">bypassPermissions</code>。在我的测试里它们放过的是同样五个动作（<code class="post-code--single">.git/config</code> 那一格见表下脚注），区别在于<strong>怎么</strong>决定。</p>
 <h2 id="auto-模式怎么判">auto 模式怎么判</h2>
 <p><code class="post-code--single">bypassPermissions</code> 跳过检查。auto 模式用一个分类器模型（默认 Sonnet 5）来做检查：它读你的请求和这个动作，拦掉「任何超出你请求的提权、指向陌生基础设施、或看起来是被恶意内容驱动的动作」。自 Claude Code 2.1.283 起，它是交互终端和 VS Code 会话的<a href="https://code.claude.com/docs/en/permission-modes">起始模式</a>。</p>
 <p>那 auto 为什么放我的 agent 改了 <code class="post-code--single">.git/config</code> 这个受保护路径？因为我要它加的是一个无害的 git 别名，分类器判定<strong>这一次具体的改动</strong>和我的请求相符。auto 衡量的是意图，而 <code class="post-code--single">acceptEdits</code> 和 <code class="post-code--single">default</code> 套的是一条死规则，<code class="post-code--single">bypassPermissions</code> 则根本不套规则。受保护路径清单在 auto 下交给分类器判，只有在 <code class="post-code--single">bypassPermissions</code> 下才被直接放行。</p>

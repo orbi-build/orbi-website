@@ -24,12 +24,15 @@ mirror: claude-code-yolo-mode
 ```bash
 claude --dangerously-skip-permissions
 claude --permission-mode bypassPermissions
-# 或写进用户级设置 ~/.claude/settings.json（也可以用 --settings 传入）；
-# 项目里的 .claude/settings.json 不认这个值：
-# { "permissions": { "defaultMode": "bypassPermissions" } }
 ```
 
-启动时没用任何一种开启方式（包括下面的 `--allow-dangerously-skip-permissions`）的会话，中途切不进这个模式。第一次在交互会话里开，它会让你确认一次「我自己负责」，然后记下 `skipDangerousModePermissionPrompt`，之后的会话就不再弹这个对话框。在 Linux 和 macOS 上，用 root 或 `sudo` 跑时它会拒绝启动，除非它检测到自己已经被真正的沙箱包住；`permissions.disableBypassPermissionsMode: "disable"` 也能把它禁掉。这两种情况都在下面的[排查清单](#为什么开了-dangerously-skip-permissions-还在问权限)里。
+也可以写进用户级设置 `~/.claude/settings.json`（或用 `--settings` 传入）。项目里的 `.claude/settings.json` 不认这个值：
+
+```json
+{ "permissions": { "defaultMode": "bypassPermissions" } }
+```
+
+启动时没用任何一种开启方式的会话，中途切不进这个模式；其中 `--allow-dangerously-skip-permissions` 只把它加进 Shift+Tab 循环，启动后可以再切过去。第一次在交互会话里开，它会让你确认一次「我自己负责」，然后记下 `skipDangerousModePermissionPrompt`，之后的会话就不再弹这个对话框。在 Linux 和 macOS 上，用 root 或 `sudo` 跑时它会拒绝启动，除非它检测到自己已经被真正的沙箱包住；`permissions.disableBypassPermissionsMode: "disable"` 也能把它禁掉。这两种情况都在下面的[排查清单](#为什么开了-dangerously-skip-permissions-还在问权限)里。
 
 就算在这个模式下，也还有几样东西拦得住：显式的 `ask` 规则、指向关键路径的 `rm`/`rmdir`（比如 `rm -rf ~`）、以及 deny 规则。deny 规则在任何模式下都生效，YOLO 也不例外。下表里说的受保护路径是一小组路径，主要是 `.git`、`.config/git` 和 `.claude`（Claude 自己的配置），`.git/config` 是其中之一；别的模式不会自动放行对它们的写入，bypass 下则直接放行。
 
@@ -88,7 +91,7 @@ grep -m1 '"subtype":"init"' run.jsonl \
 
 有三列没什么悬念，放在这里当基准。`default`（界面上叫 **Manual**）下，`-p` 运行会拒掉一切本来要弹窗的动作。`dontAsk` 拒掉一切不在白名单上的动作。`acceptEdits` 放行编辑和常见文件命令，但仍然挡住联网、写到项目外、改受保护路径。
 
-真正要看的是 `auto` 和 `bypassPermissions`。在我的测试里它们放过的是同样五个动作，区别在于**怎么**决定。
+真正要看的是 `auto` 和 `bypassPermissions`。在我的测试里它们放过的是同样五个动作（`.git/config` 那一格见表下脚注），区别在于**怎么**决定。
 
 ## auto 模式怎么判
 
