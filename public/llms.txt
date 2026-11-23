@@ -256,6 +256,8 @@ Shipping notes from the root domain: what each delivery run hit, what fixed
 it, and the numbers behind both, traced to the issues they came from. RSS
 feed of the English posts: https://orbi.build/blog/feed.xml
 
+- Pi vs omp (Oh My Pi): same model, run unattended (English):
+  https://orbi.build/blog/pi-vs-oh-my-pi/
 - Make AI agents test behavior, not implementation (English):
   https://orbi.build/blog/ai-generated-tests/
 - Orbi weekly #7: 14-day trial, hand-back, Prioritize (English):
