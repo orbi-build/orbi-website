@@ -268,7 +268,7 @@
     "title": "Claude --dangerously-skip-permissions (YOLO), tested",
     "summary": "--dangerously-skip-permissions makes Claude Code skip permission prompts (YOLO mode). I tested how to enable it, why it fails, and how auto mode compares.",
     "zhSlug": "claude-code-yolo-mode",
-    "zhTitle": "Claude Code 的 YOLO 模式和 auto 模式：我实测了一遍",
+    "zhTitle": "Claude Code 权限全开：--dangerously-skip-permissions 实测",
     "related": []
   },
   {
