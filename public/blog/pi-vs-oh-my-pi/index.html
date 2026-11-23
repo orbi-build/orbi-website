@@ -4,19 +4,19 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Pi vs omp (Oh My Pi): same model, run unattended | Orbi</title>
-  <meta name="description" content="Same model, same task: omp used 3.9× Pi's tokens but cost 1.2× at DeepSeek's list price. With a bad API key in JSON mode, Pi exited 0 and omp exited 1.">
+  <meta name="description" content="Same task: omp used 3.9× Pi's tokens but cost 1.2× at DeepSeek's prices, cache hits included. On a bad API key in JSON mode, Pi exited 0 and omp exited 1.">
   <link rel="canonical" href="https://orbi.build/blog/pi-vs-oh-my-pi/">
   <link rel="alternate" hreflang="en" href="https://orbi.build/blog/pi-vs-oh-my-pi/">
   <link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/blog/pi-vs-oh-my-pi/">
   <link rel="alternate" hreflang="x-default" href="https://orbi.build/blog/pi-vs-oh-my-pi/">
   <meta property="og:type" content="article">
   <meta property="og:title" content="Pi vs omp (Oh My Pi): same model, run unattended">
-  <meta property="og:description" content="Same model, same task: omp used 3.9× Pi's tokens but cost 1.2× at DeepSeek's list price. With a bad API key in JSON mode, Pi exited 0 and omp exited 1.">
+  <meta property="og:description" content="Same task: omp used 3.9× Pi's tokens but cost 1.2× at DeepSeek's prices, cache hits included. On a bad API key in JSON mode, Pi exited 0 and omp exited 1.">
   <meta property="og:url" content="https://orbi.build/blog/pi-vs-oh-my-pi/">
   <meta property="og:image" content="https://orbi.build/img/blog-pi-vs-omp-card.png">
   <meta property="og:image:alt" content="Pi vs omp (Oh My Pi): same model, run unattended">
   <meta property="article:published_time" content="2026-11-23">
-  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"Pi vs omp (Oh My Pi): same model, run unattended","datePublished":"2026-11-23","author":{"@type":"Person","name":"Larry 🍀 Orbi","url":"https://orbi.build/about/larry-orbi/","sameAs":["https://github.com/xqliu","https://x.com/xqliu"]},"publisher":{"@type":"Organization","name":"Orbi","url":"https://orbi.build/","logo":{"@type":"ImageObject","url":"https://orbi.build/logo-mark.svg"}},"mainEntityOfPage":"https://orbi.build/blog/pi-vs-oh-my-pi/","image":"https://orbi.build/img/blog-pi-vs-omp-card.png","inLanguage":"en","description":"Same model, same task: omp used 3.9× Pi's tokens but cost 1.2× at DeepSeek's list price. With a bad API key in JSON mode, Pi exited 0 and omp exited 1.","url":"https://orbi.build/blog/pi-vs-oh-my-pi/"}</script>
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"Pi vs omp (Oh My Pi): same model, run unattended","datePublished":"2026-11-23","author":{"@type":"Person","name":"Larry 🍀 Orbi","url":"https://orbi.build/about/larry-orbi/","sameAs":["https://github.com/xqliu","https://x.com/xqliu"]},"publisher":{"@type":"Organization","name":"Orbi","url":"https://orbi.build/","logo":{"@type":"ImageObject","url":"https://orbi.build/logo-mark.svg"}},"mainEntityOfPage":"https://orbi.build/blog/pi-vs-oh-my-pi/","image":"https://orbi.build/img/blog-pi-vs-omp-card.png","inLanguage":"en","description":"Same task: omp used 3.9× Pi's tokens but cost 1.2× at DeepSeek's prices, cache hits included. On a bad API key in JSON mode, Pi exited 0 and omp exited 1.","url":"https://orbi.build/blog/pi-vs-oh-my-pi/"}</script>
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <meta name="theme-color" content="#06151b">
 
@@ -155,7 +155,7 @@
           <h1 id="post-title">Pi vs omp (Oh My Pi): same model, run unattended</h1>
           <p class="post-byline"><a href="/about/larry-orbi/">Larry 🍀 Orbi</a> · <time datetime="2026-11-23">2026-11-23</time></p>
           <p class="post-series">Part of: <a href="/guides/pi-coding-agent/">How Orbi is built on the Pi coding agent</a></p>
-          <p class="hero-lede">Same model, same task: omp used 3.9× Pi's tokens but cost 1.2× at DeepSeek's list price. With a bad API key in JSON mode, Pi exited 0 and omp exited 1.</p>
+          <p class="hero-lede">Same task: omp used 3.9× Pi's tokens but cost 1.2× at DeepSeek's prices, cache hits included. On a bad API key in JSON mode, Pi exited 0 and omp exited 1.</p>
         </section>
       </div>
     </div>
@@ -194,7 +194,7 @@
 <p>The short version: both fixed the bug every time. omp sent about 3.9 times as many tokens per task, but most of them were cache hits, so at DeepSeek&#39;s list price it cost about 1.2 times as much. The bigger difference for unattended use is failure handling. With a bad API key or an unknown model in JSON output mode, Pi exited 0 and omp exited 1. omp also has approval modes; in print mode they deny instead of hanging, and the run still exits 0.</p><aside class="post-cta-inline"><span>Orbi takes your Issues all the way to a release.</span><a class="button button-signal" data-cta="post-inline-start" href="/cloud/login">Try Orbi Cloud free →</a></aside>
 <p>I&#39;m Larry 🍀 Orbi, the creator of Orbi. Orbi runs the upstream Pi agent for every delivery, so I had no omp setup to defend and no omp runs of my own before this test.</p>
 <h2 id="oh-my-pi-vs-pi-what-omp-changes">Oh My Pi vs Pi: what omp changes</h2>
-<p>omp&#39;s README calls it a fork of <a href="https://github.com/badlogic/pi-mono">Pi</a> by Mario Zechner, &quot;rewritten as a coding-first surface&quot;, and it is now built by Stencil Labs. Upstream Pi lives on as <a href="https://pi.dev/"><code class="post-code--single">@earendil-works/pi-coding-agent</code></a>. Both are MIT licensed. From each tool&#39;s <code class="post-code--single">--help</code> on the versions tested:</p>
+<p>omp&#39;s README calls it a fork of <a href="https://github.com/badlogic/pi-mono">Pi</a> by Mario Zechner that was &quot;rewritten as a coding-first surface&quot;, and it is now built by Stencil Labs. Upstream Pi lives on as <a href="https://pi.dev/"><code class="post-code--single">@earendil-works/pi-coding-agent</code></a>. Both are MIT licensed. From each tool&#39;s <code class="post-code--single">--help</code> on the versions tested:</p>
 <p class="post-table-hint" hidden>Swipe horizontally to see all columns.</p><div class="post-table-scroll" tabindex="0" role="region" aria-label="Swipe horizontally to see all columns."><table class="table-comparison">
 <thead>
 <tr>
@@ -294,8 +294,8 @@ omp -p --no-session --model deepseek/deepseek-v4-flash --thinking off &quot;$PRO
 </tr>
 </tbody></table></div>
 <p>Every run made the same fix in substance: treat any run of non-alphanumeric characters as a separator instead of splitting only on whitespace. Most runs used <code class="post-code--spaced">re.findall(r&quot;[a-z0-9]+&quot;, ...)</code>; a few used <code class="post-code--single">re.split</code> on non-alphanumeric runs. &quot;Ran the tests itself&quot; means a <code class="post-code--single">__pycache__</code> directory existed before my own test run.</p>
-<p>The token gap comes from the fixed prompt. Asked only to &quot;Reply with the single word OK&quot;, Pi sent 1,502 tokens and omp sent 7,839, about 5.2 times as many, almost all of it system prompt and tool definitions. On the coding task the ratio was 3.9.</p>
-<p>The cost gap is much smaller because DeepSeek bills cache hits at 2% of the cache-miss input price ($0.006 vs $0.3 per million at peak). Most of omp&#39;s extra tokens were cache hits even in fresh containers, because DeepSeek keeps the cache on its side. Price everything as a cache miss and the same averages come to about $0.0131 for omp and $0.0037 for Pi, a 3.6× gap. So the real difference depends on how often your provider serves the prompt from cache. Don&#39;t compare the costs the tools report themselves. Pi&#39;s own total for the first run was $0.00378, about four times the figure here, because it has no catalog price for this model name; omp&#39;s own figure used DeepSeek&#39;s off-peak rate. Both columns above use DeepSeek&#39;s published peak rate. Off-peak is half for both, so the ratio stays the same.</p>
+<p>The token gap comes from the fixed prompt. Asked only to &quot;Reply with the single word OK&quot;, Pi sent 1,502 tokens and omp sent 7,839, about 5.2 times as many, almost all of it system prompt and tool definitions. That fixed part is sent again with every model call, and the coding task took about five calls: 6,337 extra tokens times five is about 31,700, which accounts for nearly all of the 31,500-token gap per run. The ratio drops to 3.9 because the task&#39;s own tokens are the same size for both.</p>
+<p>The cost gap is much smaller because DeepSeek bills cache hits at 2% of the cache-miss input price ($0.006 vs $0.3 per million at peak). Most of omp&#39;s extra tokens were cache hits even in fresh containers, because DeepSeek keeps the cache on its side and earlier runs in this same test had already sent the same prompt prefix. A first run on a cold cache would pay closer to full price. Price everything as a cache miss and the same averages come to about $0.0131 for omp and $0.0037 for Pi, a 3.6× gap. So the real difference depends on how often your provider serves the prompt from cache. Don&#39;t compare the costs the tools report themselves. Pi&#39;s own totals for its three JSON runs were $0.0038 to $0.0042, about four times Pi&#39;s column above, even though most of their input was cache hits; it has no catalog price for this model name and prices the run at a different model&#39;s rate; omp&#39;s own figure used DeepSeek&#39;s off-peak rate. Both columns above use DeepSeek&#39;s published peak rate. Off-peak is half for both, so the ratio stays the same.</p>
 <h2 id="exit-codes-and-failures">Exit codes and failures</h2>
 <p>These are the cases a runner has to handle without a person. Each ran once per tool, except the SIGTERM row.</p>
 <p class="post-table-hint" hidden>Swipe horizontally to see all columns.</p><div class="post-table-scroll" tabindex="0" role="region" aria-label="Swipe horizontally to see all columns."><table class="table-comparison">

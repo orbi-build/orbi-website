@@ -1,7 +1,7 @@
 ---
 title: Pi vs omp（Oh My Pi）：同一模型，无人值守实测
 date: 2026-11-23
-summary: 同一模型、同一任务，omp 用的 token 是 Pi 的 3.9 倍，按 DeepSeek 标价只贵 1.2 倍。JSON 模式下 API 密钥错误时，Pi 退出码是 0，omp 是 1。
+summary: 同一模型、同一任务，omp 用的 token 是 Pi 的 3.9 倍，算上缓存、按 DeepSeek 标价只贵 1.2 倍。JSON 模式下 API 密钥错误时，Pi 退出码是 0，omp 是 1。
 lang: zh
 author: Larry 🍀 Orbi
 image: /img/blog-pi-vs-omp-card.png
@@ -17,7 +17,7 @@ Pi 是一个开源的终端编程 agent，体量很小；omp（Oh My Pi）是它
 
 ## omp 在 Pi 之上改了什么
 
-omp 的 README 说它是 Mario Zechner 的 [Pi](https://github.com/badlogic/pi-mono) 的分叉，"重写成以编程为先的形态"，现在由 Stencil Labs 维护。上游 Pi 现在发布为 [`@earendil-works/pi-coding-agent`](https://pi.dev/)。两者都是 MIT 许可。下表取自本次测试版本各自的 `--help`：
+omp 的 README 说它是 Mario Zechner 的 [Pi](https://github.com/badlogic/pi-mono) 的分叉，后来"重写成以编程为先的形态"，现在由 Stencil Labs 维护。上游 Pi 现在发布为 [`@earendil-works/pi-coding-agent`](https://pi.dev/)。两者都是 MIT 许可。下表取自本次测试版本各自的 `--help`：
 
 | | Pi 1.6.0 | omp 19.1.0 |
 |---|---|---|
@@ -65,11 +65,11 @@ Pi 这里必须加 `--provider deepseek`。只写 `--model deepseek/deepseek-v4-
 
 每次的改法实质相同：把任何一串非字母数字字符都当分隔符，不再只按空白切分。多数用的是 `re.findall(r"[a-z0-9]+", ...)`，少数用 `re.split` 按非字母数字切。"自己跑了测试"指我跑测试之前，仓库里已经有 `__pycache__` 目录。
 
-token 的差距来自固定提示词。只让它"回复一个词 OK"，Pi 发了 1,502 个 token，omp 发了 7,839 个，约 5.2 倍，几乎全是系统提示词和工具定义。到了编程任务上，比例是 3.9 倍。
+token 的差距来自固定提示词。只让它"回复一个词 OK"，Pi 发了 1,502 个 token，omp 发了 7,839 个，约 5.2 倍，几乎全是系统提示词和工具定义。这部分固定内容每调用一次模型就要重发一次，编程任务大约调用 5 次：多出的 6,337 个 token 乘 5，约 31,700，基本就是每次运行那 31,500 个 token 的差距。比例降到 3.9 倍，是因为任务本身的 token 两边一样多。
 
-花费差得少，是因为 DeepSeek 对缓存命中只收未命中输入价的 2%（高峰价每百万 0.006 美元对 0.3 美元）。omp 多出来的 token 大多命中了缓存，即使每次都是全新容器也一样，因为缓存在 DeepSeek 服务端。如果全部按未命中算，同样的平均值是 omp 约 0.0131 美元、Pi 约 0.0037 美元，差 3.6 倍。所以实际差多少，取决于你的服务商有多少提示词能命中缓存。
+花费差得少，是因为 DeepSeek 对缓存命中只收未命中输入价的 2%（高峰价每百万 0.006 美元对 0.3 美元）。omp 多出来的 token 大多命中了缓存，即使每次都是全新容器也一样，因为缓存在 DeepSeek 服务端，而这次测试里更早的运行已经发过同样的提示词开头。缓存还没预热的第一次运行，花费会更接近全价。如果全部按未命中算，同样的平均值是 omp 约 0.0131 美元、Pi 约 0.0037 美元，差 3.6 倍。所以实际差多少，取决于你的服务商有多少提示词能命中缓存。
 
-两个工具自报的花费不能直接比。Pi 对第一次运行自报 0.00378 美元，约是上表数字的 4 倍，因为它的目录里没有这个模型名的价格；omp 自报用的是 DeepSeek 的闲时价。上表两列都按 DeepSeek 公布的高峰价算；闲时价两边都减半，比例不变。
+两个工具自报的花费不能直接比。Pi 对那三次 JSON 运行自报 0.0038 到 0.0042 美元，约是上表 Pi 那一列的 4 倍，而那几次大部分输入都命中了缓存；原因是它的目录里没有这个模型名的价格，改用了别的单价；omp 自报用的是 DeepSeek 的闲时价。上表两列都按 DeepSeek 公布的高峰价算；闲时价两边都减半，比例不变。
 
 ## 退出码和出错情况
 

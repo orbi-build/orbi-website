@@ -1,7 +1,7 @@
 ---
 title: Pi vs omp (Oh My Pi): same model, run unattended
 date: 2026-11-23
-summary: Same model, same task: omp used 3.9× Pi's tokens but cost 1.2× at DeepSeek's list price. With a bad API key in JSON mode, Pi exited 0 and omp exited 1.
+summary: Same task: omp used 3.9× Pi's tokens but cost 1.2× at DeepSeek's prices, cache hits included. On a bad API key in JSON mode, Pi exited 0 and omp exited 1.
 lang: en
 author: Larry 🍀 Orbi
 image: /img/blog-pi-vs-omp-card.png
@@ -17,7 +17,7 @@ I'm Larry 🍀 Orbi, the creator of Orbi. Orbi runs the upstream Pi agent for ev
 
 ## Oh My Pi vs Pi: what omp changes
 
-omp's README calls it a fork of [Pi](https://github.com/badlogic/pi-mono) by Mario Zechner, "rewritten as a coding-first surface", and it is now built by Stencil Labs. Upstream Pi lives on as [`@earendil-works/pi-coding-agent`](https://pi.dev/). Both are MIT licensed. From each tool's `--help` on the versions tested:
+omp's README calls it a fork of [Pi](https://github.com/badlogic/pi-mono) by Mario Zechner that was "rewritten as a coding-first surface", and it is now built by Stencil Labs. Upstream Pi lives on as [`@earendil-works/pi-coding-agent`](https://pi.dev/). Both are MIT licensed. From each tool's `--help` on the versions tested:
 
 | | Pi 1.6.0 | omp 19.1.0 |
 |---|---|---|
@@ -65,9 +65,9 @@ Each tool ran the task six times: three in text mode and three in JSON mode, whi
 
 Every run made the same fix in substance: treat any run of non-alphanumeric characters as a separator instead of splitting only on whitespace. Most runs used `re.findall(r"[a-z0-9]+", ...)`; a few used `re.split` on non-alphanumeric runs. "Ran the tests itself" means a `__pycache__` directory existed before my own test run.
 
-The token gap comes from the fixed prompt. Asked only to "Reply with the single word OK", Pi sent 1,502 tokens and omp sent 7,839, about 5.2 times as many, almost all of it system prompt and tool definitions. On the coding task the ratio was 3.9.
+The token gap comes from the fixed prompt. Asked only to "Reply with the single word OK", Pi sent 1,502 tokens and omp sent 7,839, about 5.2 times as many, almost all of it system prompt and tool definitions. That fixed part is sent again with every model call, and the coding task took about five calls: 6,337 extra tokens times five is about 31,700, which accounts for nearly all of the 31,500-token gap per run. The ratio drops to 3.9 because the task's own tokens are the same size for both.
 
-The cost gap is much smaller because DeepSeek bills cache hits at 2% of the cache-miss input price ($0.006 vs $0.3 per million at peak). Most of omp's extra tokens were cache hits even in fresh containers, because DeepSeek keeps the cache on its side. Price everything as a cache miss and the same averages come to about $0.0131 for omp and $0.0037 for Pi, a 3.6× gap. So the real difference depends on how often your provider serves the prompt from cache. Don't compare the costs the tools report themselves. Pi's own total for the first run was $0.00378, about four times the figure here, because it has no catalog price for this model name; omp's own figure used DeepSeek's off-peak rate. Both columns above use DeepSeek's published peak rate. Off-peak is half for both, so the ratio stays the same.
+The cost gap is much smaller because DeepSeek bills cache hits at 2% of the cache-miss input price ($0.006 vs $0.3 per million at peak). Most of omp's extra tokens were cache hits even in fresh containers, because DeepSeek keeps the cache on its side and earlier runs in this same test had already sent the same prompt prefix. A first run on a cold cache would pay closer to full price. Price everything as a cache miss and the same averages come to about $0.0131 for omp and $0.0037 for Pi, a 3.6× gap. So the real difference depends on how often your provider serves the prompt from cache. Don't compare the costs the tools report themselves. Pi's own totals for its three JSON runs were $0.0038 to $0.0042, about four times Pi's column above, even though most of their input was cache hits; it has no catalog price for this model name and prices the run at a different model's rate; omp's own figure used DeepSeek's off-peak rate. Both columns above use DeepSeek's published peak rate. Off-peak is half for both, so the ratio stays the same.
 
 ## Exit codes and failures
 

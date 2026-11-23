@@ -10,7 +10,7 @@
       <link>https://orbi.build/blog/pi-vs-oh-my-pi/</link>
       <guid isPermaLink="true">https://orbi.build/blog/pi-vs-oh-my-pi/</guid>
       <pubDate>Mon, 23 Nov 2026 00:00:00 GMT</pubDate>
-      <description>Same model, same task: omp used 3.9× Pi's tokens but cost 1.2× at DeepSeek's list price. With a bad API key in JSON mode, Pi exited 0 and omp exited 1.</description>
+      <description>Same task: omp used 3.9× Pi's tokens but cost 1.2× at DeepSeek's prices, cache hits included. On a bad API key in JSON mode, Pi exited 0 and omp exited 1.</description>
     </item>
     <item>
       <title>Make AI agents test behavior, not implementation</title>
