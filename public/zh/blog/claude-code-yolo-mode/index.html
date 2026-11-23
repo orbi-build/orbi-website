@@ -166,7 +166,7 @@
           <ol>
           <li><a class="post-toc-link" href="#dangerously-skip-permissions-在-claude-code-里做什么">--dangerously-skip-permissions 在 Claude Code 里做什么</a></li>
           <li><a class="post-toc-link" href="#怎么开启-bypass-permissions">怎么开启 bypass permissions</a></li>
-          <li><a class="post-toc-link" href="#为什么开了-dangerously-skip-permissions-还在问权限">为什么开了 --dangerously-skip-permissions 还在问权限</a></li>
+          <li><a class="post-toc-link" href="#为什么-dangerously-skip-permissions-不生效-开了还在问权限">为什么 --dangerously-skip-permissions 不生效、开了还在问权限</a></li>
           <li><a class="post-toc-link" href="#五种权限模式分别放行了哪些动作">五种权限模式分别放行了哪些动作</a></li>
           <li><a class="post-toc-link" href="#auto-模式怎么判">auto 模式怎么判</a></li>
           <li><a class="post-toc-link" href="#文件里的提示注入-谁拦住了">文件里的提示注入，谁拦住了</a></li>
@@ -182,7 +182,7 @@
           <ol>
           <li><a class="post-toc-link" href="#dangerously-skip-permissions-在-claude-code-里做什么">--dangerously-skip-permissions 在 Claude Code 里做什么</a></li>
           <li><a class="post-toc-link" href="#怎么开启-bypass-permissions">怎么开启 bypass permissions</a></li>
-          <li><a class="post-toc-link" href="#为什么开了-dangerously-skip-permissions-还在问权限">为什么开了 --dangerously-skip-permissions 还在问权限</a></li>
+          <li><a class="post-toc-link" href="#为什么-dangerously-skip-permissions-不生效-开了还在问权限">为什么 --dangerously-skip-permissions 不生效、开了还在问权限</a></li>
           <li><a class="post-toc-link" href="#五种权限模式分别放行了哪些动作">五种权限模式分别放行了哪些动作</a></li>
           <li><a class="post-toc-link" href="#auto-模式怎么判">auto 模式怎么判</a></li>
           <li><a class="post-toc-link" href="#文件里的提示注入-谁拦住了">文件里的提示注入，谁拦住了</a></li>
@@ -204,7 +204,7 @@ claude --permission-mode bypassPermissions
 <p>也可以写进用户级设置 <code class="post-code--single">~/.claude/settings.json</code>（或用 <code class="post-code--single">--settings</code> 传入）。项目里的 <code class="post-code--single">.claude/settings.json</code> 不认这个值：</p>
 <div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="已复制">复制</button><pre><code class="language-json" data-copy-source>{ &quot;permissions&quot;: { &quot;defaultMode&quot;: &quot;bypassPermissions&quot; } }
 </code></pre></div>
-<p>启动时没用任何一种开启方式的会话，中途切不进这个模式；其中 <code class="post-code--single">--allow-dangerously-skip-permissions</code> 只把它加进 Shift+Tab 循环，启动后可以再切过去。第一次在交互会话里开，它会让你确认一次「我自己负责」，然后记下 <code class="post-code--single">skipDangerousModePermissionPrompt</code>，之后的会话就不再弹这个对话框。在 Linux 和 macOS 上，用 root 或 <code class="post-code--single">sudo</code> 跑时它会拒绝启动，除非它检测到自己已经被真正的沙箱包住；<code class="post-code--spaced">permissions.disableBypassPermissionsMode: &quot;disable&quot;</code> 也能把它禁掉。这两种情况都在下面的<a href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E5%BC%80%E4%BA%86-dangerously-skip-permissions-%E8%BF%98%E5%9C%A8%E9%97%AE%E6%9D%83%E9%99%90">排查清单</a>里。</p>
+<p>启动时没用任何一种开启方式的会话，中途切不进这个模式；其中 <code class="post-code--single">--allow-dangerously-skip-permissions</code> 只把它加进 Shift+Tab 循环，启动后可以再切过去。第一次在交互会话里开，它会让你确认一次「我自己负责」，然后记下 <code class="post-code--single">skipDangerousModePermissionPrompt</code>，之后的会话就不再弹这个对话框。在 Linux 和 macOS 上，用 root 或 <code class="post-code--single">sudo</code> 跑时它会拒绝启动，除非它检测到自己已经被真正的沙箱包住；<code class="post-code--spaced">permissions.disableBypassPermissionsMode: &quot;disable&quot;</code> 也能把它禁掉。这两种情况都在下面的<a href="#%E4%B8%BA%E4%BB%80%E4%B9%88-dangerously-skip-permissions-%E4%B8%8D%E7%94%9F%E6%95%88-%E5%BC%80%E4%BA%86%E8%BF%98%E5%9C%A8%E9%97%AE%E6%9D%83%E9%99%90">排查清单</a>里。</p>
 <p>就算在这个模式下，也还有几样东西拦得住：显式的 <code class="post-code--single">ask</code> 规则、指向关键路径的 <code class="post-code--single">rm</code>/<code class="post-code--single">rmdir</code>（比如 <code class="post-code--spaced">rm -rf ~</code>）、以及 deny 规则。deny 规则在任何模式下都生效，YOLO 也不例外。下表里说的受保护路径是一小组路径，主要是 <code class="post-code--single">.git</code>、<code class="post-code--single">.config/git</code> 和 <code class="post-code--single">.claude</code>（Claude 自己的配置），<code class="post-code--single">.git/config</code> 是其中之一；别的模式不会自动放行对它们的写入，bypass 下则直接放行。</p>
 <h2 id="怎么开启-bypass-permissions">怎么开启 bypass permissions</h2>
 <p>每种开法我在 2.1.329 上各试了一次，探针都是往项目外写文件。「生效」指会话的 <code class="post-code--single">init</code> 事件报告 <code class="post-code--single">bypassPermissions</code>，并且文件真的写到了磁盘上。</p>
@@ -216,8 +216,8 @@ claude --permission-mode bypassPermissions
 <li>只加 <code class="post-code--single">--allow-dangerously-skip-permissions</code>：不生效。会话仍是 <code class="post-code--single">default</code>；这个参数只是把这个模式加进 Shift+Tab 的切换循环。</li>
 </ul>
 <p>项目文件这一条和文档一致：在 <code class="post-code--single">.claude/settings.json</code> 或 <code class="post-code--single">.claude/settings.local.json</code> 里设 <code class="post-code--single">bypassPermissions</code>，文档原话是「it doesn&#39;t take effect either, and the session starts in Manual mode」。也没有任何提示告诉你发生了这件事。</p>
-<p>图形客户端我没法测，所以这一节剩下的内容来自 Anthropic 的<a href="https://code.claude.com/docs/en/permission-modes">权限模式文档</a>和 VS Code 扩展文档，不是我的实测。在 VS Code 扩展里，先打开设置 <code class="post-code--single">claudeCode.allowDangerouslySkipPermissions</code>（「Allow dangerously skip permissions」），再在模式指示器里选 Bypass permissions；或者在用户设置里把 <code class="post-code--single">claudeCode.initialPermissionMode</code> 设成 <code class="post-code--single">bypassPermissions</code>。没打开这个开关时，模式指示器里看不到这个模式，<code class="post-code--single">bypassPermissions</code> 这个起始值也会退回 Manual。在 Desktop 应用里，Pro、Max 和 Ultra 套餐的设置里有「Allow bypass permissions mode」开关；Team 和 Enterprise 套餐由组织策略决定。Cloud 会话根本不提供 bypass。</p>
-<h2 id="为什么开了-dangerously-skip-permissions-还在问权限">为什么开了 --dangerously-skip-permissions 还在问权限</h2>
+<p>图形客户端我没法测，所以这一节剩下的内容来自 Anthropic 的<a href="https://code.claude.com/docs/en/permission-modes">权限模式文档</a>和 VS Code 扩展文档，不是我的实测。在 VS Code 扩展里，先打开设置 <code class="post-code--single">claudeCode.allowDangerouslySkipPermissions</code>（「Allow dangerously skip permissions」），再在模式指示器里选 Bypass permissions；或者在用户设置里把 <code class="post-code--single">claudeCode.initialPermissionMode</code> 设成 <code class="post-code--single">bypassPermissions</code>。没打开这个开关时，模式指示器里看不到这个模式，<code class="post-code--single">bypassPermissions</code> 这个起始值也会退回 Manual。在 Desktop 应用里，Pro、Max 和 Ultra 套餐的设置里有「Allow bypass permissions mode」开关，打开后在输入框下方的模式选择器里选 Bypass permissions；Team 和 Enterprise 套餐由组织策略决定。Cloud 会话根本不提供 bypass。</p>
+<h2 id="为什么-dangerously-skip-permissions-不生效-开了还在问权限">为什么 --dangerously-skip-permissions 不生效、开了还在问权限</h2>
 <p>下面这些情况大多是静默失败：会话以 Manual 启动，无头运行把本来要弹窗的动作直接拒掉，进程照样退出 0。标了「实测」的条目来自 2.1.329 上的那几次运行。</p>
 <ol>
 <li>你把 <code class="post-code--spaced">&quot;defaultMode&quot;: &quot;bypassPermissions&quot;</code> 写进了仓库的 <code class="post-code--single">.claude/settings.json</code>。会话以 Manual 启动，照样一直问（在 <code class="post-code--single">-p</code> 下则是直接拒绝），因为项目级和本地设置文件不认这个值。把它挪到 <code class="post-code--single">~/.claude/settings.json</code>、用 <code class="post-code--single">--settings</code> 传入，或者直接用参数。实测：被忽略，退出码 0，stderr 为空。</li>
