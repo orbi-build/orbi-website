@@ -164,12 +164,12 @@
         <nav class="post-toc" aria-label="本页目录">
           <h2>本页目录</h2>
           <ol>
-          <li><a class="post-toc-link" href="#oh-my-pi-vs-pi-omp-改了什么">Oh My Pi vs Pi：omp 改了什么</a></li>
+          <li><a class="post-toc-link" href="#omp-在-pi-之上改了什么">omp 在 Pi 之上改了什么</a></li>
           <li><a class="post-toc-link" href="#测试环境">测试环境</a></li>
           <li><a class="post-toc-link" href="#编程任务的结果">编程任务的结果</a></li>
           <li><a class="post-toc-link" href="#退出码和出错情况">退出码和出错情况</a></li>
           <li><a class="post-toc-link" href="#没人盯着时-omp-的审批模式">没人盯着时 omp 的审批模式</a></li>
-          <li><a class="post-toc-link" href="#pi-vs-omp-无人值守该用哪个">Pi vs omp：无人值守该用哪个</a></li>
+          <li><a class="post-toc-link" href="#无人值守该用哪个">无人值守该用哪个</a></li>
           <li><a class="post-toc-link" href="#orbi-为什么继续用-pi">Orbi 为什么继续用 Pi</a></li>
           <li><a class="post-toc-link" href="#局限">局限</a></li>
           <li><a class="post-toc-link" href="#相关">相关</a></li>
@@ -179,21 +179,21 @@
         <details class="post-toc-inline">
           <summary>本页目录 · 9 节</summary>
           <ol>
-          <li><a class="post-toc-link" href="#oh-my-pi-vs-pi-omp-改了什么">Oh My Pi vs Pi：omp 改了什么</a></li>
+          <li><a class="post-toc-link" href="#omp-在-pi-之上改了什么">omp 在 Pi 之上改了什么</a></li>
           <li><a class="post-toc-link" href="#测试环境">测试环境</a></li>
           <li><a class="post-toc-link" href="#编程任务的结果">编程任务的结果</a></li>
           <li><a class="post-toc-link" href="#退出码和出错情况">退出码和出错情况</a></li>
           <li><a class="post-toc-link" href="#没人盯着时-omp-的审批模式">没人盯着时 omp 的审批模式</a></li>
-          <li><a class="post-toc-link" href="#pi-vs-omp-无人值守该用哪个">Pi vs omp：无人值守该用哪个</a></li>
+          <li><a class="post-toc-link" href="#无人值守该用哪个">无人值守该用哪个</a></li>
           <li><a class="post-toc-link" href="#orbi-为什么继续用-pi">Orbi 为什么继续用 Pi</a></li>
           <li><a class="post-toc-link" href="#局限">局限</a></li>
           <li><a class="post-toc-link" href="#相关">相关</a></li>
           </ol>
         </details>
-<p>Pi 是一个开源的终端编程 agent，体量很小；omp（Oh My Pi）是它的一个分叉，在里面塞了大量现成功能：默认开 16 个工具（Pi 默认 4 个）、工具调用审批、花费上限、子代理、联网搜索和语言服务器工具。这篇 Pi vs omp 对比写给想让它们在没人盯着的情况下跑的人：脚本、定时任务、CI，或者 Orbi 这样的交付流水线。2026 年 11 月 23 日，我用同一个模型、同一个任务把两者各跑了一遍，再专门试了没人按键时最要紧的几种出错情况。</p>
+<p>Pi 是一个开源的终端编程 agent，体量很小；omp（Oh My Pi）是它的一个分叉，在里面塞了大量现成功能：默认开 16 个工具（Pi 默认 4 个）、工具调用审批、花费上限、子代理、联网搜索和语言服务器工具。这篇写给想让它们在没人盯着时运行的人：脚本、定时任务、CI，或者 Orbi 这样的交付流水线。2026 年 11 月 23 日，我用同一个模型、同一个任务把两者各跑了一遍，再专门试了没人按键时最要紧的几种出错情况。</p>
 <p>先说结论：两边每次都把缺陷修好了。omp 每个任务发出的 token 大约是 Pi 的 3.9 倍，但多出来的大部分命中了缓存，按 DeepSeek 标价算只贵约 1.2 倍。无人值守时更大的差别在出错处理：用 JSON 输出模式时，API 密钥错误或模型名写错，Pi 退出码是 0，omp 是 1。omp 还有审批模式，在单次模式下遇到要审批的操作会直接拒绝，不会卡住，但进程照样以 0 退出。</p><aside class="post-cta-inline"><span>Orbi 把你的 Issue 一路做到发版。</span><a class="button button-signal" data-cta="post-inline-start" href="/zh/cloud/login">免费试用 Orbi Cloud →</a></aside>
 <p>我是 Larry 🍀 Orbi，Orbi 的创始人。Orbi 每次交付都用上游的 Pi，我手上没有要维护的 omp 配置，这次测试之前也从没跑过 omp。</p>
-<h2 id="oh-my-pi-vs-pi-omp-改了什么">Oh My Pi vs Pi：omp 改了什么</h2>
+<h2 id="omp-在-pi-之上改了什么">omp 在 Pi 之上改了什么</h2>
 <p>omp 的 README 说它是 Mario Zechner 的 <a href="https://github.com/badlogic/pi-mono">Pi</a> 的分叉，&quot;重写成以编程为先的形态&quot;，现在由 Stencil Labs 维护。上游 Pi 现在发布为 <a href="https://pi.dev/"><code class="post-code--single">@earendil-works/pi-coding-agent</code></a>。两者都是 MIT 许可。下表取自本次测试版本各自的 <code class="post-code--single">--help</code>：</p>
 <p class="post-table-hint" hidden>左右滑动查看所有列。</p><div class="post-table-scroll" tabindex="0" role="region" aria-label="左右滑动查看所有列。"><table class="table-comparison">
 <thead>
@@ -295,10 +295,10 @@ omp -p --no-session --model deepseek/deepseek-v4-flash --thinking off &quot;$PRO
 </tbody></table></div>
 <p>每次的改法实质相同：把任何一串非字母数字字符都当分隔符，不再只按空白切分。多数用的是 <code class="post-code--spaced">re.findall(r&quot;[a-z0-9]+&quot;, ...)</code>，少数用 <code class="post-code--single">re.split</code> 按非字母数字切。&quot;自己跑了测试&quot;指我跑测试之前，仓库里已经有 <code class="post-code--single">__pycache__</code> 目录。</p>
 <p>token 的差距来自固定提示词。只让它&quot;回复一个词 OK&quot;，Pi 发了 1,502 个 token，omp 发了 7,839 个，约 5.2 倍，几乎全是系统提示词和工具定义。到了编程任务上，比例是 3.9 倍。</p>
-<p>花费差得少，是因为 DeepSeek 对缓存命中只收未命中输入价的 2%（高峰价每百万 0.006 美元对 0.3 美元）。omp 多出来的 token 大多命中了缓存，即使每次都是全新容器也一样，因为缓存在 DeepSeek 服务端。如果全部按未命中算，同样的平均值是 omp 约 0.0131 美元、Pi 约 0.0037 美元，差 3.6 倍。所以实际差多少，取决于你的服务商多大比例能从缓存里给出提示词。</p>
+<p>花费差得少，是因为 DeepSeek 对缓存命中只收未命中输入价的 2%（高峰价每百万 0.006 美元对 0.3 美元）。omp 多出来的 token 大多命中了缓存，即使每次都是全新容器也一样，因为缓存在 DeepSeek 服务端。如果全部按未命中算，同样的平均值是 omp 约 0.0131 美元、Pi 约 0.0037 美元，差 3.6 倍。所以实际差多少，取决于你的服务商有多少提示词能命中缓存。</p>
 <p>两个工具自报的花费不能直接比。Pi 对第一次运行自报 0.00378 美元，约是上表数字的 4 倍，因为它的目录里没有这个模型名的价格；omp 自报用的是 DeepSeek 的闲时价。上表两列都按 DeepSeek 公布的高峰价算；闲时价两边都减半，比例不变。</p>
 <h2 id="退出码和出错情况">退出码和出错情况</h2>
-<p>下面是流水线必须在没人的情况下处理的情况。除终止信号那一行外，每种情况每个工具各跑一次。</p>
+<p>下面这些出错场景，流水线得在没人时自己处理。除终止信号那一行外，每种情况每个工具各跑一次。</p>
 <p class="post-table-hint" hidden>左右滑动查看所有列。</p><div class="post-table-scroll" tabindex="0" role="region" aria-label="左右滑动查看所有列。"><table class="table-comparison">
 <thead>
 <tr>
@@ -346,9 +346,9 @@ omp -p --no-session --model deepseek/deepseek-v4-flash --thinking off &quot;$PRO
 <p>JSON 模式那两行最需要在你的封装里处理。Pi 把 401 或 400 错误写进了事件流，退出码却是 0；我上次拿 Pi 1.5.0 和 OpenCode 对比时也是这样，见<a href="/zh/blog/pi-coding-agent-vs-opencode/#%E6%97%A0%E4%BA%BA%E5%80%BC%E5%AE%88%E6%97%B6%E7%9A%84%E6%9D%83%E9%99%90%E4%B8%8E%E9%80%80%E5%87%BA%E7%A0%81">那篇</a>。用 JSON 模式驱动 Pi 时，要看最后一条消息：这几次运行里它带着 <code class="post-code--single">&quot;stopReason&quot;:&quot;error&quot;</code> 和 <code class="post-code--single">errorMessage</code>，而退出码是 0。</p>
 <p>模型名不存在时，Pi 1.6.0 打出的还是每次都会出现的那条&quot;not found ... Using custom model id&quot;警告，然后照样发请求，由 DeepSeek 拒掉。所以这条警告分辨不出你是不是写错了名字。omp 则在本地直接拒绝：&quot;Model ... not found&quot;，并提示用 <code class="post-code--spaced">omp models find</code> 查。</p>
 <p>两个工具都会一直读管道输入，直到它关闭，所以流水线如果没关掉标准输入，两个都会挂住。omp 至少会说出来：&quot;Reading prompt from piped stdin (waiting for EOF; Ctrl+C to abort)&quot;，之后每 10 秒打一行状态；Pi 什么都不打印。Orbi 在 Pi 上踩过这个坑，现在每个会话都把标准输入设成 <code class="post-code--single">/dev/null</code>（<a href="https://github.com/orbi-build/orbi/issues/1562">orbi#1562</a>）。</p>
-<p>收到 SIGTERM 时，两边都以 143 退出，什么都不回滚。修改在信号之前已经写下的（Pi 在第 3、4 秒，omp 在第 4.5 秒），改过的 <code class="post-code--single">slugify.py</code> 就留在工作区里。进程被杀之后，先检查工作区再复用。</p>
+<p>收到 SIGTERM 时，两边都以 143 退出，什么都不回滚。如果信号到来前修改已经写入（Pi 在第 3、4 秒，omp 在第 4.5 秒），改过的 <code class="post-code--single">slugify.py</code> 就会留在工作区里。进程被杀之后，先检查工作区再复用。</p>
 <h2 id="没人盯着时-omp-的审批模式">没人盯着时 omp 的审批模式</h2>
-<p>omp 用 <code class="post-code--single">tools.approvalMode</code> 检查每个工具调用。它的源码注释写着这个设置默认是 <code class="post-code--single">yolo</code>，也就是全部放行，和我看到的一致：上面默认参数的那些运行都不需要加任何参数。我又用更严的模式在单次模式下跑了编程任务：<code class="post-code--single">write</code> 两次，<code class="post-code--single">always-ask</code> 四次（文本模式、JSON 模式各两次）。</p>
+<p>omp 用 <code class="post-code--single">tools.approvalMode</code> 检查每个工具调用。它的源码注释写着这个设置默认是 <code class="post-code--single">yolo</code>，也就是全部放行，和我看到的一致：前面那些不加参数的运行都没被拦。我又用更严的模式在单次模式下跑了编程任务：<code class="post-code--single">write</code> 两次，<code class="post-code--single">always-ask</code> 四次（文本模式、JSON 模式各两次）。</p>
 <p class="post-table-hint" hidden>左右滑动查看所有列。</p><div class="post-table-scroll" tabindex="0" role="region" aria-label="左右滑动查看所有列。"><table class="table-comparison">
 <thead>
 <tr>
@@ -379,8 +379,8 @@ omp -p --no-session --model deepseek/deepseek-v4-flash --thinking off &quot;$PRO
 </tbody></table></div>
 <p>没有一次卡住。每个被拒的调用都以&quot;requires approval but no interactive UI available&quot;返回给模型，并提示去设 <code class="post-code--single">tools.approvalMode</code> 或在配置里放行这个工具。模型在最后的回答里如实说了被挡住（&quot;Blocked: cannot run or edit anything&quot;），但进程照样以正常的 <code class="post-code--single">stop</code> 退出，退出码 0。所以在单次模式下，更严的审批模式能用来禁止写文件或执行命令，却不能用来等一个人来批准，而且退出码不会告诉你的脚本这次活被拒了。</p>
 <p>Pi 根本没有审批这一步。它的<a href="https://pi.dev/docs/latest/security">安全文档</a>也这么写；想拦某个工具，要靠扩展或 <code class="post-code--single">--exclude-tools</code>，OpenCode 那篇里有一个拦 <code class="post-code--single">rm</code> 的<a href="/zh/blog/pi-coding-agent-vs-opencode/#%E6%97%A0%E4%BA%BA%E5%80%BC%E5%AE%88%E6%97%B6%E7%9A%84%E6%9D%83%E9%99%90%E4%B8%8E%E9%80%80%E5%87%BA%E7%A0%81">小扩展</a>。两个工具都不是沙箱，无人值守时把它们放进随时可以扔掉的容器或虚拟机里。</p>
-<h2 id="pi-vs-omp-无人值守该用哪个">Pi vs omp：无人值守该用哪个</h2>
-<p>如果你已经把 agent 放进沙箱，并且每次运行后都检查测试和改动，那剩下的判断就落在出错处理和提示词大小上。</p>
+<h2 id="无人值守该用哪个">无人值守该用哪个</h2>
+<p>如果你已经把 agent 放进沙箱，并且每次运行后都检查测试和改动，那主要看出错处理和提示词大小。</p>
 <p>想要现成的安全限制，我会选 omp：有独立退出码的花费上限、时间上限、我测过的两种输出模式下 API 出错都返回非零、能拒绝写入的审批模式，卡在标准输入时还会说出来。代价是固定提示词大得多，你的服务商不缓存的话，这笔钱很明显。</p>
 <p>想要最小的提示词、一分钟就能看完的工具面，并且愿意自己补上限制，我会选 Pi：接 <code class="post-code--spaced">&lt; /dev/null</code>、设超时、JSON 模式下检查 <code class="post-code--single">&quot;stopReason&quot;:&quot;error&quot;</code>。不管选哪个，都要按测试和改动判断一次运行成没成。这次测试里，两个工具都出现过什么都没做却以 0 退出的情况。</p>
 <h2 id="orbi-为什么继续用-pi">Orbi 为什么继续用 Pi</h2>
