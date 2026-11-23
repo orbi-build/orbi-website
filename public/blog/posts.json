@@ -2,7 +2,7 @@
   {
     "slug": "pi-vs-oh-my-pi",
     "title": "Pi vs omp (Oh My Pi): same model, run unattended",
-    "summary": "Same model, same task: omp used 3.9× Pi's tokens but cost 1.2× at DeepSeek list price. With a bad API key in JSON mode, Pi exited 0 and omp exited 1.",
+    "summary": "Same model, same task: omp used 3.9× Pi's tokens but cost 1.2× at DeepSeek's list price. With a bad API key in JSON mode, Pi exited 0 and omp exited 1.",
     "zhSlug": null,
     "zhTitle": null,
     "related": []

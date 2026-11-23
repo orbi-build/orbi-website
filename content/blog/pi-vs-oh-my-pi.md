@@ -1,14 +1,14 @@
 ---
 title: Pi vs omp (Oh My Pi): same model, run unattended
 date: 2026-11-23
-summary: Same model, same task: omp used 3.9× Pi's tokens but cost 1.2× at DeepSeek list price. With a bad API key in JSON mode, Pi exited 0 and omp exited 1.
+summary: Same model, same task: omp used 3.9× Pi's tokens but cost 1.2× at DeepSeek's list price. With a bad API key in JSON mode, Pi exited 0 and omp exited 1.
 lang: en
 author: Larry 🍀 Orbi
 image: /img/blog-pi-vs-omp-card.png
 series: pi
 ---
 
-Pi is a small open-source coding agent for the terminal, and omp (Oh My Pi) is a fork of it that adds a lot more built in: 16 default tools instead of Pi's four, approval modes, a cost cap, subagents, web search and language-server tools. This Pi vs omp comparison is for people who want to run one of them without a person watching: from a script, a cron job, CI, or a runner like Orbi. I ran both on 23 November 2026 against the same model and the same task, then poked at the failure cases that matter when nobody is there to press a key.
+Pi is a small open-source coding agent for the terminal, and omp (Oh My Pi) is a fork of it that adds a lot more built in: 16 tools on by default instead of Pi's four, approval modes, a cost cap, subagents, web search and language-server tools. This Pi vs omp comparison is for people who want to run one of them without a person watching: from a script, a cron job, CI, or a runner like Orbi. I ran both on 23 November 2026 against the same model and the same task, then poked at the failure cases that matter when nobody is there to press a key.
 
 The short version: both fixed the bug every time. omp sent about 3.9 times as many tokens per task, but most of them were cache hits, so at DeepSeek's list price it cost about 1.2 times as much. The bigger difference for unattended use is failure handling. With a bad API key or an unknown model in JSON output mode, Pi exited 0 and omp exited 1. omp also has approval modes; in print mode they deny instead of hanging, and the run still exits 0.
 
@@ -20,7 +20,7 @@ omp's README calls it a fork of [Pi](https://github.com/badlogic/pi-mono) by Mar
 
 | | Pi 1.6.0 | omp 19.1.0 |
 |---|---|---|
-| Built-in tools | 4: read, bash, edit, write | 16 on by default, 15 more optional |
+| Built-in tools | 4 on by default (read, bash, edit, write); grep, find and ls ship off | 16 on by default, 13 more optional |
 | Tool approval | None; every tool call runs | `--approval-mode` always-ask, always-ask-cached, write or yolo |
 | Spend limit | None | `--max-cost` (print mode exits 3), `--warn-cost` |
 | Time limit | None built in | `--max-time` |
@@ -33,14 +33,18 @@ The extra omp tools include grep and glob, a Python and JavaScript `eval` kernel
 
 Each run started a fresh Docker container (`node:22-bookworm`) with an empty home directory: no config files, no `AGENTS.md`, no skills. I installed Pi 1.6.0 (released 20 November) with npm and omp 19.1.0 (released 21 November) with Bun 1.4.4. Both called the DeepSeek API directly with thinking off. I asked for `deepseek-v4-flash`; DeepSeek's [pricing page](https://api-docs.deepseek.com/quick_start/pricing) says that legacy name is now served by `deepseek-flash` (DeepSeek-V4.1-Flash), so both tools hit the same model.
 
-The commands:
+Install and run (both read the key from `DEEPSEEK_API_KEY`):
 
 ```bash
+npm install -g @earendil-works/pi-coding-agent@1.6.0
+bun install -g @oh-my-pi/pi-coding-agent@19.1.0
+export DEEPSEEK_API_KEY=...   # your DeepSeek key
+
 pi  -p --no-session --provider deepseek --model deepseek-v4-flash --thinking off "$PROMPT" < /dev/null
 omp -p --no-session --model deepseek/deepseek-v4-flash --thinking off "$PROMPT" < /dev/null
 ```
 
-Pi needs `--provider deepseek` here. With only `--model deepseek/deepseek-v4-flash`, Pi 1.6.0 picked OpenRouter's model of that name and failed with "No API key found for openrouter". omp read the same string as DeepSeek's own model.
+Pi needs `--provider deepseek` here. With only `--model deepseek/deepseek-v4-flash`, Pi 1.6.0 called the name "ambiguous across providers" (OpenRouter and Vercel AI Gateway both list it) and exited 1; omp read the same string as DeepSeek's own model. Even the working Pi command prints `Warning: Model "deepseek-v4-flash" not found for provider "deepseek". Using custom model id.` on every run, because Pi's catalog does not list that name. Pi still sends the request, and DeepSeek accepts it.
 
 The task was a small Python repository whose `slugify()` kept punctuation, so two of its three unit tests failed. The prompt asked the agent to fix `slugify.py` without touching the tests and to run the tests before finishing. I judged each run by its exit code, whether `python3 -m unittest` passed afterwards, and which files `git status` showed as changed.
 
@@ -58,15 +62,15 @@ Each tool ran the task six times: three in text mode and three in JSON mode, whi
 | of which cache hits | 9,088 | 40,661 |
 | Mean cost per run, DeepSeek peak price | $0.00098 | $0.00117 |
 
-Both tools made the same fix, matching runs of letters and digits with `re.findall` instead of splitting on whitespace. "Ran the tests itself" means a `__pycache__` directory existed before my own test run.
+Every run made the same fix in substance: treat any run of non-alphanumeric characters as a separator instead of splitting only on whitespace. Most runs used `re.findall(r"[a-z0-9]+", ...)`; a few used `re.split` on non-alphanumeric runs. "Ran the tests itself" means a `__pycache__` directory existed before my own test run.
 
 The token gap comes from the fixed prompt. Asked only to "Reply with the single word OK", Pi sent 1,502 tokens and omp sent 7,839, about 5.2 times as many, almost all of it system prompt and tool definitions. On the coding task the ratio was 3.9.
 
-The cost gap is much smaller because DeepSeek bills cache hits at 2% of the cache-miss input price ($0.006 vs $0.3 per million at peak). Most of omp's extra tokens were cache hits even in fresh containers, because DeepSeek keeps the cache on its side. Price everything as a cache miss and the same averages come to about $0.0131 for omp and $0.0037 for Pi, a 3.6× gap. So the real difference depends on how often your provider serves the prompt from cache. Each tool reports its own cost, but Pi had no price for this model name, so I used DeepSeek's published rates for both columns.
+The cost gap is much smaller because DeepSeek bills cache hits at 2% of the cache-miss input price ($0.006 vs $0.3 per million at peak). Most of omp's extra tokens were cache hits even in fresh containers, because DeepSeek keeps the cache on its side. Price everything as a cache miss and the same averages come to about $0.0131 for omp and $0.0037 for Pi, a 3.6× gap. So the real difference depends on how often your provider serves the prompt from cache. Don't compare the costs the tools report themselves. Pi's own total for the first run was $0.00378, about four times the figure here, because it has no catalog price for this model name; omp's own figure used DeepSeek's off-peak rate. Both columns above use DeepSeek's published peak rate. Off-peak is half for both, so the ratio stays the same.
 
 ## Exit codes and failures
 
-These are the cases a runner has to handle without a person. Each ran once per tool, except where noted.
+These are the cases a runner has to handle without a person. Each ran once per tool, except the SIGTERM row.
 
 | Case | Pi 1.6.0 | omp 19.1.0 |
 |---|---|---|
@@ -80,7 +84,7 @@ These are the cases a runner has to handle without a person. Each ran once per t
 
 The JSON-mode rows are the ones to fix in your wrapper. Pi printed the 401 or 400 error in its event stream and still exited 0, the same behaviour I saw in Pi 1.5.0 when I compared it with OpenCode in [that post](/blog/pi-coding-agent-vs-opencode/#permissions-exit-codes-and-unattended-runs). If you drive Pi in JSON mode, check the final message: in these runs it carried `"stopReason":"error"` and an `errorMessage`, while the exit status said 0.
 
-On an unknown model, Pi 1.6.0 warned "Model ... not found for provider deepseek. Using custom model id." and sent the request anyway; DeepSeek rejected it. omp refused locally with "Model ... not found" and pointed to `omp models find`.
+On an unknown model, Pi 1.6.0 printed the same "not found ... Using custom model id" warning it prints on every run with this model and sent the request anyway; DeepSeek rejected it. So that warning cannot tell you whether you made a typo. omp refused locally with "Model ... not found" and pointed to `omp models find`.
 
 Both tools read piped stdin until it closes, so a runner that leaves stdin open will hang either one. omp at least says so: "Reading prompt from piped stdin (waiting for EOF; Ctrl+C to abort)", then a status line every 10 seconds. Pi printed nothing. Orbi hit this with Pi and now starts every session with stdin set to `/dev/null` ([orbi#1562](https://github.com/orbi-build/orbi/issues/1562)).
 
@@ -88,13 +92,13 @@ A SIGTERM stops both with 143 and rolls nothing back. When the edit landed befor
 
 ## omp's approval modes with nobody watching
 
-omp checks tool calls against `tools.approvalMode`. Its source says the setting defaults to `yolo`, which runs everything, and that matched what I saw: the default runs above needed no flag. I also ran the coding task twice with each stricter mode in print mode.
+omp checks tool calls against `tools.approvalMode`. Its source says the setting defaults to `yolo`, which runs everything, and that matched what I saw: the default runs above needed no flag. I also ran the coding task in print mode with each stricter mode: `write` twice, and `always-ask` four times (twice in text mode, twice in JSON mode).
 
 | Mode | What happened | Tests | Exit |
 |---|---|---|---|
 | default (yolo) | Edited and ran tests | Pass, 6/6 | 0 |
 | `--approval-mode write` | Edited `slugify.py`; every way to run Python was denied | Pass on my run, never run by the agent, 2/2 | 0 |
-| `--approval-mode always-ask` | Could read files only; edits and shell denied | Fail, nothing changed, 2/2 | 0 |
+| `--approval-mode always-ask` | Could read files only; edits and shell denied | Fail, nothing changed, 4/4 | 0 |
 
 Nothing hung. Each denied call came back to the model as "requires approval but no interactive UI available", with a hint to set `tools.approvalMode` or allow the tool in config. The model reported the block honestly in its final answer ("Blocked: cannot run or edit anything"), but the process still exited 0 with a normal `stop`. So a stricter mode in print mode is a way to stop writes or commands, not a way to get a person's approval, and the exit code will not tell your script that the work was refused.
 
@@ -114,7 +118,7 @@ I [picked Pi without a comparison](/blog/orbi-on-pi-coding-agent/#why-we-stay-on
 
 ## Limits
 
-One Linux machine, one day, one model (DeepSeek V4.1 Flash, thinking off), one small task. Six coding runs per tool, two per approval mode, one per failure case. This says nothing about which agent writes better code on hard tasks; Composio's benchmark is the place for that. omp has far more settings than I touched, and its defaults may change between releases. Versions: Pi 1.6.0 and omp 19.1.0.
+One Linux machine, one day, one model (DeepSeek V4.1 Flash, thinking off), one small task. Six coding runs per tool; for omp's stricter modes, two `write` and four `always-ask` runs; three SIGTERM timings per tool (plus one more for omp); one run for each other failure case. This says nothing about which agent writes better code on hard tasks; Composio's benchmark is the place for that. omp has far more settings than I touched, and its defaults may change between releases. Versions: Pi 1.6.0 and omp 19.1.0.
 
 ## Related
 

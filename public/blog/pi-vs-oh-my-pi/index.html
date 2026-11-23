@@ -4,16 +4,16 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Pi vs omp (Oh My Pi): same model, run unattended | Orbi</title>
-  <meta name="description" content="Same model, same task: omp used 3.9× Pi's tokens but cost 1.2× at DeepSeek list price. With a bad API key in JSON mode, Pi exited 0 and omp exited 1.">
+  <meta name="description" content="Same model, same task: omp used 3.9× Pi's tokens but cost 1.2× at DeepSeek's list price. With a bad API key in JSON mode, Pi exited 0 and omp exited 1.">
   <link rel="canonical" href="https://orbi.build/blog/pi-vs-oh-my-pi/">
   <meta property="og:type" content="article">
   <meta property="og:title" content="Pi vs omp (Oh My Pi): same model, run unattended">
-  <meta property="og:description" content="Same model, same task: omp used 3.9× Pi's tokens but cost 1.2× at DeepSeek list price. With a bad API key in JSON mode, Pi exited 0 and omp exited 1.">
+  <meta property="og:description" content="Same model, same task: omp used 3.9× Pi's tokens but cost 1.2× at DeepSeek's list price. With a bad API key in JSON mode, Pi exited 0 and omp exited 1.">
   <meta property="og:url" content="https://orbi.build/blog/pi-vs-oh-my-pi/">
   <meta property="og:image" content="https://orbi.build/img/blog-pi-vs-omp-card.png">
   <meta property="og:image:alt" content="Pi vs omp (Oh My Pi): same model, run unattended">
   <meta property="article:published_time" content="2026-11-23">
-  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"Pi vs omp (Oh My Pi): same model, run unattended","datePublished":"2026-11-23","author":{"@type":"Person","name":"Larry 🍀 Orbi","url":"https://orbi.build/about/larry-orbi/","sameAs":["https://github.com/xqliu","https://x.com/xqliu"]},"publisher":{"@type":"Organization","name":"Orbi","url":"https://orbi.build/","logo":{"@type":"ImageObject","url":"https://orbi.build/logo-mark.svg"}},"mainEntityOfPage":"https://orbi.build/blog/pi-vs-oh-my-pi/","image":"https://orbi.build/img/blog-pi-vs-omp-card.png","inLanguage":"en","description":"Same model, same task: omp used 3.9× Pi's tokens but cost 1.2× at DeepSeek list price. With a bad API key in JSON mode, Pi exited 0 and omp exited 1.","url":"https://orbi.build/blog/pi-vs-oh-my-pi/"}</script>
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"Pi vs omp (Oh My Pi): same model, run unattended","datePublished":"2026-11-23","author":{"@type":"Person","name":"Larry 🍀 Orbi","url":"https://orbi.build/about/larry-orbi/","sameAs":["https://github.com/xqliu","https://x.com/xqliu"]},"publisher":{"@type":"Organization","name":"Orbi","url":"https://orbi.build/","logo":{"@type":"ImageObject","url":"https://orbi.build/logo-mark.svg"}},"mainEntityOfPage":"https://orbi.build/blog/pi-vs-oh-my-pi/","image":"https://orbi.build/img/blog-pi-vs-omp-card.png","inLanguage":"en","description":"Same model, same task: omp used 3.9× Pi's tokens but cost 1.2× at DeepSeek's list price. With a bad API key in JSON mode, Pi exited 0 and omp exited 1.","url":"https://orbi.build/blog/pi-vs-oh-my-pi/"}</script>
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <meta name="theme-color" content="#06151b">
 
@@ -152,7 +152,7 @@
           <h1 id="post-title">Pi vs omp (Oh My Pi): same model, run unattended</h1>
           <p class="post-byline"><a href="/about/larry-orbi/">Larry 🍀 Orbi</a> · <time datetime="2026-11-23">2026-11-23</time></p>
           <p class="post-series">Part of: <a href="/guides/pi-coding-agent/">How Orbi is built on the Pi coding agent</a></p>
-          <p class="hero-lede">Same model, same task: omp used 3.9× Pi's tokens but cost 1.2× at DeepSeek list price. With a bad API key in JSON mode, Pi exited 0 and omp exited 1.</p>
+          <p class="hero-lede">Same model, same task: omp used 3.9× Pi's tokens but cost 1.2× at DeepSeek's list price. With a bad API key in JSON mode, Pi exited 0 and omp exited 1.</p>
         </section>
       </div>
     </div>
@@ -187,7 +187,7 @@
           <li><a class="post-toc-link" href="#related">Related</a></li>
           </ol>
         </details>
-<p>Pi is a small open-source coding agent for the terminal, and omp (Oh My Pi) is a fork of it that adds a lot more built in: 16 default tools instead of Pi&#39;s four, approval modes, a cost cap, subagents, web search and language-server tools. This Pi vs omp comparison is for people who want to run one of them without a person watching: from a script, a cron job, CI, or a runner like Orbi. I ran both on 23 November 2026 against the same model and the same task, then poked at the failure cases that matter when nobody is there to press a key.</p>
+<p>Pi is a small open-source coding agent for the terminal, and omp (Oh My Pi) is a fork of it that adds a lot more built in: 16 tools on by default instead of Pi&#39;s four, approval modes, a cost cap, subagents, web search and language-server tools. This Pi vs omp comparison is for people who want to run one of them without a person watching: from a script, a cron job, CI, or a runner like Orbi. I ran both on 23 November 2026 against the same model and the same task, then poked at the failure cases that matter when nobody is there to press a key.</p>
 <p>The short version: both fixed the bug every time. omp sent about 3.9 times as many tokens per task, but most of them were cache hits, so at DeepSeek&#39;s list price it cost about 1.2 times as much. The bigger difference for unattended use is failure handling. With a bad API key or an unknown model in JSON output mode, Pi exited 0 and omp exited 1. omp also has approval modes; in print mode they deny instead of hanging, and the run still exits 0.</p><aside class="post-cta-inline"><span>Orbi takes your Issues all the way to a release.</span><a class="button button-signal" data-cta="post-inline-start" href="/cloud/login">Try Orbi Cloud free →</a></aside>
 <p>I&#39;m Larry 🍀 Orbi, the creator of Orbi. Orbi runs the upstream Pi agent for every delivery, so I had no omp setup to defend and no omp runs of my own before this test.</p>
 <h2 id="oh-my-pi-vs-pi-what-omp-changes">Oh My Pi vs Pi: what omp changes</h2>
@@ -202,8 +202,8 @@
 </thead>
 <tbody><tr>
 <th scope="row">Built-in tools</th>
-<td>4: read, bash, edit, write</td>
-<td>16 on by default, 15 more optional</td>
+<td>4 on by default (read, bash, edit, write); grep, find and ls ship off</td>
+<td>16 on by default, 13 more optional</td>
 </tr>
 <tr>
 <th scope="row">Tool approval</th>
@@ -234,11 +234,15 @@
 <p>The extra omp tools include grep and glob, a Python and JavaScript <code class="post-code--single">eval</code> kernel, <code class="post-code--single">task</code> for subagents, <code class="post-code--single">web_search</code>, <code class="post-code--single">lsp</code>, <code class="post-code--single">ast_edit</code> and a debugger. If you want to know which one writes better code across many tasks, Composio ran <a href="https://composio.dev/content/pi-vs-omp">a 30-task benchmark</a> with the same model on both. I did not try to repeat it. This post is about how each one behaves when it runs on its own.</p>
 <h2 id="setup">Setup</h2>
 <p>Each run started a fresh Docker container (<code class="post-code--single">node:22-bookworm</code>) with an empty home directory: no config files, no <code class="post-code--single">AGENTS.md</code>, no skills. I installed Pi 1.6.0 (released 20 November) with npm and omp 19.1.0 (released 21 November) with Bun 1.4.4. Both called the DeepSeek API directly with thinking off. I asked for <code class="post-code--single">deepseek-v4-flash</code>; DeepSeek&#39;s <a href="https://api-docs.deepseek.com/quick_start/pricing">pricing page</a> says that legacy name is now served by <code class="post-code--single">deepseek-flash</code> (DeepSeek-V4.1-Flash), so both tools hit the same model.</p>
-<p>The commands:</p>
-<div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="Copied">Copy</button><pre><code class="language-bash" data-copy-source>pi  -p --no-session --provider deepseek --model deepseek-v4-flash --thinking off &quot;$PROMPT&quot; &lt; /dev/null
+<p>Install and run (both read the key from <code class="post-code--single">DEEPSEEK_API_KEY</code>):</p>
+<div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="Copied">Copy</button><pre><code class="language-bash" data-copy-source>npm install -g @earendil-works/pi-coding-agent@1.6.0
+bun install -g @oh-my-pi/pi-coding-agent@19.1.0
+export DEEPSEEK_API_KEY=...   # your DeepSeek key
+
+pi  -p --no-session --provider deepseek --model deepseek-v4-flash --thinking off &quot;$PROMPT&quot; &lt; /dev/null
 omp -p --no-session --model deepseek/deepseek-v4-flash --thinking off &quot;$PROMPT&quot; &lt; /dev/null
 </code></pre></div>
-<p>Pi needs <code class="post-code--spaced">--provider deepseek</code> here. With only <code class="post-code--spaced">--model deepseek/deepseek-v4-flash</code>, Pi 1.6.0 picked OpenRouter&#39;s model of that name and failed with &quot;No API key found for openrouter&quot;. omp read the same string as DeepSeek&#39;s own model.</p>
+<p>Pi needs <code class="post-code--spaced">--provider deepseek</code> here. With only <code class="post-code--spaced">--model deepseek/deepseek-v4-flash</code>, Pi 1.6.0 called the name &quot;ambiguous across providers&quot; (OpenRouter and Vercel AI Gateway both list it) and exited 1; omp read the same string as DeepSeek&#39;s own model. Even the working Pi command prints <code class="post-code--spaced">Warning: Model &quot;deepseek-v4-flash&quot; not found for provider &quot;deepseek&quot;. Using custom model id.</code> on every run, because Pi&#39;s catalog does not list that name. Pi still sends the request, and DeepSeek accepts it.</p>
 <p>The task was a small Python repository whose <code class="post-code--single">slugify()</code> kept punctuation, so two of its three unit tests failed. The prompt asked the agent to fix <code class="post-code--single">slugify.py</code> without touching the tests and to run the tests before finishing. I judged each run by its exit code, whether <code class="post-code--spaced">python3 -m unittest</code> passed afterwards, and which files <code class="post-code--spaced">git status</code> showed as changed.</p>
 <h2 id="results-on-the-coding-task">Results on the coding task</h2>
 <p>Each tool ran the task six times: three in text mode and three in JSON mode, which I used to read token counts.</p>
@@ -286,11 +290,11 @@ omp -p --no-session --model deepseek/deepseek-v4-flash --thinking off &quot;$PRO
 <td>$0.00117</td>
 </tr>
 </tbody></table></div>
-<p>Both tools made the same fix, matching runs of letters and digits with <code class="post-code--single">re.findall</code> instead of splitting on whitespace. &quot;Ran the tests itself&quot; means a <code class="post-code--single">__pycache__</code> directory existed before my own test run.</p>
+<p>Every run made the same fix in substance: treat any run of non-alphanumeric characters as a separator instead of splitting only on whitespace. Most runs used <code class="post-code--spaced">re.findall(r&quot;[a-z0-9]+&quot;, ...)</code>; a few used <code class="post-code--single">re.split</code> on non-alphanumeric runs. &quot;Ran the tests itself&quot; means a <code class="post-code--single">__pycache__</code> directory existed before my own test run.</p>
 <p>The token gap comes from the fixed prompt. Asked only to &quot;Reply with the single word OK&quot;, Pi sent 1,502 tokens and omp sent 7,839, about 5.2 times as many, almost all of it system prompt and tool definitions. On the coding task the ratio was 3.9.</p>
-<p>The cost gap is much smaller because DeepSeek bills cache hits at 2% of the cache-miss input price ($0.006 vs $0.3 per million at peak). Most of omp&#39;s extra tokens were cache hits even in fresh containers, because DeepSeek keeps the cache on its side. Price everything as a cache miss and the same averages come to about $0.0131 for omp and $0.0037 for Pi, a 3.6× gap. So the real difference depends on how often your provider serves the prompt from cache. Each tool reports its own cost, but Pi had no price for this model name, so I used DeepSeek&#39;s published rates for both columns.</p>
+<p>The cost gap is much smaller because DeepSeek bills cache hits at 2% of the cache-miss input price ($0.006 vs $0.3 per million at peak). Most of omp&#39;s extra tokens were cache hits even in fresh containers, because DeepSeek keeps the cache on its side. Price everything as a cache miss and the same averages come to about $0.0131 for omp and $0.0037 for Pi, a 3.6× gap. So the real difference depends on how often your provider serves the prompt from cache. Don&#39;t compare the costs the tools report themselves. Pi&#39;s own total for the first run was $0.00378, about four times the figure here, because it has no catalog price for this model name; omp&#39;s own figure used DeepSeek&#39;s off-peak rate. Both columns above use DeepSeek&#39;s published peak rate. Off-peak is half for both, so the ratio stays the same.</p>
 <h2 id="exit-codes-and-failures">Exit codes and failures</h2>
-<p>These are the cases a runner has to handle without a person. Each ran once per tool, except where noted.</p>
+<p>These are the cases a runner has to handle without a person. Each ran once per tool, except the SIGTERM row.</p>
 <p class="post-table-hint" hidden>Swipe horizontally to see all columns.</p><div class="post-table-scroll" tabindex="0" role="region" aria-label="Swipe horizontally to see all columns."><table class="table-comparison">
 <thead>
 <tr>
@@ -336,11 +340,11 @@ omp -p --no-session --model deepseek/deepseek-v4-flash --thinking off &quot;$PRO
 </tr>
 </tbody></table></div>
 <p>The JSON-mode rows are the ones to fix in your wrapper. Pi printed the 401 or 400 error in its event stream and still exited 0, the same behaviour I saw in Pi 1.5.0 when I compared it with OpenCode in <a href="/blog/pi-coding-agent-vs-opencode/#permissions-exit-codes-and-unattended-runs">that post</a>. If you drive Pi in JSON mode, check the final message: in these runs it carried <code class="post-code--single">&quot;stopReason&quot;:&quot;error&quot;</code> and an <code class="post-code--single">errorMessage</code>, while the exit status said 0.</p>
-<p>On an unknown model, Pi 1.6.0 warned &quot;Model ... not found for provider deepseek. Using custom model id.&quot; and sent the request anyway; DeepSeek rejected it. omp refused locally with &quot;Model ... not found&quot; and pointed to <code class="post-code--spaced">omp models find</code>.</p>
+<p>On an unknown model, Pi 1.6.0 printed the same &quot;not found ... Using custom model id&quot; warning it prints on every run with this model and sent the request anyway; DeepSeek rejected it. So that warning cannot tell you whether you made a typo. omp refused locally with &quot;Model ... not found&quot; and pointed to <code class="post-code--spaced">omp models find</code>.</p>
 <p>Both tools read piped stdin until it closes, so a runner that leaves stdin open will hang either one. omp at least says so: &quot;Reading prompt from piped stdin (waiting for EOF; Ctrl+C to abort)&quot;, then a status line every 10 seconds. Pi printed nothing. Orbi hit this with Pi and now starts every session with stdin set to <code class="post-code--single">/dev/null</code> (<a href="https://github.com/orbi-build/orbi/issues/1562">orbi#1562</a>).</p>
 <p>A SIGTERM stops both with 143 and rolls nothing back. When the edit landed before the signal (Pi at 3 and 4 seconds, omp at 4.5 seconds), the changed <code class="post-code--single">slugify.py</code> stayed in the working tree. After a kill, check the tree before you reuse it.</p>
 <h2 id="omp-s-approval-modes-with-nobody-watching">omp&#39;s approval modes with nobody watching</h2>
-<p>omp checks tool calls against <code class="post-code--single">tools.approvalMode</code>. Its source says the setting defaults to <code class="post-code--single">yolo</code>, which runs everything, and that matched what I saw: the default runs above needed no flag. I also ran the coding task twice with each stricter mode in print mode.</p>
+<p>omp checks tool calls against <code class="post-code--single">tools.approvalMode</code>. Its source says the setting defaults to <code class="post-code--single">yolo</code>, which runs everything, and that matched what I saw: the default runs above needed no flag. I also ran the coding task in print mode with each stricter mode: <code class="post-code--single">write</code> twice, and <code class="post-code--single">always-ask</code> four times (twice in text mode, twice in JSON mode).</p>
 <p class="post-table-hint" hidden>Swipe horizontally to see all columns.</p><div class="post-table-scroll" tabindex="0" role="region" aria-label="Swipe horizontally to see all columns."><table class="table-comparison">
 <thead>
 <tr>
@@ -365,7 +369,7 @@ omp -p --no-session --model deepseek/deepseek-v4-flash --thinking off &quot;$PRO
 <tr>
 <th scope="row"><code class="post-code--spaced">--approval-mode always-ask</code></th>
 <td>Could read files only; edits and shell denied</td>
-<td>Fail, nothing changed, 2/2</td>
+<td>Fail, nothing changed, 4/4</td>
 <td>0</td>
 </tr>
 </tbody></table></div>
@@ -378,7 +382,7 @@ omp -p --no-session --model deepseek/deepseek-v4-flash --thinking off &quot;$PRO
 <h2 id="why-orbi-stays-on-pi">Why Orbi stays on Pi</h2>
 <p>I <a href="/blog/orbi-on-pi-coding-agent/#why-we-stay-on-pi">picked Pi without a comparison</a>, and this test did not give me a reason to switch. Orbi already does the things omp adds for unattended work in its own runner: it sets stdin to <code class="post-code--single">/dev/null</code>, enforces timeouts, classifies the result from the session&#39;s evidence rather than Pi&#39;s exit code, and runs each delivery in its own checkout. Then an independent review and the merge gate decide whether the change ships. A smaller fixed prompt is cheaper on every one of those runs. <a href="/cloud/?ref=blog-pi-vs-omp">Orbi Cloud</a> runs that pipeline for you, from a GitHub Issue to a merged pull request and a tagged release.</p>
 <h2 id="limits">Limits</h2>
-<p>One Linux machine, one day, one model (DeepSeek V4.1 Flash, thinking off), one small task. Six coding runs per tool, two per approval mode, one per failure case. This says nothing about which agent writes better code on hard tasks; Composio&#39;s benchmark is the place for that. omp has far more settings than I touched, and its defaults may change between releases. Versions: Pi 1.6.0 and omp 19.1.0.</p>
+<p>One Linux machine, one day, one model (DeepSeek V4.1 Flash, thinking off), one small task. Six coding runs per tool; for omp&#39;s stricter modes, two <code class="post-code--single">write</code> and four <code class="post-code--single">always-ask</code> runs; three SIGTERM timings per tool (plus one more for omp); one run for each other failure case. This says nothing about which agent writes better code on hard tasks; Composio&#39;s benchmark is the place for that. omp has far more settings than I touched, and its defaults may change between releases. Versions: Pi 1.6.0 and omp 19.1.0.</p>
 <aside class="post-cta">
   <h2>Orbi takes your Issues all the way to a release.</h2>
   <a class="button button-signal" data-cta="post-start" href="/cloud/login">Try Orbi Cloud free →</a>
