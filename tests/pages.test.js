@@ -1688,6 +1688,24 @@ describe("one unified footer on every content page", () => {
     }
   });
 
+  // Issue #1435: LaunchOnIt's crawler reads the server-rendered home page and
+  // flips Orbi's directory entry from nofollow to dofollow once it finds this
+  // badge, so the embed ships verbatim from the vendor snippet (link and image
+  // URL unchanged, the & escaped as &amp;) in the file's own 151x48 box — and
+  // stays crawlable.
+  it("carries the LaunchOnIt featured badge in the footer, on en and zh (Issue #1435)", () => {
+    const badge = '<a href="https://launchon.it/products/orbi" target="_blank" rel="noopener noreferrer" title="Orbi - Featured on LaunchOnIt">'
+      + '<img src="https://launchon.it/api/badge/orbi?theme=light&amp;size=md&amp;type=featured" alt="Orbi - Featured on LaunchOnIt" width="151" height="48"></a>';
+    for (const output of ["index.html", "zh/index.html"]) {
+      const footer = footerRegion(shipped.get(output));
+      const occurrences = footer.split(badge).length - 1;
+      expect(occurrences, `${output}: the LaunchOnIt badge must ship exactly once in the footer`)
+        .toBe(1);
+      expect(footerAnchorTag(footer, "https://launchon.it/products/orbi"), `${output}: the badge must stay a crawlable backlink`)
+        .not.toContain("nofollow");
+    }
+  });
+
   it("carries the 11 compare deep dives, in the right language tree", () => {
     for (const page of content()) {
       const footer = footerRegion(shipped.get(page.output));
