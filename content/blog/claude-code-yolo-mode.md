@@ -1,33 +1,73 @@
 ---
-title: YOLO mode Claude Code vs auto mode: what I measured
+title: Claude --dangerously-skip-permissions (YOLO), tested
 date: 2026-10-13
-summary: YOLO mode in Claude Code is --dangerously-skip-permissions. I tested it against auto mode and the safer modes on 2.1.287: what runs, what stops injection.
+updated: 2026-11-23
+summary: --dangerously-skip-permissions makes Claude Code skip permission prompts (YOLO mode). I tested how to enable it, why it fails, and how auto mode compares.
 lang: en
 author: Larry 🍀 Orbi
 image: /img/blog-yolo-card.png
 mirror: claude-code-yolo-mode
 ---
 
-Search "YOLO mode Claude Code" and you're after one flag: `--dangerously-skip-permissions`, which runs every tool call without asking. The reason to reach for it is real. On a long task the permission prompts pile up, and after the tenth "allow this command?" you stop reading them. But the flag's own name warns you, and the docs only let you turn it on inside "isolated environments like containers, VMs, or dev containers without internet access."
+`--dangerously-skip-permissions` switches Claude Code into `bypassPermissions` mode, so tool calls run without asking you first. People call it YOLO mode, and it's for anyone who wants the permission prompts gone on long or unattended tasks. Below you get a measured table of what each permission mode lets through, every way to turn bypass permissions mode on, and why it sometimes doesn't take effect. The reason to reach for it is real. On a long task the prompts pile up, and after the tenth "allow this command?" you stop reading them. But the flag's own name warns you, and the docs only let you turn it on inside "isolated environments like containers, VMs, or dev containers without internet access."
 
 I'm Larry 🍀 Orbi, the creator of Orbi. Orbi runs coding agents unattended all day, so "how do I stop the prompts without handing over the keys" is a question I have to answer for real. This post is what I found when I tested YOLO mode against the four other permission modes, including the newer **auto mode**, which reviews each action with a second model instead of asking you. Auto mode handles most of what people open YOLO mode for, and the thing that actually stopped a data-exfiltration attempt in my tests was the model itself, not the permission mode.
 
-All numbers below are from Claude Code 2.1.287 (the stable release on 2026-10-13), the agent on `claude-sonnet-5-5`, run non-interactively with `claude -p` (auto mode's classifier, below, is a second model reviewing the first; the docs call it Sonnet 5, a different model from the `claude-sonnet-5-5` the agent runs on). Every number below comes from those runs, recorded per action.
+The mode table, the auto mode runs and the injection test are from Claude Code 2.1.287 (the stable release on 2026-10-13), the agent on `claude-sonnet-5-5`, run non-interactively with `claude -p` (auto mode's classifier, below, is a second model reviewing the first; the docs call it Sonnet 5, a different model from the `claude-sonnet-5-5` the agent runs on). Those numbers come from those runs, recorded per action. I re-tested the enable and troubleshooting sections on Claude Code 2.1.329 on 2026-11-23: one non-interactive `claude -p` run per case on the Haiku model, asking it to write a file outside the project as the probe, with my user settings excluded by `--setting-sources project`.
 
-## What YOLO mode does in Claude Code
+## What --dangerously-skip-permissions does in Claude Code
 
-`--dangerously-skip-permissions` turns on `bypassPermissions` mode. The documented equivalents:
+It starts the session in `bypassPermissions` mode, where Claude Code writes files, runs shell commands and makes network calls without asking; only deny rules, explicit ask rules and a few critical-path deletions still stop it.
+
+The documented equivalents:
 
 ```bash
 claude --dangerously-skip-permissions
 claude --permission-mode bypassPermissions
-# or in settings.json:
+# or in user settings, ~/.claude/settings.json (or pass it with --settings);
+# the project's .claude/settings.json ignores this value:
 # { "permissions": { "defaultMode": "bypassPermissions" } }
 ```
 
-You can't switch into it from a session you didn't start with it enabled. The first interactive session asks you to accept responsibility once, then records `skipDangerousModePermissionPrompt` so later sessions skip the dialog. On Linux and macOS it refuses to start as root or under `sudo` ("`--dangerously-skip-permissions cannot be used with root/sudo privileges for security reasons`") unless it detects a real sandbox around it. An administrator can block it entirely with `permissions.disableBypassPermissionsMode: "disable"` in managed settings.
+You can't switch into it from a session you didn't start with it enabled. The first interactive session asks you to accept responsibility once, then records `skipDangerousModePermissionPrompt` so later sessions skip the dialog. On Linux and macOS it refuses to start as root or under `sudo` unless it detects a real sandbox around it, and `permissions.disableBypassPermissionsMode: "disable"` blocks it; both show up in the [troubleshooting list](#why-dangerously-skip-permissions-still-asks-for-permission) below.
 
 Even in this mode, a few things still stop: an explicit `ask` rule, an `rm`/`rmdir` that targets a critical path like `rm -rf ~`, and a deny rule. Deny rules win in every mode, YOLO included. (The protected paths the table below refers to are a small set, chiefly `.git`, `.config/git` and `.claude`.)
+
+## How to enable bypass permissions in Claude Code
+
+I tried each way once on 2.1.329 with the outside-the-project write as the probe. "Took effect" means the session's `init` event reported `bypassPermissions` and the file landed on disk.
+
+- `claude --dangerously-skip-permissions`: took effect. `bypassPermissions`, file written.
+- `claude --permission-mode bypassPermissions`: took effect. `bypassPermissions`, file written.
+- `claude --settings '{"permissions":{"defaultMode":"bypassPermissions"}}'`: took effect. `bypassPermissions`, file written. The docs list `--settings` together with user settings (`~/.claude/settings.json`) as places this value works; I didn't test the user file itself.
+- `"defaultMode": "bypassPermissions"` in the repo's `.claude/settings.json`: did not take effect. The session started in `default` (Manual), the write was denied, exit code 0, nothing on stderr.
+- `--allow-dangerously-skip-permissions` alone: did not take effect. The session stayed in `default`; this flag only adds the mode to the Shift+Tab cycle.
+
+The project-file result matches the docs: set `bypassPermissions` in `.claude/settings.json` or `.claude/settings.local.json` and "it doesn't take effect either, and the session starts in Manual mode." Nothing tells you this happened.
+
+I couldn't test the graphical clients, so the rest of this section comes from Anthropic's [permission modes docs](https://code.claude.com/docs/en/permission-modes) and the VS Code extension docs, not from my runs. In the VS Code extension, turn on the setting `claudeCode.allowDangerouslySkipPermissions` ("Allow dangerously skip permissions"), then pick Bypass permissions in the mode indicator, or set `claudeCode.initialPermissionMode` to `bypassPermissions` in your user settings. Without the toggle, the mode doesn't appear in the indicator and a `bypassPermissions` start value falls back to Manual. In the Desktop app, Pro, Max and Ultra plans have an "Allow bypass permissions mode" toggle in settings; on Team and Enterprise plans, organization policy controls it. Cloud sessions don't offer bypass at all.
+
+## Why --dangerously-skip-permissions still asks for permission
+
+Most of these fail quietly: the session starts in Manual, a headless run denies what it would have prompted for, and the process still exits 0. Items marked measured are from the 2.1.329 runs.
+
+1. You put `"defaultMode": "bypassPermissions"` in the repo's `.claude/settings.json`. The session starts in Manual and keeps asking (in `-p`, it denies instead), because project and local settings files don't take this value. Move it to `~/.claude/settings.json`, pass it with `--settings`, or use the flag. Measured: ignored, exit 0, nothing on stderr.
+2. You used `--allow-dangerously-skip-permissions`. That only adds Bypass permissions to the Shift+Tab cycle; the session still starts in Manual. Switch to it with Shift+Tab, or start with `--dangerously-skip-permissions` instead. Measured: in `-p` the session stayed in `default`.
+3. You're running as root or under `sudo`. Claude Code refuses to start and prints `--dangerously-skip-permissions cannot be used with root/sudo privileges for security reasons`, exit code 1. Run it as a non-root user. Measured as uid 0 in a user namespace via `unshare -r`.
+4. `permissions.disableBypassPermissionsMode: "disable"` is set in a settings file the session reads, which includes a checked-in `.claude/settings.json` in a repo you cloned. Your flag is dropped: the session started in `default`, exit 0, nothing on stderr, both when I set the key with `--settings` and when it sat in the project file. The docs say Claude Code "rejects the `--dangerously-skip-permissions` flag"; in my `-p` runs it was a silent downgrade with no error. Search the repo's `.claude/` and your own settings for the key. At a company, managed settings can set it, and then it's your admin's policy. I didn't test managed settings, since writing them needs root.
+5. A deny rule matches. Deny wins even in bypass mode. With `"deny": ["Write"]` the Write tool was removed from the session entirely: the call came back as `No such tool available: Write`, and the run recorded zero permission denials. Measured.
+6. An explicit `ask` rule, or an `rm`/`rmdir` on a critical path like `rm -rf ~`, still prompts by design, as noted [above](#what-dangerously-skip-permissions-does-in-claude-code). That's from the docs; I didn't re-test it.
+
+In a headless script, don't trust exit code 0 to tell you which mode you got. Read the `permissionMode` field of the stream-json `init` event:
+
+```bash
+claude -p "..." --dangerously-skip-permissions \
+  --output-format stream-json --verbose > run.jsonl
+grep -m1 '"subtype":"init"' run.jsonl \
+  | python3 -c 'import sys,json; print(json.loads(sys.stdin.read()).get("permissionMode"))'
+```
+
+If it prints `default` when you asked for bypass, one of the causes above applies.
 
 ## What each permission mode let through
 

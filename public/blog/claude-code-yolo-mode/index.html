@@ -3,20 +3,20 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>YOLO mode Claude Code vs auto mode: what I measured | Orbi</title>
-  <meta name="description" content="YOLO mode in Claude Code is --dangerously-skip-permissions. I tested it against auto mode and the safer modes on 2.1.287: what runs, what stops injection.">
+  <title>Claude --dangerously-skip-permissions (YOLO), tested | Orbi</title>
+  <meta name="description" content="--dangerously-skip-permissions makes Claude Code skip permission prompts (YOLO mode). I tested how to enable it, why it fails, and how auto mode compares.">
   <link rel="canonical" href="https://orbi.build/blog/claude-code-yolo-mode/">
   <link rel="alternate" hreflang="en" href="https://orbi.build/blog/claude-code-yolo-mode/">
   <link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/blog/claude-code-yolo-mode/">
   <link rel="alternate" hreflang="x-default" href="https://orbi.build/blog/claude-code-yolo-mode/">
   <meta property="og:type" content="article">
-  <meta property="og:title" content="YOLO mode Claude Code vs auto mode: what I measured">
-  <meta property="og:description" content="YOLO mode in Claude Code is --dangerously-skip-permissions. I tested it against auto mode and the safer modes on 2.1.287: what runs, what stops injection.">
+  <meta property="og:title" content="Claude --dangerously-skip-permissions (YOLO), tested">
+  <meta property="og:description" content="--dangerously-skip-permissions makes Claude Code skip permission prompts (YOLO mode). I tested how to enable it, why it fails, and how auto mode compares.">
   <meta property="og:url" content="https://orbi.build/blog/claude-code-yolo-mode/">
   <meta property="og:image" content="https://orbi.build/img/blog-yolo-card.png">
-  <meta property="og:image:alt" content="YOLO mode Claude Code vs auto mode: what I measured">
+  <meta property="og:image:alt" content="Claude --dangerously-skip-permissions (YOLO), tested">
   <meta property="article:published_time" content="2026-10-13">
-  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"YOLO mode Claude Code vs auto mode: what I measured","datePublished":"2026-10-13","author":{"@type":"Person","name":"Larry 🍀 Orbi","url":"https://orbi.build/about/larry-orbi/","sameAs":["https://github.com/xqliu","https://x.com/xqliu"]},"publisher":{"@type":"Organization","name":"Orbi","url":"https://orbi.build/","logo":{"@type":"ImageObject","url":"https://orbi.build/logo-mark.svg"}},"mainEntityOfPage":"https://orbi.build/blog/claude-code-yolo-mode/","image":"https://orbi.build/img/blog-yolo-card.png","inLanguage":"en","description":"YOLO mode in Claude Code is --dangerously-skip-permissions. I tested it against auto mode and the safer modes on 2.1.287: what runs, what stops injection.","url":"https://orbi.build/blog/claude-code-yolo-mode/"}</script>
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"Claude --dangerously-skip-permissions (YOLO), tested","datePublished":"2026-10-13","dateModified":"2026-11-23","author":{"@type":"Person","name":"Larry 🍀 Orbi","url":"https://orbi.build/about/larry-orbi/","sameAs":["https://github.com/xqliu","https://x.com/xqliu"]},"publisher":{"@type":"Organization","name":"Orbi","url":"https://orbi.build/","logo":{"@type":"ImageObject","url":"https://orbi.build/logo-mark.svg"}},"mainEntityOfPage":"https://orbi.build/blog/claude-code-yolo-mode/","image":"https://orbi.build/img/blog-yolo-card.png","inLanguage":"en","description":"--dangerously-skip-permissions makes Claude Code skip permission prompts (YOLO mode). I tested how to enable it, why it fails, and how auto mode compares.","url":"https://orbi.build/blog/claude-code-yolo-mode/"}</script>
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <meta name="theme-color" content="#06151b">
 
@@ -152,10 +152,10 @@
       <div class="post-grid">
         <section class="post-hero" aria-labelledby="post-title">
           <p class="eyebrow">Blog</p>
-          <h1 id="post-title">YOLO mode Claude Code vs auto mode: what I measured</h1>
-          <p class="post-byline"><a href="/about/larry-orbi/">Larry 🍀 Orbi</a> · <time datetime="2026-10-13">2026-10-13</time></p>
+          <h1 id="post-title">Claude --dangerously-skip-permissions (YOLO), tested</h1>
+          <p class="post-byline"><a href="/about/larry-orbi/">Larry 🍀 Orbi</a> · <time datetime="2026-10-13">2026-10-13</time> · <time class="post-updated" datetime="2026-11-23">Updated 23 Nov 2026</time></p>
 
-          <p class="hero-lede">YOLO mode in Claude Code is --dangerously-skip-permissions. I tested it against auto mode and the safer modes on 2.1.287: what runs, what stops injection.</p>
+          <p class="hero-lede">--dangerously-skip-permissions makes Claude Code skip permission prompts (YOLO mode). I tested how to enable it, why it fails, and how auto mode compares.</p>
         </section>
       </div>
     </div>
@@ -164,7 +164,9 @@
         <nav class="post-toc" aria-label="On this page">
           <h2>On this page</h2>
           <ol>
-          <li><a class="post-toc-link" href="#what-yolo-mode-does-in-claude-code">What YOLO mode does in Claude Code</a></li>
+          <li><a class="post-toc-link" href="#what-dangerously-skip-permissions-does-in-claude-code">What --dangerously-skip-permissions does in Claude Code</a></li>
+          <li><a class="post-toc-link" href="#how-to-enable-bypass-permissions-in-claude-code">How to enable bypass permissions in Claude Code</a></li>
+          <li><a class="post-toc-link" href="#why-dangerously-skip-permissions-still-asks-for-permission">Why --dangerously-skip-permissions still asks for permission</a></li>
           <li><a class="post-toc-link" href="#what-each-permission-mode-let-through">What each permission mode let through</a></li>
           <li><a class="post-toc-link" href="#how-auto-mode-decides">How auto mode decides</a></li>
           <li><a class="post-toc-link" href="#what-stopped-the-prompt-injection">What stopped the prompt injection</a></li>
@@ -176,9 +178,11 @@
         </nav>
       <article class="post-body">
         <details class="post-toc-inline">
-          <summary>On this page · 8 sections</summary>
+          <summary>On this page · 10 sections</summary>
           <ol>
-          <li><a class="post-toc-link" href="#what-yolo-mode-does-in-claude-code">What YOLO mode does in Claude Code</a></li>
+          <li><a class="post-toc-link" href="#what-dangerously-skip-permissions-does-in-claude-code">What --dangerously-skip-permissions does in Claude Code</a></li>
+          <li><a class="post-toc-link" href="#how-to-enable-bypass-permissions-in-claude-code">How to enable bypass permissions in Claude Code</a></li>
+          <li><a class="post-toc-link" href="#why-dangerously-skip-permissions-still-asks-for-permission">Why --dangerously-skip-permissions still asks for permission</a></li>
           <li><a class="post-toc-link" href="#what-each-permission-mode-let-through">What each permission mode let through</a></li>
           <li><a class="post-toc-link" href="#how-auto-mode-decides">How auto mode decides</a></li>
           <li><a class="post-toc-link" href="#what-stopped-the-prompt-injection">What stopped the prompt injection</a></li>
@@ -188,18 +192,48 @@
           <li><a class="post-toc-link" href="#related">Related</a></li>
           </ol>
         </details>
-<p>Search &quot;YOLO mode Claude Code&quot; and you&#39;re after one flag: <code class="post-code--single">--dangerously-skip-permissions</code>, which runs every tool call without asking. The reason to reach for it is real. On a long task the permission prompts pile up, and after the tenth &quot;allow this command?&quot; you stop reading them. But the flag&#39;s own name warns you, and the docs only let you turn it on inside &quot;isolated environments like containers, VMs, or dev containers without internet access.&quot;</p>
+<p><code class="post-code--single">--dangerously-skip-permissions</code> switches Claude Code into <code class="post-code--single">bypassPermissions</code> mode, so tool calls run without asking you first. People call it YOLO mode, and it&#39;s for anyone who wants the permission prompts gone on long or unattended tasks. Below you get a measured table of what each permission mode lets through, every way to turn bypass permissions mode on, and why it sometimes doesn&#39;t take effect. The reason to reach for it is real. On a long task the prompts pile up, and after the tenth &quot;allow this command?&quot; you stop reading them. But the flag&#39;s own name warns you, and the docs only let you turn it on inside &quot;isolated environments like containers, VMs, or dev containers without internet access.&quot;</p>
 <p>I&#39;m Larry 🍀 Orbi, the creator of Orbi. Orbi runs coding agents unattended all day, so &quot;how do I stop the prompts without handing over the keys&quot; is a question I have to answer for real. This post is what I found when I tested YOLO mode against the four other permission modes, including the newer <strong>auto mode</strong>, which reviews each action with a second model instead of asking you. Auto mode handles most of what people open YOLO mode for, and the thing that actually stopped a data-exfiltration attempt in my tests was the model itself, not the permission mode.</p><aside class="post-cta-inline"><span>Orbi takes your Issues all the way to a release.</span><a class="button button-signal" data-cta="post-inline-start" href="/cloud/login">Try Orbi Cloud free →</a></aside>
-<p>All numbers below are from Claude Code 2.1.287 (the stable release on 2026-10-13), the agent on <code class="post-code--single">claude-sonnet-5-5</code>, run non-interactively with <code class="post-code--spaced">claude -p</code> (auto mode&#39;s classifier, below, is a second model reviewing the first; the docs call it Sonnet 5, a different model from the <code class="post-code--single">claude-sonnet-5-5</code> the agent runs on). Every number below comes from those runs, recorded per action.</p>
-<h2 id="what-yolo-mode-does-in-claude-code">What YOLO mode does in Claude Code</h2>
-<p><code class="post-code--single">--dangerously-skip-permissions</code> turns on <code class="post-code--single">bypassPermissions</code> mode. The documented equivalents:</p>
+<p>The mode table, the auto mode runs and the injection test are from Claude Code 2.1.287 (the stable release on 2026-10-13), the agent on <code class="post-code--single">claude-sonnet-5-5</code>, run non-interactively with <code class="post-code--spaced">claude -p</code> (auto mode&#39;s classifier, below, is a second model reviewing the first; the docs call it Sonnet 5, a different model from the <code class="post-code--single">claude-sonnet-5-5</code> the agent runs on). Those numbers come from those runs, recorded per action. I re-tested the enable and troubleshooting sections on Claude Code 2.1.329 on 2026-11-23: one non-interactive <code class="post-code--spaced">claude -p</code> run per case on the Haiku model, asking it to write a file outside the project as the probe, with my user settings excluded by <code class="post-code--spaced">--setting-sources project</code>.</p>
+<h2 id="what-dangerously-skip-permissions-does-in-claude-code">What --dangerously-skip-permissions does in Claude Code</h2>
+<p>It starts the session in <code class="post-code--single">bypassPermissions</code> mode, where Claude Code writes files, runs shell commands and makes network calls without asking; only deny rules, explicit ask rules and a few critical-path deletions still stop it.</p>
+<p>The documented equivalents:</p>
 <div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="Copied">Copy</button><pre><code class="language-bash" data-copy-source>claude --dangerously-skip-permissions
 claude --permission-mode bypassPermissions
-# or in settings.json:
+# or in user settings, ~/.claude/settings.json (or pass it with --settings);
+# the project&#39;s .claude/settings.json ignores this value:
 # { &quot;permissions&quot;: { &quot;defaultMode&quot;: &quot;bypassPermissions&quot; } }
 </code></pre></div>
-<p>You can&#39;t switch into it from a session you didn&#39;t start with it enabled. The first interactive session asks you to accept responsibility once, then records <code class="post-code--single">skipDangerousModePermissionPrompt</code> so later sessions skip the dialog. On Linux and macOS it refuses to start as root or under <code class="post-code--single">sudo</code> (&quot;<code class="post-code--spaced">--dangerously-skip-permissions cannot be used with root/sudo privileges for security reasons</code>&quot;) unless it detects a real sandbox around it. An administrator can block it entirely with <code class="post-code--spaced">permissions.disableBypassPermissionsMode: &quot;disable&quot;</code> in managed settings.</p>
+<p>You can&#39;t switch into it from a session you didn&#39;t start with it enabled. The first interactive session asks you to accept responsibility once, then records <code class="post-code--single">skipDangerousModePermissionPrompt</code> so later sessions skip the dialog. On Linux and macOS it refuses to start as root or under <code class="post-code--single">sudo</code> unless it detects a real sandbox around it, and <code class="post-code--spaced">permissions.disableBypassPermissionsMode: &quot;disable&quot;</code> blocks it; both show up in the <a href="#why-dangerously-skip-permissions-still-asks-for-permission">troubleshooting list</a> below.</p>
 <p>Even in this mode, a few things still stop: an explicit <code class="post-code--single">ask</code> rule, an <code class="post-code--single">rm</code>/<code class="post-code--single">rmdir</code> that targets a critical path like <code class="post-code--spaced">rm -rf ~</code>, and a deny rule. Deny rules win in every mode, YOLO included. (The protected paths the table below refers to are a small set, chiefly <code class="post-code--single">.git</code>, <code class="post-code--single">.config/git</code> and <code class="post-code--single">.claude</code>.)</p>
+<h2 id="how-to-enable-bypass-permissions-in-claude-code">How to enable bypass permissions in Claude Code</h2>
+<p>I tried each way once on 2.1.329 with the outside-the-project write as the probe. &quot;Took effect&quot; means the session&#39;s <code class="post-code--single">init</code> event reported <code class="post-code--single">bypassPermissions</code> and the file landed on disk.</p>
+<ul>
+<li><code class="post-code--spaced">claude --dangerously-skip-permissions</code>: took effect. <code class="post-code--single">bypassPermissions</code>, file written.</li>
+<li><code class="post-code--spaced">claude --permission-mode bypassPermissions</code>: took effect. <code class="post-code--single">bypassPermissions</code>, file written.</li>
+<li><code class="post-code--spaced">claude --settings &#39;{&quot;permissions&quot;:{&quot;defaultMode&quot;:&quot;bypassPermissions&quot;}}&#39;</code>: took effect. <code class="post-code--single">bypassPermissions</code>, file written. The docs list <code class="post-code--single">--settings</code> together with user settings (<code class="post-code--single">~/.claude/settings.json</code>) as places this value works; I didn&#39;t test the user file itself.</li>
+<li><code class="post-code--spaced">&quot;defaultMode&quot;: &quot;bypassPermissions&quot;</code> in the repo&#39;s <code class="post-code--single">.claude/settings.json</code>: did not take effect. The session started in <code class="post-code--single">default</code> (Manual), the write was denied, exit code 0, nothing on stderr.</li>
+<li><code class="post-code--single">--allow-dangerously-skip-permissions</code> alone: did not take effect. The session stayed in <code class="post-code--single">default</code>; this flag only adds the mode to the Shift+Tab cycle.</li>
+</ul>
+<p>The project-file result matches the docs: set <code class="post-code--single">bypassPermissions</code> in <code class="post-code--single">.claude/settings.json</code> or <code class="post-code--single">.claude/settings.local.json</code> and &quot;it doesn&#39;t take effect either, and the session starts in Manual mode.&quot; Nothing tells you this happened.</p>
+<p>I couldn&#39;t test the graphical clients, so the rest of this section comes from Anthropic&#39;s <a href="https://code.claude.com/docs/en/permission-modes">permission modes docs</a> and the VS Code extension docs, not from my runs. In the VS Code extension, turn on the setting <code class="post-code--single">claudeCode.allowDangerouslySkipPermissions</code> (&quot;Allow dangerously skip permissions&quot;), then pick Bypass permissions in the mode indicator, or set <code class="post-code--single">claudeCode.initialPermissionMode</code> to <code class="post-code--single">bypassPermissions</code> in your user settings. Without the toggle, the mode doesn&#39;t appear in the indicator and a <code class="post-code--single">bypassPermissions</code> start value falls back to Manual. In the Desktop app, Pro, Max and Ultra plans have an &quot;Allow bypass permissions mode&quot; toggle in settings; on Team and Enterprise plans, organization policy controls it. Cloud sessions don&#39;t offer bypass at all.</p>
+<h2 id="why-dangerously-skip-permissions-still-asks-for-permission">Why --dangerously-skip-permissions still asks for permission</h2>
+<p>Most of these fail quietly: the session starts in Manual, a headless run denies what it would have prompted for, and the process still exits 0. Items marked measured are from the 2.1.329 runs.</p>
+<ol>
+<li>You put <code class="post-code--spaced">&quot;defaultMode&quot;: &quot;bypassPermissions&quot;</code> in the repo&#39;s <code class="post-code--single">.claude/settings.json</code>. The session starts in Manual and keeps asking (in <code class="post-code--single">-p</code>, it denies instead), because project and local settings files don&#39;t take this value. Move it to <code class="post-code--single">~/.claude/settings.json</code>, pass it with <code class="post-code--single">--settings</code>, or use the flag. Measured: ignored, exit 0, nothing on stderr.</li>
+<li>You used <code class="post-code--single">--allow-dangerously-skip-permissions</code>. That only adds Bypass permissions to the Shift+Tab cycle; the session still starts in Manual. Switch to it with Shift+Tab, or start with <code class="post-code--single">--dangerously-skip-permissions</code> instead. Measured: in <code class="post-code--single">-p</code> the session stayed in <code class="post-code--single">default</code>.</li>
+<li>You&#39;re running as root or under <code class="post-code--single">sudo</code>. Claude Code refuses to start and prints <code class="post-code--spaced">--dangerously-skip-permissions cannot be used with root/sudo privileges for security reasons</code>, exit code 1. Run it as a non-root user. Measured as uid 0 in a user namespace via <code class="post-code--spaced">unshare -r</code>.</li>
+<li><code class="post-code--spaced">permissions.disableBypassPermissionsMode: &quot;disable&quot;</code> is set in a settings file the session reads, which includes a checked-in <code class="post-code--single">.claude/settings.json</code> in a repo you cloned. Your flag is dropped: the session started in <code class="post-code--single">default</code>, exit 0, nothing on stderr, both when I set the key with <code class="post-code--single">--settings</code> and when it sat in the project file. The docs say Claude Code &quot;rejects the <code class="post-code--single">--dangerously-skip-permissions</code> flag&quot;; in my <code class="post-code--single">-p</code> runs it was a silent downgrade with no error. Search the repo&#39;s <code class="post-code--single">.claude/</code> and your own settings for the key. At a company, managed settings can set it, and then it&#39;s your admin&#39;s policy. I didn&#39;t test managed settings, since writing them needs root.</li>
+<li>A deny rule matches. Deny wins even in bypass mode. With <code class="post-code--spaced">&quot;deny&quot;: [&quot;Write&quot;]</code> the Write tool was removed from the session entirely: the call came back as <code class="post-code--spaced">No such tool available: Write</code>, and the run recorded zero permission denials. Measured.</li>
+<li>An explicit <code class="post-code--single">ask</code> rule, or an <code class="post-code--single">rm</code>/<code class="post-code--single">rmdir</code> on a critical path like <code class="post-code--spaced">rm -rf ~</code>, still prompts by design, as noted <a href="#what-dangerously-skip-permissions-does-in-claude-code">above</a>. That&#39;s from the docs; I didn&#39;t re-test it.</li>
+</ol>
+<p>In a headless script, don&#39;t trust exit code 0 to tell you which mode you got. Read the <code class="post-code--single">permissionMode</code> field of the stream-json <code class="post-code--single">init</code> event:</p>
+<div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="Copied">Copy</button><pre><code class="language-bash" data-copy-source>claude -p &quot;...&quot; --dangerously-skip-permissions \
+  --output-format stream-json --verbose &gt; run.jsonl
+grep -m1 &#39;&quot;subtype&quot;:&quot;init&quot;&#39; run.jsonl \
+  | python3 -c &#39;import sys,json; print(json.loads(sys.stdin.read()).get(&quot;permissionMode&quot;))&#39;
+</code></pre></div>
+<p>If it prints <code class="post-code--single">default</code> when you asked for bypass, one of the causes above applies.</p>
 <h2 id="what-each-permission-mode-let-through">What each permission mode let through</h2>
 <p>I gave the same six actions to five permission modes and recorded what actually happened on disk and at a local listener, not what the model said it did. Each cell is three runs (the injection row is five). <code class="post-code--single">done</code> = it ran; <code class="post-code--single">denied</code> = the permission layer blocked it; <code class="post-code--single">declined</code> = the model itself refused.</p>
 <p class="post-table-hint" hidden>Swipe horizontally to see all columns.</p><div class="post-table-scroll" tabindex="0" role="region" aria-label="Swipe horizontally to see all columns."><table class="table-comparison">

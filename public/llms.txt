@@ -388,7 +388,7 @@ feed of the English posts: https://orbi.build/blog/feed.xml
   https://orbi.build/blog/orbi-weekly-2/
 - Orbi 周报 #2：连上仓库，Orbi 先给您几条建议 (Chinese):
   https://orbi.build/zh/blog/orbi-weekly-2/
-- YOLO mode Claude Code vs auto mode: what I measured (English):
+- Claude --dangerously-skip-permissions (YOLO), tested (English):
   https://orbi.build/blog/claude-code-yolo-mode/
 - Claude Code 的 YOLO 模式和 auto 模式：我实测了一遍 (Chinese):
   https://orbi.build/zh/blog/claude-code-yolo-mode/
