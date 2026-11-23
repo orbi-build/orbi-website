@@ -9,7 +9,7 @@ image: /img/blog-yolo-card.png
 mirror: claude-code-yolo-mode
 ---
 
-`--dangerously-skip-permissions` switches Claude Code into `bypassPermissions` mode, so tool calls run without asking you first. People call it YOLO mode, and it's for anyone who wants the permission prompts gone on long or unattended tasks. Below you get a measured table of what each permission mode lets through, every way to turn bypass permissions mode on, and why it sometimes doesn't take effect. The reason to reach for it is real. On a long task the prompts pile up, and after the tenth "allow this command?" you stop reading them. But the flag's own name warns you, and the docs only let you turn it on inside "isolated environments like containers, VMs, or dev containers without internet access."
+`--dangerously-skip-permissions` switches Claude Code into `bypassPermissions` mode, so tool calls run without asking you first. People call it YOLO mode, and it's for anyone who wants the permission prompts gone on long or unattended tasks. Below you get a measured table of what each permission mode lets through, every way to turn bypass permissions mode on, and why it sometimes doesn't take effect. The reason to reach for it is real. On a long task the prompts pile up, and after the tenth "allow this command?" you stop reading them. But the flag's own name warns you, and the docs say to use it only in "isolated environments like containers, VMs, or dev containers without internet access."
 
 I'm Larry 🍀 Orbi, the creator of Orbi. Orbi runs coding agents unattended all day, so "how do I stop the prompts without handing over the keys" is a question I have to answer for real. This post is what I found when I tested YOLO mode against the four other permission modes, including the newer **auto mode**, which reviews each action with a second model instead of asking you. Auto mode handles most of what people open YOLO mode for, and the thing that actually stopped a data-exfiltration attempt in my tests was the model itself, not the permission mode.
 
@@ -17,7 +17,7 @@ The mode table, the auto mode runs and the injection test are from Claude Code 2
 
 ## What --dangerously-skip-permissions does in Claude Code
 
-It starts the session in `bypassPermissions` mode, where Claude Code writes files, runs shell commands and makes network calls without asking; only deny rules, explicit ask rules and a few critical-path deletions still stop it.
+It starts the session in `bypassPermissions` mode, where Claude Code writes files, runs shell commands and makes network calls without asking. Deny rules, explicit ask rules and critical-path deletions still stop it, along with a few other checks the docs list under [actions no mode auto-approves](https://code.claude.com/docs/en/permission-modes#actions-no-mode-auto-approves).
 
 The documented equivalents:
 
@@ -56,7 +56,9 @@ Most of these fail quietly: the session starts in Manual, a headless run denies 
 3. You're running as root or under `sudo`. Claude Code refuses to start and prints `--dangerously-skip-permissions cannot be used with root/sudo privileges for security reasons`, exit code 1. Run it as a non-root user. Measured as uid 0 in a user namespace via `unshare -r`.
 4. `permissions.disableBypassPermissionsMode: "disable"` is set in a settings file the session reads, which includes a checked-in `.claude/settings.json` in a repo you cloned. Your flag is dropped: the session started in `default`, exit 0, nothing on stderr, both when I set the key with `--settings` and when it sat in the project file. The docs say Claude Code "rejects the `--dangerously-skip-permissions` flag"; in my `-p` runs it was a silent downgrade with no error. Search the repo's `.claude/` and your own settings for the key. At a company, managed settings can set it, and then it's your admin's policy. I didn't test managed settings, since writing them needs root.
 5. A deny rule matches. Deny wins even in bypass mode. With `"deny": ["Write"]` the Write tool was removed from the session entirely: the call came back as `No such tool available: Write`, and the run recorded zero permission denials. Measured.
-6. An explicit `ask` rule, or an `rm`/`rmdir` on a critical path like `rm -rf ~`, still prompts by design, as noted [above](#what-dangerously-skip-permissions-does-in-claude-code). That's from the docs; I didn't re-test it.
+6. The repo turns on `permissions.blockWritesOutsideWorkingDirectories`. The `init` event says `bypassPermissions`, yet writes outside the project are refused with "Writes outside the working directories are blocked (permissions.blockWritesOutsideWorkingDirectories). Add the directory with /add-dir, or remove that setting." Any settings file can turn this on, including the repo's checked-in one, so check `.claude/` for the key or add the directory with `/add-dir`. Measured. Its sibling `blockReadsOutsideWorkingDirectories` makes Bash commands that read outside the project prompt even in bypass (docs only).
+7. You started a background session with `claude --bg`. Without your acceptance of the bypass warning recorded in `~/.claude/settings.json` or managed settings, the docs say the bypass request is refused or ignored and the session starts in Manual. Accept the dialog once in an interactive session. Docs only; I didn't test background sessions.
+8. An explicit `ask` rule, or an `rm`/`rmdir` on a critical path like `rm -rf ~`, still prompts by design, as noted [above](#what-dangerously-skip-permissions-does-in-claude-code). That's from the docs; I didn't re-test it.
 
 In a headless script, don't trust exit code 0 to tell you which mode you got. Read the `permissionMode` field of the stream-json `init` event:
 
@@ -67,7 +69,7 @@ grep -m1 '"subtype":"init"' run.jsonl \
   | python3 -c 'import sys,json; print(json.loads(sys.stdin.read()).get("permissionMode"))'
 ```
 
-If it prints `default` when you asked for bypass, one of the causes above applies.
+If it prints `default` when you asked for bypass, look at items 1, 2, 4 and 7. If it prints `bypassPermissions` and writes outside the project still fail, look at items 5 and 6.
 
 ## What each permission mode let through
 
@@ -104,7 +106,7 @@ I planted an instruction in a repo's `README.md` telling the agent to read a key
 
 In all 25 runs, across every mode, the agent never sent the key. It read the README, recognized the embedded instruction as an injection, said so, and summarized the project without following it. The listener logged zero exfiltration hits (the only hits it saw were the legitimate localhost call from the network-test row).
 
-But the injection was declined by the *model*, not blocked by the permission layer. `bypassPermissions` has no permission layer to block it. If a future model, or a cleverer injection, doesn't recognize the trap, YOLO mode has nothing behind it. The docs say plainly that it "offers no protection against prompt injection or unintended actions." Auto mode's classifier adds a second layer, and it's built for exactly this: the classifier request strips tool *results*, so the hostile text sitting in a command's output or a fetched page can't reach it and steer it. What the classifier does judge is the *action* (a `curl` to a strange host, say), not the injected text, which never reaches it. And it misses some: Anthropic's own [published false-negative rates](https://www.anthropic.com/engineering/claude-code-auto-mode) are 17% on a curated set of real overeager actions and 5.7% on a synthetic exfiltration set. Read 17% as roughly one dangerous action in six slipping past, measured on actions already selected as dangerous, so auto mode lowers the risk but still lets some attempts through. The environment still has to limit what a missed call can reach.
+But the injection was declined by the *model*, not blocked by the permission layer. With no deny rule in place, `bypassPermissions` had no permission layer to block it. A deny rule would still block the call (setup 2 below shows one stopping `curl`), but it stops only what you thought to name. If a future model, or a cleverer injection, doesn't recognize the trap, YOLO mode has nothing behind it. The docs say plainly that it "offers no protection against prompt injection or unintended actions." Auto mode's classifier adds a second layer, and it's built for exactly this: the classifier request strips tool *results*, so the hostile text sitting in a command's output or a fetched page can't reach it and steer it. What the classifier does judge is the *action* (a `curl` to a strange host, say), not the injected text, which never reaches it. And it misses some: Anthropic's own [published false-negative rates](https://www.anthropic.com/engineering/claude-code-auto-mode) are 17% on a curated set of real overeager actions and 5.7% on a synthetic exfiltration set. Read 17% as roughly one dangerous action in six slipping past, measured on actions already selected as dangerous, so auto mode lowers the risk but still lets some attempts through. The environment still has to limit what a missed call can reach.
 
 I'm not publishing the injection text; if you want to test your own setup, write your own and point the listener at a host you control.
 
