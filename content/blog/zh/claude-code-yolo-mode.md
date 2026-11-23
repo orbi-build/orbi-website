@@ -32,7 +32,7 @@ claude --permission-mode bypassPermissions
 { "permissions": { "defaultMode": "bypassPermissions" } }
 ```
 
-启动时没用任何一种开启方式的会话，中途切不进这个模式；其中 `--allow-dangerously-skip-permissions` 只把它加进 Shift+Tab 循环，启动后可以再切过去。第一次在交互会话里开，它会让你确认一次「我自己负责」，然后记下 `skipDangerousModePermissionPrompt`，之后的会话就不再弹这个对话框。在 Linux 和 macOS 上，用 root 或 `sudo` 跑时它会拒绝启动，除非它检测到自己已经被真正的沙箱包住；`permissions.disableBypassPermissionsMode: "disable"` 也能把它禁掉。这两种情况都在下面的[排查清单](#为什么开了-dangerously-skip-permissions-还在问权限)里。
+启动时没用任何一种开启方式的会话，中途切不进这个模式；其中 `--allow-dangerously-skip-permissions` 只把它加进 Shift+Tab 循环，启动后可以再切过去。第一次在交互会话里开，它会让你确认一次「我自己负责」，然后记下 `skipDangerousModePermissionPrompt`，之后的会话就不再弹这个对话框。在 Linux 和 macOS 上，用 root 或 `sudo` 跑时它会拒绝启动，除非它检测到自己已经被真正的沙箱包住；`permissions.disableBypassPermissionsMode: "disable"` 也能把它禁掉。这两种情况都在下面的[排查清单](#为什么-dangerously-skip-permissions-不生效-开了还在问权限)里。
 
 就算在这个模式下，也还有几样东西拦得住：显式的 `ask` 规则、指向关键路径的 `rm`/`rmdir`（比如 `rm -rf ~`）、以及 deny 规则。deny 规则在任何模式下都生效，YOLO 也不例外。下表里说的受保护路径是一小组路径，主要是 `.git`、`.config/git` 和 `.claude`（Claude 自己的配置），`.git/config` 是其中之一；别的模式不会自动放行对它们的写入，bypass 下则直接放行。
 
@@ -48,9 +48,9 @@ claude --permission-mode bypassPermissions
 
 项目文件这一条和文档一致：在 `.claude/settings.json` 或 `.claude/settings.local.json` 里设 `bypassPermissions`，文档原话是「it doesn't take effect either, and the session starts in Manual mode」。也没有任何提示告诉你发生了这件事。
 
-图形客户端我没法测，所以这一节剩下的内容来自 Anthropic 的[权限模式文档](https://code.claude.com/docs/en/permission-modes)和 VS Code 扩展文档，不是我的实测。在 VS Code 扩展里，先打开设置 `claudeCode.allowDangerouslySkipPermissions`（「Allow dangerously skip permissions」），再在模式指示器里选 Bypass permissions；或者在用户设置里把 `claudeCode.initialPermissionMode` 设成 `bypassPermissions`。没打开这个开关时，模式指示器里看不到这个模式，`bypassPermissions` 这个起始值也会退回 Manual。在 Desktop 应用里，Pro、Max 和 Ultra 套餐的设置里有「Allow bypass permissions mode」开关；Team 和 Enterprise 套餐由组织策略决定。Cloud 会话根本不提供 bypass。
+图形客户端我没法测，所以这一节剩下的内容来自 Anthropic 的[权限模式文档](https://code.claude.com/docs/en/permission-modes)和 VS Code 扩展文档，不是我的实测。在 VS Code 扩展里，先打开设置 `claudeCode.allowDangerouslySkipPermissions`（「Allow dangerously skip permissions」），再在模式指示器里选 Bypass permissions；或者在用户设置里把 `claudeCode.initialPermissionMode` 设成 `bypassPermissions`。没打开这个开关时，模式指示器里看不到这个模式，`bypassPermissions` 这个起始值也会退回 Manual。在 Desktop 应用里，Pro、Max 和 Ultra 套餐的设置里有「Allow bypass permissions mode」开关，打开后在输入框下方的模式选择器里选 Bypass permissions；Team 和 Enterprise 套餐由组织策略决定。Cloud 会话根本不提供 bypass。
 
-## 为什么开了 --dangerously-skip-permissions 还在问权限
+## 为什么 --dangerously-skip-permissions 不生效、开了还在问权限
 
 下面这些情况大多是静默失败：会话以 Manual 启动，无头运行把本来要弹窗的动作直接拒掉，进程照样退出 0。标了「实测」的条目来自 2.1.329 上的那几次运行。
 
