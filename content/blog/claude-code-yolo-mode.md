@@ -120,12 +120,14 @@ To drop the prompts and still keep a floor under the agent, I tested two configu
 **1. `dontAsk` with an allow list.** Nothing runs unless you named it; everything else is denied, not prompted.
 
 ```bash
-claude -p "run the tests and summarize failures" \
+claude -p 'Run `npm test` (exactly that command, nothing chained) and summarize failures.' \
   --permission-mode dontAsk \
   --allowedTools "Read" "Bash(npm test)"
 ```
 
 The allowed tools are passed as space-separated quoted tokens. In my runs every one of the six actions was stopped: the five side-effect actions denied by the permission layer, and the injection declined by the model, the same as in every other mode. This is the tightest option and the right one for CI: the agent can do the two things you listed and nothing else.
+
+Name the exact command in the prompt. `Bash(npm test)` matches only the bare `npm test`, and when I re-ran this setup on 2.1.329 on 2026-11-23 with the vaguer prompt "run the tests and summarize failures", the tests never ran in any of four runs. Twice the model chained `npm test` with other commands (`npm test; echo "EXIT=$?"`), which the rule doesn't match; the other two times an earlier chained command (`ls -la && …`) was denied and it gave up before trying the tests. Switching the rule to `Bash(npm test:*)` didn't help in two more runs. With the prompt above, it ran plain `npm test` in both runs. Like every `dontAsk` denial, the failed attempts still ended with exit code 0.
 
 **2. `bypassPermissions` with deny rules.** YOLO speed, but deny rules still bite (they win in every mode).
 

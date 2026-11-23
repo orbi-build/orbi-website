@@ -120,12 +120,14 @@ grep -m1 '"subtype":"init"' run.jsonl \
 **1. `dontAsk` 配白名单。** 白名单外的动作一律直接拒绝，不弹窗。
 
 ```bash
-claude -p "跑测试并总结失败项" \
+claude -p 'Run `npm test` (exactly that command, nothing chained) and summarize failures.' \
   --permission-mode dontAsk \
   --allowedTools "Read" "Bash(npm test)"
 ```
 
 我的测试里六个动作全部被挡住：五个有副作用的动作被权限层拦下，注入被模型拒绝，和别的模式一样。这是最紧的一种，也最适合 CI：agent 只能做你列的那两件事，别的都不行。工具名用空格分隔、各自加引号作为参数传入。
+
+提示词里要写明确切的命令（上面那句英文就是让它只跑 `npm test`、不串别的命令）。`Bash(npm test)` 只匹配单独的 `npm test`。2026-11-23 我在 2.1.329 上重跑这套配置，提示词写得含糊（「run the tests and summarize failures」）时，四次运行里测试一次都没跑：两次是模型把 `npm test` 和别的命令串在一起（比如 `npm test; echo "EXIT=$?"`），规则匹配不上；另外两次是更早一条串起来的命令（`ls -la && …`）先被拒，它就没再去跑测试；把规则改成 `Bash(npm test:*)` 又跑了两次，也没用。换成上面的提示词，两次都直接跑了 `npm test`。和所有 `dontAsk` 下的拒绝一样，没跑成的那几次退出码照样是 0。
 
 **2. `bypassPermissions` 配 deny 规则。** YOLO 的速度，deny 规则仍然生效。
 

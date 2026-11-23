@@ -314,11 +314,12 @@ grep -m1 &#39;&quot;subtype&quot;:&quot;init&quot;&#39; run.jsonl \
 <h2 id="两种-别问我-但也别全开-的配置">两种「别问我，但也别全开」的配置</h2>
 <p>想把弹窗关掉、底下又留个托底，我实测过两种配置，各跑三次：</p>
 <p><strong>1. <code class="post-code--single">dontAsk</code> 配白名单。</strong> 白名单外的动作一律直接拒绝，不弹窗。</p>
-<div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="已复制">复制</button><pre><code class="language-bash" data-copy-source>claude -p &quot;跑测试并总结失败项&quot; \
+<div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="已复制">复制</button><pre><code class="language-bash" data-copy-source>claude -p &#39;Run `npm test` (exactly that command, nothing chained) and summarize failures.&#39; \
   --permission-mode dontAsk \
   --allowedTools &quot;Read&quot; &quot;Bash(npm test)&quot;
 </code></pre></div>
 <p>我的测试里六个动作全部被挡住：五个有副作用的动作被权限层拦下，注入被模型拒绝，和别的模式一样。这是最紧的一种，也最适合 CI：agent 只能做你列的那两件事，别的都不行。工具名用空格分隔、各自加引号作为参数传入。</p>
+<p>提示词里要写明确切的命令（上面那句英文就是让它只跑 <code class="post-code--spaced">npm test</code>、不串别的命令）。<code class="post-code--spaced">Bash(npm test)</code> 只匹配单独的 <code class="post-code--spaced">npm test</code>。2026-11-23 我在 2.1.329 上重跑这套配置，提示词写得含糊（「run the tests and summarize failures」）时，四次运行里测试一次都没跑：两次是模型把 <code class="post-code--spaced">npm test</code> 和别的命令串在一起（比如 <code class="post-code--spaced">npm test; echo &quot;EXIT=$?&quot;</code>），规则匹配不上；另外两次是更早一条串起来的命令（<code class="post-code--spaced">ls -la &amp;&amp; …</code>）先被拒，它就没再去跑测试；把规则改成 <code class="post-code--spaced">Bash(npm test:*)</code> 又跑了两次，也没用。换成上面的提示词，两次都直接跑了 <code class="post-code--spaced">npm test</code>。和所有 <code class="post-code--single">dontAsk</code> 下的拒绝一样，没跑成的那几次退出码照样是 0。</p>
 <p><strong>2. <code class="post-code--single">bypassPermissions</code> 配 deny 规则。</strong> YOLO 的速度，deny 规则仍然生效。</p>
 <div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="已复制">复制</button><pre><code class="language-bash" data-copy-source>claude -p &quot;...&quot; --permission-mode bypassPermissions \
   --settings &#39;{&quot;permissions&quot;:{&quot;deny&quot;:[&quot;Bash(curl:*)&quot;,&quot;Read(./.env.local)&quot;,&quot;Read(./.env)&quot;]}}&#39;
