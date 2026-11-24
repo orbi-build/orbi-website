@@ -112,7 +112,10 @@ belongs to decides where you edit it.
   CommonMark body. Blog bodies
   may use only `<figure>`, `<figcaption>`, `<img>` (with a non-empty
   `alt`) and responsive `<iframe>` media tags; other raw HTML, JSON headers and
-  nav/footer markers are forbidden. The build renders the body with marked into
+  nav/footer markers are forbidden. The one marker a body may carry is
+  `<!--@credits-calculator-->` (Issue #1459): the build replaces it with the
+  credits estimator, priced from the Markdown table directly above it, so the
+  rates stay written once. The build renders the body with marked into
   `site/partials/post.html` (the shared nav/footer included), derives the `/blog/`
   and `/zh/blog/` indexes from the post list,
   and writes `/blog/feed.xml` (RSS 2.0, English posts). Pairing (Issue #214):
