@@ -4210,3 +4210,60 @@ describe("evidence page delivery records (Issue #1244)", () => {
     expect(hrefsOf("zh/evidence/index.html")).toEqual(hrefsOf("evidence/index.html"));
   });
 });
+
+// Issue #1439: ToolPilot's free listing asks for the official ToolPilot badge
+// on a page of our own, linked back to ToolPilot's directory, and the submitted
+// URL has to be public and stable. The ticket keeps the badge itself off the
+// sitewide footer and navigation, so the badge lives on this one page; the page
+// ships the normal site chrome (nav, footer, language switch) and the footer
+// badge row links it as plain text, so the page is not an orphan and the badge
+// is still nowhere but here.
+describe("ToolPilot badge page (Issue #1439)", () => {
+  const OUTPUTS = ["toolpilot/index.html", "zh/toolpilot/index.html"];
+  const BADGE_SRC = "https://www.toolpilot.ai/cdn/shop/files/f-w_690x151_crop_center.png";
+  // The vendor's own embed of this file declares 300×66, and the file the CDN
+  // serves at that URL decodes to 300×66 — the declared box proves the ratio
+  // rather than repeating a guess.
+  const badgeAnchors = (html) =>
+    [...html.matchAll(/<a href="https:\/\/www\.toolpilot\.ai\/"[^>]*>[\s\S]*?<\/a>/g)].map((match) => match[0]);
+
+  it("ships the official ToolPilot badge on its own page, in both languages", () => {
+    for (const output of OUTPUTS) {
+      const html = shipped.get(output);
+      expect(html, `${output}: the badge page must ship`).toBeTruthy();
+      const anchors = badgeAnchors(html);
+      expect(anchors, `${output}: exactly one backlink to ToolPilot`).toHaveLength(1);
+      expect(anchors[0], `${output}: the backlink opens ToolPilot in a new tab`).toContain('target="_blank"');
+      const image = anchors[0].match(/<img \b[^>]*>/)?.[0] ?? "";
+      expect(image, `${output}: the backlink wraps the official badge image`).toContain(`src="${BADGE_SRC}"`);
+      expect(image, `${output}: the badge carries a non-empty alt`).toMatch(/\balt="[^"]+"/);
+      expect(image, `${output}: the badge declares the vendor's 300×66 box`).toMatch(/\bwidth="300"/);
+      expect(image, `${output}: the badge declares the vendor's 300×66 box`).toMatch(/\bheight="66"/);
+    }
+  });
+
+  it("keeps the badge off the sitewide footer and navigation", () => {
+    for (const output of ["index.html", "zh/index.html"]) {
+      const html = shipped.get(output);
+      expect(footerRegion(html), `${output}: the footer must not carry the ToolPilot badge`)
+        .not.toContain("toolpilot.ai");
+      expect(navRegion(html), `${output}: the navigation must not carry the ToolPilot badge`)
+        .not.toContain("toolpilot.ai");
+    }
+  });
+
+  // The page is the backlink's home, so it must not be an orphan: the footer
+  // badge row already carries every directory link, and it stays in the page's
+  // own language tree (Issue #611's inbound-link rule).
+  it("links the page from the footer badge row, in each page's own language tree", () => {
+    const expected = {
+      "index.html": ['<a href="/toolpilot/">ToolPilot badge</a>', '<a href="/zh/toolpilot/">'],
+      "zh/index.html": ['<a href="/zh/toolpilot/">ToolPilot 徽章</a>', '<a href="/toolpilot/">'],
+    };
+    for (const [output, [ownTree, otherTree]] of Object.entries(expected)) {
+      const footer = footerRegion(shipped.get(output));
+      expect(footer, `${output}: the footer badge row links the badge page`).toContain(ownTree);
+      expect(footer, `${output}: the footer stays in its own language tree`).not.toContain(otherTree);
+    }
+  });
+});

@@ -385,6 +385,12 @@ export const BADGE_PLACEHOLDER_SIZES = [
   // /products/orbi answers 200 and is expected to go dofollow after the
   // crawler finds this badge (Issue #1435).
   { host: "launchon.it", width: 151, height: 48 },
+  // 2026-11-24 ToolPilot official "Featured Badge White", measured on the live
+  // URL the vendor's brand-guidelines page embeds:
+  // /cdn/shop/files/f-w_690x151_crop_center.png 300x66 (PNG, 2407 bytes; the
+  // CDN serves this crop at 300x66 and the vendor's own snippet declares the
+  // same box). Only the dedicated /toolpilot/ page carries it (Issue #1439).
+  { host: "www.toolpilot.ai", width: 300, height: 66 },
 ];
 const FALLBACK_PLACEHOLDER_SIZE = { width: 1, height: 1 };
 
