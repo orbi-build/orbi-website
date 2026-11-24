@@ -18,7 +18,8 @@ const SOCIAL_PROOF_JSON = join(ROOT, "site", "data", "social-proof.json");
 let outDir;
 const built = new Map(); // output path -> rendered HTML
 
-// A record in the Issue's 10-key contract, with delivery fields filled.
+// A record in the Issue's data contract, with delivery fields filled (a quote
+// additionally carries `translation` + `translation_lang`, Issue #1443).
 const delivery = (repo, pr, merged_at, title, human_reviews = 0) => ({
   repo,
   pr,
@@ -32,13 +33,15 @@ const delivery = (repo, pr, merged_at, title, human_reviews = 0) => ({
   consent: null,
 });
 
-const quote = (text, person, consent) => ({
+const quote = (text, person, consent, translation = null, translation_lang = null) => ({
   repo: null,
   pr: null,
   merged_at: null,
   human_reviews: null,
   title: null,
   quote: text,
+  translation,
+  translation_lang,
   person,
   handle: `@${person.toLowerCase().replace(/\s+/g, "")}`,
   person_url: `https://x.com/${person.toLowerCase().replace(/\s+/g, "")}`,
@@ -58,6 +61,14 @@ afterAll(async () => {
 });
 
 const cardsOf = (html) => [...html.matchAll(/<article class="proof-card[^"]*">/g)].map((m) => m[0]);
+// The quote card of one person, so a translation line is checked against the
+// card that carries it, not against the whole section.
+const quoteCardOf = (html, person) => {
+  const personAt = html.indexOf(person);
+  if (personAt < 0) return "";
+  const start = html.lastIndexOf('<article class="proof-card proof-card-quote"', personAt);
+  return start < 0 ? "" : html.slice(start, html.indexOf("</article>", personAt));
+};
 const sectionOf = (html, id) => {
   const start = html.indexOf(`<section class="social-proof shell" id="${id}"`);
   const end = html.indexOf("</section>", start);
@@ -122,22 +133,21 @@ describe("homepage social-proof section (Issue #226)", () => {
     }
   });
 
-  // Issue #1243: the five deliveries the homepage shows are the newest
-  // external merges, each one in a different public repository, all merged
-  // between 2026-10-02 and 2026-10-12 (the newest records in
-  // site/data/social-proof.json as of 2026-11-08).
-  it("renders one quote card and the five seeded deliveries, quotes first, newest first", () => {
+  // Issue #1443: the homepage shows two quotes (newest consent first) and the
+  // four newest external merges left in site/data/social-proof.json, at most
+  // two per repository.
+  it("renders two quote cards and the four newest seeded deliveries, quotes first, newest first", () => {
     const html = built.get("index.html");
     const section = sectionOf(html, "social-proof");
     expect(cardsOf(section)).toHaveLength(6);
-    expect(section.match(/class="proof-card proof-card-quote"/g)).toHaveLength(1);
+    expect(section.match(/class="proof-card proof-card-quote"/g)).toHaveLength(2);
     const order = [
+      section.indexOf("Juan Tamez"),
       section.indexOf("Tommy Xiao"),
       section.indexOf("k8e/pull/630"),
       section.indexOf("Soncle-music/pull/22"),
-      section.indexOf("safehearts/pull/2"),
-      section.indexOf("Tianshu-harness/pull/6"),
       section.indexOf("my-ai-team-docs/pull/464"),
+      section.indexOf("k8e/pull/615"),
     ];
     expect(order).toEqual([...order].sort((a, b) => a - b));
     expect(order.every((at) => at > -1)).toBe(true);
@@ -154,9 +164,8 @@ describe("homepage social-proof section (Issue #226)", () => {
       expect(hrefs).toEqual([
         "https://github.com/xiaods/k8e/pull/630",
         "https://github.com/minuda2009/Soncle-music/pull/22",
-        "https://github.com/toondji-ix/safehearts/pull/2",
-        "https://github.com/zzuu080603/Tianshu-harness/pull/6",
         "https://github.com/SHUKE-LABS/my-ai-team-docs/pull/464",
+        "https://github.com/xiaods/k8e/pull/615",
       ]);
     }
   });
@@ -167,10 +176,37 @@ describe("homepage social-proof section (Issue #226)", () => {
     expect(section).toContain('class="proof-card-handle" href="https://x.com/xds2000"');
   });
 
+  it("keeps Juan Tamez's quote with his name and GitHub link", () => {
+    for (const output of ["index.html", "zh/index.html"]) {
+      const card = quoteCardOf(sectionOf(built.get(output), "social-proof"), "Juan Tamez");
+      expect(card, `${output}: no Juan Tamez quote card`).not.toBe("");
+      expect(card).toContain("Orbi is a really cool project!");
+      expect(card).toContain('class="proof-card-name">Juan Tamez</span>');
+      expect(card).toContain('class="proof-card-handle" href="https://github.com/XelHaku" rel="noopener">@XelHaku</a>');
+    }
+  });
+
+  // Issue #1443: a quote in the other language carries one small translation
+  // line under it; a quote already in the page's language carries none.
+  it("translates the other-language quote and leaves the same-language quote unlabelled", () => {
+    const en = sectionOf(built.get("index.html"), "social-proof");
+    const zh = sectionOf(built.get("zh/index.html"), "social-proof");
+    expect(quoteCardOf(en, "Tommy Xiao")).toContain(
+      'class="proof-card-translation">Translation: Orbi\'s fully automated control flow is great. Keep it up.</p>',
+    );
+    expect(quoteCardOf(en, "Juan Tamez")).not.toContain("proof-card-translation");
+    expect(quoteCardOf(zh, "Juan Tamez")).toContain('class="proof-card-translation">译：Orbi 是个很酷的项目！</p>');
+    expect(quoteCardOf(zh, "Tommy Xiao")).not.toContain("proof-card-translation");
+    // Exactly one translation line per homepage: the other-language quote's.
+    expect(en.match(/class="proof-card-translation"/g)).toHaveLength(1);
+    expect(zh.match(/class="proof-card-translation"/g)).toHaveLength(1);
+  });
+
   it("shows the merge date and preserves the no-human-review lines", () => {
     const section = sectionOf(built.get("index.html"), "social-proof");
-    // None of the five seeded merges carries a human review: five markers.
-    expect(section.match(/class="proof-card-review">no human review<\/p>/g)).toHaveLength(5);
+    // Three of the four homepage merges carry no human review (k8e#615 carries
+    // two, and a non-zero count never renders the line): three markers.
+    expect(section.match(/class="proof-card-review">no human review<\/p>/g)).toHaveLength(3);
     expect(section).toContain('<time datetime="2026-10-12T08:39:25Z">2026-10-12</time>');
     expect(section).toContain('<time datetime="2026-10-02T04:21:18Z">2026-10-02</time>');
   });
@@ -178,32 +214,34 @@ describe("homepage social-proof section (Issue #226)", () => {
   it("carries the computed count line linking /evidence/#third-party", () => {
     const section = sectionOf(built.get("index.html"), "social-proof");
     expect(section).toContain('href="/evidence/#third-party"');
-    expect(section).toContain("10 deliveries in other people's repositories");
+    expect(section).toContain("7 deliveries in other people's repositories");
   });
 
   it("mirrors the same structure on the zh homepage with zh copy", () => {
     const section = sectionOf(built.get("zh/index.html"), "social-proof");
     expect(cardsOf(section)).toHaveLength(6);
-    expect(section.match(/class="proof-card proof-card-quote"/g)).toHaveLength(1);
+    expect(section.match(/class="proof-card proof-card-quote"/g)).toHaveLength(2);
     expect(section).toContain('href="/zh/evidence/#third-party"');
-    expect(section).toContain("他人仓库中已有 10 次交付");
+    expect(section).toContain("他人仓库中已有 7 次交付");
     expect(section).toContain("无人类 review");
     // Same data, same markup: the EN and ZH sections carry the same links.
     const count = (html) => sectionOf(html, "social-proof").match(/<a /g).length;
     expect(count(built.get("zh/index.html"))).toBe(count(built.get("index.html")));
   });
 
-  it("keeps the quote card free of a PR line (the quote has no repository)", () => {
+  it("keeps the quote cards free of a PR line (the quotes have no repository)", () => {
     const section = sectionOf(built.get("index.html"), "social-proof");
-    const card = section.slice(section.indexOf('class="proof-card proof-card-quote"'), section.indexOf("</article>", section.indexOf("Tommy Xiao")));
-    expect(card).not.toContain("github.com");
+    for (const person of ["Tommy Xiao", "Juan Tamez"]) {
+      expect(quoteCardOf(section, person), `${person}: no quote card`).not.toContain(
+        '<p class="proof-card-meta">',
+      );
+    }
   });
 
   it("keeps the older records off the homepage but on /evidence/", () => {
     for (const output of ["index.html", "zh/index.html"]) {
       const section = sectionOf(built.get(output), "social-proof");
       expect(section).not.toContain("k8e/pull/613");
-      expect(section).not.toContain("k8e/pull/615");
       expect(section).not.toContain("mat-site/pull/16");
     }
     for (const output of ["evidence/index.html", "zh/evidence/index.html"]) {
@@ -222,7 +260,7 @@ describe("/evidence/ #third-party section (Issue #226)", () => {
       const third = html.indexOf('<section class="social-proof shell" id="third-party"');
       expect(third, `${output}: #third-party missing`).toBeGreaterThan(records);
       const section = sectionOf(html, "third-party");
-      expect(cardsOf(section)).toHaveLength(11);
+      expect(cardsOf(section)).toHaveLength(9);
       expect(section).toContain("https://github.com/xiaods/k8e/pull/613");
       expect(section).toContain("https://github.com/xiaods/k8e/pull/615");
       expect(section).toContain("https://github.com/minuda2009/Soncle-music/pull/22");
@@ -232,27 +270,32 @@ describe("/evidence/ #third-party section (Issue #226)", () => {
   it("groups the deliveries by repository, newest repository first", () => {
     const section = sectionOf(built.get("evidence/index.html"), "third-party");
     const groups = [...section.matchAll(/<h3 class="social-proof-group-title">([\s\S]*?)<\/h3>/g)].map((m) => m[1]);
-    // Six repositories, ordered by each repository's newest merge, then quotes.
+    // Four repositories, ordered by each repository's newest merge, then quotes.
     expect(groups).toEqual([
       "xiaods/k8e",
       "minuda2009/Soncle-music",
-      "toondji-ix/safehearts",
-      "zzuu080603/Tianshu-harness",
       "SHUKE-LABS/my-ai-team-docs",
       "SHUKE-LABS/mat-site",
       "Quotes",
     ]);
-    const matGroup = section.slice(section.indexOf(groups[5]), section.indexOf("Quotes</h3>", section.indexOf(groups[5])));
+    const matGroup = section.slice(section.indexOf(groups[3]), section.indexOf("Quotes</h3>", section.indexOf(groups[3])));
     expect(cardsOf(matGroup)).toHaveLength(2);
     const k8eGroup = section.slice(section.indexOf(groups[0]), section.indexOf(groups[1]));
     expect(cardsOf(k8eGroup)).toHaveLength(3); // 630 (new), 615, 613
   });
 
-  it("keeps the quotes group last with the quote card", () => {
-    const section = sectionOf(built.get("evidence/index.html"), "third-party");
-    const quotesAt = section.indexOf("Quotes</h3>");
-    expect(quotesAt).toBeGreaterThan(-1);
-    expect(section.indexOf("Tommy Xiao")).toBeGreaterThan(quotesAt);
+  it("keeps the quotes group last with both quote cards and their translations", () => {
+    for (const [output, translation] of [
+      ["evidence/index.html", "Translation: Orbi's fully automated control flow is great. Keep it up."],
+      ["zh/evidence/index.html", "译：Orbi 是个很酷的项目！"],
+    ]) {
+      const section = sectionOf(built.get(output), "third-party");
+      const quotesAt = section.indexOf(output.startsWith("zh/") ? "用户引述</h3>" : "Quotes</h3>");
+      expect(quotesAt, `${output}: no quotes group`).toBeGreaterThan(-1);
+      expect(section.indexOf("Tommy Xiao")).toBeGreaterThan(quotesAt);
+      expect(section.indexOf("Juan Tamez")).toBeGreaterThan(quotesAt);
+      expect(section.slice(quotesAt)).toContain(translation);
+    }
   });
 
   it("mirrors the same structure on the zh evidence page", () => {
@@ -391,5 +434,38 @@ describe("social-proof selection helper", () => {
 describe("validator rejects malformed records", () => {
   it("names the source file in every error", () => {
     expect(() => validateSocialProof([quote("q", "P", null)], "scratch.json")).toThrow(/scratch\.json/);
+  });
+
+  // Issue #1443: a translation without its language (or the reverse) would
+  // silently never render, or render on the wrong page — fail the build.
+  it("rejects a translation without a language and a language without a translation", () => {
+    expect(() => validateSocialProof([quote("q", "P", "Telegram, 2026-09-01", "译文", null)], "scratch.json")).toThrow(
+      /translation_lang/,
+    );
+    expect(() => validateSocialProof([quote("q", "P", "Telegram, 2026-09-01", null, "zh")], "scratch.json")).toThrow(
+      /translation/,
+    );
+    expect(() => validateSocialProof([quote("q", "P", "Telegram, 2026-09-01", "译文", "fr")], "scratch.json")).toThrow(
+      /translation_lang/,
+    );
+  });
+});
+
+// Issue #1443: Orbi's own internal account and a 0-line PR are not
+// third-party deliveries — they never ship, on any of the four pages.
+describe("removed third-party records (Issue #1443)", () => {
+  it("keeps the internal account and the empty-diff PR out of the data file", async () => {
+    const records = JSON.parse(await readFile(SOCIAL_PROOF_JSON, "utf8"));
+    const repos = records.map((record) => record.repo).filter(Boolean);
+    expect(repos).not.toContain("zzuu080603/Tianshu-harness");
+    expect(repos).not.toContain("toondji-ix/safehearts");
+  });
+
+  it("renders them on none of the four pages", () => {
+    for (const output of ["index.html", "zh/index.html", "evidence/index.html", "zh/evidence/index.html"]) {
+      expect(built.get(output), `${output}: the internal account or the empty-diff PR still ships`).not.toMatch(
+        /zzuu080603\/Tianshu-harness|toondji-ix\/safehearts/,
+      );
+    }
   });
 });

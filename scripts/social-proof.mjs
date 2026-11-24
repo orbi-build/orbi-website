@@ -12,7 +12,11 @@
 //                inside a group), the quotes group last.
 //
 // A quote without a recorded consent fails the build with the person's name:
-// consent lives in the data file, never in someone's memory. The card colors
+// consent lives in the data file, never in someone's memory. A quote may also
+// carry `translation` + `translation_lang` — the same sentence in the other
+// language — and a page shows that line only when the page speaks it, so an
+// English reader still reads a Chinese quote and vice versa (Issue #1443). The
+// card colors
 // are scoped by context (`.night` on the homes, paper background on
 // /evidence/) in public/styles.css; the markup is identical everywhere.
 
@@ -35,6 +39,9 @@ const COPY = {
         ? "1 delivery in other people's repositories"
         : `${n} deliveries in other people's repositories`,
     noHumanReview: "no human review",
+    // Issue #1443: a quote in the other language carries its translation
+    // underneath. The label is the page's word for "translated from".
+    translationLabel: "Translation: ",
     quotesGroup: "Quotes",
     evidenceHref: "/evidence/#third-party",
   },
@@ -48,6 +55,7 @@ const COPY = {
       "全部第三方交付与引述，按仓库分组：Orbi 在它不拥有的仓库里发起的 pull request，以及运行者本人说的话。组内按时间倒序。",
     deliveriesLine: (n) => `他人仓库中已有 ${n} 次交付`,
     noHumanReview: "无人类 review",
+    translationLabel: "译：",
     quotesGroup: "用户引述",
     evidenceHref: "/zh/evidence/#third-party",
   },
@@ -63,6 +71,13 @@ const esc = (value) =>
     .replaceAll('"', "&quot;");
 
 const quoteText = (record) => (typeof record.quote === "string" ? record.quote.trim() : "");
+const translationText = (record) => (typeof record.translation === "string" ? record.translation.trim() : "");
+const QUOTE_LANGS = ["en", "zh"];
+// The translation line a page shows: the record's translation when it is
+// written in the page's own language. A quote already in the page's language
+// has no translation in that language, so the line stays off (Issue #1443).
+const translationFor = (record, lang) =>
+  translationText(record) && record.translation_lang === lang ? translationText(record) : "";
 const consentDate = (record) => record.consent?.match(/\d{4}-\d{2}-\d{2}/)?.[0] ?? "0000-00-00";
 const isDelivery = (record) => record.repo != null && record.pr != null;
 
@@ -75,6 +90,20 @@ export function validateSocialProof(records, source = "site/data/social-proof.js
       throw new Error(
         `${source}: record ${index} (${record.person ?? "unnamed person"}): a quote without recorded consent must not ship — add a non-empty "consent" naming where and when it was given (Issue #226)`,
       );
+    }
+    // Issue #1443: the translation and its language are a pair — one without
+    // the other would never render, or render on the wrong page.
+    if (translationText(record) !== "" || record.translation_lang != null) {
+      if (translationText(record) === "") {
+        throw new Error(
+          `${source}: record ${index} (${record.person ?? "unnamed person"}): "translation_lang" without a "translation" — add the translated sentence or drop the language`,
+        );
+      }
+      if (!QUOTE_LANGS.includes(record.translation_lang)) {
+        throw new Error(
+          `${source}: record ${index} (${record.person ?? "unnamed person"}): "translation_lang" must be one of ${QUOTE_LANGS.join(", ")} so the line knows which page it belongs to, got ${JSON.stringify(record.translation_lang)}`,
+        );
+      }
     }
     if (!quoteText(record) && !isDelivery(record)) {
       throw new Error(
@@ -149,12 +178,20 @@ function renderDeliveryCard(record, copy) {
   ].join("\n");
 }
 
-function renderQuoteCard(record, copy) {
+function renderQuoteCard(record, copy, lang) {
   const lines = [
     `      <article class="proof-card proof-card-quote">`,
     `        <blockquote class="proof-card-quote-text"><p class="orbi-proof-card-quote-text-p">${esc(record.quote)}</p></blockquote>`,
-    `        <p class="proof-card-person"><span class="proof-card-name">${esc(record.person)}</span> <a class="proof-card-handle" href="${esc(record.person_url)}" rel="noopener">${esc(record.handle)}</a></p>`,
   ];
+  // Issue #1443: a quote in the other language gets one small translation line
+  // right under it, so a reader who does not read that language still reads it.
+  const translation = translationFor(record, lang);
+  if (translation) {
+    lines.push(`        <p class="proof-card-translation">${esc(copy.translationLabel + translation)}</p>`);
+  }
+  lines.push(
+    `        <p class="proof-card-person"><span class="proof-card-name">${esc(record.person)}</span> <a class="proof-card-handle" href="${esc(record.person_url)}" rel="noopener">${esc(record.handle)}</a></p>`,
+  );
   // A PR line underneath only when the quote actually carries a repository —
   // a quote must never borrow a record it does not belong to.
   if (isDelivery(record)) {
@@ -170,7 +207,7 @@ function renderHomeSection(records, lang) {
   const copy = COPY[lang];
   const { quotes, deliveries } = selectHomeCards(records);
   const cards = [
-    ...quotes.map((record) => renderQuoteCard(record, copy)),
+    ...quotes.map((record) => renderQuoteCard(record, copy, lang)),
     ...deliveries.map((record) => renderDeliveryCard(record, copy)),
   ];
   return [
@@ -205,7 +242,7 @@ function renderEvidenceSection(records, lang) {
       `        <div class="social-proof-group">`,
       `          <h3 class="social-proof-group-title">${copy.quotesGroup}</h3>`,
       `          <div class="social-proof-grid">`,
-      ...quotes.map((record) => renderQuoteCard(record, copy)),
+      ...quotes.map((record) => renderQuoteCard(record, copy, lang)),
       `          </div>`,
       `        </div>`,
     );
