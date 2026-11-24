@@ -395,6 +395,69 @@
     observer.observe(root);
   }
 
+  /* Issue #1457: /cost/ turns a reader's own monthly volume into the sample's
+   * median and P90 cost. The unit prices are not repeated here: the two
+   * [data-cost-unit] cells of the page's own statistics table are the one copy,
+   * and the peak window applies the rule the page already states — double.
+   * The HTML ships the 30-delivery default, so a reader without JavaScript
+   * still gets an answer.
+   */
+  function bootCostEstimator(root) {
+    const countInput = root.querySelector("[data-cost-count]");
+    const results = root.querySelector("[data-cost-results]");
+    const medianOutput = root.querySelector("[data-cost-median]");
+    const p90Output = root.querySelector("[data-cost-p90]");
+    const status = root.querySelector("[data-cost-status]");
+    const windowButtons = Array.from(root.querySelectorAll("[data-cost-window]"));
+    function unitPrice(name) {
+      const cell = document.querySelector(`[data-cost-unit="${name}"]`);
+      const value = cell ? Number.parseFloat(cell.textContent.replace(/[^0-9.]/g, "")) : Number.NaN;
+      return Number.isFinite(value) ? value : null;
+    }
+    const offPeak = { median: unitPrice("median"), p90: unitPrice("p90") };
+    // Without both cells there is nothing to read, so the shipped default stays.
+    if (offPeak.median === null || offPeak.p90 === null) {
+      return;
+    }
+    let priceWindow = "offpeak";
+    function money(amount) {
+      // Cents, never more: 100 deliveries must read "$8.10", not a float tail.
+      return "$" + amount.toFixed(2);
+    }
+    function render() {
+      const raw = countInput.value.trim();
+      const count = /^\d+$/.test(raw) ? Number(raw) : 0;
+      if (count < 1 || count > 10000) {
+        results.hidden = true;
+        countInput.setAttribute("aria-invalid", "true");
+        status.textContent = root.getAttribute("data-invalid");
+        return;
+      }
+      status.textContent = "";
+      countInput.setAttribute("aria-invalid", "false");
+      results.hidden = false;
+      const multiplier = priceWindow === "peak" ? 2 : 1;
+      medianOutput.textContent = money(count * offPeak.median * multiplier);
+      p90Output.textContent = money(count * offPeak.p90 * multiplier);
+    }
+    function setWindow(name) {
+      priceWindow = name;
+      windowButtons.forEach(function (button) {
+        const selected = button.getAttribute("data-cost-window") === name;
+        button.classList.toggle("is-selected", selected);
+        button.setAttribute("aria-pressed", selected ? "true" : "false");
+      });
+      render();
+    }
+    windowButtons.forEach(function (button) {
+      button.addEventListener("click", function () {
+        setWindow(button.getAttribute("data-cost-window"));
+      });
+    });
+    countInput.addEventListener("input", render);
+    render();
+  }
+
   function bootPricingToggle(root) {
     const intervalButtons = Array.from(root.querySelectorAll("[data-pricing-interval]"));
     const prices = Array.from(document.querySelectorAll("[data-pricing-price]"));
@@ -760,6 +823,7 @@
 
   document.querySelectorAll('[role="region"].post-table-scroll').forEach(bootComparisonMatrix);
   document.querySelectorAll("[data-credits-calculator]").forEach(bootCreditsCalculator);
+  document.querySelectorAll("[data-cost-estimator]").forEach(bootCostEstimator);
   document.querySelectorAll("[data-pricing-toggle]").forEach(bootPricingToggle);
   document.querySelectorAll("[data-copy]").forEach(bootCopy);
   document.querySelectorAll(".site-header").forEach(bootNavigation);
