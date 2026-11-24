@@ -1641,7 +1641,8 @@ async function assertCloudPage(browser, path, size, screenshot) {
 // (the sample moves as worktrees are cleaned up), so its section retains the
 // date, n=46, and re-derivation recipe. Issue #512 added the dated n=20
 // merged-PR sample; Issue #886 moved it below the page as the labelled earlier
-// sample and promoted the n=169 Cloud sample to the headline. The smoke reads
+// sample and promoted the Cloud sample to the headline (n=1511 as of
+// 2026-11-24, Issue #1453). The smoke reads
 // the hero n each rendered page shows and asserts the two languages agree.
 // Issue #1212: the cost pages' prose is copy. What is pinned is the data the
 // page publishes (the sample sizes and their dates, the cost figures, the
@@ -1650,7 +1651,9 @@ async function assertCloudPage(browser, path, size, screenshot) {
 // that neither page hides the sample it is quoting.
 const costValues = [
   // the headline sample: date, size, and median/p90/mean cost
-  "2026-10-05", "n=169", "$0.082", "$0.22", "$0.11", "$18.45",
+  "2026-11-24", "n=1511", "$0.081", "$0.234", "$0.117", "$177.33",
+  // the external-user repositories, reported separately (Issue #1453)
+  "157", "$0.072", "$0.148", "$0.080", "1354",
   // the retired n=20 sample stays published as the earlier one
   "2026-09-22", "n=20", "$0.125", "$0.249", "10,612,802",
   // older per-delivery snapshot remains available
@@ -1712,10 +1715,10 @@ async function assertCostPage(browser, path, size, screenshot) {
       throw new Error(`${path}: missing the required data point ${JSON.stringify(needle)}`);
     }
   }
-  // Issue #886: the first screen is the hero — the headline sample (169 merged
-  // deliveries, median $0.082) must be what the visitor lands on.
+  // Issue #886: the first screen is the hero — the headline sample (1511
+  // merged deliveries, median $0.081) must be what the visitor lands on.
   const hero = (await page.locator("section.compare-hero").textContent()).replace(/\s+/g, " ");
-  for (const needle of ["$0.082", "169"]) {
+  for (const needle of ["$0.081", "1511"]) {
     if (!hero.includes(needle)) throw new Error(`${path}: hero is missing ${JSON.stringify(needle)}`);
   }
   if (hero.includes("$0.125")) throw new Error(`${path}: hero still leads with the retired $0.125 median`);
