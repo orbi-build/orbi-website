@@ -1,16 +1,36 @@
 ---
 title: Codex YOLO mode: what runs without approval
 date: 2026-10-16
-summary: Codex YOLO mode skips approvals and the local sandbox. Linux tests show what it allows; the guide also explains Codex auto mode and the full-auto removal.
+updated: 2026-11-24
+summary: Codex has no --dangerously-skip-permissions flag; --yolo is the equivalent. For unattended edits that keep a sandbox, use codex exec with workspace-write.
 lang: en
 author: Larry 🍀 Orbi
 image: /img/blog-codex-yolo-card.png
 mirror: codex-yolo-mode
 ---
 
-Codex YOLO mode is `--yolo`, an alias for `--dangerously-bypass-approvals-and-sandbox`. It skips approval prompts and removes Codex's local sandbox. Use it inside an environment that supplies its own isolation, such as a disposable VM or a restricted CI runner. For unattended repository edits that should keep a sandbox, start with `codex -a never exec --sandbox workspace-write "<task>"`. Codex auto mode is a different preset that still stops for approval prompts; it is [explained below](#codex-auto-mode-and-what-happened-to-full-auto).
+Codex has no `--dangerously-skip-permissions` flag. The equivalent of Claude Code's switch is Codex YOLO mode, `--yolo`, an alias for `--dangerously-bypass-approvals-and-sandbox`; it skips approval prompts and removes Codex's local sandbox. This guide is for developers who run Codex CLI themselves: it shows what read-only, workspace-write and YOLO allowed in a Linux test, a safer command for unattended edits, and how to migrate old full-auto scripts. Use YOLO only inside an environment that supplies its own isolation, such as a disposable VM or a restricted CI runner. For unattended repository edits that should keep a sandbox, start with `codex -a never exec --sandbox workspace-write "<task>"`. Codex auto mode is a different preset that still stops for approval prompts; it is [explained below](#codex-auto-mode-and-what-happened-to-full-auto). If you came looking for a Codex dangerously skip permissions flag, [the next section](#is-there-a-codex-dangerously-skip-permissions-flag) shows what happens when you type the Claude Code name.
 
-I'm Larry 🍀 Orbi, the creator of [Orbi](https://github.com/orbi-build/orbi). I tested these choices on Linux with Codex CLI 0.159.3 on 16 October 2026. Orbi runs the Pi coding agent, and its Codex integration uses Pi's `openai-codex` provider rather than Codex CLI. The commands below are for people running the CLI themselves.
+I'm Larry 🍀 Orbi, the creator of [Orbi](https://github.com/orbi-build/orbi). I ran the Linux experiment below with Codex CLI 0.159.3 on 16 October 2026, and ran the flag check in the next section with 0.172.0 on 24 November 2026. Orbi runs the Pi coding agent; Pi can use Codex models through its `openai-codex` model provider, and Orbi does not run Codex CLI. The commands below are for people running the CLI themselves.
+
+## Is there a Codex dangerously skip permissions flag?
+
+Codex CLI has no flag with that name; the Codex equivalent of Claude Code's `--dangerously-skip-permissions` is `--dangerously-bypass-approvals-and-sandbox`, alias `--yolo`, which also removes Codex's local sandbox. Measured on 24 November 2026 with Codex CLI 0.172.0 (the latest npm release at the time), passing `--dangerously-skip-permissions` stops at argument parsing with exit code 2:
+
+```text
+$ codex --version
+codex-cli 0.172.0
+
+$ codex exec --dangerously-skip-permissions "echo hi"
+error: unexpected argument '--dangerously-skip-permissions' found
+
+  tip: a similar argument exists: '--dangerously-bypass-hook-trust'
+# exit code: 2
+```
+
+Do not accept the `--dangerously-bypass-hook-trust` tip: per `codex --help`, it is a different switch that runs enabled hooks without requiring persisted hook trust, and it does not skip approvals. In 0.172.0, `--yolo` is not listed in `codex --help` or `codex exec --help`, but the CLI still accepts it and [OpenAI's CLI reference](https://learn.chatgpt.com/docs/cli/reference) lists it as the alias. Combining `--yolo` with `--approve-for-me` fails with "the argument '--dangerously-bypass-approvals-and-sandbox' cannot be used with '--approve-for-me'", showing that the CLI expands `--yolo` to the long flag. Only the flags were checked on 0.172.0; the boundary experiment further down was not re-run.
+
+If your actual problem is that Codex keeps asking for approval and you want no prompts while keeping a sandbox, prefer [running unattended with `workspace-write`](#run-unattended-while-keeping-workspace-write) over YOLO. For the Claude Code flag itself, see [Claude Code YOLO mode](/blog/claude-code-yolo-mode/).
 
 ## How to start Codex YOLO mode
 
@@ -68,7 +88,7 @@ codex -a never exec --sandbox workspace-write \
 
 I also asked each configuration to create `greeting.py` containing `print('workspace ok')`, then run it. Workspace-write completed it without Codex YOLO mode; YOLO also completed it. Under read-only, the agent said it could not create the file and made no tool call. These three ordinary-task runs were separate from the fixed probes.
 
-All six CLI runs exited 0, including the read-only task that never created its file. Before the next pipeline step, check the expected files and project tests; a successful CLI exit alone does not prove the task met its acceptance criteria.
+All six experiment runs exited 0, including the read-only task that never created its file. Before the next pipeline step, check the expected files and project tests; a successful CLI exit alone does not prove the task met its acceptance criteria.
 
 ## Codex auto mode, and what happened to full auto
 
@@ -95,7 +115,7 @@ error: unexpected argument '--full-auto' found
 # exit code: 2
 ```
 
-Codex CLI 0.163.0 printed the same error when I repeated the check on 17 October 2026, and interactive `codex --full-auto --help` failed the same way. OpenAI's current [non-interactive documentation](https://learn.chatgpt.com/docs/non-interactive-mode) says `--full-auto` is no longer supported. For scripts that need repository edits, it directs users to explicit `--sandbox workspace-write`, or to `--approve-for-me` on its own for automatic approval review (that preset already includes workspace-write, so don't add `--sandbox`). Some search results describe an older transition: [Codex CLI 0.130.0](https://github.com/openai/codex/blob/rust-v0.130.0/codex-rs/exec/src/cli.rs#L99) still accepted `--full-auto` with a deprecation warning. Check the installed CLI to find out which behavior applies to your version.
+Codex CLI 0.163.0 printed the same error when I repeated the check on 24 November 2026, and interactive `codex --full-auto --help` failed the same way. OpenAI's current [non-interactive documentation](https://learn.chatgpt.com/docs/non-interactive-mode) says `--full-auto` is no longer supported. For scripts that need repository edits, it directs users to explicit `--sandbox workspace-write`, or to `--approve-for-me` on its own for automatic approval review (that preset already includes workspace-write, so don't add `--sandbox`). Some search results describe an older transition: [Codex CLI 0.130.0](https://github.com/openai/codex/blob/rust-v0.130.0/codex-rs/exec/src/cli.rs#L99) still accepted `--full-auto` with a deprecation warning. Check the installed CLI to find out which behavior applies to your version.
 
 OpenAI's [table of common combinations](https://learn.chatgpt.com/docs/agent-approvals-security#common-sandbox-and-approval-combinations) puts these modes side by side; the `--approve-for-me` shortcut is from the [CLI reference](https://learn.chatgpt.com/docs/cli/reference):
 
@@ -120,7 +140,7 @@ This preset uses workspace-write, on-request approvals and an automatic reviewer
 
 [Auto-review](https://learn.chatgpt.com/docs/sandboxing/auto-review) evaluates an action that needs approval. Commands already permitted inside the sandbox run without that review; approved escalations can cross the normal boundary. After a denial, the agent must find a materially safer alternative or stop and ask the user. Account and organization policy can constrain this mode.
 
-I confirmed that 0.159.3 accepts the parameter. I did not test reviewer decisions in this matrix. Approval review also has a different job from reviewing a patch: permission to execute a command does not prove the resulting code is correct or ready to merge.
+I confirmed that 0.159.3 accepts the parameter, and 0.172.0 lists it in `codex --help`. I did not test reviewer decisions in this matrix. Approval review also has a different job from reviewing a patch: permission to execute a command does not prove the resulting code is correct or ready to merge.
 
 ## How Orbi runs unattended and gates a merge
 
