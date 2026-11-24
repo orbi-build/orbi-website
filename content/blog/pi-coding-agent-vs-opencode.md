@@ -206,4 +206,4 @@ One Linux machine, one day, DeepSeek V4.1 Flash and one local model. These were 
 
 ## Related
 
-[Pi coding agent vs Claude Code](/blog/pi-coding-agent-vs-claude-code/), [OpenCode vs Claude Code](/blog/opencode-vs-claude-code/), [Pi agent harness](/blog/pi-agent-harness/), and [Pi extensions in production](/blog/pi-extensions-in-production/) cover adjacent measurements and integration details. The [Orbi comparison](/compare/) and [Orbi Cloud](/cloud/?ref=blog-pi-vs-oc) describe the delivery workflow.
+[Pi coding agent vs Claude Code](/blog/pi-coding-agent-vs-claude-code/), [OpenCode vs Claude Code](/blog/opencode-vs-claude-code/), [Pi agent harness](/blog/pi-agent-harness/), [Pi extensions in production](/blog/pi-extensions-in-production/), and [best Pi extensions for unattended runs](/blog/best-pi-extensions/) cover adjacent measurements and integration details. The [Orbi comparison](/compare/) and [Orbi Cloud](/cloud/?ref=blog-pi-vs-oc) describe the delivery workflow.
