@@ -6,13 +6,6 @@
     <description>Notes from shipping Orbi in the open: delivery runs, failures, fixes, and measurements.</description>
     <language>en</language>
     <item>
-      <title>AI now approves pull requests. Who reviews the AI?</title>
-      <link>https://orbi.build/blog/who-reviews-the-ai/</link>
-      <guid isPermaLink="true">https://orbi.build/blog/who-reviews-the-ai/</guid>
-      <pubDate>Tue, 24 Nov 2026 00:00:00 GMT</pubDate>
-      <description>AI coding tools now approve pull requests. For a small team, the real question is what you trust when one goes wrong. Orbi's answer: not the model.</description>
-    </item>
-    <item>
       <title>Pi vs omp (Oh My Pi): same model, run unattended</title>
       <link>https://orbi.build/blog/pi-vs-oh-my-pi/</link>
       <guid isPermaLink="true">https://orbi.build/blog/pi-vs-oh-my-pi/</guid>

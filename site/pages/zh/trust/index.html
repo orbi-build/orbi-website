@@ -1,0 +1,230 @@
+<!--orbi:page
+{
+  "output": "zh/trust/index.html",
+  "lang": "zh",
+  "mirror": "trust/index.html",
+  "layout": "pretty",
+  "nav": {
+    "navId": "primary-navigation",
+    "systemHref": "/zh/#system",
+    "compareHref": "/zh/compare/",
+    "compareLabel": "竞品对比",
+    "compareDataCta": false,
+    "compareCurrent": false,
+    "costHref": "/zh/cloud/#pricing",
+    "costCurrent": false,
+    "compareCostSameLine": false,
+    "docsHref": "https://docs.orbi.build/zh",
+    "langSwitchHref": "/trust/",
+    "langCurrentFirst": true
+  }
+}
+-->
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>信任：Orbi 如何保障你的仓库安全</title>
+  <meta name="description" content="AI 打不开的门禁、留在你手里的 GitHub 控制权、代码去了哪里，以及 Orbi 不承诺的事。每一条都附有出处。">
+  <link rel="canonical" href="https://orbi.build/zh/trust/">
+  <link rel="alternate" hreflang="en" href="https://orbi.build/trust/">
+  <link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/trust/">
+  <link rel="alternate" hreflang="x-default" href="https://orbi.build/trust/">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <meta name="theme-color" content="#06151b">
+
+  <meta property="og:type" content="article">
+  <meta property="og:site_name" content="Orbi">
+  <meta property="og:locale" content="zh_CN">
+  <meta property="og:locale:alternate" content="en_US">
+  <meta property="og:url" content="https://orbi.build/zh/trust/">
+  <meta property="og:title" content="信任：Orbi 如何保障你的仓库安全">
+  <meta property="og:description" content="AI 打不开的门禁、留在你手里的 GitHub 控制权，以及我们自己公开写出的限制。">
+  <meta property="og:image" content="https://orbi.build/img/og.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Orbi。你的仓库始终属于你。">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:site" content="@xqliu">
+  <meta name="twitter:creator" content="@xqliu">
+  <meta name="twitter:title" content="信任：Orbi 如何保障你的仓库安全">
+  <meta name="twitter:description" content="AI 打不开的门禁、留在你手里的 GitHub 控制权，以及我们自己公开写出的限制。">
+  <meta name="twitter:image" content="https://orbi.build/img/og.png">
+  <link rel="stylesheet" href="/fonts/fonts.css">
+  <link rel="stylesheet" href="/styles.css">
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "headline": "信任：Orbi 如何保障你的仓库安全",
+    "description": "AI 打不开的门禁、留在你手里的 GitHub 控制权、代码去了哪里，以及 Orbi 不承诺的事。",
+    "inLanguage": "zh-CN",
+    "url": "https://orbi.build/zh/trust/",
+    "isPartOf": {
+      "@type": "WebSite",
+      "name": "Orbi",
+      "url": "https://orbi.build/"
+    },
+    "about": { "@id": "https://orbi.build/#software" }
+  }
+  </script>
+</head>
+<body>
+  <a class="skip-link" href="#main-content">跳到正文</a>
+
+<!--@nav-->
+
+  <main id="main-content">
+    <div class="night">
+      <section class="compare-hero shell" aria-labelledby="trust-title">
+        <p class="eyebrow">信任 · 2026-11-24 核对</p>
+        <h1 id="trust-title">你的仓库，始终属于你</h1>
+        <p class="hero-lede"><strong>Orbi 让 AI 写代码、审代码、合并代码，但它的设计让你永远不必信任 AI 来做这件事。</strong>每次合并都要通过模型打不开的门禁；最后的控制权在 GitHub 上，握在你手里，而不在我们手里。本页每一条说法都链接到背后的代码、文档或公开记录。</p>
+        <div class="cta-row">
+          <a class="button button-ghost" href="#protections">查看六项保护</a>
+          <a class="text-link" href="https://docs.orbi.build/zh/trust?ref=trust-page-zh">阅读完整细则 ↗</a>
+        </div>
+      </section>
+    </div>
+
+    <section class="compare-section shell" id="numbers" aria-labelledby="numbers-title">
+      <p class="section-tag">用数字说话</p>
+      <h2 class="orbi-compare-section-h2" id="numbers-title">你可以确定的事</h2>
+      <div class="stat-grid">
+        <div class="stat"><strong>100%</strong><span>的交付步骤都记录在你自己的 GitHub 仓库里</span></div>
+        <div class="stat"><strong>0</strong><span>次强制推送共享分支</span></div>
+        <div class="stat"><strong>1</strong><span>步操作，在 GitHub 上撤销 Orbi Cloud 的访问</span></div>
+        <div class="stat"><strong>120 分钟</strong><span>交付结束后，Cloud 删除工作副本</span></div>
+      </div>
+    </section>
+
+    <section class="compare-section shell" id="protections" aria-labelledby="protections-title">
+      <p class="section-tag">六项保护</p>
+      <h2 class="orbi-compare-section-h2" id="protections-title">你的代码如何受到保护</h2>
+      <p class="section-lede">每一项保护都链接到它的文档，以及证明它的测试（如果有）。</p>
+      <ul class="dive-list">
+        <li class="orbi-dive-list-li">
+          <a class="orbi-dive-list-a" href="https://docs.orbi.build/zh/safety-matrix?ref=trust-page-zh">
+            <strong class="orbi-dive-list-strong">AI 打不开的门禁</strong>
+            <p class="orbi-dive-list-p">改动只有在满足全部条件时才会合并：审查结论绑定在确切的 commit 上；仓库有 CI 时，该 commit 上的 CI 必须通过；head 没有变；base 是最新的。合并锁定在被审查的那个 commit 上。</p>
+          </a>
+        </li>
+        <li class="orbi-dive-list-li">
+          <a class="orbi-dive-list-a" href="https://docs.orbi.build/zh/workflow?ref=trust-page-zh">
+            <strong class="orbi-dive-list-strong">审查者不是写代码的那个</strong>
+            <p class="orbi-dive-list-p">审查在一个独立会话里进行，它看不到作者的思路，还可以换成另一家供应商的另一个模型。AI 永远不会自己批改自己的作业。</p>
+          </a>
+        </li>
+        <li class="orbi-dive-list-li">
+          <a class="orbi-dive-list-a" href="https://cloud-docs.orbi.build/zh/security">
+            <strong class="orbi-dive-list-strong">最终控制权留在 GitHub</strong>
+            <p class="orbi-dive-list-p">分支保护由 GitHub 执行，不由 Orbi 执行。Cloud 只能访问你选择的仓库；卸载 GitHub App，访问立即终止，不需要经过我们。</p>
+          </a>
+        </li>
+        <li class="orbi-dive-list-li">
+          <a class="orbi-dive-list-a" href="/zh/evidence/">
+            <strong class="orbi-dive-list-strong">记录就在你的仓库里</strong>
+            <p class="orbi-dive-list-p">每一步都写在你看得见的地方：你自己仓库里的 Issue、PR 和评论，而不是一个需要你信任的仪表盘。一个 <code>run_id</code> 把一次运行的评论、PR 和日志串在一起。</p>
+          </a>
+        </li>
+        <li class="orbi-dive-list-li">
+          <a class="orbi-dive-list-a" href="https://docs.orbi.build/zh/safety-matrix?ref=trust-page-zh">
+            <strong class="orbi-dive-list-strong">宁可停下，也不瞎猜</strong>
+            <p class="orbi-dive-list-p">出错立即失败。审查与修复最多五轮。做不完的交付会被标记为 <code>ai-blocked</code> 并写明原因，等人来决定。</p>
+          </a>
+        </li>
+        <li class="orbi-dive-list-li">
+          <a class="orbi-dive-list-a" href="https://github.com/orbi-build/orbi">
+            <strong class="orbi-dive-list-strong">开源，没有任何锁定</strong>
+            <p class="orbi-dive-list-p">引擎以 AGPL-3.0 开源，在你自己的仓库上永久免费运行。任何 OpenAI 兼容模型都能用。明天停用，也没有任何东西需要导出。</p>
+          </a>
+        </li>
+      </ul>
+    </section>
+
+    <section class="compare-section shell" id="your-code" aria-labelledby="code-title">
+      <p class="section-tag">你的代码去了哪里</p>
+      <h2 class="orbi-compare-section-h2" id="code-title">自托管还是 Cloud，说清楚</h2>
+      <ul class="event-list">
+        <li class="orbi-event-list-li">
+          <span class="event-era">自托管</span>
+          <div>
+            <strong>在你自己的机器上</strong>
+            <p class="orbi-event-list-p">你的仓库、GitHub token 和模型 key 都留在运行 Orbi 的机器上，不会上传给我们。代码只会发给你配置的模型端点；用本地模型，代码就完全不出你的环境。</p>
+            <p class="src-note orbi-event-list-p"><a class="orbi-src-note-a" href="https://docs.orbi.build/zh/security?ref=trust-page-zh">引擎安全模型</a></p>
+          </div>
+        </li>
+        <li class="orbi-event-list-li">
+          <span class="event-era">Cloud</span>
+          <div>
+            <strong>在我们运营的机器上，只在交付期间</strong>
+            <p class="orbi-event-list-p">托管 worker 只克隆你授权的仓库。每个客户以独立的操作系统用户运行，与其他客户隔离，接触不到你的生产凭据或其他仓库。交付结束后静默 120 分钟，工作副本即被删除。</p>
+            <p class="orbi-event-list-p"><strong>模型：</strong>Cloud 默认使用平台模型通道，运行的是 DeepSeek，因此这个通道上你的代码和提示会发送给 DeepSeek。如果这不适合你的代码，可以填入自己的模型 key；它加密存储，只会以掩码形式显示。</p>
+            <p class="src-note orbi-event-list-p">
+              <a class="orbi-src-note-a" href="https://cloud-docs.orbi.build/zh/security">Cloud 安全</a>
+              · <a class="orbi-src-note-a" href="https://cloud-docs.orbi.build/zh/model-configuration">模型配置</a>
+              · <a class="orbi-src-note-a" href="/zh/cloud/#faq">Cloud 常见问题</a>
+            </p>
+          </div>
+        </li>
+      </ul>
+    </section>
+
+    <section class="compare-section shell" id="not-covered" aria-labelledby="limits-title">
+      <p class="section-tag">不在保障范围内</p>
+      <h2 class="orbi-compare-section-h2" id="limits-title">我们不承诺的事</h2>
+      <p class="section-lede">保障只有写清楚边界才有价值。下面是我们的边界，持续维护的完整清单在<a href="https://docs.orbi.build/zh/safety-matrix?ref=trust-page-zh">安全矩阵</a>里。</p>
+      <div class="faq-list">
+        <details class="faq-item" open>
+          <summary><span>01</span>没有分支保护，Orbi 里没有任何东西能阻止 agent 推送你的主分支</summary>
+          <div class="faq-answer">
+            <p class="orbi-faq-answer-p">Agent 被要求永远不推送、不合并 base 分支，但指令不等于强制。真正执行的是 GitHub 的分支保护或 ruleset。在 Orbi 合并任何东西之前，请先开启它，并要求状态检查通过。</p>
+          </div>
+        </details>
+        <details class="faq-item">
+          <summary><span>02</span>没有 CI，就没有测试证据</summary>
+          <div class="faq-answer">
+            <p class="orbi-faq-answer-p">没有上报任何检查的 PR，在独立审查和其他门禁通过后仍然可以合并，只是它的测试不会被报告为通过。Orbi 门禁的强度取决于你提供的 CI。</p>
+          </div>
+        </details>
+        <details class="faq-item">
+          <summary><span>03</span>要求批准评审，会让每次交付都停下</summary>
+          <div class="faq-answer">
+            <p class="orbi-faq-answer-p">Orbi 以同一个 GitHub 身份开 PR 和合并 PR，而 GitHub 不允许作者批准自己的 PR。如果 base 分支要求批准，Orbi 会等一个人逐个批准。这是一个合理的选择，<a href="https://cloud-docs.orbi.build/zh/connect-repository">这里说明了怎么做</a>。</p>
+          </div>
+        </details>
+        <details class="faq-item">
+          <summary><span>04</span>发版走自己的门禁，不经过 PR 审查</summary>
+          <div class="faq-answer">
+            <p class="orbi-faq-answer-p">发版任务可以先把版本提交直接推送到 base 分支，再打 tag、发布说明。</p>
+          </div>
+        </details>
+        <details class="faq-item">
+          <summary><span>05</span>测试通过，不等于做的是你想要的</summary>
+          <div class="faq-answer">
+            <p class="orbi-faq-answer-p">测试证明代码符合测试，不证明测试符合你的本意。请在 Issue 里写清验收标准；如果希望每次合并前由人确认业务意图或界面文案，可以打开人工验收门。</p>
+          </div>
+        </details>
+      </div>
+    </section>
+
+    <section class="closing shell" aria-labelledby="verify-title">
+      <p class="section-tag">别只听我们说</p>
+      <h2 class="orbi-closing-h2" id="verify-title">先看记录，再拿测试仓库试一试</h2>
+      <p>在公开证据页打开真实的交付，包括那些被审查打回的。然后接入一个开了分支保护的测试仓库。如果本页任何内容与 Orbi 的实际行为不符，那是 bug，<a href="https://github.com/orbi-build/orbi/issues">请告诉我们</a>。</p>
+      <div class="cta-row">
+        <a class="button button-dark" href="/zh/evidence/">打开公开记录</a>
+        <a class="text-link" href="/zh/cloud/">免费试用 Orbi Cloud 14 天 →</a>
+      </div>
+    </section>
+
+  </main>
+
+<!--@footer-->
+
+  <script src="/demo.js" defer></script>
+
+</body>
+</html>

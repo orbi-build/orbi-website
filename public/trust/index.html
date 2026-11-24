@@ -3,127 +3,51 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>AI now approves pull requests. Who reviews the AI? | Orbi</title>
-  <meta name="description" content="AI coding tools now approve pull requests. For a small team, the real question is what you trust when one goes wrong. Orbi's answer: not the model.">
-  <link rel="canonical" href="https://orbi.build/blog/who-reviews-the-ai/">
-  <link rel="alternate" hreflang="en" href="https://orbi.build/blog/who-reviews-the-ai/">
-  <link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/blog/who-reviews-the-ai/">
-  <link rel="alternate" hreflang="x-default" href="https://orbi.build/blog/who-reviews-the-ai/">
-  <meta property="og:type" content="article">
-  <meta property="og:title" content="AI now approves pull requests. Who reviews the AI?">
-  <meta property="og:description" content="AI coding tools now approve pull requests. For a small team, the real question is what you trust when one goes wrong. Orbi's answer: not the model.">
-  <meta property="og:url" content="https://orbi.build/blog/who-reviews-the-ai/">
-  <meta property="og:image" content="https://orbi.build/img/blog-who-reviews-the-ai-card.png">
-  <meta property="og:image:alt" content="AI now approves pull requests. Who reviews the AI?">
-  <meta property="article:published_time" content="2026-11-24">
-  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"AI now approves pull requests. Who reviews the AI?","datePublished":"2026-11-24","author":{"@type":"Person","name":"Larry 🍀 Orbi","url":"https://orbi.build/about/larry-orbi/","sameAs":["https://github.com/xqliu","https://x.com/xqliu"]},"publisher":{"@type":"Organization","name":"Orbi","url":"https://orbi.build/","logo":{"@type":"ImageObject","url":"https://orbi.build/logo-mark.svg"}},"mainEntityOfPage":"https://orbi.build/blog/who-reviews-the-ai/","image":"https://orbi.build/img/blog-who-reviews-the-ai-card.png","inLanguage":"en","description":"AI coding tools now approve pull requests. For a small team, the real question is what you trust when one goes wrong. Orbi's answer: not the model.","url":"https://orbi.build/blog/who-reviews-the-ai/"}</script>
+  <title>Trust: how Orbi keeps your repository safe</title>
+  <meta name="description" content="The gates an AI cannot open, the GitHub controls you keep, where your code goes, and what Orbi does not promise. Every claim links to its proof.">
+  <link rel="canonical" href="https://orbi.build/trust/">
+  <link rel="alternate" hreflang="en" href="https://orbi.build/trust/">
+  <link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/trust/">
+  <link rel="alternate" hreflang="x-default" href="https://orbi.build/trust/">
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <meta name="theme-color" content="#06151b">
 
+  <meta property="og:type" content="article">
+  <meta property="og:site_name" content="Orbi">
+  <meta property="og:locale" content="en_US">
+  <meta property="og:locale:alternate" content="zh_CN">
+  <meta property="og:url" content="https://orbi.build/trust/">
+  <meta property="og:title" content="Trust: how Orbi keeps your repository safe">
+  <meta property="og:description" content="Gates the AI cannot open, controls that stay with you on GitHub, and the limits we publish ourselves.">
+  <meta property="og:image" content="https://orbi.build/img/og.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Orbi. Your repository stays yours.">
   <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:site" content="@xqliu">
+  <meta name="twitter:creator" content="@xqliu">
+  <meta name="twitter:title" content="Trust: how Orbi keeps your repository safe">
+  <meta name="twitter:description" content="Gates the AI cannot open, controls that stay with you on GitHub, and the limits we publish ourselves.">
+  <meta name="twitter:image" content="https://orbi.build/img/og.png">
   <link rel="stylesheet" href="/fonts/fonts.css">
   <link rel="stylesheet" href="/styles.css">
 
-  <style>
-    /* Blog-only layout: the shared .shell/.compare-hero rules stay unchanged. */
-    .post-grid { max-width: 52rem; margin: 0 auto; padding: 0 24px; }
-    .post-hero { padding: 84px 0 68px; }
-    /* Issue #860: the body text column is wider than --hero-copy-width, so the
-       hero fills it and the h1/lede right edge lands on the body text. */
-    .post-hero h1, .post-hero .hero-lede { max-width: none; }
-    .post-body { padding-top: 12px; padding-bottom: 30px; }
-    .post-body h2, .post-body .related-links h2 { font-family: var(--display); font-size: 1.5rem; line-height: 1.25; margin: 42px 0 10px; scroll-margin-top: 24px; }
-    .post-body .related-links { margin: 0; }
-    .post-cta {
-      margin: 42px 0 12px;
-      padding: 30px;
-      border-radius: var(--radius-card);
-      background: var(--night);
-      color: #edf5f0;
-      text-align: center;
-    }
-    .post-cta h2 { margin: 0 0 18px; color: #edf5f0; font-family: var(--display); font-size: 1.5rem; line-height: 1.25; }
-    .post-cta .button { margin: 0 auto; color: var(--night); text-decoration: none; }
-    .post-cta-note { margin: 10px 0 18px; color: #aec2bd; font-size: 0.9rem; }
-    .post-cta .post-cta-link { color: #edf5f0; font-size: 0.9rem; text-underline-offset: 3px; }
-    .post-cta .post-cta-link:hover { color: #fff; }
-    .post-cta-inline {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 16px;
-      margin: 28px 0;
-      padding: 12px 16px;
-      border: 1px solid var(--line);
-      border-radius: var(--radius-card);
-      background: var(--paper-2);
-    }
-    .post-cta-inline span { color: var(--ink); font-size: 0.95rem; }
-    .post-cta-inline .button { flex: 0 0 auto; min-height: 40px; padding: 0 14px; font-size: 0.85rem; }
-    .post-toc { position: sticky; top: 24px; max-height: calc(100vh - 48px); overflow-y: auto; align-self: start; padding-top: 26px; }
-    .post-toc h2 { margin: 0 0 10px; padding: 0; font: 500 0.75rem/1.5rem var(--mono); letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-soft); }
-    .post-toc ol { list-style: none; margin: 0; padding: 0; border-left: 1px solid var(--line); }
-    .post-toc ol ol { border-left: 0; }
-    .post-body .post-toc-inline ol { margin: 0; padding-left: 2.2em; }
-    .post-body .post-toc-inline ol ol { list-style: none; padding-left: 1em; margin-top: 0; }
-    .post-toc li { margin: 0; }
-    .post-toc-inline li { margin: 6px 0; }
-    .post-toc-link { display: block; color: var(--ink-soft); font-size: 0.92rem; line-height: 1.4; text-decoration: none; overflow-wrap: anywhere; }
-    .post-toc .post-toc-link { padding: 6px 0 6px 15px; margin-left: -1px; border-left: 1px solid transparent; font-size: 0.875rem; line-height: 1.25rem; }
-    .post-toc ol ol .post-toc-link { padding-left: 27px; }
-    .post-toc-link:hover, .post-toc-link.is-current { color: var(--ink); }
-    .post-toc .post-toc-link.is-current { border-left-color: var(--ink); color: var(--ink); font-weight: 600; }
-    .post-toc-inline { display: none; margin: 0 0 28px; border: 1px solid var(--line); border-radius: var(--radius-card); padding: 12px 16px; }
-    .post-toc-inline summary { cursor: pointer; font-weight: 600; }
-    .post-toc-inline ol { margin-top: 12px; }
-
-    .post-body h3 { font-family: var(--display); font-size: 1.13rem; line-height: 1.3; margin: 30px 0 6px; }
-    .post-body p { margin: 14px 0; }
-    /* Issue #833: this line sits on the dark .night hero, so it uses the dark-band secondary color. */
-    .post-series { margin: 10px 0 6px; color: #9aada9; font-size: 0.95rem; }
-    .post-series a { color: inherit; text-decoration: underline; text-underline-offset: 3px; }
-    /* Issue #887: the byline sits between the title and the lede on the same
-       dark hero, so it carries the dark-band secondary color and the mono
-       label type the rest of the post metadata uses. */
-    .post-byline { margin: 0 0 24px; color: #9aada9; font-family: var(--mono); font-size: 0.85rem; }
-    .post-byline a { color: inherit; text-decoration: underline; text-underline-offset: 3px; }
-    .post-byline a:hover { color: #edf5f0; }
-    .post-body ul, .post-body ol { margin: 14px 0; padding-left: 22px; }
-    .post-body li { margin: 6px 0; }
-    .post-body a { color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
-    .post-body code { font-family: var(--mono); font-size: 0.88em; background: var(--paper-2); border: 1px solid var(--line); border-radius: var(--radius-control); padding: 1px 5px; white-space: nowrap; display: inline-block; max-width: 100%; overflow-x: auto; vertical-align: bottom; }
-    .post-body code.post-code--spaced { white-space: normal; display: inline; }
-    .post-body pre { background: var(--paper-2); border: 1px solid var(--line); border-radius: var(--radius-card); padding: 14px 16px; overflow-x: auto; margin: 18px 0; }
-    .post-body pre code, .post-body pre code.post-code--spaced, .post-body pre code.post-code--single { background: none; border: none; padding: 0; font-size: 0.85rem; white-space: pre; overflow-wrap: normal; display: inline; max-width: none; overflow: visible; }
-    .post-table-scroll { overflow-x: auto; }
-    .post-body table { width: 100%; border-collapse: collapse; }
-    .post-body th, .post-body td { border: 1px solid var(--line); padding: 8px 10px; text-align: left; }
-    .post-body th { background: var(--paper-2); }
-    .post-body strong { font-weight: 600; }
-    .post-media { margin: 24px 0; }
-    .post-body svg { max-width: 100%; height: auto; }
-    .post-media img, .post-media iframe, .post-media svg { display: block; width: 100%; border: 0; border-radius: var(--radius-card); }
-    .post-media img, .post-media svg { height: auto; }
-    .post-media iframe { aspect-ratio: 16 / 9; }
-    .post-media figcaption { color: var(--muted); font-size: 0.9rem; margin-top: 8px; }
-    @media (min-width: 1200px) {
-      .post-grid { display: grid; grid-template-columns: minmax(0, 52rem) 200px; column-gap: 56px; max-width: calc(52rem + 256px); padding: 0; }
-      .post-hero, .post-body { grid-column: 1; padding-left: 16px; padding-right: 16px; }
-      .post-toc { grid-column: 2; grid-row: 1; }
-    }
-    @media (max-width: 1199px) {
-      .post-toc { display: none; }
-      .post-toc-inline { display: block; }
-    }
-    @media (max-width: 760px) {
-      .post-hero { padding-top: 64px; padding-bottom: 48px; }
-      .post-cta { padding: 24px 18px; }
-      .post-cta .button { width: 100%; }
-      .post-cta-inline { align-items: stretch; flex-direction: column; gap: 10px; }
-      .post-cta-inline .button { width: 100%; }
-    }
-  </style>
-
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "headline": "Trust: how Orbi keeps your repository safe",
+    "description": "The gates an AI cannot open, the GitHub controls you keep, where your code goes, and what Orbi does not promise.",
+    "inLanguage": "en",
+    "url": "https://orbi.build/trust/",
+    "isPartOf": {
+      "@type": "WebSite",
+      "name": "Orbi",
+      "url": "https://orbi.build/"
+    },
+    "about": { "@id": "https://orbi.build/#software" }
+  }
+  </script>
 </head>
 <body>
   <a class="skip-link" href="#main-content">Skip to content</a>
@@ -149,118 +73,148 @@
 
   <main id="main-content">
     <div class="night">
-      <div class="post-grid">
-        <section class="post-hero" aria-labelledby="post-title">
-          <p class="eyebrow">Blog</p>
-          <h1 id="post-title">AI now approves pull requests. Who reviews the AI?</h1>
-          <p class="post-byline"><a href="/about/larry-orbi/">Larry 🍀 Orbi</a> · <time datetime="2026-11-24">2026-11-24</time></p>
+      <section class="compare-hero shell" aria-labelledby="trust-title">
+        <p class="eyebrow">Trust · reviewed 2026-11-24</p>
+        <h1 id="trust-title">Your repository stays yours</h1>
+        <p class="hero-lede"><strong>Orbi lets AI write, review and merge your code, and it is built so you never have to trust the AI to do that.</strong> Merges pass gates the model cannot open. The final controls sit on GitHub, where you hold them, not with us. Every claim on this page links to the code, the documentation or the public record behind it.</p>
+        <div class="cta-row">
+          <a class="button button-ghost" href="#protections">See the six protections</a>
+          <a class="text-link" href="https://docs.orbi.build/trust?ref=trust-page">Read the full fine print ↗</a>
+        </div>
+      </section>
+    </div>
 
-          <p class="hero-lede">AI coding tools now approve pull requests. For a small team, the real question is what you trust when one goes wrong. Orbi's answer: not the model.</p>
-        </section>
+    <section class="compare-section shell" id="numbers" aria-labelledby="numbers-title">
+      <p class="section-tag">IN NUMBERS</p>
+      <h2 class="orbi-compare-section-h2" id="numbers-title">What you can count on</h2>
+      <div class="stat-grid">
+        <div class="stat"><strong>100%</strong><span>of every delivery’s steps are recorded in your own GitHub repository</span></div>
+        <div class="stat"><strong>0</strong><span>force pushes to a shared branch</span></div>
+        <div class="stat"><strong>1</strong><span>step on GitHub revokes Orbi Cloud’s access</span></div>
+        <div class="stat"><strong>120 min</strong><span>after a delivery ends, Cloud deletes its working copy</span></div>
       </div>
-    </div>
+    </section>
 
-    <div class="post-grid">
-        <nav class="post-toc" aria-label="On this page">
-          <h2>On this page</h2>
-          <ol>
-          <li><a class="post-toc-link" href="#don-t-trust-the-model-trust-the-gates-around-it">Don't trust the model. Trust the gates around it</a></li>
-          <li><a class="post-toc-link" href="#an-ai-approving-itself-is-the-wrong-default">An AI approving itself is the wrong default</a></li>
-          <li><a class="post-toc-link" href="#the-ledger-is-your-repository">The ledger is your repository</a></li>
-          <li><a class="post-toc-link" href="#stopping-beats-guessing">Stopping beats guessing</a></li>
-          <li><a class="post-toc-link" href="#orbi-publishes-its-own-gaps">Orbi publishes its own gaps</a></li>
-          <li><a class="post-toc-link" href="#three-settings-whatever-tool-you-pick">Three settings, whatever tool you pick</a></li>
-          <li><a class="post-toc-link" href="#check-it-yourself">Check it yourself</a></li>
-          <li><a class="post-toc-link" href="#related">Related</a></li>
-          </ol>
-        </nav>
-      <article class="post-body">
-        <details class="post-toc-inline">
-          <summary>On this page · 8 sections</summary>
-          <ol>
-          <li><a class="post-toc-link" href="#don-t-trust-the-model-trust-the-gates-around-it">Don't trust the model. Trust the gates around it</a></li>
-          <li><a class="post-toc-link" href="#an-ai-approving-itself-is-the-wrong-default">An AI approving itself is the wrong default</a></li>
-          <li><a class="post-toc-link" href="#the-ledger-is-your-repository">The ledger is your repository</a></li>
-          <li><a class="post-toc-link" href="#stopping-beats-guessing">Stopping beats guessing</a></li>
-          <li><a class="post-toc-link" href="#orbi-publishes-its-own-gaps">Orbi publishes its own gaps</a></li>
-          <li><a class="post-toc-link" href="#three-settings-whatever-tool-you-pick">Three settings, whatever tool you pick</a></li>
-          <li><a class="post-toc-link" href="#check-it-yourself">Check it yourself</a></li>
-          <li><a class="post-toc-link" href="#related">Related</a></li>
-          </ol>
+    <section class="compare-section shell" id="protections" aria-labelledby="protections-title">
+      <p class="section-tag">SIX PROTECTIONS</p>
+      <h2 class="orbi-compare-section-h2" id="protections-title">How your code is protected</h2>
+      <p class="section-lede">Each protection links to where it is documented and, where one exists, the test that proves it.</p>
+      <ul class="dive-list">
+        <li class="orbi-dive-list-li">
+          <a class="orbi-dive-list-a" href="https://docs.orbi.build/safety-matrix?ref=trust-page">
+            <strong class="orbi-dive-list-strong">Gates the AI cannot open</strong>
+            <p class="orbi-dive-list-p">A change merges only with a review verdict bound to the exact commit, CI passing on that commit when your repository reports CI, a head that has not moved, and a current base. The merge is pinned to the reviewed commit.</p>
+          </a>
+        </li>
+        <li class="orbi-dive-list-li">
+          <a class="orbi-dive-list-a" href="https://docs.orbi.build/workflow?ref=trust-page#reviewing-with-a-different-model">
+            <strong class="orbi-dive-list-strong">A reviewer that did not write the code</strong>
+            <p class="orbi-dive-list-p">Review runs in a separate session that never saw the author’s reasoning, and it can run on a different model from a different provider. An AI never grades its own homework.</p>
+          </a>
+        </li>
+        <li class="orbi-dive-list-li">
+          <a class="orbi-dive-list-a" href="https://cloud-docs.orbi.build/security">
+            <strong class="orbi-dive-list-strong">Final controls stay on GitHub</strong>
+            <p class="orbi-dive-list-p">Branch protection is enforced by GitHub, not by Orbi. Cloud reaches only the repositories you select, and uninstalling the GitHub App ends its access at once, without asking us.</p>
+          </a>
+        </li>
+        <li class="orbi-dive-list-li">
+          <a class="orbi-dive-list-a" href="/evidence/">
+            <strong class="orbi-dive-list-strong">The record is your repository</strong>
+            <p class="orbi-dive-list-p">Every step lands where you can read it: Issues, pull requests and comments in your own repository, not a dashboard you have to trust, and one <code>run_id</code> ties a run’s comments, PR and logs together.</p>
+          </a>
+        </li>
+        <li class="orbi-dive-list-li">
+          <a class="orbi-dive-list-a" href="https://docs.orbi.build/safety-matrix?ref=trust-page#the-matrix">
+            <strong class="orbi-dive-list-strong">It stops instead of guessing</strong>
+            <p class="orbi-dive-list-p">Errors fail fast. Review and fix is capped at five rounds. A delivery it cannot finish is labelled <code>ai-blocked</code> with the reason, and waits for a person.</p>
+          </a>
+        </li>
+        <li class="orbi-dive-list-li">
+          <a class="orbi-dive-list-a" href="https://github.com/orbi-build/orbi">
+            <strong class="orbi-dive-list-strong">Open source, nothing to lock you in</strong>
+            <p class="orbi-dive-list-p">The engine is AGPL-3.0, free to run on your own repositories forever. Bring any OpenAI-compatible model. Leave tomorrow and there is nothing to export.</p>
+          </a>
+        </li>
+      </ul>
+    </section>
+
+    <section class="compare-section shell" id="your-code" aria-labelledby="code-title">
+      <p class="section-tag">WHERE YOUR CODE GOES</p>
+      <h2 class="orbi-compare-section-h2" id="code-title">Self-hosted or Cloud, stated plainly</h2>
+      <ul class="event-list">
+        <li class="orbi-event-list-li">
+          <span class="event-era">Self-hosted</span>
+          <div>
+            <strong>On your machine</strong>
+            <p class="orbi-event-list-p">Your repository, GitHub token and model keys stay on the machine you run Orbi on, and nothing is uploaded to us. Your code goes only to the model endpoint you configure, so a local model keeps it entirely in-house.</p>
+            <p class="src-note orbi-event-list-p"><a class="orbi-src-note-a" href="https://docs.orbi.build/security?ref=trust-page">Engine security model</a></p>
+          </div>
+        </li>
+        <li class="orbi-event-list-li">
+          <span class="event-era">Cloud</span>
+          <div>
+            <strong>On machines we operate, for as long as a delivery runs</strong>
+            <p class="orbi-event-list-p">The hosted worker clones only the repositories you authorize. Each customer runs as a separate operating-system user, isolated from every other customer, with no access to your production credentials or other repositories. The working copy is deleted 120 quiet minutes after a delivery finishes.</p>
+            <p class="orbi-event-list-p"><strong>Model:</strong> by default Cloud uses its platform model channel, which runs DeepSeek, so your code and prompts on that channel are sent to DeepSeek. If that does not suit your code, add your own model key; it is stored encrypted and only ever shown masked.</p>
+            <p class="src-note orbi-event-list-p">
+              <a class="orbi-src-note-a" href="https://cloud-docs.orbi.build/security">Cloud security</a>
+              · <a class="orbi-src-note-a" href="https://cloud-docs.orbi.build/model-configuration">Model configuration</a>
+              · <a class="orbi-src-note-a" href="/cloud/#faq">Cloud FAQ</a>
+            </p>
+          </div>
+        </li>
+      </ul>
+    </section>
+
+    <section class="compare-section shell" id="not-covered" aria-labelledby="limits-title">
+      <p class="section-tag">NOT COVERED</p>
+      <h2 class="orbi-compare-section-h2" id="limits-title">What we do not promise</h2>
+      <p class="section-lede">A guarantee is only worth something if its limits are written down. These are ours, and the maintained list lives in the <a href="https://docs.orbi.build/safety-matrix?ref=trust-page#known-gaps">safety matrix</a>.</p>
+      <div class="faq-list">
+        <details class="faq-item" open>
+          <summary><span>01</span>Without branch protection, nothing in Orbi stops an agent pushing your main branch</summary>
+          <div class="faq-answer">
+            <p class="orbi-faq-answer-p">The agents are instructed never to push or merge the base branch, but an instruction is not an enforcement. GitHub branch protection or a ruleset is what enforces it. Turn it on, with required status checks, before Orbi merges anything.</p>
+          </div>
         </details>
-<p>This month, &quot;AI reviews your pull requests, fixes them, and approves the ones your policy allows&quot; became a standard pitch for AI coding tools. I&#39;m glad. It means the market has accepted an idea that sounded radical two years ago: code delivery can be done end to end by AI.</p>
-<p>It also puts a question in front of every team. If AI writes the code, reviews it and approves the merge, what exactly are you trusting when something goes wrong?</p><aside class="post-cta-inline"><span>Orbi takes your Issues all the way to a release.</span><a class="button button-signal" data-cta="post-inline-start" href="/cloud/login">Try Orbi Cloud free →</a></aside>
-<p>I&#39;ve been answering that question since Orbi&#39;s first day. This post is the short version of the answer, written for small teams that have no platform group to make the call for them. The full version, with a link behind every claim, is the <a href="https://docs.orbi.build/trust?ref=blog-who-reviews-the-ai">trust page in the docs</a>.</p>
-<h2 id="don-t-trust-the-model-trust-the-gates-around-it">Don&#39;t trust the model. Trust the gates around it</h2>
-<p>Models change. The next release from the same vendor may be stronger overall and weaker at exactly the thing you care about. A delivery system whose safety rests on &quot;the model got it right this time&quot; ties its reliability to someone else&#39;s release schedule.</p>
-<p>So Orbi splits the roles:</p>
-<ul>
-<li><strong>The model does the work</strong>: writing, testing, reviewing, fixing.</li>
-<li><strong>The Runner holds the line</strong>: a small, deterministic program decides what may merge. The review verdict is bound to the exact commit it reviewed, CI must be green on that commit, and the merge is refused if the head changes.</li>
-<li><strong>GitHub enforces the boundary</strong>: branch protection and rulesets are the final layer. Orbi works with them, not instead of them.</li>
-</ul>
-<p>The model can be wrong. The gates don&#39;t open because of it. I wrote up how those gates work at merge time in <a href="/blog/claude-code-github-actions-who-merges/">Claude Code in Actions: who presses merge?</a></p>
-<h2 id="an-ai-approving-itself-is-the-wrong-default">An AI approving itself is the wrong default</h2>
-<p>&quot;AI reviews AI&quot; sounds like a double check. But if the same model writes and reviews, they share the same training, the same habits and the same blind spots. It&#39;s a student grading their own homework.</p>
-<p>In Orbi the reviewer is always a separate session, and with two lines of config it can run on a different model from a different provider:</p>
-<div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="Copied">Copy</button><pre><code class="language-toml" data-copy-source>pi_provider = &quot;z-ai&quot;
-pi_model = &quot;glm-5.3-flash&quot;
+        <details class="faq-item">
+          <summary><span>02</span>No CI means no test evidence</summary>
+          <div class="faq-answer">
+            <p class="orbi-faq-answer-p">A pull request with no reported checks can still merge after the independent review and the other gates; its tests are simply not reported as passed. Orbi’s gates are as strong as the CI you give them.</p>
+          </div>
+        </details>
+        <details class="faq-item">
+          <summary><span>03</span>Required approvals stop every delivery</summary>
+          <div class="faq-answer">
+            <p class="orbi-faq-answer-p">Orbi opens and merges a pull request as the same GitHub identity, and GitHub does not let an author approve their own pull request. If your base branch requires approvals, Orbi waits for a person to approve each one. That is a legitimate choice; <a href="https://cloud-docs.orbi.build/connect-repository#branch-protection-that-blocks-every-merge">here is how to make it</a>.</p>
+          </div>
+        </details>
+        <details class="faq-item">
+          <summary><span>04</span>Releases follow their own gates, not the pull request review</summary>
+          <div class="faq-answer">
+            <p class="orbi-faq-answer-p">A release task can push a version commit directly to the base branch before it tags and publishes the release notes.</p>
+          </div>
+        </details>
+        <details class="faq-item">
+          <summary><span>05</span>Passing tests are not the intent you meant</summary>
+          <div class="faq-answer">
+            <p class="orbi-faq-answer-p">Tests prove the code matches the tests, not that the tests match what you wanted. Write acceptance criteria in the Issue, and turn on the human acceptance gate if a person should confirm business intent or UI copy before each merge.</p>
+          </div>
+        </details>
+      </div>
+    </section>
 
-review_pi_provider = &quot;groq&quot;
-review_pi_model = &quot;groq/compound&quot;
-</code></pre></div>
-<p>Orbi is model-agnostic not because I dislike any vendor, but because independent review requires independence. A system that can only review a vendor&#39;s model with the same vendor&#39;s model can&#39;t provide that.</p>
-<h2 id="the-ledger-is-your-repository">The ledger is your repository</h2>
-<p>Many tools give you a polished dashboard. Orbi doesn&#39;t, because you shouldn&#39;t have to trust a vendor&#39;s dashboard to know what happened in your own repository.</p>
-<p>Orbi has no database. GitHub Issues, labels, comments and pull requests are the whole delivery record. Each run has a <code class="post-code--single">run_id</code> that threads through the Issue comments, the pull request and the logs. The round the reviewer rejected, the fix commits, the moment it merged: all of it is in your repository, readable with tools you already use.</p>
-<p>A side effect: you can&#39;t get locked in. Stop using Orbi and there&#39;s nothing to export, because Orbi never held anything.</p>
-<h2 id="stopping-beats-guessing">Stopping beats guessing</h2>
-<p>A confident wrong merge is much worse than an honest &quot;I&#39;m stuck&quot;, especially for a small team. A large company has on-call, a platform team and staging to catch mistakes. A five-person team usually doesn&#39;t.</p>
-<p>So Orbi&#39;s defaults lean toward stopping:</p>
-<ul>
-<li>command errors fail fast, with no silent fallback;</li>
-<li>a delivery it can&#39;t finish is labelled <code class="post-code--single">ai-blocked</code> with the reason, for a person;</li>
-<li>review and fix is capped at five rounds;</li>
-<li>a vague ticket gets a question back, not a guess.</li>
-</ul>
-<p>If you want a person to sign off on every merge, turn on the human acceptance gate. Each delivery then lists what was verified automatically and what only a person can confirm, such as business intent and UI copy, and waits for your go-ahead.</p>
-<h2 id="orbi-publishes-its-own-gaps">Orbi publishes its own gaps</h2>
-<p>This is the part I care about most. Orbi&#39;s docs include a <a href="https://docs.orbi.build/safety-matrix?ref=blog-who-reviews-the-ai">safety matrix</a>: each row names a failure, the layer that catches it, and the test that proves it. Rename or delete that test and CI fails, so the table can&#39;t quietly drift out of date.</p>
-<p>At the bottom is a list of known gaps, including:</p>
-<ul>
-<li>Orbi does <strong>not</strong> stop an agent session from pushing your protected branch by itself. The agents are told not to, but that&#39;s an instruction, not an enforcement. Your branch protection enforces it; without it, nothing in Orbi does.</li>
-<li>Releases don&#39;t go through the pull request review gate. They have their own gates.</li>
-<li>Green tests aren&#39;t correct intent. Tests prove the code matches the tests, not that the tests match what you meant.</li>
-</ul>
-<p>Why write these down? Because trust is built from evidence you can check, not from promises. Documentation that names its own weaknesses is more credible than documentation that only lists strengths. When a gap closes, it stays in the table with the fix, so the history isn&#39;t erased.</p>
-<h2 id="three-settings-whatever-tool-you-pick">Three settings, whatever tool you pick</h2>
-<p>Whether or not you choose Orbi, before you let any AI tool merge code:</p>
-<ol>
-<li><strong>Protect your main branch</strong> and require status checks. It&#39;s the last line, and the only one that truly enforces.</li>
-<li><strong>Use a fine-grained token</strong> scoped to the repositories and permissions actually needed.</li>
-<li><strong>Check the review is independent</strong>: ask whether the reviewer and the author are the same model.</li>
-</ol>
-<h2 id="check-it-yourself">Check it yourself</h2>
-<p>Don&#39;t trust Orbi because of this post. Verify it:</p>
-<ul>
-<li>Follow one real loop: <a href="https://github.com/orbi-build/orbi/issues/1367">Issue #1367</a> → <a href="https://github.com/orbi-build/orbi/pull/1370">PR #1370</a> → <a href="https://github.com/orbi-build/orbi/releases/tag/v0.5.47">Release v0.5.47</a>.</li>
-<li>Browse Orbi&#39;s own <a href="https://github.com/orbi-build/orbi/pulls?q=is:merged">merged pull requests</a>. Orbi is built with Orbi, rejected reviews included.</li>
-<li>Pick any row in the safety matrix and run its test.</li>
-<li>Read the full <a href="https://docs.orbi.build/trust?ref=blog-who-reviews-the-ai">trust page</a>.</li>
-</ul>
-<p>Then try it on a throwaway repository with branch protection on: <a href="/cloud/">Orbi Cloud</a> comes with a 14-day free trial, and <a href="https://docs.orbi.build/quickstart?ref=blog-who-reviews-the-ai">self-hosting</a> is free forever.</p>
-<p>AI will keep writing code faster. What&#39;s scarce is a reason to let go of the wheel.</p>
-<aside class="post-cta">
-  <h2>Orbi takes your Issues all the way to a release.</h2>
-  <a class="button button-signal" data-cta="post-start" href="/cloud/login">Try Orbi Cloud free →</a>
-  <p class="post-cta-note">No credit card required · Orbi only sees the repos you pick</p>
-  <a class="post-cta-link" data-cta="post-selfhost" href="https://github.com/orbi-build/orbi">Prefer to self-host? It's open source (AGPL) →</a>
-</aside><h2 id="related">Related</h2>
-<p>Read the <a href="/compare/claude-code/">Claude Code comparison</a>, <a href="/guides/auto-merge-ai-prs/">auto-merge guide</a>, and <a href="/cloud/">Cloud</a>.</p>
+    <section class="closing shell" aria-labelledby="verify-title">
+      <p class="section-tag">DON’T TAKE OUR WORD FOR IT</p>
+      <h2 class="orbi-closing-h2" id="verify-title">Check the record, then try it on a test repository</h2>
+      <p>Open real deliveries, including reviews that said no, on the public evidence page. Then connect a throwaway repository with branch protection on. If anything on this page does not match what Orbi does, that is a bug: <a href="https://github.com/orbi-build/orbi/issues">tell us</a>.</p>
+      <div class="cta-row">
+        <a class="button button-dark" href="/evidence/">Open the public record</a>
+        <a class="text-link" href="/cloud/">Try Orbi Cloud free for 14 days →</a>
+      </div>
+    </section>
 
-<!--orbi:related-posts-->
-      </article>
-    </div>
   </main>
 
 <section class="subscribe-box shell" aria-labelledby="subscribe-title">
@@ -304,10 +258,10 @@ review_pi_model = &quot;groq/compound&quot;
       </div>
       <div class="footer-group">
         <h2>Company</h2>
-        <ul><li><a href="/support/">Support</a></li><li><a href="https://github.com/orbi-build/orbi/milestones">Roadmap</a></li><li><a href="/privacy/">Privacy</a></li><li><a href="/terms/">Terms</a></li><li><a href="https://github.com/orbi-build/orbi">GitHub</a></li><li><a href="https://x.com/xqliu" rel="me">X</a></li><li><a href="https://www.youtube.com/@orbibuild" rel="me">YouTube</a></li><li><a href="https://www.reddit.com/r/OrbiBuild/">Reddit</a></li></ul>
+        <ul><li><a href="/support/">Support</a></li><li><a href="https://github.com/orbi-build/orbi/milestones">Roadmap</a></li><li><a href="/trust/">Trust</a></li><li><a href="/privacy/">Privacy</a></li><li><a href="/terms/">Terms</a></li><li><a href="https://github.com/orbi-build/orbi">GitHub</a></li><li><a href="https://x.com/xqliu" rel="me">X</a></li><li><a href="https://www.youtube.com/@orbibuild" rel="me">YouTube</a></li><li><a href="https://www.reddit.com/r/OrbiBuild/">Reddit</a></li></ul>
       </div>
     </nav>
-    <div class="footer-language language" role="group" aria-label="Language"><span aria-current="page">EN</span><a href="/zh/blog/who-reviews-the-ai/" lang="zh-CN" aria-label="简体中文">ZH</a></div>
+    <div class="footer-language language" role="group" aria-label="Language"><span aria-current="page">EN</span><a href="/zh/trust/" lang="zh-CN" aria-label="简体中文">ZH</a></div>
     <nav class="footer-friends" aria-label="Featured on">
       <span class="footer-friends-label">Featured on</span>
       <div class="footer-badges">
@@ -504,7 +458,7 @@ review_pi_model = &quot;groq/compound&quot;
 
   <script src="/demo.js" defer></script>
 
-<script>(()=>{try{const links=[...document.querySelectorAll('.post-toc-link')];const targetOf=(link)=>link.getAttribute('href').slice(1);const headings=[...new Set(links.map(link=>document.getElementById(targetOf(link))).filter(Boolean))];const setCurrent=(heading)=>{links.forEach((link)=>link.classList.toggle('is-current',targetOf(link)===heading.id));};if('IntersectionObserver' in window){const update=()=>{const current=headings.findLast((heading)=>heading.getBoundingClientRect().top<=innerHeight*.4)??headings[0];if(current)setCurrent(current);};const observer=new IntersectionObserver(update,{rootMargin:'-24px 0px -60% 0px',threshold:0});headings.forEach((heading)=>observer.observe(heading));addEventListener('scroll',update,{passive:true});update();}}catch(error){console.warn('post_toc_observer_failed',error);}})();</script><script>(()=>{
+<script>(()=>{
   const endpoint="/cloud/e", start=Date.now();
   let visible=document.visibilityState!=="hidden", visibleAt=visible?start:0, visibleMs=0, interacted=false, engagedSent=false, depthSent=false, maxDepth=0;
   const send=(kind,detail,extra)=>{const body={kind,path:location.pathname};if(detail!==undefined)body.detail=String(detail);if(extra)Object.assign(body,extra);try{if(!navigator.sendBeacon(endpoint,new Blob([JSON.stringify(body)],{type:"application/json"})))console.warn("engagement_report_failed","sendBeacon returned false");}catch(error){console.warn("engagement_report_failed",error);}};
