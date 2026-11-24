@@ -304,15 +304,17 @@ describe("llms pricing tokens (Issue #874)", () => {
 });
 
 // Issue #886: llms.txt is the claim file AI crawlers read, so its cost numbers
-// have to be the /cost/ headline — 169 merged deliveries at a median of $0.082 —
-// and the retired 20-PR / $0.125 median must not return as the current figure.
-describe("llms cost numbers match the /cost/ headline (Issue #886)", () => {
-  it("states the 169-delivery median, p90 and peak caveat in both llms files", () => {
+// have to be the /cost/ headline — the merged deliveries Orbi Cloud recorded
+// (1511 as of 2026-11-24, Issue #1453) at a median of $0.081 — and the retired
+// 20-PR / $0.125 median must not return as the current figure.
+describe("llms cost numbers match the /cost/ headline (Issues #886, #1453)", () => {
+  it("states the 1511-delivery median, p90 and peak caveat in both llms files", () => {
     for (const [name, raw] of [["llms.txt", llms], ["llms-full.txt", llmsFull]]) {
       const text = raw.replace(/\s+/g, " ");
-      expect(text, name).toContain("169 merged deliveries");
-      expect(text, `${name}: median`).toContain("$0.082");
-      expect(text, `${name}: p90`).toContain("$0.22");
+      expect(text, name).toContain("1511 merged deliveries");
+      expect(text, `${name}: median`).toContain("$0.081");
+      expect(text, `${name}: p90`).toContain("$0.234");
+      expect(text, `${name}: external repositories`).toContain("157");
     }
   });
 
@@ -321,7 +323,7 @@ describe("llms cost numbers match the /cost/ headline (Issue #886)", () => {
     expect(keyNumbers, "llms-full key numbers").not.toContain("$0.125");
     const costSection = llms.slice(llms.indexOf("**What does it cost?**"), llms.indexOf("## Blog"));
     expect(costSection, "llms.txt cost answer").not.toContain("$0.125");
-    expect(costSection, "llms.txt cost answer").toContain("$0.082");
+    expect(costSection, "llms.txt cost answer").toContain("$0.081");
   });
 });
 // Issue #1298: the founding half price reaches Stripe because the checkout link

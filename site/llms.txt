@@ -202,9 +202,10 @@ __SOLO_REPOSITORIES__ repository) and Pro (US$__CLOUD_MONTHLY_USD__/month or
 US$__PRO_ANNUAL_USD__/year, __INCLUDED_TOKENS__ tokens,
 __PRO_REPOSITORIES__ repositories). What the model usage itself costs is
 measured, not estimated, and published in two units. Per merged delivery
-(the /cost/ page's headline): 169 merged deliveries recorded by Orbi Cloud,
-measured 2026-10-05, median $0.082 off-peak (peak prices double, so that is
-the floor) and a 90th percentile of $0.22. Per run including unmerged work:
+(the /cost/ page's headline): 1511 merged deliveries recorded by Orbi Cloud
+up to 2026-11-24, median $0.081 off-peak (peak prices double, so that is
+the floor) and a 90th percentile of $0.234; 157 of them ran in 30
+repositories owned by users outside orbi-build. Per run including unmerged work:
 the 2026-09-12 n=46 snapshot had a median of 2,220,637 tokens and a mean of
 4,742,066 — roughly $0.06–0.12 per run at DeepSeek V4.1 Flash list prices. Every sample moves as records change; treat
 https://orbi.build/cost/ as authoritative.
