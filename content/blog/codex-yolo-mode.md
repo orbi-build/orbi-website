@@ -1,16 +1,36 @@
 ---
 title: Codex YOLO mode: what runs without approval
 date: 2026-10-16
-summary: Codex YOLO mode skips approvals and the local sandbox. Linux tests show what it allows; the guide also explains Codex auto mode and the full-auto removal.
+updated: 2026-11-24
+summary: Codex has no --dangerously-skip-permissions flag. Use --dangerously-bypass-approvals-and-sandbox (--yolo), or workspace-write to keep the sandbox.
 lang: en
 author: Larry 🍀 Orbi
 image: /img/blog-codex-yolo-card.png
 mirror: codex-yolo-mode
 ---
 
-Codex YOLO mode is `--yolo`, an alias for `--dangerously-bypass-approvals-and-sandbox`. It skips approval prompts and removes Codex's local sandbox. Use it inside an environment that supplies its own isolation, such as a disposable VM or a restricted CI runner. For unattended repository edits that should keep a sandbox, start with `codex -a never exec --sandbox workspace-write "<task>"`. Codex auto mode is a different preset that still stops for approval prompts; it is [explained below](#codex-auto-mode-and-what-happened-to-full-auto).
+Codex YOLO mode is `--yolo`, an alias for `--dangerously-bypass-approvals-and-sandbox`. It skips approval prompts and removes Codex's local sandbox. Use it inside an environment that supplies its own isolation, such as a disposable VM or a restricted CI runner. For unattended repository edits that should keep a sandbox, start with `codex -a never exec --sandbox workspace-write "<task>"`. Codex auto mode is a different preset that still stops for approval prompts; it is [explained below](#codex-auto-mode-and-what-happened-to-full-auto). If you came looking for a Codex dangerously skip permissions flag, there is none; `--yolo` is the equivalent, and [the next section](#is-there-a-codex-dangerously-skip-permissions-flag) shows what happens when you type the Claude Code name.
 
-I'm Larry 🍀 Orbi, the creator of [Orbi](https://github.com/orbi-build/orbi). I tested these choices on Linux with Codex CLI 0.159.3 on 16 October 2026. Orbi runs the Pi coding agent, and its Codex integration uses Pi's `openai-codex` provider rather than Codex CLI. The commands below are for people running the CLI themselves.
+I'm Larry 🍀 Orbi, the creator of [Orbi](https://github.com/orbi-build/orbi). I ran the Linux experiment below with Codex CLI 0.159.3 on 16 October 2026, and repeated the flag check in the next section with 0.172.0 on 24 November 2026. Orbi runs the Pi coding agent; Pi can use Codex models through its `openai-codex` model provider, and Orbi does not run Codex CLI. The commands below are for people running the CLI themselves.
+
+## Is there a Codex dangerously skip permissions flag?
+
+Codex CLI has no flag with that name; the Codex equivalent of Claude Code's `--dangerously-skip-permissions` is `--dangerously-bypass-approvals-and-sandbox`, alias `--yolo`, which also removes Codex's local sandbox. Measured on 24 November 2026 with Codex CLI 0.172.0 (the latest npm release that day), passing `--dangerously-skip-permissions` stops at argument parsing with exit code 2:
+
+```text
+$ codex --version
+codex-cli 0.172.0
+
+$ codex exec --dangerously-skip-permissions "echo hi"
+error: unexpected argument '--dangerously-skip-permissions' found
+
+  tip: a similar argument exists: '--dangerously-bypass-hook-trust'
+# exit code: 2
+```
+
+Do not accept the `--dangerously-bypass-hook-trust` tip: per `codex --help`, it is a different switch that runs enabled hooks without requiring persisted hook trust, and it does not skip approvals. In 0.172.0, `--yolo` is not listed in `codex --help` or `codex exec --help`, but the CLI still accepts it and [OpenAI's CLI reference](https://learn.chatgpt.com/docs/cli/reference) lists it as the alias. Combining `--yolo` with `--approve-for-me` fails with "the argument '--dangerously-bypass-approvals-and-sandbox' cannot be used with '--approve-for-me'", showing that the CLI expands `--yolo` to the long flag.
+
+If your actual problem is that Codex keeps asking for approval and you want no prompts while keeping a sandbox, prefer [running unattended with `workspace-write`](#run-unattended-while-keeping-workspace-write) over YOLO. For the Claude Code flag itself, see [Claude Code YOLO mode](/blog/claude-code-yolo-mode/).
 
 ## How to start Codex YOLO mode
 

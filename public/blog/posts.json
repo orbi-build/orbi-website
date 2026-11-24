@@ -258,7 +258,7 @@
   {
     "slug": "codex-yolo-mode",
     "title": "Codex YOLO mode: what runs without approval",
-    "summary": "Codex YOLO mode skips approvals and the local sandbox. Linux tests show what it allows; the guide also explains Codex auto mode and the full-auto removal.",
+    "summary": "Codex has no --dangerously-skip-permissions flag. Use --dangerously-bypass-approvals-and-sandbox (--yolo), or workspace-write to keep the sandbox.",
     "zhSlug": "codex-yolo-mode",
     "zhTitle": "Codex YOLO mode 会放开什么权限",
     "related": []

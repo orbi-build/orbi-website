@@ -234,7 +234,7 @@
       <link>https://orbi.build/blog/codex-yolo-mode/</link>
       <guid isPermaLink="true">https://orbi.build/blog/codex-yolo-mode/</guid>
       <pubDate>Fri, 16 Oct 2026 00:00:00 GMT</pubDate>
-      <description>Codex YOLO mode skips approvals and the local sandbox. Linux tests show what it allows; the guide also explains Codex auto mode and the full-auto removal.</description>
+      <description>Codex has no --dangerously-skip-permissions flag. Use --dangerously-bypass-approvals-and-sandbox (--yolo), or workspace-write to keep the sandbox.</description>
     </item>
     <item>
       <title>Orbi weekly #2: connect a repo, see suggestions</title>
