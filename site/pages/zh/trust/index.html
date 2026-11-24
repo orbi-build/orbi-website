@@ -143,9 +143,10 @@
         <li class="orbi-event-list-li">
           <span class="event-era">03 · 隐私</span>
           <div>
-            <strong>谁能看到我的代码？</strong>
+            <strong>谁能看到我的代码？会被拿去训练 AI 吗？</strong>
+            <p class="orbi-event-list-p"><strong>Orbi 不用你的代码训练任何 AI 模型。</strong>Orbi 只调用模型，不训练模型。</p>
             <p class="orbi-event-list-p"><strong>自托管：</strong>你的仓库、GitHub token 和模型 key 都留在你的机器上，不会上传给我们。代码只会发给你配置的模型端点；用本地模型，代码就完全不出你的环境。</p>
-            <p class="orbi-event-list-p"><strong>Cloud：</strong>托管 worker 只克隆你授权的仓库，每个客户以独立的操作系统用户运行，交付结束后静默 120 分钟即删除工作副本。Cloud 默认的模型通道运行的是 DeepSeek，它会收到交付所需的提示和仓库上下文；填入自己的模型 key，就改为发给你选择的供应商。只有在需要执行服务条款时，我们才可能查看 Issue 文本和仓库内容。</p>
+            <p class="orbi-event-list-p"><strong>Cloud：</strong>托管 worker 只克隆你授权的仓库，每个客户以独立的操作系统用户运行，交付结束后静默 120 分钟即删除工作副本。Cloud 默认的模型通道运行的是 DeepSeek，它会收到交付所需的提示和仓库上下文；填入自己的模型 key，就改为发给你选择的供应商，适用该供应商自己的数据条款。只有在需要执行服务条款时，我们才可能查看 Issue 文本和仓库内容。</p>
             <p class="src-note orbi-event-list-p"><a class="orbi-src-note-a" href="https://cloud-docs.orbi.build/zh/security">Cloud 安全</a> · <a class="orbi-src-note-a" href="/zh/privacy/">隐私政策</a></p>
           </div>
         </li>
@@ -189,10 +190,10 @@
           </div>
         </li>
         <li class="orbi-event-list-li">
-          <span class="event-era">09 · 合规</span>
+          <span class="event-era">09 · 数据处理</span>
           <div>
-            <strong>你们有 SOC 2 或 ISO 27001 认证吗？</strong>
-            <p class="orbi-event-list-p">目前没有，我们也不会暗示有。Cloud 依赖 GitHub、Vultr（托管 worker）、Cloudflare、Stripe 和你的模型供应商，隐私政策里都列明了。如果你的制度要求供应商必须有认证，可以把开源引擎部署在你已经批准过的基础设施上。</p>
+            <strong>谁会处理我的数据？能不能完全留在内部？</strong>
+            <p class="orbi-event-list-p">Cloud 运行在 GitHub、Vultr（托管 worker）、Cloudflare 和 Stripe 上，再加上你使用的模型供应商；隐私政策列明了每一家以及它会收到什么。我们不出售个人信息。如果你的制度要求所有东西都留在你已经批准过的基础设施上，可以把开源引擎部署在那里，数据不会经过我们。</p>
             <p class="src-note orbi-event-list-p"><a class="orbi-src-note-a" href="/zh/privacy/">服务提供方</a> · <a class="orbi-src-note-a" href="https://docs.orbi.build/zh/security?ref=trust-page-zh">自托管安全模型</a></p>
           </div>
         </li>
