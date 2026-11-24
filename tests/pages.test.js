@@ -1707,6 +1707,24 @@ describe("one unified footer on every content page", () => {
     }
   });
 
+  // Issue #1454: LaunchScaler's free listing opens 2026-12-08 and its badge page
+  // (Credential / Dark / Outlined) hands out an embed whose /v/ link answers 307
+  // to the listing — verified on the live endpoints 2026-11-24. The shared strip
+  // ships that snippet once on each language's home page: the file's own 272x58
+  // box, the supplied alt text, and a crawlable link.
+  it("carries the LaunchScaler badge in the footer, on en and zh (Issue #1454)", () => {
+    const badge = '<a href="https://www.launchscaler.com/v/orbi.build?t=8gvNeULtSOXxahIHWo9fbQhqkWhZGca_5d9Uo7sTIO4&amp;utm_source=badge&amp;utm_medium=referral" target="_blank" rel="noopener">'
+      + '<img src="https://www.launchscaler.com/api/badge/orbi.build/image?theme=dark&amp;variant=credential&amp;tone=outline" alt="Orbi on LaunchScaler" width="272" height="58" loading="lazy"></a>';
+    for (const output of ["index.html", "zh/index.html"]) {
+      const footer = footerRegion(shipped.get(output));
+      const occurrences = footer.split(badge).length - 1;
+      expect(occurrences, `${output}: the LaunchScaler badge must ship exactly once in the footer`)
+        .toBe(1);
+      expect(footerAnchorTag(footer, "https://www.launchscaler.com/v/orbi.build"), `${output}: the badge must stay a crawlable backlink`)
+        .not.toContain("nofollow");
+    }
+  });
+
   it("carries the 11 compare deep dives, in the right language tree", () => {
     for (const page of content()) {
       const footer = footerRegion(shipped.get(page.output));
