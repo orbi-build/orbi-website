@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Trust: how Orbi keeps your repository safe</title>
-  <meta name="description" content="The gates an AI cannot open, the GitHub controls you keep, where your code goes, and what Orbi does not promise. Every claim links to its proof.">
+  <meta name="description" content="What teams ask before letting AI merge code: safety, code privacy, control, lock-in to Orbi or an AI vendor, cost, compliance. Each answer links to proof.">
   <link rel="canonical" href="https://orbi.build/trust/">
   <link rel="alternate" hreflang="en" href="https://orbi.build/trust/">
   <link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/trust/">
@@ -76,10 +76,10 @@
       <section class="compare-hero shell" aria-labelledby="trust-title">
         <p class="eyebrow">Trust · reviewed 2026-11-24</p>
         <h1 id="trust-title">Your repository stays yours</h1>
-        <p class="hero-lede"><strong>Orbi lets AI write, review and merge your code, and it is built so you never have to trust the AI to do that.</strong> Merges pass gates the model cannot open. The final controls sit on GitHub, where you hold them, not with us. Every claim on this page links to the code, the documentation or the public record behind it.</p>
+        <p class="hero-lede"><strong>Orbi lets AI write, review and merge your code, and it is built so you never have to trust the AI, or us, to do that.</strong> Merges pass gates the model cannot open. The final controls stay on GitHub, in your hands. The engine is open source, and it works with any AI model, so you are never locked in to Orbi or to an AI vendor. Every answer below links to the code, the documentation or the public record behind it.</p>
         <div class="cta-row">
-          <a class="button button-ghost" href="#protections">See the six protections</a>
-          <a class="text-link" href="https://docs.orbi.build/trust?ref=trust-page">Read the full fine print ↗</a>
+          <a class="button button-ghost" href="#questions">Read the nine questions</a>
+          <a class="text-link" href="https://docs.orbi.build/trust?ref=trust-page">Full fine print ↗</a>
         </div>
       </section>
     </div>
@@ -89,79 +89,106 @@
       <h2 class="orbi-compare-section-h2" id="numbers-title">What you can count on</h2>
       <div class="stat-grid">
         <div class="stat"><strong>100%</strong><span>of every delivery’s steps are recorded in your own GitHub repository</span></div>
-        <div class="stat"><strong>0</strong><span>force pushes to a shared branch</span></div>
+        <div class="stat"><strong>Any</strong><span>OpenAI-compatible model, hosted or local, for writing and for review</span></div>
         <div class="stat"><strong>1</strong><span>step on GitHub revokes Orbi Cloud’s access</span></div>
-        <div class="stat"><strong>120 min</strong><span>after a delivery ends, Cloud deletes its working copy</span></div>
+        <div class="stat"><strong>$0</strong><span>per-token overage: when an allowance runs out, new work pauses</span></div>
       </div>
     </section>
 
-    <section class="compare-section shell" id="protections" aria-labelledby="protections-title">
-      <p class="section-tag">SIX PROTECTIONS</p>
-      <h2 class="orbi-compare-section-h2" id="protections-title">How your code is protected</h2>
-      <p class="section-lede">Each protection links to where it is documented and, where one exists, the test that proves it.</p>
-      <ul class="dive-list">
-        <li class="orbi-dive-list-li">
-          <a class="orbi-dive-list-a" href="https://docs.orbi.build/safety-matrix?ref=trust-page">
-            <strong class="orbi-dive-list-strong">Gates the AI cannot open</strong>
-            <p class="orbi-dive-list-p">A change merges only with a review verdict bound to the exact commit, CI passing on that commit when your repository reports CI, a head that has not moved, and a current base. The merge is pinned to the reviewed commit.</p>
-          </a>
-        </li>
-        <li class="orbi-dive-list-li">
-          <a class="orbi-dive-list-a" href="https://docs.orbi.build/workflow?ref=trust-page#reviewing-with-a-different-model">
-            <strong class="orbi-dive-list-strong">A reviewer that did not write the code</strong>
-            <p class="orbi-dive-list-p">Review runs in a separate session that never saw the author’s reasoning, and it can run on a different model from a different provider. An AI never grades its own homework.</p>
-          </a>
-        </li>
-        <li class="orbi-dive-list-li">
-          <a class="orbi-dive-list-a" href="https://cloud-docs.orbi.build/security">
-            <strong class="orbi-dive-list-strong">Final controls stay on GitHub</strong>
-            <p class="orbi-dive-list-p">Branch protection is enforced by GitHub, not by Orbi. Cloud reaches only the repositories you select, and uninstalling the GitHub App ends its access at once, without asking us.</p>
-          </a>
-        </li>
-        <li class="orbi-dive-list-li">
-          <a class="orbi-dive-list-a" href="/evidence/">
-            <strong class="orbi-dive-list-strong">The record is your repository</strong>
-            <p class="orbi-dive-list-p">Every step lands where you can read it: Issues, pull requests and comments in your own repository, not a dashboard you have to trust, and one <code>run_id</code> ties a run’s comments, PR and logs together.</p>
-          </a>
-        </li>
-        <li class="orbi-dive-list-li">
-          <a class="orbi-dive-list-a" href="https://docs.orbi.build/safety-matrix?ref=trust-page#the-matrix">
-            <strong class="orbi-dive-list-strong">It stops instead of guessing</strong>
-            <p class="orbi-dive-list-p">Errors fail fast. Review and fix is capped at five rounds. A delivery it cannot finish is labelled <code>ai-blocked</code> with the reason, and waits for a person.</p>
-          </a>
-        </li>
-        <li class="orbi-dive-list-li">
-          <a class="orbi-dive-list-a" href="https://github.com/orbi-build/orbi">
-            <strong class="orbi-dive-list-strong">Open source, nothing to lock you in</strong>
-            <p class="orbi-dive-list-p">The engine is AGPL-3.0, free to run on your own repositories forever. Bring any OpenAI-compatible model. Leave tomorrow and there is nothing to export.</p>
-          </a>
-        </li>
-      </ul>
+    <section class="compare-section shell" id="neutral" aria-labelledby="neutral-title">
+      <p class="section-tag">VENDOR-NEUTRAL BY DESIGN</p>
+      <h2 class="orbi-compare-section-h2" id="neutral-title">No lock-in, at any layer</h2>
+      <p class="section-lede">AI coding tools tend to tie you to one vendor’s platform and one vendor’s model. Orbi is built so you can walk away from either, or from us, without losing anything.</p>
+      <div class="compare-table-wrap">
+        <table class="compare-table table-stack">
+          <thead><tr><th scope="col">Layer</th><th scope="col">What Orbi does</th><th scope="col">If you want to switch</th></tr></thead>
+          <tbody>
+            <tr><th scope="row">The engine</th><td data-label="What Orbi does">Open source under AGPL-3.0. Free to run on your own repositories, at any scale, forever.</td><td data-label="If you want to switch">Self-host it. Fork it. It keeps working even if the company behind Orbi does not.</td></tr>
+            <tr><th scope="row">Your record</th><td data-label="What Orbi does">Every Issue, pull request, review round and release stays in your GitHub repository. No delivery database you depend on.</td><td data-label="If you want to switch">Stop using Orbi. Nothing to export; your history stays where it is.</td></tr>
+            <tr><th scope="row">The AI model</th><td data-label="What Orbi does">Any OpenAI-compatible endpoint: tested templates for Gemini, GLM, DeepSeek, xAI, Groq, OpenRouter and local Qwen, plus Sign in with ChatGPT.</td><td data-label="If you want to switch">Change one setting. A price rise, an outage or a policy change at one AI vendor stops being your problem.</td></tr>
+            <tr><th scope="row">The reviewer</th><td data-label="What Orbi does">Review can run on a different model from a different provider than the one that wrote the code.</td><td data-label="If you want to switch">Pair any two models you trust. No vendor grades its own work.</td></tr>
+            <tr><th scope="row">Hosting</th><td data-label="What Orbi does">Orbi Cloud runs the same open engine on the same GitHub record.</td><td data-label="If you want to switch">Move between Cloud and self-hosted at any time; the record does not change.</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="src-note"><a class="orbi-src-note-a" href="https://github.com/orbi-build/orbi">Source code</a> · <a class="orbi-src-note-a" href="https://docs.orbi.build/providers?ref=trust-page">Model providers</a> · <a class="orbi-src-note-a" href="https://docs.orbi.build/workflow?ref=trust-page#reviewing-with-a-different-model">Reviewing with a different model</a> · <a class="orbi-src-note-a" href="https://cloud-docs.orbi.build/model-configuration">Cloud: your own model key</a></p>
     </section>
 
-    <section class="compare-section shell" id="your-code" aria-labelledby="code-title">
-      <p class="section-tag">WHERE YOUR CODE GOES</p>
-      <h2 class="orbi-compare-section-h2" id="code-title">Self-hosted or Cloud, stated plainly</h2>
+    <section class="compare-section shell" id="questions" aria-labelledby="questions-title">
+      <p class="section-tag">NINE QUESTIONS</p>
+      <h2 class="orbi-compare-section-h2" id="questions-title">What teams ask before they let an AI merge code</h2>
+      <p class="section-lede">These are the concerns developer surveys keep surfacing: security of AI-written code, privacy, control, lock-in, cost and accountability. Here is how Orbi answers each.</p>
       <ul class="event-list">
         <li class="orbi-event-list-li">
-          <span class="event-era">Self-hosted</span>
+          <span class="event-era">01 · Safety</span>
           <div>
-            <strong>On your machine</strong>
-            <p class="orbi-event-list-p">Your repository, GitHub token and model keys stay on the machine you run Orbi on, and nothing is uploaded to us. Your code goes only to the model endpoint you configure, so a local model keeps it entirely in-house.</p>
-            <p class="src-note orbi-event-list-p"><a class="orbi-src-note-a" href="https://docs.orbi.build/security?ref=trust-page">Engine security model</a></p>
+            <strong>Will AI-written code break my main branch or add vulnerabilities?</strong>
+            <p class="orbi-event-list-p">A change merges only after an independent review session returns a clean verdict bound to the exact commit, CI passes on that commit when your repository reports CI, the head has not moved and the base is current. The merge is pinned to the reviewed commit. The reviewer rates security problems as Blockers, and anything your CI checks, such as a code scanner or secret scanning, becomes a merge gate. Orbi does not ship its own security scanner, so put the scanners you trust in CI.</p>
+            <p class="src-note orbi-event-list-p"><a class="orbi-src-note-a" href="https://docs.orbi.build/safety-matrix?ref=trust-page">Safety matrix: each gate and the test that proves it</a></p>
           </div>
         </li>
         <li class="orbi-event-list-li">
-          <span class="event-era">Cloud</span>
+          <span class="event-era">02 · Review</span>
           <div>
-            <strong>On machines we operate, for as long as a delivery runs</strong>
-            <p class="orbi-event-list-p">The hosted worker clones only the repositories you authorize. Each customer runs as a separate operating-system user, isolated from every other customer, with no access to your production credentials or other repositories. The working copy is deleted 120 quiet minutes after a delivery finishes.</p>
-            <p class="orbi-event-list-p"><strong>Model:</strong> by default Cloud uses its platform model channel, which runs DeepSeek, so your code and prompts on that channel are sent to DeepSeek. If that does not suit your code, add your own model key; it is stored encrypted and only ever shown masked.</p>
-            <p class="src-note orbi-event-list-p">
-              <a class="orbi-src-note-a" href="https://cloud-docs.orbi.build/security">Cloud security</a>
-              · <a class="orbi-src-note-a" href="https://cloud-docs.orbi.build/model-configuration">Model configuration</a>
-              · <a class="orbi-src-note-a" href="/cloud/#faq">Cloud FAQ</a>
-            </p>
+            <strong>Is the code checked by something other than the AI that wrote it?</strong>
+            <p class="orbi-event-list-p">Always. Review runs in a separate session that never saw the author’s reasoning, optionally on another vendor’s model, and it does say no: in PR #1023 it rejected the first attempt with a finding that named the file, the line and the fix.</p>
+            <p class="src-note orbi-event-list-p"><a class="orbi-src-note-a" href="https://github.com/orbi-build/orbi/pull/1023">PR #1023</a> · <a class="orbi-src-note-a" href="/evidence/">More public deliveries</a></p>
+          </div>
+        </li>
+        <li class="orbi-event-list-li">
+          <span class="event-era">03 · Privacy</span>
+          <div>
+            <strong>Who sees my code?</strong>
+            <p class="orbi-event-list-p"><strong>Self-hosted:</strong> your repository, GitHub token and model keys stay on your machine; nothing is uploaded to us. Your code goes only to the model endpoint you configure, and a local model keeps it entirely in-house.</p>
+            <p class="orbi-event-list-p"><strong>Cloud:</strong> the hosted worker clones only the repositories you authorize, runs each customer as a separate operating-system user, and deletes the working copy 120 quiet minutes after a delivery finishes. By default Cloud’s model channel runs DeepSeek, which receives the prompts and repository context a delivery needs; add your own model key to send it to a provider you choose instead. We may review Issue text and repository content only when we need to enforce the terms of service.</p>
+            <p class="src-note orbi-event-list-p"><a class="orbi-src-note-a" href="https://cloud-docs.orbi.build/security">Cloud security</a> · <a class="orbi-src-note-a" href="/privacy/">Privacy policy</a></p>
+          </div>
+        </li>
+        <li class="orbi-event-list-li">
+          <span class="event-era">04 · Control</span>
+          <div>
+            <strong>Can I stay in control?</strong>
+            <p class="orbi-event-list-p">Branch protection is enforced by GitHub, not by Orbi. Cloud reaches only the repositories in your GitHub App installation, with no organization or account permissions, and uninstalling the App ends access at once, without asking us. You can correct a running delivery with a comment on its Issue, stop it by closing the Issue, hold a merge with the <code>ai-blocked</code> label, or turn on the human acceptance gate so a person signs off before each merge.</p>
+            <p class="src-note orbi-event-list-p"><a class="orbi-src-note-a" href="https://cloud-docs.orbi.build/install-app#what-the-permissions-are-for">What each permission is for</a> · <a class="orbi-src-note-a" href="https://docs.orbi.build/workflow?ref=trust-page#stopping-a-delivery">Stopping a delivery</a></p>
+          </div>
+        </li>
+        <li class="orbi-event-list-li">
+          <span class="event-era">05 · Lock-in</span>
+          <div>
+            <strong>Am I locked in to Orbi, or to one AI vendor?</strong>
+            <p class="orbi-event-list-p">No. The engine is open source, the record lives in your repository, and any OpenAI-compatible model works, for writing and for review. See <a href="#neutral">no lock-in, at any layer</a> above.</p>
+          </div>
+        </li>
+        <li class="orbi-event-list-li">
+          <span class="event-era">06 · Cost</span>
+          <div>
+            <strong>Will the bill surprise me?</strong>
+            <p class="orbi-event-list-p">Cloud plans include a monthly model allowance with no per-token overage billing. When the allowance runs out, new deliveries pause, or switch to your own key if you added one; work already running finishes. The trial needs no card. Self-hosting is free, and you pay your model provider directly.</p>
+            <p class="src-note orbi-event-list-p"><a class="orbi-src-note-a" href="https://cloud-docs.orbi.build/limits-and-quotas">Limits and quotas</a> · <a class="orbi-src-note-a" href="/cloud/#pricing">Pricing</a></p>
+          </div>
+        </li>
+        <li class="orbi-event-list-li">
+          <span class="event-era">07 · Failure</span>
+          <div>
+            <strong>What happens when it cannot do the job?</strong>
+            <p class="orbi-event-list-p">It stops and tells you. Errors fail fast with no silent fallback, review and fix is capped at five rounds, and a delivery it cannot finish is labelled <code>ai-blocked</code> with the reason, for a person to decide. It never force-pushes a shared branch.</p>
+            <p class="src-note orbi-event-list-p"><a class="orbi-src-note-a" href="https://docs.orbi.build/workflow?ref=trust-page">Workflow</a></p>
+          </div>
+        </li>
+        <li class="orbi-event-list-li">
+          <span class="event-era">08 · Audit</span>
+          <div>
+            <strong>Can I find out exactly what happened?</strong>
+            <p class="orbi-event-list-p">Every step is written where you can read it: Issues, pull requests and comments in your own repository, not a dashboard you have to trust. One <code>run_id</code> ties a run’s comments, pull request and logs together. Orbi builds itself this way, in public.</p>
+            <p class="src-note orbi-event-list-p"><a class="orbi-src-note-a" href="/evidence/">Public evidence</a> · <a class="orbi-src-note-a" href="https://github.com/orbi-build/orbi/pulls?q=is:merged">Every merged pull request</a></p>
+          </div>
+        </li>
+        <li class="orbi-event-list-li">
+          <span class="event-era">09 · Compliance</span>
+          <div>
+            <strong>Do you have SOC 2 or ISO 27001?</strong>
+            <p class="orbi-event-list-p">Not today, and we will not imply otherwise. Cloud relies on GitHub, Vultr (the hosted worker), Cloudflare, Stripe and your model provider, as listed in the privacy policy. If your policies require a certified vendor, self-host the open-source engine on infrastructure you already approve.</p>
+            <p class="src-note orbi-event-list-p"><a class="orbi-src-note-a" href="/privacy/">Service providers</a> · <a class="orbi-src-note-a" href="https://docs.orbi.build/security?ref=trust-page">Self-hosted security model</a></p>
           </div>
         </li>
       </ul>
@@ -200,6 +227,12 @@
           <summary><span>05</span>Passing tests are not the intent you meant</summary>
           <div class="faq-answer">
             <p class="orbi-faq-answer-p">Tests prove the code matches the tests, not that the tests match what you wanted. Write acceptance criteria in the Issue, and turn on the human acceptance gate if a person should confirm business intent or UI copy before each merge.</p>
+          </div>
+        </details>
+        <details class="faq-item">
+          <summary><span>06</span>Cloud is provided as available, without guarantees of correctness</summary>
+          <div class="faq-answer">
+            <p class="orbi-faq-answer-p">The terms of service do not guarantee uninterrupted service, a particular model provider, delivery success or correct changes, and you remain responsible for what you merge and deploy. The gates above are how Orbi earns trust; the terms say plainly what is and is not promised.</p>
           </div>
         </details>
       </div>

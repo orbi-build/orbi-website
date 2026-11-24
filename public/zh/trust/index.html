@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>信任：Orbi 如何保障你的仓库安全</title>
-  <meta name="description" content="AI 打不开的门禁、留在你手里的 GitHub 控制权、代码去了哪里，以及 Orbi 不承诺的事。每一条都附有出处。">
+  <meta name="description" content="让 AI 合并代码之前，团队最关心的问题：安全、代码隐私、控制权、被 Orbi 或 AI 厂商锁定、费用、合规。每个回答都附有出处。">
   <link rel="canonical" href="https://orbi.build/zh/trust/">
   <link rel="alternate" hreflang="en" href="https://orbi.build/trust/">
   <link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/trust/">
@@ -76,10 +76,10 @@
       <section class="compare-hero shell" aria-labelledby="trust-title">
         <p class="eyebrow">信任 · 2026-11-24 核对</p>
         <h1 id="trust-title">你的仓库，始终属于你</h1>
-        <p class="hero-lede"><strong>Orbi 让 AI 写代码、审代码、合并代码，但它的设计让你永远不必信任 AI 来做这件事。</strong>每次合并都要通过模型打不开的门禁；最后的控制权在 GitHub 上，握在你手里，而不在我们手里。本页每一条说法都链接到背后的代码、文档或公开记录。</p>
+        <p class="hero-lede"><strong>Orbi 让 AI 写代码、审代码、合并代码，但它的设计让你既不必信任 AI，也不必信任我们。</strong>每次合并都要通过模型打不开的门禁；最后的控制权留在 GitHub 上，握在你手里。引擎开源，任何 AI 模型都能用，你既不会被 Orbi 锁定，也不会被某一家 AI 厂商锁定。下面每个回答都链接到背后的代码、文档或公开记录。</p>
         <div class="cta-row">
-          <a class="button button-ghost" href="#protections">查看六项保护</a>
-          <a class="text-link" href="https://docs.orbi.build/zh/trust?ref=trust-page-zh">阅读完整细则 ↗</a>
+          <a class="button button-ghost" href="#questions">查看九个问题</a>
+          <a class="text-link" href="https://docs.orbi.build/zh/trust?ref=trust-page-zh">完整细则 ↗</a>
         </div>
       </section>
     </div>
@@ -89,79 +89,106 @@
       <h2 class="orbi-compare-section-h2" id="numbers-title">你可以确定的事</h2>
       <div class="stat-grid">
         <div class="stat"><strong>100%</strong><span>的交付步骤都记录在你自己的 GitHub 仓库里</span></div>
-        <div class="stat"><strong>0</strong><span>次强制推送共享分支</span></div>
+        <div class="stat"><strong>任意</strong><span>OpenAI 兼容模型，托管或本地，写代码和审代码都能用</span></div>
         <div class="stat"><strong>1</strong><span>步操作，在 GitHub 上撤销 Orbi Cloud 的访问</span></div>
-        <div class="stat"><strong>120 分钟</strong><span>交付结束后，Cloud 删除工作副本</span></div>
+        <div class="stat"><strong>$0</strong><span>按 token 超额计费：额度用完，新任务暂停</span></div>
       </div>
     </section>
 
-    <section class="compare-section shell" id="protections" aria-labelledby="protections-title">
-      <p class="section-tag">六项保护</p>
-      <h2 class="orbi-compare-section-h2" id="protections-title">你的代码如何受到保护</h2>
-      <p class="section-lede">每一项保护都链接到它的文档，以及证明它的测试（如果有）。</p>
-      <ul class="dive-list">
-        <li class="orbi-dive-list-li">
-          <a class="orbi-dive-list-a" href="https://docs.orbi.build/zh/safety-matrix?ref=trust-page-zh">
-            <strong class="orbi-dive-list-strong">AI 打不开的门禁</strong>
-            <p class="orbi-dive-list-p">改动只有在满足全部条件时才会合并：审查结论绑定在确切的 commit 上；仓库有 CI 时，该 commit 上的 CI 必须通过；head 没有变；base 是最新的。合并锁定在被审查的那个 commit 上。</p>
-          </a>
-        </li>
-        <li class="orbi-dive-list-li">
-          <a class="orbi-dive-list-a" href="https://docs.orbi.build/zh/workflow?ref=trust-page-zh">
-            <strong class="orbi-dive-list-strong">审查者不是写代码的那个</strong>
-            <p class="orbi-dive-list-p">审查在一个独立会话里进行，它看不到作者的思路，还可以换成另一家供应商的另一个模型。AI 永远不会自己批改自己的作业。</p>
-          </a>
-        </li>
-        <li class="orbi-dive-list-li">
-          <a class="orbi-dive-list-a" href="https://cloud-docs.orbi.build/zh/security">
-            <strong class="orbi-dive-list-strong">最终控制权留在 GitHub</strong>
-            <p class="orbi-dive-list-p">分支保护由 GitHub 执行，不由 Orbi 执行。Cloud 只能访问你选择的仓库；卸载 GitHub App，访问立即终止，不需要经过我们。</p>
-          </a>
-        </li>
-        <li class="orbi-dive-list-li">
-          <a class="orbi-dive-list-a" href="/zh/evidence/">
-            <strong class="orbi-dive-list-strong">记录就在你的仓库里</strong>
-            <p class="orbi-dive-list-p">每一步都写在你看得见的地方：你自己仓库里的 Issue、PR 和评论，而不是一个需要你信任的仪表盘。一个 <code>run_id</code> 把一次运行的评论、PR 和日志串在一起。</p>
-          </a>
-        </li>
-        <li class="orbi-dive-list-li">
-          <a class="orbi-dive-list-a" href="https://docs.orbi.build/zh/safety-matrix?ref=trust-page-zh">
-            <strong class="orbi-dive-list-strong">宁可停下，也不瞎猜</strong>
-            <p class="orbi-dive-list-p">出错立即失败。审查与修复最多五轮。做不完的交付会被标记为 <code>ai-blocked</code> 并写明原因，等人来决定。</p>
-          </a>
-        </li>
-        <li class="orbi-dive-list-li">
-          <a class="orbi-dive-list-a" href="https://github.com/orbi-build/orbi">
-            <strong class="orbi-dive-list-strong">开源，没有任何锁定</strong>
-            <p class="orbi-dive-list-p">引擎以 AGPL-3.0 开源，在你自己的仓库上永久免费运行。任何 OpenAI 兼容模型都能用。明天停用，也没有任何东西需要导出。</p>
-          </a>
-        </li>
-      </ul>
+    <section class="compare-section shell" id="neutral" aria-labelledby="neutral-title">
+      <p class="section-tag">厂商中立</p>
+      <h2 class="orbi-compare-section-h2" id="neutral-title">每一层都不锁定你</h2>
+      <p class="section-lede">AI 编码工具往往把你绑在一家厂商的平台和一家厂商的模型上。Orbi 的设计让你可以随时离开其中任何一个，包括离开我们，而不丢任何东西。</p>
+      <div class="compare-table-wrap">
+        <table class="compare-table table-stack">
+          <thead><tr><th scope="col">层面</th><th scope="col">Orbi 怎么做</th><th scope="col">想换的时候</th></tr></thead>
+          <tbody>
+            <tr><th scope="row">引擎</th><td data-label="Orbi 怎么做">以 AGPL-3.0 开源。在你自己的仓库上运行永久免费，不限规模。</td><td data-label="想换的时候">自己部署，或者 fork。即使 Orbi 背后的公司不在了，它照样能跑。</td></tr>
+            <tr><th scope="row">你的记录</th><td data-label="Orbi 怎么做">每个 Issue、PR、每轮审查和每次发版都留在你的 GitHub 仓库里，不依赖任何交付数据库。</td><td data-label="想换的时候">停用 Orbi 就行。无需导出，历史原封不动。</td></tr>
+            <tr><th scope="row">AI 模型</th><td data-label="Orbi 怎么做">任何 OpenAI 兼容端点：已测试的模板包括 Gemini、GLM、DeepSeek、xAI、Groq、OpenRouter 和本地 Qwen，还支持用 ChatGPT 账号登录。</td><td data-label="想换的时候">改一项配置。某家 AI 厂商涨价、宕机或改政策，都不再是你的问题。</td></tr>
+            <tr><th scope="row">审查者</th><td data-label="Orbi 怎么做">审查可以运行在与写代码不同的供应商、不同的模型上。</td><td data-label="想换的时候">任选两个你信任的模型搭配。没有哪家厂商给自己的作业打分。</td></tr>
+            <tr><th scope="row">部署方式</th><td data-label="Orbi 怎么做">Orbi Cloud 运行的是同一个开源引擎，使用同一套 GitHub 记录。</td><td data-label="想换的时候">云端和自托管之间随时切换，记录不变。</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="src-note"><a class="orbi-src-note-a" href="https://github.com/orbi-build/orbi">源代码</a> · <a class="orbi-src-note-a" href="https://docs.orbi.build/zh/providers?ref=trust-page-zh">模型供应商</a> · <a class="orbi-src-note-a" href="https://docs.orbi.build/zh/workflow?ref=trust-page-zh">用不同模型审查</a> · <a class="orbi-src-note-a" href="https://cloud-docs.orbi.build/zh/model-configuration">Cloud：使用自己的模型 key</a></p>
     </section>
 
-    <section class="compare-section shell" id="your-code" aria-labelledby="code-title">
-      <p class="section-tag">你的代码去了哪里</p>
-      <h2 class="orbi-compare-section-h2" id="code-title">自托管还是 Cloud，说清楚</h2>
+    <section class="compare-section shell" id="questions" aria-labelledby="questions-title">
+      <p class="section-tag">九个问题</p>
+      <h2 class="orbi-compare-section-h2" id="questions-title">让 AI 合并代码之前，团队最常问的问题</h2>
+      <p class="section-lede">开发者调查里反复出现的顾虑是：AI 写的代码是否安全、隐私、控制权、锁定、费用和可追责。下面是 Orbi 对每一项的回答。</p>
       <ul class="event-list">
         <li class="orbi-event-list-li">
-          <span class="event-era">自托管</span>
+          <span class="event-era">01 · 安全</span>
           <div>
-            <strong>在你自己的机器上</strong>
-            <p class="orbi-event-list-p">你的仓库、GitHub token 和模型 key 都留在运行 Orbi 的机器上，不会上传给我们。代码只会发给你配置的模型端点；用本地模型，代码就完全不出你的环境。</p>
-            <p class="src-note orbi-event-list-p"><a class="orbi-src-note-a" href="https://docs.orbi.build/zh/security?ref=trust-page-zh">引擎安全模型</a></p>
+            <strong>AI 写的代码会搞坏主分支，或者引入漏洞吗？</strong>
+            <p class="orbi-event-list-p">改动只有在满足全部条件时才会合并：独立审查会话给出通过结论，并绑定在确切的 commit 上；仓库有 CI 时，该 commit 上的 CI 必须通过；head 没有变；base 是最新的。合并锁定在被审查的那个 commit 上。审查者把安全问题定为 Blocker 级；你的 CI 检查的任何东西，比如代码扫描或密钥扫描，都会成为合并门禁。Orbi 本身不带安全扫描器，所以请把你信任的扫描工具放进 CI。</p>
+            <p class="src-note orbi-event-list-p"><a class="orbi-src-note-a" href="https://docs.orbi.build/zh/safety-matrix?ref=trust-page-zh">安全矩阵：每道门禁及证明它的测试</a></p>
           </div>
         </li>
         <li class="orbi-event-list-li">
-          <span class="event-era">Cloud</span>
+          <span class="event-era">02 · 审查</span>
           <div>
-            <strong>在我们运营的机器上，只在交付期间</strong>
-            <p class="orbi-event-list-p">托管 worker 只克隆你授权的仓库。每个客户以独立的操作系统用户运行，与其他客户隔离，接触不到你的生产凭据或其他仓库。交付结束后静默 120 分钟，工作副本即被删除。</p>
-            <p class="orbi-event-list-p"><strong>模型：</strong>Cloud 默认使用平台模型通道，运行的是 DeepSeek，因此这个通道上你的代码和提示会发送给 DeepSeek。如果这不适合你的代码，可以填入自己的模型 key；它加密存储，只会以掩码形式显示。</p>
-            <p class="src-note orbi-event-list-p">
-              <a class="orbi-src-note-a" href="https://cloud-docs.orbi.build/zh/security">Cloud 安全</a>
-              · <a class="orbi-src-note-a" href="https://cloud-docs.orbi.build/zh/model-configuration">模型配置</a>
-              · <a class="orbi-src-note-a" href="/zh/cloud/#faq">Cloud 常见问题</a>
-            </p>
+            <strong>代码会由写它的 AI 以外的东西来检查吗？</strong>
+            <p class="orbi-event-list-p">一定会。审查在一个独立会话里进行，它看不到作者的思路，还可以换成另一家厂商的模型。而且它真的会说"不"：在 PR #1023 里，它打回了第一版，指出了具体的文件、行号和修法。</p>
+            <p class="src-note orbi-event-list-p"><a class="orbi-src-note-a" href="https://github.com/orbi-build/orbi/pull/1023">PR #1023</a> · <a class="orbi-src-note-a" href="/zh/evidence/">更多公开交付</a></p>
+          </div>
+        </li>
+        <li class="orbi-event-list-li">
+          <span class="event-era">03 · 隐私</span>
+          <div>
+            <strong>谁能看到我的代码？</strong>
+            <p class="orbi-event-list-p"><strong>自托管：</strong>你的仓库、GitHub token 和模型 key 都留在你的机器上，不会上传给我们。代码只会发给你配置的模型端点；用本地模型，代码就完全不出你的环境。</p>
+            <p class="orbi-event-list-p"><strong>Cloud：</strong>托管 worker 只克隆你授权的仓库，每个客户以独立的操作系统用户运行，交付结束后静默 120 分钟即删除工作副本。Cloud 默认的模型通道运行的是 DeepSeek，它会收到交付所需的提示和仓库上下文；填入自己的模型 key，就改为发给你选择的供应商。只有在需要执行服务条款时，我们才可能查看 Issue 文本和仓库内容。</p>
+            <p class="src-note orbi-event-list-p"><a class="orbi-src-note-a" href="https://cloud-docs.orbi.build/zh/security">Cloud 安全</a> · <a class="orbi-src-note-a" href="/zh/privacy/">隐私政策</a></p>
+          </div>
+        </li>
+        <li class="orbi-event-list-li">
+          <span class="event-era">04 · 控制权</span>
+          <div>
+            <strong>我能一直掌握控制权吗？</strong>
+            <p class="orbi-event-list-p">分支保护由 GitHub 执行，不由 Orbi 执行。Cloud 只能访问你在 GitHub App 安装里授权的仓库，没有任何组织或账户级权限；卸载 App，访问立即终止，不需要经过我们。你可以在 Issue 下留言纠正正在进行的交付，关闭 Issue 来停止它，用 <code>ai-blocked</code> 标签拦住合并，或者打开人工验收门，让每次合并前都有人签字。</p>
+            <p class="src-note orbi-event-list-p"><a class="orbi-src-note-a" href="https://cloud-docs.orbi.build/zh/install-app">每项权限的用途</a> · <a class="orbi-src-note-a" href="https://docs.orbi.build/zh/workflow?ref=trust-page-zh">如何停止交付</a></p>
+          </div>
+        </li>
+        <li class="orbi-event-list-li">
+          <span class="event-era">05 · 锁定</span>
+          <div>
+            <strong>我会被 Orbi 或某一家 AI 厂商锁定吗？</strong>
+            <p class="orbi-event-list-p">不会。引擎开源，记录在你的仓库里，任何 OpenAI 兼容模型都能用来写代码和审代码。详见上面的<a href="#neutral">每一层都不锁定你</a>。</p>
+          </div>
+        </li>
+        <li class="orbi-event-list-li">
+          <span class="event-era">06 · 费用</span>
+          <div>
+            <strong>账单会吓我一跳吗？</strong>
+            <p class="orbi-event-list-p">Cloud 套餐包含每月的模型额度，不按 token 收超额费用。额度用完后，新交付会暂停；如果你填了自己的 key，就改用你的 key 继续；已经在跑的工作照常完成。试用不需要绑卡。自托管免费，模型费用直接付给模型供应商。</p>
+            <p class="src-note orbi-event-list-p"><a class="orbi-src-note-a" href="https://cloud-docs.orbi.build/zh/limits-and-quotas">限制与额度</a> · <a class="orbi-src-note-a" href="/zh/cloud/#pricing">价格</a></p>
+          </div>
+        </li>
+        <li class="orbi-event-list-li">
+          <span class="event-era">07 · 失败</span>
+          <div>
+            <strong>它做不到的时候会怎样？</strong>
+            <p class="orbi-event-list-p">它会停下来告诉你。出错立即失败，没有静默兜底；审查与修复最多五轮；做不完的交付会被标记为 <code>ai-blocked</code> 并写明原因，交给人决定。它从不强制推送共享分支。</p>
+            <p class="src-note orbi-event-list-p"><a class="orbi-src-note-a" href="https://docs.orbi.build/zh/workflow?ref=trust-page-zh">工作流</a></p>
+          </div>
+        </li>
+        <li class="orbi-event-list-li">
+          <span class="event-era">08 · 追溯</span>
+          <div>
+            <strong>我能查清楚到底发生了什么吗？</strong>
+            <p class="orbi-event-list-p">每一步都写在你看得见的地方：你自己仓库里的 Issue、PR 和评论，而不是一个需要你信任的仪表盘。一个 <code>run_id</code> 把一次运行的评论、PR 和日志串在一起。Orbi 自己就是这样公开构建的。</p>
+            <p class="src-note orbi-event-list-p"><a class="orbi-src-note-a" href="/zh/evidence/">公开证据</a> · <a class="orbi-src-note-a" href="https://github.com/orbi-build/orbi/pulls?q=is:merged">所有已合并的 PR</a></p>
+          </div>
+        </li>
+        <li class="orbi-event-list-li">
+          <span class="event-era">09 · 合规</span>
+          <div>
+            <strong>你们有 SOC 2 或 ISO 27001 认证吗？</strong>
+            <p class="orbi-event-list-p">目前没有，我们也不会暗示有。Cloud 依赖 GitHub、Vultr（托管 worker）、Cloudflare、Stripe 和你的模型供应商，隐私政策里都列明了。如果你的制度要求供应商必须有认证，可以把开源引擎部署在你已经批准过的基础设施上。</p>
+            <p class="src-note orbi-event-list-p"><a class="orbi-src-note-a" href="/zh/privacy/">服务提供方</a> · <a class="orbi-src-note-a" href="https://docs.orbi.build/zh/security?ref=trust-page-zh">自托管安全模型</a></p>
           </div>
         </li>
       </ul>
@@ -200,6 +227,12 @@
           <summary><span>05</span>测试通过，不等于做的是你想要的</summary>
           <div class="faq-answer">
             <p class="orbi-faq-answer-p">测试证明代码符合测试，不证明测试符合你的本意。请在 Issue 里写清验收标准；如果希望每次合并前由人确认业务意图或界面文案，可以打开人工验收门。</p>
+          </div>
+        </details>
+        <details class="faq-item">
+          <summary><span>06</span>Cloud 按现状提供，不保证结果正确</summary>
+          <div class="faq-answer">
+            <p class="orbi-faq-answer-p">服务条款不保证服务不中断、不保证使用某个特定的模型供应商、不保证交付成功或改动正确；你合并和部署的东西仍由你负责。上面的门禁是 Orbi 赢得信任的方式，条款则把承诺和不承诺的内容写清楚。</p>
           </div>
         </details>
       </div>
