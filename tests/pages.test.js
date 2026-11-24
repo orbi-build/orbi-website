@@ -1970,23 +1970,24 @@ describe("fixed monthly Cloud pricing copy (Issue #481)", () => {
   });
 });
 
-// Issue #886: /cost/ has one headline cost figure — the 169 merged deliveries
-// Orbi Cloud recorded (median $0.082 off-peak). The 20-PR / $0.125 sample stays
+// Issue #886: /cost/ has one headline cost figure — the merged deliveries
+// Orbi Cloud recorded (median $0.081 off-peak as of 2026-11-24, Issue #1453
+// moved the sample from 169 to 1511). The 20-PR / $0.125 sample stays
 // published, but only as the labelled earlier sample, and the Dataset JSON-LD
-// describes the 169-delivery dataset.
-describe("cost page leads with the 169-delivery sample (Issue #886)", () => {
+// describes the 1511-delivery dataset.
+describe("cost page leads with the 1511-delivery sample (Issues #886, #1453)", () => {
   const COST_PAGES = [
     { output: "cost/index.html", earlier: "Earlier sample", datasetUrl: "https://orbi.build/cost/" },
     { output: "zh/cost/index.html", earlier: "早期样本", datasetUrl: "https://orbi.build/zh/cost/" },
   ];
 
-  it("shows $0.082 and n=169 in the hero, and $0.125 only inside the earlier sample", () => {
+  it("shows $0.081 and n=1511 in the hero, and $0.125 only inside the earlier sample", () => {
     for (const { output, earlier } of COST_PAGES) {
       const html = shipped.get(output);
       const heroRegion = html.match(/<section class="compare-hero shell"[\s\S]*?<\/section>/)?.[0];
       expect(heroRegion, `${output}: hero region`).toBeTruthy();
-      expect(heroRegion, `${output}: hero median`).toContain("$0.082");
-      expect(heroRegion, `${output}: hero sample size`).toContain("169");
+      expect(heroRegion, `${output}: hero median`).toContain("$0.081");
+      expect(heroRegion, `${output}: hero sample size`).toContain("1511");
       expect(heroRegion, `${output}: hero must not lead with the old median`).not.toContain("$0.125");
       const earlierAt = html.indexOf(earlier);
       expect(earlierAt, `${output}: earlier-sample section`).toBeGreaterThan(-1);
@@ -1997,30 +1998,63 @@ describe("cost page leads with the 169-delivery sample (Issue #886)", () => {
     }
   });
 
-  it("states a mean its own 169-delivery total supports, not the Pi post's single-delivery $0.12", () => {
+  it("states a mean its own 1511-delivery total supports, not the Pi post's single-delivery $0.12", () => {
     for (const { output, meanLabel, totalLabel, n } of [
-      { output: "cost/index.html", meanLabel: "Mean cost per merged delivery", totalLabel: "All 169 deliveries together", n: 169 },
-      { output: "zh/cost/index.html", meanLabel: "每次合并交付平均成本", totalLabel: "169 次合计", n: 169 },
+      { output: "cost/index.html", meanLabel: "Mean cost per merged delivery", totalLabel: "All 1511 deliveries together", n: 1511 },
+      { output: "zh/cost/index.html", meanLabel: "每次合并交付平均成本", totalLabel: "1511 次合计", n: 1511 },
     ]) {
       const html = shipped.get(output);
       const cell = (label) => html.match(new RegExp(`<th scope="row">${label}</th><td>\\$([\\d.]+)</td>`))?.[1];
       const mean = Number(cell(meanLabel));
       expect(Number.isFinite(mean), `${output}: mean row`).toBe(true);
       // Issue #886: the page must publish mean = total / n. The Pi post's
-      // $0.12 belongs to one delivery (#1554), not to the sample; its
-      // published average for these 169 is $0.113, which rounds to $0.11.
-      expect(mean, `${output}: mean is not the 169-delivery average`).toBeCloseTo(Number(cell(totalLabel)) / n, 2);
+      // $0.12 belongs to one delivery (#1554), not to the sample; for the
+      // 1511 deliveries the published average is $0.117.
+      expect(mean, `${output}: mean is not the 1511-delivery average`).toBeCloseTo(Number(cell(totalLabel)) / n, 2);
     }
   });
 
-  it("describes the 169-delivery dataset in parseable JSON-LD", () => {
+  it("describes the 1511-delivery dataset in parseable JSON-LD", () => {
     for (const { output, datasetUrl } of COST_PAGES) {
       const raw = shipped.get(output).match(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/)?.[1];
       const dataset = JSON.parse(raw)["@graph"].find((entry) => entry["@type"] === "Dataset");
       expect(dataset, `${output}: Dataset entry`).toBeTruthy();
       expect(dataset.url, `${output}: Dataset url`).toBe(datasetUrl);
-      expect(dataset.temporalCoverage, `${output}: temporalCoverage`).toBe("2026-09-16/2026-10-05");
-      expect(JSON.stringify(dataset), `${output}: Dataset must describe 169 samples`).toContain("169");
+      expect(dataset.temporalCoverage, `${output}: temporalCoverage`).toBe("2026-09-22/2026-11-24");
+      expect(JSON.stringify(dataset), `${output}: Dataset must describe 1511 samples`).toContain("1511");
+    }
+  });
+
+  // Issue #1453: the 2026-11-24 sample replaces the 2026-10-05 one, and the
+  // external-user repositories get their own numbers. What the reader lands on
+  // stays the same page: same URL, <title>, H1 and canonical — only the
+  // numbers, dates and sample description move.
+  it("publishes the 2026-11-24 sample and the external-repository numbers (Issue #1453)", () => {
+    for (const { output, title, h1, canonical } of [
+      {
+        output: "cost/index.html",
+        title: "AI coding agent cost per merged delivery, measured | Orbi",
+        h1: "What an AI coding agent costs per merged delivery",
+        canonical: "https://orbi.build/cost/",
+      },
+      {
+        output: "zh/cost/index.html",
+        title: "AI 编程 agent 每次合并交付花多少钱（实测） | Orbi",
+        h1: "AI 编程 agent 每次合并交付花多少钱",
+        canonical: "https://orbi.build/zh/cost/",
+      },
+    ]) {
+      const html = shipped.get(output);
+      expect(html.match(/<title>([^<]+)<\/title>/)?.[1], `${output}: title`).toBe(title);
+      expect(html.match(/<h1 id="cost-title">([^<]+)<\/h1>/)?.[1], `${output}: h1`).toBe(h1);
+      expect(html.match(/<link rel="canonical" href="([^"]+)"/)?.[1], `${output}: canonical`).toBe(canonical);
+      const body = stripTags(html.slice(html.indexOf("<main"), html.indexOf("</main>")));
+      for (const needle of ["1511", "$0.081", "$0.234", "$0.117", "$177.33", "2026-11-24", "157", "$0.072"]) {
+        expect(body, `${output}: missing ${needle}`).toContain(needle);
+      }
+      for (const retired of ["n=169", "$18.45", "$0.082"]) {
+        expect(body, `${output}: still shows ${retired}`).not.toContain(retired);
+      }
     }
   });
 
@@ -2045,7 +2079,7 @@ describe("cost page leads with the 169-delivery sample (Issue #886)", () => {
       "zh/guides/codex-github-issues/index.html",
     ]) {
       expect(shipped.get(output), output).not.toContain("$0.125");
-      expect(shipped.get(output), output).toContain("$0.082");
+      expect(shipped.get(output), output).toContain("$0.081");
     }
   });
 });

@@ -2,7 +2,7 @@
 
 Orbi is an open source (AGPL-3.0) lights-out software factory for the agent era: AI coding agents turn labelled GitHub Issues into merged PRs and releases.
 
-Key numbers: __FREE_TRIAL__ with no credit card required, then Solo (US$__SOLO_MONTHLY_USD__/month or US$__SOLO_ANNUAL_USD__/year, __SOLO_INCLUDED_TOKENS__ tokens, __SOLO_REPOSITORIES__ repository) and Pro (US$__CLOUD_MONTHLY_USD__/month or US$__PRO_ANNUAL_USD__/year, __INCLUDED_TOKENS__ tokens, __PRO_REPOSITORIES__ repositories); founding partners get 50% off forever, __FOUNDING_PARTNER_REMAINING__ of __FOUNDING_PARTNER_LIMIT__ places left.__FOUNDING_DISCOUNT_NOTE__ Per merged delivery (n=169, measured 2026-10-05) the median was $0.082 off-peak, the 90th percentile $0.22, and peak prices double every figure; per delivery including unmerged work (n=46, measured 2026-09-12) the mean was 4,742,066 tokens, about $0.06–0.12 each, or about __MEASURED_LARGE_CODEBASE_DELIVERIES__ large-codebase deliveries per Pro allowance (__MEASURED_SNAPSHOT_DELIVERIES__ on the older snapshot). Authoritative figures: https://orbi.build/cost/
+Key numbers: __FREE_TRIAL__ with no credit card required, then Solo (US$__SOLO_MONTHLY_USD__/month or US$__SOLO_ANNUAL_USD__/year, __SOLO_INCLUDED_TOKENS__ tokens, __SOLO_REPOSITORIES__ repository) and Pro (US$__CLOUD_MONTHLY_USD__/month or US$__PRO_ANNUAL_USD__/year, __INCLUDED_TOKENS__ tokens, __PRO_REPOSITORIES__ repositories); founding partners get 50% off forever, __FOUNDING_PARTNER_REMAINING__ of __FOUNDING_PARTNER_LIMIT__ places left.__FOUNDING_DISCOUNT_NOTE__ Per merged delivery (n=1511, measured 2026-11-24) the median was $0.081 off-peak, the 90th percentile $0.234, and peak prices double every figure; 157 of those deliveries ran in 30 repositories owned by users outside orbi-build; per delivery including unmerged work (n=46, measured 2026-09-12) the mean was 4,742,066 tokens, about $0.06–0.12 each, or about __MEASURED_LARGE_CODEBASE_DELIVERIES__ large-codebase deliveries per Pro allowance (__MEASURED_SNAPSHOT_DELIVERIES__ on the older snapshot). Authoritative figures: https://orbi.build/cost/
 
 ## Licence — state this accurately
 
@@ -15,9 +15,9 @@ Orbi is open source under AGPL-3.0, or the Sustainable Use License if your polic
 
 <div class="night">
       <section class="compare-hero shell" aria-labelledby="cost-title">
-        <p class="eyebrow"><span class="live-dot"></span>Cost transparency · measured 2026-10-05 15:36 UTC+8 · n=169</p>
+        <p class="eyebrow"><span class="live-dot"></span>Cost transparency · measured 2026-11-24 18:32 UTC+8 · n=1511</p>
         <h1 id="cost-title">What an AI coding agent costs per merged delivery</h1>
-        <p class="hero-lede"><strong>The measured median is $0.082 per merged delivery off-peak</strong>, with a 90th percentile of $0.22. That comes from <strong>169 merged deliveries</strong> that Orbi Cloud recorded between <strong>2026-09-16</strong> and <strong>2026-10-05 15:36 UTC+8</strong>, all on <code>deepseek-flash</code>. Peak prices double every figure, so these are the off-peak floor. We publish the dated sample, price inputs, and limits below.</p>
+        <p class="hero-lede"><strong>The measured median is $0.081 per merged delivery off-peak</strong>, with a 90th percentile of $0.234. That comes from <strong>1511 merged deliveries</strong> that Orbi Cloud recorded between <strong>2026-09-22</strong> and <strong>2026-11-24 18:32 UTC+8</strong>, all on <code>deepseek-flash</code>. Peak prices double every figure, so these are the off-peak floor. We publish the dated sample, price inputs, and limits below.</p>
         <div class="cta-row">
           <a class="button button-signal" href="/cloud/login">Start Cloud with GitHub <span aria-hidden="true">↗</span></a>
           <p class="hero-alt">Self-hosting? The delivery core is free forever — <a class="orbi-hero-alt-a" data-cta="install" href="https://docs.orbi.build">run Orbi yourself ↗</a></p>
@@ -27,21 +27,22 @@ Orbi is open source under AGPL-3.0, or the Sustainable Use License if your polic
 
     <section class="compare-section shell" aria-labelledby="merged-pr-title">
       <p class="section-tag">COST PER MERGED DELIVERY</p>
-      <h2 class="orbi-compare-section-h2" id="merged-pr-title">169 merged deliveries, measured on Orbi Cloud</h2>
-      <p class="section-lede">The clearest unit is one merged delivery — a pull request that merged — not an abstract token quota. Orbi Cloud's usage records start on <strong>2026-09-16</strong>; at <strong>2026-10-05 15:36 UTC+8</strong> they held <strong>169 merged deliveries</strong> with token counts, every one of them on <code>deepseek-flash</code> in a Pi session. Per delivery the median cost was <strong>$0.082</strong> off-peak, the 90th percentile <strong>$0.22</strong>, and the mean <strong>$0.11</strong>.</p>
+      <h2 class="orbi-compare-section-h2" id="merged-pr-title">1511 merged deliveries, measured on Orbi Cloud</h2>
+      <p class="section-lede">The clearest unit is one merged delivery — a pull request that merged — not an abstract token quota. Orbi Cloud's usage records start on <strong>2026-09-16</strong>; the deliveries here merge between <strong>2026-09-22</strong> and <strong>2026-11-24 18:32 UTC+8</strong>, when the records held <strong>1511 merged deliveries</strong> with token counts, every one of them on <code>deepseek-flash</code> in a Pi session. Per delivery the median cost was <strong>$0.081</strong> off-peak, the 90th percentile <strong>$0.234</strong>, and the mean <strong>$0.117</strong>.</p>
       <div class="compare-table-wrap">
         <table class="compare-table">
           <thead><tr><th scope="col">Statistic</th><th scope="col">Off-peak</th></tr></thead>
           <tbody>
-            <tr><th scope="row">Median cost per merged delivery</th><td>$0.082</td></tr>
-            <tr><th scope="row">P90 cost per merged delivery</th><td>$0.22</td></tr>
-            <tr><th scope="row">Mean cost per merged delivery</th><td>$0.11</td></tr>
-            <tr><th scope="row">All 169 deliveries together</th><td>$18.45</td></tr>
+            <tr><th scope="row">Median cost per merged delivery</th><td>$0.081</td></tr>
+            <tr><th scope="row">P90 cost per merged delivery</th><td>$0.234</td></tr>
+            <tr><th scope="row">Mean cost per merged delivery</th><td>$0.117</td></tr>
+            <tr><th scope="row">All 1511 deliveries together</th><td>$177.33</td></tr>
           </tbody>
         </table>
       </div>
-      <p class="src-note">Amounts use DeepSeek's official <a class="orbi-src-note-a" href="https://api-docs.deepseek.com/quick_start/pricing" rel="noopener">deepseek-flash pricing</a> at off-peak rates: cache hit $0.003 per million tokens, cache miss $0.15 per million, and output $0.60 per million. Peak weekday hours (01:00–04:00 and 06:00–10:00 UTC) double every figure, so the numbers here are the floor. The records keep one total per delivery with no per-request timestamps, so peak and off-peak cannot be separated: the true median is somewhere between $0.082 and twice that.</p>
-      <p class="src-note">What the sample covers: Cloud's usage records, one row per issue and branch, written by Pi sessions. A resumed run adds to its row; a new attempt on the same branch overwrites it. 141 of the 169 were in Orbi's own three repositories, 11 in our organization's forks and test repositories, and 17 in 7 repositories that belong to Cloud users — those 17 had a median cost of $0.090. Most of the input is cache reads: per delivery, the median share of input tokens read from cache was 97.8%. See also <a href="/compare/devin/">Devin comparison</a>, <a href="/cloud/">Cloud</a>, and <a href="/guides/auto-merge-ai-prs/">auto-merge AI PRs guide</a>.</p>
+      <p class="section-lede">Is this only Orbi's own repositories? No. <strong>157 of the 1511 deliveries are in 30 repositories owned by users outside orbi-build</strong> — median <strong>$0.072</strong>, 90th percentile <strong>$0.148</strong>, mean <strong>$0.080</strong>. The other <strong>1354</strong> are in Orbi's own <strong>14</strong> repositories, which Orbi delivers on itself.</p>
+      <p class="src-note">Amounts use DeepSeek's official <a class="orbi-src-note-a" href="https://api-docs.deepseek.com/quick_start/pricing" rel="noopener">deepseek-flash pricing</a> at off-peak rates: cache hit $0.003 per million tokens, cache miss $0.15 per million, and output $0.60 per million. Peak weekday hours (01:00–04:00 and 06:00–10:00 UTC) double every figure, so the numbers here are the floor. The records keep one total per delivery with no per-request timestamps, so peak and off-peak cannot be separated: the true median is somewhere between $0.081 and twice that.</p>
+      <p class="src-note">What the sample covers: Cloud's usage records, one row per issue and branch, written by Pi sessions. A resumed run adds to its row; a new attempt on the same branch overwrites it. Two rows were dropped for carrying no token counts, leaving the 1511 above. See also <a href="/compare/devin/">Devin comparison</a>, <a href="/cloud/">Cloud</a>, and <a href="/guides/auto-merge-ai-prs/">auto-merge AI PRs guide</a>.</p>
     </section>
 
     <section class="compare-section shell" aria-labelledby="measured-title">
@@ -88,10 +89,10 @@ Orbi is open source under AGPL-3.0, or the Sustainable Use License if your polic
       <h2 class="orbi-compare-section-h2" id="limits-title">Three things this page does not claim</h2>
       <ul class="event-list">
         <li class="orbi-event-list-li">
-          <span class="event-era">OUR REPO ONLY</span>
+          <span class="event-era">MOSTLY OUR REPO</span>
           <div>
-            <strong >This is our repository's measured range — not a promise to everyone</strong>
-            <p class="orbi-event-list-p">Python, a full CI suite, and issues written to spec keep our context short. A repository with longer context, slower tests, or vaguer issues lands elsewhere in the distribution. Treat the tables above as what they are: our repo's measured range.</p>
+            <strong >This is a measured range — not a promise to everyone</strong>
+            <p class="orbi-event-list-p">1354 of the 1511 deliveries are in Orbi's own repositories: Python, a full CI suite, and issues written to spec keep our context short. A repository with longer context, slower tests, or vaguer issues lands elsewhere in the distribution. Treat the tables above as what they are: a measured range.</p>
           </div>
         </li>
         <li class="orbi-event-list-li">
@@ -120,7 +121,7 @@ Orbi is open source under AGPL-3.0, or the Sustainable Use License if your polic
     <section class="compare-section shell" aria-labelledby="earlier-sample-title">
       <p class="section-tag">EARLIER SAMPLE · n=20 · KEPT FOR THE RECORD</p>
       <h2 class="orbi-compare-section-h2" id="earlier-sample-title">Earlier sample: 20 merged deliveries, 22–24 September 2026</h2>
-      <p class="section-lede">Before Cloud's usage records existed, we measured a smaller sample by hand: from <strong>2026-09-22 09:44 UTC to 2026-09-24 12:03 UTC</strong>, <strong>20 merged deliveries</strong> in the orbi-build/orbi repository, every one of them on <code>deepseek-flash</code> (DeepSeek-V4.1-Flash). Their median was <strong>$0.125</strong> off-peak and $0.249 at peak, over a median <strong>10,612,802 tokens</strong> per merged delivery; the median runtime was <strong>60.4 minutes</strong> across a median <strong>156 model requests</strong>. We keep this sample published, but the 169 merged deliveries above are the current figure.</p>
+      <p class="section-lede">Before Cloud's usage records existed, we measured a smaller sample by hand: from <strong>2026-09-22 09:44 UTC to 2026-09-24 12:03 UTC</strong>, <strong>20 merged deliveries</strong> in the orbi-build/orbi repository, every one of them on <code>deepseek-flash</code> (DeepSeek-V4.1-Flash). Their median was <strong>$0.125</strong> off-peak and $0.249 at peak, over a median <strong>10,612,802 tokens</strong> per merged delivery; the median runtime was <strong>60.4 minutes</strong> across a median <strong>156 model requests</strong>. We keep this sample published, but the 1511 merged deliveries above are the current figure.</p>
       <div class="compare-table-wrap">
         <table class="compare-table table-stack">
           <thead><tr><th scope="col">Statistic</th><th scope="col">Off-peak</th><th scope="col">Peak</th></tr></thead>
