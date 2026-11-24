@@ -7,7 +7,7 @@ published: 2026-10-05
 updated: 2026-11-10
 ---
 
-Pi coding agent 是一个在命令行里运行的开源编程助手。如果你在评估 Pi，或者想让它无人值守地跑，这页讲 Orbi 怎么启动 Pi 会话、在外面补了哪些东西（角色、评审轮次、合并闸门、标签、静默会话的处理），并附生产数字。Orbi 是一个开源 runner：你给 GitHub issue 打上 `ai-ready` 标签，它把这张 issue 做成评审过、合并了的 PR；另开一张发版 issue，就能把合并的工作打包成带 tag 的 release。可以装在自己机器上跑，也可以用托管版 Orbi Cloud。整条流水线里写代码的那一步，全部交给 [Pi coding agent](https://pi.dev)。Pi 官网管自己叫「a minimal agent harness」，由 Earendil 开发，MIT 许可（[earendil-works/pi](https://github.com/earendil-works/pi)）。Orbi 不是 Pi 官方项目。
+Pi coding agent 是一个在命令行里运行的开源编程助手。如果你在评估 Pi，或者想让它无人值守地跑，这页讲 Orbi 怎么启动 Pi 会话、在外面补了哪些东西（角色、评审轮次、合并闸门、标签、静默会话的处理），并附生产数字。Orbi 是一个开源 runner：你给 GitHub issue 打上 `ai-ready` 标签，它把这张 issue 做成评审过、合并了的 PR；另开一张发版 issue，就能把合并的工作打包成带 tag 的 release。可以装在自己机器上跑，也可以用托管版 [Orbi Cloud](/zh/cloud/?ref=seo-pi-hub-top)；[这条交付记录](/proof/orbi-build/orbi/2067)来自一个真实的安装问题，记下了从开 issue 到发布 v0.7.34 的全过程。整条流水线里写代码的那一步，全部交给 [Pi coding agent](https://pi.dev)。Pi 官网管自己叫「a minimal agent harness」，由 Earendil 开发，MIT 许可（[earendil-works/pi](https://github.com/earendil-works/pi)）。Orbi 不是 Pi 官方项目。
 
 截至 2026 年 11 月 10 日（UTC+8），我们查的那台 Orbi Cloud 沙箱主机上装的是 Pi 1.5.0；npm 上最新的是 11 月 10 日 07:45（UTC+8）发布的 1.5.1。下文的生产统计跨过了多个 Pi 版本，不属于某一个版本。想自己安装、运行 Pi，见[《Pi agent harness》](/zh/blog/pi-agent-harness/)的安装一节，那里的步骤用 Pi 1.5.0 测过。
 

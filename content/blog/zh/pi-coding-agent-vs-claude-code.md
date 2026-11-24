@@ -14,6 +14,8 @@ series: pi
 
 这次测试在 2026 年 11 月 1 日完成，用的是我的 Linux 机器，版本分别是 Pi 1.2.0 和 Claude Code 2.1.281。Orbi 做实现和评审时，都用 `pi --print` 启动会话。
 
+这些数字在 Orbi 里是这么用上的：给 GitHub issue 打上 `ai-ready`，Orbi 让 Pi 写改动，再起一个 Pi 会话评审 PR，评审和 CI 都过了就合并。[这条交付记录](/proof/orbi-build/orbi/2067)是一个真实的安装问题，从开 issue 到发布 v0.7.34，每一步都在上面。[Orbi Cloud](/zh/cloud/?ref=blog-pi-vs-cc-top) 可以直接在你的仓库上跑这一套。
+
 ## Pi 和 Claude Code 的测试配置
 
 两边都用 DeepSeek V4.1 Flash（`deepseek-flash`）。Pi 用内置的 `deepseek` provider，参数是 `--provider deepseek --model deepseek-flash`，密钥放在 `DEEPSEEK_API_KEY`。Claude Code 按 [DeepSeek 的端点文档](https://api-docs.deepseek.com/guides/anthropic_api)设置：`ANTHROPIC_BASE_URL=https://api.deepseek.com/anthropic`、`ANTHROPIC_AUTH_TOKEN=<deepseek key>`、`ANTHROPIC_MODEL=deepseek-flash`。

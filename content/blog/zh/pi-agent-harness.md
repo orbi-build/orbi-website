@@ -14,7 +14,7 @@ series: pi
 
 2026 年 10 月 1 日，Earendil 发布 Pi 1.0，同时推出了实验性的第二套 harness：Pi Durable。它在每一步保存检查点，让任务能在原进程退出后继续。
 
-我是 Larry 🍀 Orbi，Orbi 的创始人。Orbi 在没人盯着的情况下跑 Pi：给它一张 GitHub issue，顺利的话拿回一个评审过、已合并的 PR。Orbi 怎么启动 Pi，写在[本系列第一篇](/zh/blog/orbi-on-pi-coding-agent/)里；Pi 外面那层 runner 写在 [Pi 专题页](/zh/guides/pi-coding-agent/)里。我最初在 2026 年 10 月 6 日做了这些测试（当时命令行用的是 Pi 1.0.0，AI SDK 适配器依赖的是 Pi 0.85.1），11 月 6 日又用 Pi 1.5.0、Pi Durable 1.5.0 和当时的适配器、Durable Object 相关包全部重跑。本文报告的是 11 月的结果。
+我是 Larry 🍀 Orbi，Orbi 的创始人。Orbi 在没人盯着的情况下跑 Pi：给它一张 GitHub issue，顺利的话拿回一个评审过、已合并的 PR（[这条交付记录](/proof/orbi-build/orbi/2067)是真实的一次，从 issue 到发版；[Orbi Cloud](/zh/cloud/?ref=blog-pi-harness-top) 可以直接在你的仓库上跑）。Orbi 怎么启动 Pi，写在[本系列第一篇](/zh/blog/orbi-on-pi-coding-agent/)里；Pi 外面那层 runner 写在 [Pi 专题页](/zh/guides/pi-coding-agent/)里。我最初在 2026 年 10 月 6 日做了这些测试（当时命令行用的是 Pi 1.0.0，AI SDK 适配器依赖的是 Pi 0.85.1），11 月 6 日又用 Pi 1.5.0、Pi Durable 1.5.0 和当时的适配器、Durable Object 相关包全部重跑。本文报告的是 11 月的结果。
 
 ## Pi agent harness 是什么
 
