@@ -240,7 +240,7 @@
     <article class="post-entry">
       <h2 class="post-entry-title"><a href="/zh/blog/codex-yolo-mode/">Codex YOLO mode 会放开什么权限</a></h2>
       <p class="post-entry-meta"><time datetime="2026-10-16">2026-10-16</time></p>
-      <p class="post-entry-summary">Codex YOLO mode 会跳过审批和本地沙箱。本文用 Linux 实测它放开了哪些操作，并说明 Codex auto mode 是什么、旧 full-auto 命令怎样迁移。</p>
+      <p class="post-entry-summary">Codex 没有 --dangerously-skip-permissions 参数，对应的开关是 --yolo。想无人值守又保留沙箱，用 codex exec 加 workspace-write。</p>
     </article>
     <article class="post-entry">
       <h2 class="post-entry-title"><a href="/zh/blog/orbi-weekly-2/">Orbi 周报 #2：连上仓库，Orbi 先给您几条建议</a></h2>
@@ -398,7 +398,7 @@
       </div>
       <div class="footer-group">
         <h2>公司</h2>
-        <ul><li><a href="/zh/support/">支持</a></li><li><a href="https://github.com/orbi-build/orbi/milestones">路线图</a></li><li><a href="/zh/privacy/">隐私政策</a></li><li><a href="/zh/terms/">服务条款</a></li><li><a href="https://github.com/orbi-build/orbi">GitHub</a></li><li><a href="https://x.com/xqliu" rel="me">X</a></li><li><a href="https://www.youtube.com/@orbibuild" rel="me">YouTube</a></li><li><a href="https://www.reddit.com/r/OrbiBuild/">Reddit</a></li></ul>
+        <ul><li><a href="/zh/support/">支持</a></li><li><a href="https://github.com/orbi-build/orbi/milestones">路线图</a></li><li><a href="/zh/trust/">信任</a></li><li><a href="/zh/privacy/">隐私政策</a></li><li><a href="/zh/terms/">服务条款</a></li><li><a href="https://github.com/orbi-build/orbi">GitHub</a></li><li><a href="https://x.com/xqliu" rel="me">X</a></li><li><a href="https://www.youtube.com/@orbibuild" rel="me">YouTube</a></li><li><a href="https://www.reddit.com/r/OrbiBuild/">Reddit</a></li></ul>
       </div>
     </nav>
     <div class="footer-language language" role="group" aria-label="语言"><span aria-current="page">ZH</span><a href="/blog/" lang="en" aria-label="English">EN</a></div>
@@ -409,6 +409,7 @@
         <span class="footer-friends-text">
           <a href="https://www.opensourcealternatives.to/" rel="noopener">Open Source Alternatives</a>
           <a href="https://agentic.ai/best/free-coding-agents" rel="noopener">Agentic.ai</a>
+          <a href="/zh/toolpilot/">ToolPilot 徽章</a>
         </span>
         <a href="https://betterlaunch.app/p/orbi" target="_blank" rel="noopener noreferrer"><img src="https://betterlaunch.app/api/badges/orbi?kind=featured&amp;theme=light&amp;v=4" alt="Orbi" width="196" height="72" /></a>
         <a href="https://launchnest.io/p/orbi" rel="dofollow" title="orbi.build — Domain Rating by LaunchNest">

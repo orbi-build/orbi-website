@@ -182,6 +182,18 @@
     <xhtml:link rel="alternate" hreflang="x-default" href="https://orbi.build/terms/"/>
   </url>
   <url>
+    <loc>https://orbi.build/toolpilot/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/toolpilot/"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/toolpilot/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://orbi.build/toolpilot/"/>
+  </url>
+  <url>
+    <loc>https://orbi.build/trust/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/trust/"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/trust/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://orbi.build/trust/"/>
+  </url>
+  <url>
     <loc>https://orbi.build/zh/about/larry-orbi/</loc>
     <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/about/larry-orbi/"/>
     <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/about/larry-orbi/"/>
@@ -360,6 +372,18 @@
     <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/terms/"/>
     <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/terms/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://orbi.build/terms/"/>
+  </url>
+  <url>
+    <loc>https://orbi.build/zh/toolpilot/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/toolpilot/"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/toolpilot/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://orbi.build/toolpilot/"/>
+  </url>
+  <url>
+    <loc>https://orbi.build/zh/trust/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/trust/"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/trust/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://orbi.build/trust/"/>
   </url>
   <url>
     <loc>https://orbi.build/blog/pi-vs-oh-my-pi/</loc>
@@ -753,12 +777,14 @@
   </url>
   <url>
     <loc>https://orbi.build/blog/codex-yolo-mode/</loc>
+    <lastmod>2026-11-24</lastmod>
     <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/blog/codex-yolo-mode/"/>
     <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/blog/codex-yolo-mode/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://orbi.build/blog/codex-yolo-mode/"/>
   </url>
   <url>
     <loc>https://orbi.build/zh/blog/codex-yolo-mode/</loc>
+    <lastmod>2026-11-24</lastmod>
     <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/blog/codex-yolo-mode/"/>
     <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/blog/codex-yolo-mode/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://orbi.build/blog/codex-yolo-mode/"/>

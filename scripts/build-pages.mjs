@@ -245,6 +245,11 @@ const LANG = {
     friendsAria: "Featured on",
     friendsPauseLabel: "Pause",
     friendsPlayLabel: "Play",
+    // Issue #1439: the ToolPilot badge page is linked from the badge row that
+    // already carries every directory backlink, so the page (and the badge
+    // backlink it holds) is not orphaned. The row keeps every entry's own
+    // language tree: /toolpilot/ here, /zh/toolpilot/ on the ZH pages.
+    friendsToolpilotLabel: "ToolPilot badge",
     langGroupAria: "Language",
     currentLangLabel: "EN",
     otherLangAttr: "zh-CN",
@@ -263,6 +268,7 @@ const LANG = {
     faqLabel: "FAQ",
     releasesLabel: "Releases",
     statusLabel: "Status",
+    trustLabel: "Trust",
     privacyLabel: "Privacy",
     termsLabel: "Terms",
     supportLabel: "Support",
@@ -304,6 +310,7 @@ const LANG = {
     friendsAria: "收录于",
     friendsPauseLabel: "暂停",
     friendsPlayLabel: "播放",
+    friendsToolpilotLabel: "ToolPilot 徽章",
     langGroupAria: "语言",
     currentLangLabel: "ZH",
     otherLangAttr: "en",
@@ -322,6 +329,7 @@ const LANG = {
     faqLabel: "常见问题",
     releasesLabel: "发布记录",
     statusLabel: "状态",
+    trustLabel: "信任",
     privacyLabel: "隐私政策",
     termsLabel: "服务条款",
     supportLabel: "支持",
@@ -416,12 +424,14 @@ export function renderFooter(page) {
     COMPARE_HEADING: t.compareHeading,
     COMPARE_LINKS: `${deepLinks.replaceAll("      ", "").replaceAll("\n", "").replaceAll("<a ", "<li><a ").replaceAll("</a>", "</a></li>")}<li><a href="${base(`${t.langPrefix}/compare/`)}">${t.compareLabel === "竞品对比" ? "全部对比" : "All comparisons"}</a></li>`,
     COMPANY_HEADING: t.companyHeading,
-    COMPANY_LINKS: [`<li><a href="${base(`${t.langPrefix}/support/`)}">${t.supportLabel}</a></li>`,`<li><a href="https://github.com/orbi-build/orbi/milestones">${t.roadmapLabel}</a></li>`,`<li><a href="${base(`${t.langPrefix}/privacy/`)}">${t.privacyLabel}</a></li>`,`<li><a href="${base(`${t.langPrefix}/terms/`)}">${t.termsLabel}</a></li>`,`<li><a href="https://github.com/orbi-build/orbi">GitHub</a></li>`,`<li><a href="https://x.com/xqliu" rel="me">X</a></li>`,`<li><a href="https://www.youtube.com/@orbibuild" rel="me">YouTube</a></li>`,`<li><a href="https://www.reddit.com/r/OrbiBuild/">Reddit</a></li>`].join(""),
+    COMPANY_LINKS: [`<li><a href="${base(`${t.langPrefix}/support/`)}">${t.supportLabel}</a></li>`,`<li><a href="https://github.com/orbi-build/orbi/milestones">${t.roadmapLabel}</a></li>`,`<li><a href="${base(`${t.langPrefix}/trust/`)}">${t.trustLabel}</a></li>`,`<li><a href="${base(`${t.langPrefix}/privacy/`)}">${t.privacyLabel}</a></li>`,`<li><a href="${base(`${t.langPrefix}/terms/`)}">${t.termsLabel}</a></li>`,`<li><a href="https://github.com/orbi-build/orbi">GitHub</a></li>`,`<li><a href="https://x.com/xqliu" rel="me">X</a></li>`,`<li><a href="https://www.youtube.com/@orbibuild" rel="me">YouTube</a></li>`,`<li><a href="https://www.reddit.com/r/OrbiBuild/">Reddit</a></li>`].join(""),
     LANGUAGE_SWITCH: `<div class="footer-language language" role="group" aria-label="${t.langGroupAria}">${lineA}${lineB}</div>`,
     FRIENDS_ARIA: t.friendsAria,
     FRIENDS_LABEL: t.friendsLabel,
     FRIENDS_PAUSE_LABEL: t.friendsPauseLabel,
     FRIENDS_PLAY_LABEL: t.friendsPlayLabel,
+    FRIENDS_TOOLPILOT_HREF: base(`${t.langPrefix}/toolpilot/`),
+    FRIENDS_TOOLPILOT_LABEL: t.friendsToolpilotLabel,
   })}`;
 }
 
