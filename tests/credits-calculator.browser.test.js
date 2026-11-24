@@ -96,7 +96,7 @@ describe("credits estimator (Issue #1459)", () => {
     }
   }, 60_000);
 
-  it("names the model) and the fields in the page's language", async () => {
+  it("names the model and the fields in the page's language", async () => {
     const en = await openPage(EN_PAGE);
     try {
       expect(await text(en.page, ".credits-calculator-title")).toBe("Estimate what a task costs in credits");
@@ -115,7 +115,7 @@ describe("credits estimator (Issue #1459)", () => {
     }
   }, 60_000);
 
-  it("prices the same task) on GPT-6 Luna at about 0.29 credits and 3,480 tasks", async () => {
+  it("prices the same task on GPT-6 Luna at about 0.29 credits and 3,480 tasks", async () => {
     for (const route of [EN_PAGE, ZH_PAGE]) {
       const { page, errors } = await openPage(route);
       try {
@@ -132,7 +132,7 @@ describe("credits estimator (Issue #1459)", () => {
     }
   }, 60_000);
 
-  it("doubles the cost) on GPT-6.1 Sol when Fast is ticked", async () => {
+  it("doubles the cost on GPT-6.1 Sol when Fast is ticked", async () => {
     const { page, errors } = await openPage(EN_PAGE);
     try {
       await page.check(`${WIDGET} [data-credits-fast]`);
@@ -147,7 +147,7 @@ describe("credits estimator (Issue #1459)", () => {
     }
   }, 60_000);
 
-  it("shows a hint) instead of NaN for a negative or empty field, and recovers", async () => {
+  it("shows a hint instead of NaN for a negative or empty field, and recovers", async () => {
     const { page, errors } = await openPage(ZH_PAGE);
     try {
       await page.fill(`${WIDGET} [data-credits-fresh]`, "-5");
@@ -175,7 +175,7 @@ describe("credits estimator (Issue #1459)", () => {
     }
   }, 60_000);
 
-  it("fits a 390px) phone without widening the page", async () => {
+  it("fits a 390px phone without widening the page", async () => {
     for (const route of [EN_PAGE, ZH_PAGE]) {
       const { page, errors } = await openPage(route, 390);
       try {
