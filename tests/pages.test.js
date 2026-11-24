@@ -1520,14 +1520,14 @@ describe("one unified footer on every content page", () => {
       // the Resources row gained one link and the Guides row lost one.
       // Issue #1000 adds the open-source contributions post to Resources.
       // Issue #1384 adds the Reddit community link to the Company group.
-      // The trust page adds Trust to the Company group.
-      expect(linkCounts, `${page.output}: footer group link counts`).toEqual([6, 11, 8, 13, 9]);
+      // The trust page sits in the Product group, after the public evidence page.
+      expect(linkCounts, `${page.output}: footer group link counts`).toEqual([7, 11, 8, 13, 8]);
       const companyLinks = [...groups[4][2].matchAll(/<a href="([^"]+)"[^>]*>([^<]+)<\/a>/g)]
         .map(([, href, label]) => [href, label]);
       const siteBase = page.nav.siteBase ?? "";
       expect(companyLinks, `${page.output}: Company links`).toEqual(page.lang === "zh"
-        ? [[`${siteBase}/zh/support/`, "支持"], ["https://github.com/orbi-build/orbi/milestones", "路线图"], [`${siteBase}/zh/trust/`, "信任"], [`${siteBase}/zh/privacy/`, "隐私政策"], [`${siteBase}/zh/terms/`, "服务条款"], ["https://github.com/orbi-build/orbi", "GitHub"], ["https://x.com/xqliu", "X"], ["https://www.youtube.com/@orbibuild", "YouTube"], ["https://www.reddit.com/r/OrbiBuild/", "Reddit"]]
-        : [[`${siteBase}/support/`, "Support"], ["https://github.com/orbi-build/orbi/milestones", "Roadmap"], [`${siteBase}/trust/`, "Trust"], [`${siteBase}/privacy/`, "Privacy"], [`${siteBase}/terms/`, "Terms"], ["https://github.com/orbi-build/orbi", "GitHub"], ["https://x.com/xqliu", "X"], ["https://www.youtube.com/@orbibuild", "YouTube"], ["https://www.reddit.com/r/OrbiBuild/", "Reddit"]]);
+        ? [[`${siteBase}/zh/support/`, "支持"], ["https://github.com/orbi-build/orbi/milestones", "路线图"], [`${siteBase}/zh/privacy/`, "隐私政策"], [`${siteBase}/zh/terms/`, "服务条款"], ["https://github.com/orbi-build/orbi", "GitHub"], ["https://x.com/xqliu", "X"], ["https://www.youtube.com/@orbibuild", "YouTube"], ["https://www.reddit.com/r/OrbiBuild/", "Reddit"]]
+        : [[`${siteBase}/support/`, "Support"], ["https://github.com/orbi-build/orbi/milestones", "Roadmap"], [`${siteBase}/privacy/`, "Privacy"], [`${siteBase}/terms/`, "Terms"], ["https://github.com/orbi-build/orbi", "GitHub"], ["https://x.com/xqliu", "X"], ["https://www.youtube.com/@orbibuild", "YouTube"], ["https://www.reddit.com/r/OrbiBuild/", "Reddit"]]);
       const items = [...nav.matchAll(/<a href="([^"]+)"/g)].map((m) => m[1]);
       expect(items, `${page.output}: footer nav drifted`).toHaveLength(47);
     }
