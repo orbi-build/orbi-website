@@ -117,7 +117,7 @@ error: unexpected argument '--full-auto' found
 # exit code: 2
 ```
 
-2026 年 10 月 17 日补充核对时，我用 Codex CLI 0.163.0 重跑这条检查，报错相同；交互式的 `codex --full-auto --help` 也一样报错。OpenAI 当前的[非交互运行文档](https://learn.chatgpt.com/docs/non-interactive-mode)说明，`--full-auto` 已不再支持。需要修改仓库的脚本应明确使用 `--sandbox workspace-write`；需要自动审批 review 时，改用 `--approve-for-me`，它已包含 workspace-write，不要再加 `--sandbox`。一些搜索结果描述的是过渡期的行为：[Codex CLI 0.130.0](https://github.com/openai/codex/blob/rust-v0.130.0/codex-rs/exec/src/cli.rs#L99) 仍接受 `--full-auto`，只打印一条弃用警告。实际是否可用，要核对安装版本的参数解析结果。
+2026 年 11 月 24 日补充核对时，我用 Codex CLI 0.163.0 重跑这条检查，报错相同；交互式的 `codex --full-auto --help` 也一样报错。OpenAI 当前的[非交互运行文档](https://learn.chatgpt.com/docs/non-interactive-mode)说明，`--full-auto` 已不再支持。需要修改仓库的脚本应明确使用 `--sandbox workspace-write`；需要自动审批 review 时，改用 `--approve-for-me`，它已包含 workspace-write，不要再加 `--sandbox`。一些搜索结果描述的是过渡期的行为：[Codex CLI 0.130.0](https://github.com/openai/codex/blob/rust-v0.130.0/codex-rs/exec/src/cli.rs#L99) 仍接受 `--full-auto`，只打印一条弃用警告。实际是否可用，要核对安装版本的参数解析结果。
 
 审批与安全文档的[常用组合表](https://learn.chatgpt.com/docs/agent-approvals-security#common-sandbox-and-approval-combinations)列出了这几种模式，`--approve-for-me` 这个简写出自 [CLI 参考](https://learn.chatgpt.com/docs/cli/reference)：
 
