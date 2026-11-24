@@ -754,7 +754,75 @@
     }
   }
 
+  // Issue #1459: the credits estimator under the Codex credits article's rate
+  // table. Its rates are the page's own — the build writes each model's
+  // per-million-token rates onto that <option> from the table above it, and
+  // nothing here restates them. It reads the controls, recalculates, and
+  // rewrites two numbers in the sentence the build already rendered: no
+  // request, no storage, nothing about the reader leaves the page. A field
+  // that is empty, negative or not a number hides the result and shows the
+  // hint instead, so NaN or Infinity never reaches the reader.
+  function bootCreditsCalculator(root) {
+    const model = root.querySelector("[data-credits-model]");
+    const fields = ["fresh", "cached", "output", "balance"].map(function (name) {
+      return root.querySelector("[data-credits-" + name + "]");
+    });
+    const fast = root.querySelector("[data-credits-fast]");
+    const result = root.querySelector("[data-credits-result]");
+    const costOut = root.querySelector("[data-credits-cost]");
+    const tasksOut = root.querySelector("[data-credits-tasks]");
+    const error = root.querySelector("[data-credits-error]");
+    if (!model || fields.some(function (field) { return !field; }) ||
+        !fast || !result || !costOut || !tasksOut || !error) {
+      return;
+    }
+
+    function readNumber(field) {
+      if (field.value.trim() === "") return NaN;
+      const value = Number(field.value);
+      return value >= 0 && isFinite(value) ? value : NaN;
+    }
+
+    function trim(text) {
+      return text.indexOf(".") === -1 ? text : text.replace(/0+$/, "").replace(/\.$/, "");
+    }
+
+    function formatCredits(value) {
+      return trim(value.toFixed(value < 1 ? 2 : 1));
+    }
+
+    function formatTasks(value) {
+      if (!(value >= 1)) return trim(value.toFixed(2));
+      const step = Math.pow(10, Math.max(0, String(Math.floor(value)).length - 3));
+      return String(Math.round(value / step) * step).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    }
+
+    function update() {
+      const values = fields.map(readNumber);
+      const option = model.options[model.selectedIndex];
+      const rates = option
+        ? ["input", "cached", "output"].map(function (name) {
+            return Number(option.getAttribute("data-rate-" + name));
+          })
+        : [];
+      const valid = values.every(isFinite) && rates.length === 3 && rates.every(isFinite);
+      result.hidden = !valid;
+      error.hidden = valid;
+      if (!valid) return;
+      const cost = (values[0] * rates[0] + values[1] * rates[1] + values[2] * rates[2]) / 1000000 * (fast.checked ? 2 : 1);
+      costOut.textContent = formatCredits(cost);
+      tasksOut.textContent = formatTasks(cost > 0 ? values[3] / cost : 0);
+    }
+
+    [model].concat(fields, fast).forEach(function (control) {
+      control.addEventListener("input", update);
+      control.addEventListener("change", update);
+    });
+    update();
+  }
+
   document.querySelectorAll('[role="region"].post-table-scroll').forEach(bootComparisonMatrix);
+  document.querySelectorAll("[data-credits-calculator]").forEach(bootCreditsCalculator);
   document.querySelectorAll("[data-cost-estimator]").forEach(bootCostEstimator);
   document.querySelectorAll("[data-pricing-toggle]").forEach(bootPricingToggle);
   document.querySelectorAll("[data-copy]").forEach(bootCopy);

@@ -306,7 +306,19 @@
 </tr>
 </tbody></table></div>
 <p><em>Credits per 1 million tokens, Standard speed.</em></p>
-<p>To turn a balance into a number of tasks, price one task. Say a task sends 50,000 fresh input tokens, 150,000 cached input tokens and gets 10,000 output tokens back. On GPT-6.1 Sol that costs 2.5 + 0.375 + 2.5, about 5.4 credits. The same task on GPT-6 Luna costs about 0.29 credits. Paid from credits, Fast mode doubles the cost on these models (against included usage it counts 2.5 times, as noted earlier), and Ultrafast (offered on GPT-6.1 Sol, not Luna) costs more again. At those example rates, 1,000 credits cover about 186 such tasks on GPT-6.1 Sol, or about 3,480 on GPT-6 Luna. OpenAI does not publish a single price per credit; purchase prices and discounts depend on your plan, and checkout shows the price before you pay. Your own tasks will differ from this example, so take the per-task figure from your recent usage on the Usage page and divide your balance by it.</p>
+<div class="credits-calculator" data-credits-calculator>
+  <p class="credits-calculator-title" id="credits-calculator-title">Estimate what a task costs in credits</p>
+  <div class="credits-calculator-fields" role="group" aria-labelledby="credits-calculator-title">
+    <label class="credits-calculator-field"><span>Model</span><select data-credits-model><option value="GPT-6.2 Astra" data-rate-input="200" data-rate-cached="10" data-rate-output="1000">GPT-6.2 Astra</option><option value="GPT-6.1 Sol" data-rate-input="50" data-rate-cached="2.5" data-rate-output="250" selected>GPT-6.1 Sol</option><option value="GPT-6 Luna" data-rate-input="2.5" data-rate-cached="0.25" data-rate-output="12.5">GPT-6 Luna</option></select></label>
+    <label class="credits-calculator-field"><span>Fresh input tokens</span><input type="number" inputmode="decimal" min="0" step="1" value="50000" data-credits-fresh></label>
+    <label class="credits-calculator-field"><span>Cached input tokens</span><input type="number" inputmode="decimal" min="0" step="1" value="150000" data-credits-cached></label>
+    <label class="credits-calculator-field"><span>Output tokens</span><input type="number" inputmode="decimal" min="0" step="1" value="10000" data-credits-output></label>
+    <label class="credits-calculator-field"><span>Credits balance</span><input type="number" inputmode="decimal" min="0" step="any" value="1000" data-credits-balance></label>
+  </div>
+  <label class="credits-calculator-fast"><input type="checkbox" data-credits-fast><span>Fast (credits double)</span></label>
+  <p class="credits-calculator-result" data-credits-result aria-live="polite">About <strong data-credits-cost>5.4</strong> credits per task; your balance covers about <strong data-credits-tasks>186</strong> tasks like this.</p>
+  <p class="credits-calculator-error" data-credits-error aria-live="polite" hidden>Enter 0 or a larger number in every token field and the balance.</p>
+</div><p>To turn a balance into a number of tasks, price one task. Say a task sends 50,000 fresh input tokens, 150,000 cached input tokens and gets 10,000 output tokens back. On GPT-6.1 Sol that costs 2.5 + 0.375 + 2.5, about 5.4 credits. The same task on GPT-6 Luna costs about 0.29 credits. Paid from credits, Fast mode doubles the cost on these models (against included usage it counts 2.5 times, as noted earlier), and Ultrafast (offered on GPT-6.1 Sol, not Luna) costs more again. At those example rates, 1,000 credits cover about 186 such tasks on GPT-6.1 Sol, or about 3,480 on GPT-6 Luna. OpenAI does not publish a single price per credit; purchase prices and discounts depend on your plan, and checkout shows the price before you pay. Your own tasks will differ from this example, so take the per-task figure from your recent usage on the Usage page and divide your balance by it.</p>
 <p>Four rules worth knowing before you buy:</p>
 <ul>
 <li><strong>They expire.</strong> Credits expire 12 months after purchase and do not roll over; credits bought in Japan after 13 November 2026 expire after 180 days.</li>
