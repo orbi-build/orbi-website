@@ -103,8 +103,8 @@
         <table class="compare-table">
           <thead><tr><th scope="col">统计量</th><th scope="col">非高峰</th></tr></thead>
           <tbody>
-            <tr><th scope="row">每次合并交付成本中位数</th><td>$0.081</td></tr>
-            <tr><th scope="row">每次合并交付 P90 成本</th><td>$0.234</td></tr>
+            <tr><th scope="row">每次合并交付成本中位数</th><td data-cost-unit="median">$0.081</td></tr>
+            <tr><th scope="row">每次合并交付 P90 成本</th><td data-cost-unit="p90">$0.234</td></tr>
             <tr><th scope="row">每次合并交付平均成本</th><td>$0.117</td></tr>
             <tr><th scope="row">1511 次合计</th><td>$177.33</td></tr>
           </tbody>
@@ -113,6 +113,26 @@
       <p class="section-lede">是不是只在自家仓库跑出来的？不是。<strong>1511 次里有 157 次在仓库所有者不是 orbi-build 的外部用户仓库里，共 30 个仓库</strong>——中位 <strong>$0.072</strong>，90 分位 <strong>$0.148</strong>，均值 <strong>$0.080</strong>。其余 <strong>1354</strong> 次在 Orbi 自己的 <strong>14</strong> 个仓库，Orbi 的代码本来就是 Orbi 交付的。</p>
       <p class="src-note">金额按 DeepSeek 官方 <a class="orbi-src-note-a" href="https://api-docs.deepseek.com/quick_start/pricing" rel="noopener">deepseek-flash 价格</a>的非高峰价计算：缓存命中每百万 token $0.003、未命中每百万 $0.15、输出每百万 $0.60。工作日高峰（UTC 01:00–04:00 和 06:00–10:00）所有数字翻倍，所以这里是下限。用量记录里每次交付只有一个总数，没有每次请求的时间，分不出高峰和非高峰：真实中位数在 $0.081 到它的两倍之间。</p>
       <p class="src-note">样本范围：Cloud 的用量记录，每个 Issue 和分支一行，由 Pi 会话写入；同一个交付恢复时累加，同一分支上新的一次尝试会覆盖。另有 2 行没有 token 计数被剔除，剩下上面的 1511 次。另见 <a href="/zh/compare/devin/">Devin 对比</a>、<a href="/zh/cloud/">Cloud</a> 和 <a href="/zh/guides/auto-merge-ai-prs/">自动合并 AI PR 指南</a>。</p>
+
+      <!-- Issue #1457：按读者自己的用量估算。单价就是上面统计表里标了 [data-cost-unit] 的两个单元格，demo.js 读回来再按本页写明的规则（高峰翻倍）计算，数字只有一处。静态结果是默认 30 次，给没有 JavaScript 的读者。 -->
+      <div class="cost-estimator" role="group" aria-labelledby="estimator-label" data-cost-estimator data-invalid="请输入 1 到 10000 之间的整数。">
+        <p class="section-tag" id="estimator-label">按你的用量估算</p>
+        <div class="cost-estimator-controls">
+          <label class="cost-estimator-field" for="cost-estimator-count">每月合并交付次数
+            <input id="cost-estimator-count" type="text" inputmode="numeric" autocomplete="off" spellcheck="false" value="30" data-cost-count>
+          </label>
+          <div class="pricing-interval-toggle cost-estimator-window" role="group" aria-label="价格时段">
+            <button type="button" class="is-selected" data-cost-window="offpeak" aria-pressed="true">非高峰</button>
+            <button type="button" data-cost-window="peak" aria-pressed="false">高峰</button>
+          </div>
+        </div>
+        <div class="cost-estimator-results" data-cost-results>
+          <p class="cost-estimator-result">中位估计 <strong data-cost-median>$2.43</strong></p>
+          <p class="cost-estimator-result">偏高估计（P90） <strong data-cost-p90>$7.02</strong></p>
+        </div>
+        <p class="cost-estimator-status" data-cost-status role="status" aria-live="polite"></p>
+        <p class="src-note">单价来自上面 1511 次合并交付的实测；高峰时段翻倍。</p>
+      </div>
     </section>
 
     <section class="compare-section shell" aria-labelledby="measured-title">

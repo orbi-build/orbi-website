@@ -108,8 +108,8 @@
         <table class="compare-table">
           <thead><tr><th scope="col">Statistic</th><th scope="col">Off-peak</th></tr></thead>
           <tbody>
-            <tr><th scope="row">Median cost per merged delivery</th><td>$0.081</td></tr>
-            <tr><th scope="row">P90 cost per merged delivery</th><td>$0.234</td></tr>
+            <tr><th scope="row">Median cost per merged delivery</th><td data-cost-unit="median">$0.081</td></tr>
+            <tr><th scope="row">P90 cost per merged delivery</th><td data-cost-unit="p90">$0.234</td></tr>
             <tr><th scope="row">Mean cost per merged delivery</th><td>$0.117</td></tr>
             <tr><th scope="row">All 1511 deliveries together</th><td>$177.33</td></tr>
           </tbody>
@@ -118,6 +118,26 @@
       <p class="section-lede">Is this only Orbi's own repositories? No. <strong>157 of the 1511 deliveries are in 30 repositories owned by users outside orbi-build</strong> — median <strong>$0.072</strong>, 90th percentile <strong>$0.148</strong>, mean <strong>$0.080</strong>. The other <strong>1354</strong> are in Orbi's own <strong>14</strong> repositories, which Orbi delivers on itself.</p>
       <p class="src-note">Amounts use DeepSeek's official <a class="orbi-src-note-a" href="https://api-docs.deepseek.com/quick_start/pricing" rel="noopener">deepseek-flash pricing</a> at off-peak rates: cache hit $0.003 per million tokens, cache miss $0.15 per million, and output $0.60 per million. Peak weekday hours (01:00–04:00 and 06:00–10:00 UTC) double every figure, so the numbers here are the floor. The records keep one total per delivery with no per-request timestamps, so peak and off-peak cannot be separated: the true median is somewhere between $0.081 and twice that.</p>
       <p class="src-note">What the sample covers: Cloud's usage records, one row per issue and branch, written by Pi sessions. A resumed run adds to its row; a new attempt on the same branch overwrites it. Two rows were dropped for carrying no token counts, leaving the 1511 above. See also <a href="/compare/devin/">Devin comparison</a>, <a href="/cloud/">Cloud</a>, and <a href="/guides/auto-merge-ai-prs/">auto-merge AI PRs guide</a>.</p>
+
+      <!-- Issue #1457: own-volume estimate. The unit prices are the two sample cells above marked [data-cost-unit]; demo.js reads them back and applies this page's peak rule (double), so the numbers live once. The static result is the 30-delivery default, for a reader without JavaScript. -->
+      <div class="cost-estimator" role="group" aria-labelledby="estimator-label" data-cost-estimator data-invalid="Enter a whole number from 1 to 10000.">
+        <p class="section-tag" id="estimator-label">ESTIMATE YOUR OWN USAGE</p>
+        <div class="cost-estimator-controls">
+          <label class="cost-estimator-field" for="cost-estimator-count">Merged deliveries per month
+            <input id="cost-estimator-count" type="text" inputmode="numeric" autocomplete="off" spellcheck="false" value="30" data-cost-count>
+          </label>
+          <div class="pricing-interval-toggle cost-estimator-window" role="group" aria-label="Price window">
+            <button type="button" class="is-selected" data-cost-window="offpeak" aria-pressed="true">Off-peak</button>
+            <button type="button" data-cost-window="peak" aria-pressed="false">Peak</button>
+          </div>
+        </div>
+        <div class="cost-estimator-results" data-cost-results>
+          <p class="cost-estimator-result">Median estimate <strong data-cost-median>$2.43</strong></p>
+          <p class="cost-estimator-result">High estimate (P90) <strong data-cost-p90>$7.02</strong></p>
+        </div>
+        <p class="cost-estimator-status" data-cost-status role="status" aria-live="polite"></p>
+        <p class="src-note">Unit prices are the 1511 measured deliveries above; peak hours double every figure.</p>
+      </div>
     </section>
 
     <section class="compare-section shell" aria-labelledby="measured-title">

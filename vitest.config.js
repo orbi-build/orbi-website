@@ -28,6 +28,7 @@ const BROWSER_SUITES = [
   "tests/blog-table-overflow.test.js",
   "tests/cloud-layout.test.js",
   "tests/compare-cloud-cta.test.js",
+  "tests/cost-estimator.browser.test.js",
   "tests/film-dialog.test.js",
   "tests/footer-overflow.test.js",
   "tests/hero-counter.test.js",
