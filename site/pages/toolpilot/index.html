@@ -23,9 +23,11 @@
 <!DOCTYPE html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Orbi on ToolPilot: the official ToolPilot badge | Orbi</title><meta name="description" content="ToolPilot's official badge on its own page. The badge links to ToolPilot's AI tool directory, and this is the URL submitted for Orbi's ToolPilot listing."><link rel="canonical" href="https://orbi.build/toolpilot/"><link rel="alternate" hreflang="en" href="https://orbi.build/toolpilot/"><link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/toolpilot/"><link rel="alternate" hreflang="x-default" href="https://orbi.build/toolpilot/"><meta property="og:type" content="website"><meta property="og:url" content="https://orbi.build/toolpilot/"><meta property="og:title" content="Orbi on ToolPilot: the official ToolPilot badge"><meta property="og:description" content="ToolPilot's official badge on its own page, linked to ToolPilot's AI tool directory."><meta property="og:image" content="https://orbi.build/img/og.png"><meta name="twitter:card" content="summary_large_image"><link rel="icon" href="/favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="/fonts/fonts.css"><link rel="stylesheet" href="/styles.css">
   <style>
-    /* Page-scoped: the badge is the vendor's own 300×66 file. On a 360px
-       viewport the shell is 280px wide, so it scales down instead of
-       overflowing the page (global img only caps the width). */
+    /* Page-scoped: the badge is the vendor's own 300×66 file. The shell is
+       328px wide at a 360px viewport, so the badge still shows at its 300px
+       box; under a 332px viewport max-width caps it (320 → 288x63.4) and
+       height:auto keeps the 300:66 ratio — the global img rule caps the width
+       but would leave the height attribute at 66px. */
     .toolpilot-badge-img { width: 300px; max-width: 100%; height: auto; }
   </style>
 </head><body><a class="skip-link" href="#main-content">Skip to content</a>

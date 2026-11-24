@@ -4213,9 +4213,11 @@ describe("evidence page delivery records (Issue #1244)", () => {
 
 // Issue #1439: ToolPilot's free listing asks for the official ToolPilot badge
 // on a page of our own, linked back to ToolPilot's directory, and the submitted
-// URL has to be public and stable. The ticket keeps the badge off the sitewide
-// footer and navigation, so the page is standalone: no site footer, nothing in
-// the shared partials, one URL per language.
+// URL has to be public and stable. The ticket keeps the badge itself off the
+// sitewide footer and navigation, so the badge lives on this one page; the page
+// ships the normal site chrome (nav, footer, language switch) and the footer
+// badge row links it as plain text, so the page is not an orphan and the badge
+// is still nowhere but here.
 describe("ToolPilot badge page (Issue #1439)", () => {
   const OUTPUTS = ["toolpilot/index.html", "zh/toolpilot/index.html"];
   const BADGE_SRC = "https://www.toolpilot.ai/cdn/shop/files/f-w_690x151_crop_center.png";
