@@ -1713,14 +1713,22 @@ describe("one unified footer on every content page", () => {
   // ships that snippet once on each language's home page: the file's own 272x58
   // box, the supplied alt text, and a crawlable link.
   it("carries the LaunchScaler badge in the footer, on en and zh (Issue #1454)", () => {
-    const badge = '<a href="https://www.launchscaler.com/v/orbi.build?t=8gvNeULtSOXxahIHWo9fbQhqkWhZGca_5d9Uo7sTIO4&amp;utm_source=badge&amp;utm_medium=referral" target="_blank" rel="noopener">'
+    // footerAnchorTag matches the opening tag by its whole href, closing quote
+    // included, so the shared href carries the token and the utm parameters:
+    // a prefix such as ".../v/orbi.build" would find nothing and the
+    // crawlability assertion would pass on an empty string.
+    const badgeHref = "https://www.launchscaler.com/v/orbi.build?t=8gvNeULtSOXxahIHWo9fbQhqkWhZGca_5d9Uo7sTIO4&amp;utm_source=badge&amp;utm_medium=referral";
+    const badge = `<a href="${badgeHref}" target="_blank" rel="noopener">`
       + '<img src="https://www.launchscaler.com/api/badge/orbi.build/image?theme=dark&amp;variant=credential&amp;tone=outline" alt="Orbi on LaunchScaler" width="272" height="58" loading="lazy"></a>';
     for (const output of ["index.html", "zh/index.html"]) {
       const footer = footerRegion(shipped.get(output));
       const occurrences = footer.split(badge).length - 1;
       expect(occurrences, `${output}: the LaunchScaler badge must ship exactly once in the footer`)
         .toBe(1);
-      expect(footerAnchorTag(footer, "https://www.launchscaler.com/v/orbi.build"), `${output}: the badge must stay a crawlable backlink`)
+      const anchor = footerAnchorTag(footer, badgeHref);
+      expect(anchor, `${output}: the LaunchScaler badge anchor must be found by its href`)
+        .toContain("launchscaler.com/v/orbi.build");
+      expect(anchor, `${output}: the badge must stay a crawlable backlink`)
         .not.toContain("nofollow");
     }
   });
