@@ -206,4 +206,4 @@ env -i HOME="$(mktemp -d)" PATH="$PATH" DEEPSEEK_API_KEY="$DEEPSEEK_API_KEY" \
 
 ## 相关
 
-[Pi coding agent 和 Claude Code 对比](/zh/blog/pi-coding-agent-vs-claude-code/)、[OpenCode vs Claude Code](/zh/blog/opencode-vs-claude-code/)、[Pi agent harness](/zh/blog/pi-agent-harness/) 和 [Pi extensions in production](/zh/blog/pi-extensions-in-production/) 有相关测量和集成细节。[Orbi 对比](/zh/compare/)和 [Orbi Cloud](/zh/cloud/?ref=blog-pi-vs-oc) 介绍了交付流程。
+[Pi coding agent 和 Claude Code 对比](/zh/blog/pi-coding-agent-vs-claude-code/)、[OpenCode vs Claude Code](/zh/blog/opencode-vs-claude-code/)、[Pi agent harness](/zh/blog/pi-agent-harness/)、[Pi extensions in production](/zh/blog/pi-extensions-in-production/) 和 [20 个 Pi 扩展实测](/zh/blog/best-pi-extensions/) 有相关测量和集成细节。[Orbi 对比](/zh/compare/)和 [Orbi Cloud](/zh/cloud/?ref=blog-pi-vs-oc) 介绍了交付流程。
