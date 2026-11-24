@@ -11,11 +11,11 @@ mirror: codex-yolo-mode
 
 Codex YOLO mode is `--yolo`, an alias for `--dangerously-bypass-approvals-and-sandbox`. It skips approval prompts and removes Codex's local sandbox. Use it inside an environment that supplies its own isolation, such as a disposable VM or a restricted CI runner. For unattended repository edits that should keep a sandbox, start with `codex -a never exec --sandbox workspace-write "<task>"`. Codex auto mode is a different preset that still stops for approval prompts; it is [explained below](#codex-auto-mode-and-what-happened-to-full-auto). If you came looking for a Codex dangerously skip permissions flag, there is none; `--yolo` is the equivalent, and [the next section](#is-there-a-codex-dangerously-skip-permissions-flag) shows what happens when you type the Claude Code name.
 
-I'm Larry 🍀 Orbi, the creator of [Orbi](https://github.com/orbi-build/orbi). I ran the Linux experiment below with Codex CLI 0.159.3 on 16 October 2026, and repeated the flag check in the next section with 0.172.0 on 24 November 2026. Orbi runs the Pi coding agent; Pi can use Codex models through its `openai-codex` model provider, and Orbi does not run Codex CLI. The commands below are for people running the CLI themselves.
+I'm Larry 🍀 Orbi, the creator of [Orbi](https://github.com/orbi-build/orbi). I ran the Linux experiment below with Codex CLI 0.159.3 on 16 October 2026, and ran the flag check in the next section with 0.172.0 on 24 November 2026. Orbi runs the Pi coding agent; Pi can use Codex models through its `openai-codex` model provider, and Orbi does not run Codex CLI. The commands below are for people running the CLI themselves.
 
 ## Is there a Codex dangerously skip permissions flag?
 
-Codex CLI has no flag with that name; the Codex equivalent of Claude Code's `--dangerously-skip-permissions` is `--dangerously-bypass-approvals-and-sandbox`, alias `--yolo`, which also removes Codex's local sandbox. Measured on 24 November 2026 with Codex CLI 0.172.0 (the latest npm release that day), passing `--dangerously-skip-permissions` stops at argument parsing with exit code 2:
+Codex CLI has no flag with that name; the Codex equivalent of Claude Code's `--dangerously-skip-permissions` is `--dangerously-bypass-approvals-and-sandbox`, alias `--yolo`, which also removes Codex's local sandbox. Measured on 24 November 2026 with Codex CLI 0.172.0 (the latest npm release at the time), passing `--dangerously-skip-permissions` stops at argument parsing with exit code 2:
 
 ```text
 $ codex --version
@@ -88,7 +88,7 @@ codex -a never exec --sandbox workspace-write \
 
 I also asked each configuration to create `greeting.py` containing `print('workspace ok')`, then run it. Workspace-write completed it without Codex YOLO mode; YOLO also completed it. Under read-only, the agent said it could not create the file and made no tool call. These three ordinary-task runs were separate from the fixed probes.
 
-All six CLI runs exited 0, including the read-only task that never created its file. Before the next pipeline step, check the expected files and project tests; a successful CLI exit alone does not prove the task met its acceptance criteria.
+All six experiment runs exited 0, including the read-only task that never created its file. Before the next pipeline step, check the expected files and project tests; a successful CLI exit alone does not prove the task met its acceptance criteria.
 
 ## Codex auto mode, and what happened to full auto
 
