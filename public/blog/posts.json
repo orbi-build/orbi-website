@@ -1,5 +1,13 @@
 [
   {
+    "slug": "who-reviews-the-ai",
+    "title": "AI now approves pull requests. Who reviews the AI?",
+    "summary": "AI coding tools now approve pull requests. For a small team, the real question is what you trust when one goes wrong. Orbi's answer: not the model.",
+    "zhSlug": "who-reviews-the-ai",
+    "zhTitle": "AI 开始批准 PR 了，那谁来审 AI？",
+    "related": []
+  },
+  {
     "slug": "pi-vs-oh-my-pi",
     "title": "Pi vs omp (Oh My Pi): same model, run unattended",
     "summary": "Same task: omp used 3.9× Pi's tokens but cost 1.2× at DeepSeek's prices, cache hits included. On a bad API key in JSON mode, Pi exited 0 and omp exited 1.",

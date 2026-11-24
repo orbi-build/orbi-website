@@ -374,6 +374,18 @@
     <xhtml:link rel="alternate" hreflang="x-default" href="https://orbi.build/toolpilot/"/>
   </url>
   <url>
+    <loc>https://orbi.build/blog/who-reviews-the-ai/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/blog/who-reviews-the-ai/"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/blog/who-reviews-the-ai/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://orbi.build/blog/who-reviews-the-ai/"/>
+  </url>
+  <url>
+    <loc>https://orbi.build/zh/blog/who-reviews-the-ai/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/blog/who-reviews-the-ai/"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/blog/who-reviews-the-ai/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://orbi.build/blog/who-reviews-the-ai/"/>
+  </url>
+  <url>
     <loc>https://orbi.build/blog/pi-vs-oh-my-pi/</loc>
     <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/blog/pi-vs-oh-my-pi/"/>
     <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/blog/pi-vs-oh-my-pi/"/>
