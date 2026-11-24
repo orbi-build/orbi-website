@@ -54,7 +54,7 @@ Pi 让 Orbi 可以通过一份 `models.json` 格式的 provider 列表自己选�
 
 `implement` 和 `review` 会话带 `--no-extensions` 启动。在 Pi 里，这个参数同时关掉扩展的自动发现和 Pi 的内置扩展（比如 MCP 和 Pi 执行代码的工具模式 Codemode），所以某个角色要用的扩展，都得通过 Orbi 配置里的 `pi_extensions` 以 `--extension` 加回来，Orbi Cloud 就是这样加回 Codemode 的。处理 `ai-content-only` 的 `ticket` 会话用 `--no-tools` 关闭工具，从 v0.6.2 起（[Issue #1558](https://github.com/orbi-build/orbi/issues/1558)，2026 年 10 月 5 日）也带同样的 `--no-extensions` 和配置的 `--extension` 参数；在那之前它启动时完全不带扩展相关的参数，runner 所在系统用户装的扩展可能加载进去。
 
-澄清闸门关掉 Pi 的内建工具和扩展发现，只加载引擎自带的一个扩展 `clarify_verdict.ts`，用它的判定工具回答，配置里的扩展一个都不加载。被它拦下的 issue 会加上 `ai-needs-detail`，暂停评论里附有建议：`/orbi split` 把拆分建议变成子 issue，`/orbi amend` 把建议的验收条件补进 issue 并重新排队。Orbi 怎么加载、怎么写扩展，见[扩展那篇](/zh/blog/pi-extensions-in-production/)。交付角色也能加载用户自己的 skill：Orbi 用 `--skill` 加上自己的 skill，但不给这些角色传 `--no-skills`。
+澄清闸门关掉 Pi 的内建工具和扩展发现，只加载引擎自带的一个扩展 `clarify_verdict.ts`，用它的判定工具回答，配置里的扩展一个都不加载。被它拦下的 issue 会加上 `ai-needs-detail`，暂停评论里附有建议：`/orbi split` 把拆分建议变成子 issue，`/orbi amend` 把建议的验收条件补进 issue 并重新排队。Orbi 怎么加载、怎么写扩展，见[扩展那篇](/zh/blog/pi-extensions-in-production/)；哪些第三方 Pi 扩展在没人看着时也能用，见[20 个 Pi 扩展实测](/zh/blog/best-pi-extensions/)。交付角色也能加载用户自己的 skill：Orbi 用 `--skill` 加上自己的 skill，但不给这些角色传 `--no-skills`。
 
 第四个角色 `suggest` 不在 runner 的交付流程里，只供 `orbi suggest` 和 `orbi draft` 使用。
 

@@ -289,4 +289,4 @@ pi --tools read,grep,find,ls,write_draft,ask_user,reply \
 
 ## 相关
 
-这是 Orbi Pi 系列最新的一篇。[Pi 专题页](/zh/guides/pi-coding-agent/)有完整的 runner，[第一篇](/zh/blog/orbi-on-pi-coding-agent/)跟着一张 Issue 走过 Orbi 为它起的每一个 Pi 会话，[harness 对比](/zh/blog/pi-agent-harness/)把三种无人值守的 Pi 在任务中途停掉，比较各自恢复成什么样。Orbi 开源：[orbi-build/orbi](https://github.com/orbi-build/orbi)。不想自己跑 runner 的，看 [OpenHands 对比](/zh/compare/openhands/)和 [Cloud](/zh/cloud/)。
+这是 Orbi Pi 系列中的一篇。[Pi 专题页](/zh/guides/pi-coding-agent/)有完整的 runner，[第一篇](/zh/blog/orbi-on-pi-coding-agent/)跟着一张 Issue 走过 Orbi 为它起的每一个 Pi 会话，[harness 对比](/zh/blog/pi-agent-harness/)把三种无人值守的 Pi 在任务中途停掉，比较各自恢复成什么样。想挑现成的第三方扩展而不是自己写，看[20 个 Pi 扩展实测](/zh/blog/best-pi-extensions/)，都是在没有终端的环境里测的。Orbi 开源：[orbi-build/orbi](https://github.com/orbi-build/orbi)。不想自己跑 runner 的，看 [OpenHands 对比](/zh/compare/openhands/)和 [Cloud](/zh/cloud/)。
