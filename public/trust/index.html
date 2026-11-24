@@ -138,9 +138,10 @@
         <li class="orbi-event-list-li">
           <span class="event-era">03 · Privacy</span>
           <div>
-            <strong>Who sees my code?</strong>
+            <strong>Who sees my code, and is it used to train AI?</strong>
+            <p class="orbi-event-list-p"><strong>Orbi does not train any AI model on your code.</strong> It runs models; it does not build them.</p>
             <p class="orbi-event-list-p"><strong>Self-hosted:</strong> your repository, GitHub token and model keys stay on your machine; nothing is uploaded to us. Your code goes only to the model endpoint you configure, and a local model keeps it entirely in-house.</p>
-            <p class="orbi-event-list-p"><strong>Cloud:</strong> the hosted worker clones only the repositories you authorize, runs each customer as a separate operating-system user, and deletes the working copy 120 quiet minutes after a delivery finishes. By default Cloud’s model channel runs DeepSeek, which receives the prompts and repository context a delivery needs; add your own model key to send it to a provider you choose instead. We may review Issue text and repository content only when we need to enforce the terms of service.</p>
+            <p class="orbi-event-list-p"><strong>Cloud:</strong> the hosted worker clones only the repositories you authorize, runs each customer as a separate operating-system user, and deletes the working copy 120 quiet minutes after a delivery finishes. By default Cloud’s model channel runs DeepSeek, which receives the prompts and repository context a delivery needs; add your own model key to send it to a provider you choose instead, under that provider’s own data terms. We may review Issue text and repository content only when we need to enforce the terms of service.</p>
             <p class="src-note orbi-event-list-p"><a class="orbi-src-note-a" href="https://cloud-docs.orbi.build/security">Cloud security</a> · <a class="orbi-src-note-a" href="/privacy/">Privacy policy</a></p>
           </div>
         </li>
@@ -184,10 +185,10 @@
           </div>
         </li>
         <li class="orbi-event-list-li">
-          <span class="event-era">09 · Compliance</span>
+          <span class="event-era">09 · Data handling</span>
           <div>
-            <strong>Do you have SOC 2 or ISO 27001?</strong>
-            <p class="orbi-event-list-p">Not today, and we will not imply otherwise. Cloud relies on GitHub, Vultr (the hosted worker), Cloudflare, Stripe and your model provider, as listed in the privacy policy. If your policies require a certified vendor, self-host the open-source engine on infrastructure you already approve.</p>
+            <strong>Who processes my data, and can I keep it all in-house?</strong>
+            <p class="orbi-event-list-p">Cloud runs on GitHub, Vultr (the hosted worker), Cloudflare and Stripe, plus the model provider you use; the privacy policy lists each one and what it receives. We do not sell personal information. If your policies require everything to stay on infrastructure you already approve, self-host the open-source engine there: nothing reaches us.</p>
             <p class="src-note orbi-event-list-p"><a class="orbi-src-note-a" href="/privacy/">Service providers</a> · <a class="orbi-src-note-a" href="https://docs.orbi.build/security?ref=trust-page">Self-hosted security model</a></p>
           </div>
         </li>
