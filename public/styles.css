@@ -1008,6 +1008,10 @@ html[lang="zh-CN"] .hero-lede { margin-bottom: 22px; }
   line-height: 1;
 }
 
+/* Issue #1443: the translation of an other-language quote — small and quiet,
+ * the same muted ink as the meta line, so it never competes with the quote. */
+.proof-card-translation { margin: 0; color: #4b615d; font-size: 0.8rem; line-height: 1.5; }
+
 .proof-card-person { margin: 0; font-size: 0.85rem; }
 .proof-card-name { font-weight: 600; }
 .proof-card-handle { margin-left: 4px; font-family: var(--mono); font-size: 0.75rem; text-underline-offset: 3px; }
@@ -1029,6 +1033,7 @@ html[lang="zh-CN"] .hero-lede { margin-bottom: 22px; }
 .night .proof-card-meta { color: #9aada9; }
 .night .proof-card-meta .orbi-proof-card-meta-a { color: #edf5f0; }
 .night .proof-card-review { border-top-color: var(--line-dark); color: #9aada9; }
+.night .proof-card-translation { color: #9aada9; }
 .night .proof-card-person { color: #edf5f0; }
 .night .proof-card-handle { color: #9aada9; }
 .night .proof-card-handle:hover { color: #edf5f0; }
