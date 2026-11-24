@@ -2,14 +2,14 @@
 title: Codex YOLO mode 会放开什么权限
 date: 2026-10-16
 updated: 2026-11-24
-summary: Codex 没有 --dangerously-skip-permissions 参数；对应的开关是 --dangerously-bypass-approvals-and-sandbox（即 --yolo），想保留沙箱改用 workspace-write。
+summary: Codex 没有 --dangerously-skip-permissions 参数，对应的开关是 --yolo。想无人值守又保留沙箱，用 codex exec 加 workspace-write。
 lang: zh
 author: Larry 🍀 Orbi
 image: /img/blog-codex-yolo-card.png
 mirror: codex-yolo-mode
 ---
 
-Codex YOLO mode 指的是 `--yolo`，它是 `--dangerously-bypass-approvals-and-sandbox` 的别名。开启后，Codex 不再询问审批，也不再使用自身的本地沙箱。运行它的环境必须另有隔离，例如一次性虚拟机或限制过权限的 CI runner。只想让 agent 自动修改仓库、保留沙箱，可以先用 `codex -a never exec --sandbox workspace-write "<任务>"`。Codex auto mode 是另一个预设，遇到审批仍会停下来等人，[下文](#codex-auto-mode-与已删除的-full-auto-命令)有详细说明。如果你在找 Codex 里的 dangerously skip permissions 参数，答案是没有，`--yolo` 就是对应的开关，[下一节](#codex-有没有-dangerously-skip-permissions-参数)给出输入 Claude Code 那个参数名时会发生什么。
+Codex 没有 `--dangerously-skip-permissions` 这个参数。和 Claude Code 这个开关对应的是 Codex YOLO mode，也就是 `--yolo`，它是 `--dangerously-bypass-approvals-and-sandbox` 的别名，开启后 Codex 不再询问审批，也不再使用自身的本地沙箱。这篇写给自己运行 Codex CLI 的开发者：read-only、workspace-write 和 YOLO 在 Linux 实测里放开了什么，无人值守改代码时更稳妥的命令，以及旧的 full-auto 脚本怎样迁移。YOLO 只能在另有隔离的环境里用，例如一次性虚拟机或限制过权限的 CI runner。只想让 agent 自动修改仓库、保留沙箱，可以先用 `codex -a never exec --sandbox workspace-write "<任务>"`。Codex auto mode 是另一个预设，遇到审批仍会停下来等人，[下文](#codex-auto-mode-与已删除的-full-auto-命令)有详细说明。如果你在找 Codex 里的 dangerously skip permissions 参数，[下一节](#codex-有没有-dangerously-skip-permissions-参数)给出输入 Claude Code 那个参数名时会发生什么。
 
 我是 Larry 🍀 Orbi，[Orbi](https://github.com/orbi-build/orbi) 的创始人。2026 年 10 月 16 日，我用 Codex CLI 0.159.3 做了下面的 Linux 实验；下一节的参数检查是 2026 年 11 月 24 日用 0.172.0 做的。Orbi 运行的是编码 agent Pi，Pi 可以通过 `openai-codex` 模型来源使用 Codex 模型，Orbi 不运行 Codex CLI；本文命令供直接使用 CLI 的开发者参考。
 
@@ -28,7 +28,7 @@ error: unexpected argument '--dangerously-skip-permissions' found
 # exit code: 2
 ```
 
-不要顺着报错提示改用 `--dangerously-bypass-hook-trust`：按 `codex --help` 的说明，它是另一个开关，用来在没有持久化 hook 信任记录的情况下运行已启用的 hooks，不会跳过审批。0.172.0 的 `codex --help` 和 `codex exec --help` 里都看不到 `--yolo`，但 CLI 依然接受它，[OpenAI 的 CLI 参考文档](https://learn.chatgpt.com/docs/cli/reference)也仍把它列为别名。把 `--yolo` 和 `--approve-for-me` 一起传时，报错信息写的是“the argument '--dangerously-bypass-approvals-and-sandbox' cannot be used with '--approve-for-me'”，说明 CLI 内部把 `--yolo` 展开成了长参数。
+不要顺着报错提示改用 `--dangerously-bypass-hook-trust`：按 `codex --help` 的说明，它是另一个开关，用来在没有持久化 hook 信任记录的情况下运行已启用的 hooks，不会跳过审批。0.172.0 的 `codex --help` 和 `codex exec --help` 里都看不到 `--yolo`，但 CLI 依然接受它，[OpenAI 的 CLI 参考文档](https://learn.chatgpt.com/docs/cli/reference)也仍把它列为别名。把 `--yolo` 和 `--approve-for-me` 一起传时，报错信息写的是“the argument '--dangerously-bypass-approvals-and-sandbox' cannot be used with '--approve-for-me'”，说明 CLI 内部把 `--yolo` 展开成了长参数。在 0.172.0 上我只检查了这些参数，下文的边界实验没有重跑。
 
 如果你真正想解决的是 Codex 一直弹审批，又想保住沙箱，优先用下文[保留 workspace-write，也能无人交互运行](#保留-workspace-write-也能无人交互运行)里的写法，不必开 YOLO。想看 Claude Code 那边的参数，见 [Claude Code YOLO mode](/zh/blog/claude-code-yolo-mode/)。
 
@@ -142,7 +142,7 @@ codex exec --approve-for-me \
 
 [Auto-review](https://learn.chatgpt.com/docs/sandboxing/auto-review)检查符合条件、需要审批的操作。沙箱已经允许的命令不会经过这道 review；获批的提权请求可以跨出通常的边界。请求被拒绝后，agent 必须改用风险实质上更低的方案；找不到这样的方案时，应停下来询问用户。账户和组织策略也可能限制这个模式。
 
-我只确认了 0.159.3 接受该参数，没有在这组实验里测试 reviewer 的决策。审批 review 与代码 review 的职责也不同：一个命令获准执行，并不能证明它生成的补丁正确、可以合并。
+我确认了 0.159.3 接受该参数，0.172.0 的 `codex --help` 里也列着它，但没有在这组实验里测试 reviewer 的决策。审批 review 与代码 review 的职责也不同：一个命令获准执行，并不能证明它生成的补丁正确、可以合并。
 
 ## Orbi 的无人值守运行与合并流程
 

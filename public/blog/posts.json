@@ -258,7 +258,7 @@
   {
     "slug": "codex-yolo-mode",
     "title": "Codex YOLO mode: what runs without approval",
-    "summary": "Codex has no --dangerously-skip-permissions flag. Use --dangerously-bypass-approvals-and-sandbox (--yolo), or workspace-write to keep the sandbox.",
+    "summary": "Codex has no --dangerously-skip-permissions flag; --yolo is the equivalent. For unattended edits that keep a sandbox, use codex exec with workspace-write.",
     "zhSlug": "codex-yolo-mode",
     "zhTitle": "Codex YOLO mode 会放开什么权限",
     "related": []
