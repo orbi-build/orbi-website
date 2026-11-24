@@ -245,6 +245,11 @@ const LANG = {
     friendsAria: "Featured on",
     friendsPauseLabel: "Pause",
     friendsPlayLabel: "Play",
+    // Issue #1439: the ToolPilot badge page is linked from the badge row that
+    // already carries every directory backlink, so the page (and the badge
+    // backlink it holds) is not orphaned. The row keeps every entry's own
+    // language tree: /toolpilot/ here, /zh/toolpilot/ on the ZH pages.
+    friendsToolpilotLabel: "ToolPilot badge",
     langGroupAria: "Language",
     currentLangLabel: "EN",
     otherLangAttr: "zh-CN",
@@ -304,6 +309,7 @@ const LANG = {
     friendsAria: "收录于",
     friendsPauseLabel: "暂停",
     friendsPlayLabel: "播放",
+    friendsToolpilotLabel: "ToolPilot 徽章",
     langGroupAria: "语言",
     currentLangLabel: "ZH",
     otherLangAttr: "en",
@@ -422,6 +428,8 @@ export function renderFooter(page) {
     FRIENDS_LABEL: t.friendsLabel,
     FRIENDS_PAUSE_LABEL: t.friendsPauseLabel,
     FRIENDS_PLAY_LABEL: t.friendsPlayLabel,
+    FRIENDS_TOOLPILOT_HREF: base(`${t.langPrefix}/toolpilot/`),
+    FRIENDS_TOOLPILOT_LABEL: t.friendsToolpilotLabel,
   })}`;
 }
 
