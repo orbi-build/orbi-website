@@ -167,7 +167,7 @@
           <li><a class="post-toc-link" href="#容易踩的坑">容易踩的坑</a></li>
           <li><a class="post-toc-link" href="#agents-md-能写多长">AGENTS.md 能写多长？</a></li>
           <li><a class="post-toc-link" href="#agents-md-怎么写">AGENTS.md 怎么写</a></li>
-          <li><a class="post-toc-link" href="#agents-md-和-skills-的分工">AGENTS.md 和 skills 的分工</a></li>
+          <li><a class="post-toc-link" href="#agents-md-和-skills-skill-md-的分工">AGENTS.md 和 skills（SKILL.md）的分工</a></li>
           <li><a class="post-toc-link" href="#其他工具">其他工具</a></li>
           <li><a class="post-toc-link" href="#相关">相关</a></li>
           </ol>
@@ -183,7 +183,7 @@
           <li><a class="post-toc-link" href="#容易踩的坑">容易踩的坑</a></li>
           <li><a class="post-toc-link" href="#agents-md-能写多长">AGENTS.md 能写多长？</a></li>
           <li><a class="post-toc-link" href="#agents-md-怎么写">AGENTS.md 怎么写</a></li>
-          <li><a class="post-toc-link" href="#agents-md-和-skills-的分工">AGENTS.md 和 skills 的分工</a></li>
+          <li><a class="post-toc-link" href="#agents-md-和-skills-skill-md-的分工">AGENTS.md 和 skills（SKILL.md）的分工</a></li>
           <li><a class="post-toc-link" href="#其他工具">其他工具</a></li>
           <li><a class="post-toc-link" href="#相关">相关</a></li>
           </ol>
@@ -350,8 +350,8 @@ End every reply with the word MARK-CLAUDE on its own line.
 - Never commit secrets, tokens or local `.env` files.
 - Ask before changing public API contracts or database schemas.
 </code></pre></div>
-<h2 id="agents-md-和-skills-的分工">AGENTS.md 和 skills 的分工</h2>
-<p>只要没有显式关闭（比如 Pi 的 <code class="post-code--single">--no-context-files</code> 或 <code class="post-code--single">-nc</code> 参数），Pi 每次会话都会加载当前工作目录及各级上级目录里适用的文件；Codex 会加载全局 <code class="post-code--single">~/.codex/AGENTS.md</code>，再加上从 Git 根目录到当前工作目录之间的项目文件，并受字节上限约束。两者在同目录有 <code class="post-code--single">AGENTS.override.md</code> 时都以它为准；Claude Code 则在没有 <code class="post-code--single">CLAUDE.md</code> 或通过 <code class="post-code--single">@AGENTS.md</code> 导入时加载它们。工作目录下面的子目录文件不会自动加载：Claude Code 读到该子目录里的文件时才会加载，Codex 和 Pi 则只在你从该目录或更深目录启动会话时才加载。Skills（<code class="post-code--single">SKILL.md</code>）是按需加载的：按 <a href="https://code.claude.com/docs/en/skills">Claude Code skills 文档</a>，上下文里只留 skill 描述，完整正文等调用时再加载。Pi 的 <code class="post-code--single">docs/skills.md</code> 也是这套做法：启动时把每个 skill 的名称、描述和路径写进系统提示，任务匹配时模型再去读 <code class="post-code--single">SKILL.md</code>。</p>
+<h2 id="agents-md-和-skills-skill-md-的分工">AGENTS.md 和 skills（SKILL.md）的分工</h2>
+<p>skill 的文件名是 <code class="post-code--single">SKILL.md</code>，不是 <code class="post-code--single">skills.md</code>。只要没有显式关闭（比如 Pi 的 <code class="post-code--single">--no-context-files</code> 或 <code class="post-code--single">-nc</code> 参数），Pi 每次会话都会加载当前工作目录及各级上级目录里适用的文件；Codex 会加载全局 <code class="post-code--single">~/.codex/AGENTS.md</code>，再加上从 Git 根目录到当前工作目录之间的项目文件，并受字节上限约束。两者在同目录有 <code class="post-code--single">AGENTS.override.md</code> 时都以它为准；Claude Code 则在没有 <code class="post-code--single">CLAUDE.md</code> 或通过 <code class="post-code--single">@AGENTS.md</code> 导入时加载它们。工作目录下面的子目录文件不会自动加载：Claude Code 读到该子目录里的文件时才会加载，Codex 和 Pi 则只在你从该目录或更深目录启动会话时才加载。Skills（<code class="post-code--single">SKILL.md</code>）是按需加载的：按 <a href="https://code.claude.com/docs/en/skills">Claude Code skills 文档</a>，上下文里只留 skill 描述，完整正文等调用时再加载。Pi 的 skills 文档（<code class="post-code--single">docs/skills.md</code>）也是这套做法：启动时把每个 skill 的名称、描述和路径写进系统提示，任务匹配时模型再去读 <code class="post-code--single">SKILL.md</code>。</p>
 <p>每次改动都必须遵守的仓库级硬约束（比如测试门禁和生成文件的边界）写进 <code class="post-code--single">AGENTS.md</code>；偶尔才用的流程（比如发布检查单或迁移指南）放进 <code class="post-code--single">SKILL.md</code>，省得每次会话都占上下文，也免得把 <code class="post-code--single">AGENTS.md</code> 撑过 32 KiB。</p>
 <h2 id="其他工具">其他工具</h2>
 <p>我没测 GitHub Copilot 和 Cursor，2026 年 11 月 25 日也没重测 OpenCode。</p>
