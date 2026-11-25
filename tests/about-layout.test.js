@@ -174,3 +174,56 @@ describe("the About page in the browser (Issue #1479)", () => {
     }, 40_000);
   }
 });
+
+// Issue #1488: the Chinese hero headline's positioning phrase 「软件黑灯工厂」 is one
+// word, so it must not be split between 「工」 and 「厂」 on a phone. CJK offers a
+// break opportunity between any two characters, so the browser used one as soon as
+// the first sentence no longer fitted; the assertion is per glyph, because a
+// container-level width check stays green while the glyphs sit on two lines.
+// 390 is the width the ticket names; 360 is the narrow Android width where the box
+// is smaller than the nine characters before the comma, which is the state the
+// reporter's browser rendered in. 「一直在」 is the word that break moves onto once
+// 「工厂」 may no longer break, so it is held together for the same reason.
+const WORDS = ["软件黑灯工厂", "一直在"];
+const PHONE_AND_DESKTOP = [1440, 390, 360];
+
+describe("the Chinese About hero keeps 「软件黑灯工厂」 whole (Issue #1488)", () => {
+  it(`every glyph of ${WORDS.map((word) => `「${word}」`).join(" and ")} shares one line at ${PHONE_AND_DESKTOP.join(" / ")} px`, async () => {
+    const { page, errors } = await openPage();
+    try {
+      await page.goto(`${baseUrl}/zh/about/`, { waitUntil: "load", timeout: 25_000 });
+      await page.evaluate(() => document.fonts.ready);
+      for (const width of PHONE_AND_DESKTOP) {
+        await page.setViewportSize({ width, height: 900 });
+        const measured = await page.evaluate((words) => {
+          const h1 = document.querySelector("#about-title");
+          const glyphs = [];
+          const walker = document.createTreeWalker(h1, NodeFilter.SHOW_TEXT);
+          for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+            for (let i = 0; i < node.data.length; i += 1) glyphs.push([node, i]);
+          }
+          const text = glyphs.map(([node, i]) => node.data[i]).join("");
+          const topsByWord = words.map((word) => {
+            const at = text.indexOf(word);
+            return glyphs.slice(at, at + word.length).map(([node, i]) => {
+              const range = document.createRange();
+              range.setStart(node, i);
+              range.setEnd(node, i + 1);
+              return Math.round(range.getBoundingClientRect().top * 10) / 10;
+            });
+          });
+          return { text: h1.textContent, topsByWord };
+        }, WORDS);
+        expect(measured.text, `${width}px: headline copy unchanged`).toBe("这座软件黑灯工厂，一直在造它自己。");
+        for (const [index, word] of WORDS.entries()) {
+          const tops = measured.topsByWord[index];
+          expect(new Set(tops).size, `${width}px: 「${word}」 glyph tops ${tops.join(", ")}`).toBe(1);
+        }
+        await page.locator("#about-title").screenshot({ path: `.orbi/about-zh-h1-${width}.png` });
+      }
+      expect(errors, `/zh/about/: browser errors\n${errors.join("\n")}`).toEqual([]);
+    } finally {
+      await page.close();
+    }
+  }, 40_000);
+});
