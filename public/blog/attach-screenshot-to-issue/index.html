@@ -213,7 +213,7 @@
 <p>An attachment is often the request itself. If the coder skipped <code class="post-code--single">screen.png</code>, it would have &quot;fix the two things circled&quot; and no circles, and it would write something. The review session would then judge that something without the screenshot either. So Orbi stops:</p>
 <ul>
 <li>In drafting, a file it can&#39;t read fails the round and names the file.</li>
-<li>In delivery or review, the session doesn&#39;t start. The Issue gets <code class="post-code--single">ai-blocked</code> and one comment naming the image and the fix: upload it again (or remove it, if the request doesn&#39;t need it), then swap <code class="post-code--single">ai-blocked</code> for <code class="post-code--single">ai-ready</code> (or <code class="post-code--single">ai-fix-needed</code> when a pull request is open). On a private repository that fix doesn&#39;t work yet; see the limits below. Later runs don&#39;t retry it on their own, so a broken image doesn&#39;t post a new comment every few minutes.</li>
+<li>In delivery or review, the session doesn&#39;t start. The Issue gets <code class="post-code--single">ai-blocked</code> and one comment naming the image and the fix: upload it again (or remove it, if the request doesn&#39;t need it), then swap <code class="post-code--single">ai-blocked</code> for <code class="post-code--single">ai-ready</code> (or <code class="post-code--single">ai-fix-needed</code> when a pull request is open). On a private repository, that fix needs v0.7.63 or later; see the limits below. Later runs don&#39;t retry it on their own, so a broken image doesn&#39;t post a new comment every few minutes.</li>
 </ul>
 <p>Two cases don&#39;t stop, and they&#39;re worth knowing:</p>
 <ul>
@@ -250,7 +250,7 @@
 </tr>
 <tr>
 <th scope="row">Orbi</th>
-<td>v0.7.59 or later (<a href="https://github.com/orbi-build/orbi">github.com/orbi-build/orbi</a>)</td>
+<td>v0.7.59 or later (<a href="https://github.com/orbi-build/orbi">github.com/orbi-build/orbi</a>); v0.7.63 or later for delivery on a private repository</td>
 </tr>
 <tr>
 <th scope="row">gh</th>
@@ -258,7 +258,7 @@
 </tr>
 </tbody></table></div>
 <p><code class="post-code--single">--attach</code> applies when a draft starts. Amending an existing Issue carries no attachments, so for an Issue that already exists, paste the image into it on GitHub instead.</p>
-<p>Two cautions. On a public repository, everything you attach is public: the images, and the HTML and text written into the body (collapsed is not hidden). Remove anything private before you attach it. And on a private repository, delivery in v0.7.62, the latest release as I write this, can&#39;t read the native images Orbi uploads: the address it fetches still needs a login, so the delivery stops with <code class="post-code--single">attachment_unavailable</code>. The fix (<a href="https://github.com/orbi-build/orbi/pull/2388">orbi#2388</a>, for <a href="https://github.com/orbi-build/orbi/issues/2387">orbi#2387</a>) is merged and goes out in the next release. Until then, uploading the image again doesn&#39;t help there. Drafting and the Issue itself work on private repositories today, and the run above was on a public one.</p>
+<p>Two cautions. On a public repository, everything you attach is public: the images, and the HTML and text written into the body (collapsed is not hidden). Remove anything private before you attach it. And on a private repository, delivery before v0.7.63 couldn&#39;t read the native images Orbi uploads: the address it fetched still needed a login, so the delivery stopped with <code class="post-code--single">attachment_unavailable</code>. v0.7.63, released on 25 November, fixes it (<a href="https://github.com/orbi-build/orbi/pull/2388">orbi#2388</a>, for <a href="https://github.com/orbi-build/orbi/issues/2387">orbi#2387</a>); if you run Orbi yourself, upgrade. Drafting and filing have worked on private repositories since v0.7.59; the run above was on a public one.</p>
 <h2 id="how-this-compares">How this compares</h2>
 <p>Putting the screenshot in the Issue isn&#39;t new. GitHub Copilot&#39;s cloud agent <a href="https://docs.github.com/en/copilot/how-tos/use-copilot-agents/coding-agent/provide-visual-inputs">reads screenshots dropped into an Issue body</a>, and <code class="post-code--single">gh</code> 2.99 <a href="https://github.blog/changelog/2026-09-01-github-cli-media-in-issues-pull-requests-and-comments/">added <code class="post-code--single">--attach</code></a> for anyone. Orbi uses that same upload. What it adds is in the steps around it. The drafting session reads the files before it writes the Issue, so the outcome and acceptance criteria come from what&#39;s in the screenshot and the spec. The review session reads them again every round. And when an attached file can&#39;t be read, the run stops and says which file, instead of carrying on with half the request.</p>
 <aside class="post-cta">

@@ -213,7 +213,7 @@
 <p>附件常常就是需求本身。写代码的会话要是跳过了 <code class="post-code--single">screen.png</code>，手里只剩「照截图里圈出的两处改」，却没有圈，它照样会写出点什么来；评审会话也没有截图，只能对着这些代码下结论。所以 Orbi 选择停下：</p>
 <ul>
 <li>起草时有文件读不到，这一轮直接失败，并点名是哪个文件。</li>
-<li>交付或评审时读不到，会话根本不开。Issue 打上 <code class="post-code--single">ai-blocked</code>，留一条评论写明是哪张图、怎么修：重新上传（这张图确实用不上时才删掉它），再把 <code class="post-code--single">ai-blocked</code> 换成 <code class="post-code--single">ai-ready</code>（已经有 PR 就换成 <code class="post-code--single">ai-fix-needed</code>）。私有仓库里这个办法暂时不管用，见下面的限制。之后不会自己重试，坏掉的图不会每隔几分钟刷一条评论。</li>
+<li>交付或评审时读不到，会话根本不开。Issue 打上 <code class="post-code--single">ai-blocked</code>，留一条评论写明是哪张图、怎么修：重新上传（这张图确实用不上时才删掉它），再把 <code class="post-code--single">ai-blocked</code> 换成 <code class="post-code--single">ai-ready</code>（已经有 PR 就换成 <code class="post-code--single">ai-fix-needed</code>）。私有仓库里，这个办法要 v0.7.63 或更新才行，见下面的限制。之后不会自己重试，坏掉的图不会每隔几分钟刷一条评论。</li>
 </ul>
 <p>有两种情况不会停，值得知道：</p>
 <ul>
@@ -250,7 +250,7 @@
 </tr>
 <tr>
 <th scope="row">Orbi</th>
-<td>v0.7.59 或更新（<a href="https://github.com/orbi-build/orbi">github.com/orbi-build/orbi</a>）</td>
+<td>v0.7.59 或更新（<a href="https://github.com/orbi-build/orbi">github.com/orbi-build/orbi</a>）；私有仓库交付要 v0.7.63 或更新</td>
 </tr>
 <tr>
 <th scope="row">gh</th>
@@ -258,7 +258,7 @@
 </tr>
 </tbody></table></div>
 <p><code class="post-code--single">--attach</code> 只在开始起草时生效。给已有 Issue 追加内容不会带附件，已经建好的 Issue 要补图，直接在 GitHub 上贴进去。</p>
-<p>两点提醒。公开仓库里，附上的东西谁都看得到：图片，还有写进正文的 HTML 和文本（折叠只是收起，不是隐藏）。附之前先把不该公开的内容去掉。私有仓库里，截至我写这篇时最新发布的 v0.7.62，交付还读不到 Orbi 上传的原生图片：它去下载的地址仍然要登录，交付会以 <code class="post-code--single">attachment_unavailable</code> 停下。修复（<a href="https://github.com/orbi-build/orbi/pull/2388">orbi#2388</a>，对应 <a href="https://github.com/orbi-build/orbi/issues/2387">orbi#2387</a>）已经合进主线，下一个版本发布。在那之前，私有仓库里重新上传也没用。起草和建票在私有仓库里现在就能用；上面这次运行是在公开仓库上跑的。</p>
+<p>两点提醒。公开仓库里，附上的东西谁都看得到：图片，还有写进正文的 HTML 和文本（折叠只是收起，不是隐藏）。附之前先把不该公开的内容去掉。私有仓库里，v0.7.63 之前的版本交付读不到 Orbi 上传的原生图片：它去下载的地址仍然要登录，交付会以 <code class="post-code--single">attachment_unavailable</code> 停下。11 月 25 日发布的 v0.7.63 修好了这个问题（<a href="https://github.com/orbi-build/orbi/pull/2388">orbi#2388</a>，对应 <a href="https://github.com/orbi-build/orbi/issues/2387">orbi#2387</a>），自己部署 Orbi 的升级即可。起草和建票从 v0.7.59 起就能在私有仓库里用；上面这次运行是在公开仓库上跑的。</p>
 <h2 id="和同类工具比">和同类工具比</h2>
 <p>把截图放进 Issue 不是新鲜事。GitHub Copilot 的云端 agent <a href="https://docs.github.com/en/copilot/how-tos/use-copilot-agents/coding-agent/provide-visual-inputs">会看 Issue 正文里拖进去的截图</a>，<code class="post-code--single">gh</code> 2.99 也<a href="https://github.blog/changelog/2026-09-01-github-cli-media-in-issues-pull-requests-and-comments/">给所有人加了 <code class="post-code--single">--attach</code></a>，Orbi 用的就是这个上传。区别在上传前后：起草会话先读附件再写 Issue，预期结果和验收条件按截图和约定里的内容写；评审每一轮都重新看；附进来的文件读不出来，就停下说清是哪个文件，不带着半份需求往下做。</p>
 <aside class="post-cta">
