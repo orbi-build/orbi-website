@@ -62,7 +62,7 @@ Every session got the screenshot. The session logs of all six sessions, the two 
 An attachment is often the request itself. If the coder skipped `screen.png`, it would have "fix the two things circled" and no circles, and it would write something. The review session would then judge that something without the screenshot either. So Orbi stops:
 
 - In drafting, a file it can't read fails the round and names the file.
-- In delivery or review, the session doesn't start. The Issue gets `ai-blocked` and one comment naming the image and the fix: upload it again (or remove it, if the request doesn't need it), then swap `ai-blocked` for `ai-ready` (or `ai-fix-needed` when a pull request is open). On a private repository that fix doesn't work yet; see the limits below. Later runs don't retry it on their own, so a broken image doesn't post a new comment every few minutes.
+- In delivery or review, the session doesn't start. The Issue gets `ai-blocked` and one comment naming the image and the fix: upload it again (or remove it, if the request doesn't need it), then swap `ai-blocked` for `ai-ready` (or `ai-fix-needed` when a pull request is open). On a private repository, that fix needs v0.7.63 or later; see the limits below. Later runs don't retry it on their own, so a broken image doesn't post a new comment every few minutes.
 
 Two cases don't stop, and they're worth knowing:
 
@@ -78,12 +78,12 @@ Two cases don't stop, and they're worth knowing:
 | Count and size | at most 10 files, 10 MB each; all HTML and text together at most 50,000 characters, so it fits in the Issue body |
 | Model | for delivery and review, one that declares image input, like the bundled DeepSeek template; otherwise the screenshot is ignored without notice |
 | Anything else | refused with the reason, for example a PDF or a video |
-| Orbi | v0.7.59 or later ([github.com/orbi-build/orbi](https://github.com/orbi-build/orbi)) |
+| Orbi | v0.7.59 or later ([github.com/orbi-build/orbi](https://github.com/orbi-build/orbi)); v0.7.63 or later for delivery on a private repository |
 | gh | 2.99 or later, signed in as a person (`gh auth login`) |
 
 `--attach` applies when a draft starts. Amending an existing Issue carries no attachments, so for an Issue that already exists, paste the image into it on GitHub instead.
 
-Two cautions. On a public repository, everything you attach is public: the images, and the HTML and text written into the body (collapsed is not hidden). Remove anything private before you attach it. And on a private repository, delivery in v0.7.62, the latest release as I write this, can't read the native images Orbi uploads: the address it fetches still needs a login, so the delivery stops with `attachment_unavailable`. The fix ([orbi#2388](https://github.com/orbi-build/orbi/pull/2388), for [orbi#2387](https://github.com/orbi-build/orbi/issues/2387)) is merged and goes out in the next release. Until then, uploading the image again doesn't help there. Drafting and the Issue itself work on private repositories today, and the run above was on a public one.
+Two cautions. On a public repository, everything you attach is public: the images, and the HTML and text written into the body (collapsed is not hidden). Remove anything private before you attach it. And on a private repository, delivery before v0.7.63 couldn't read the native images Orbi uploads: the address it fetched still needed a login, so the delivery stopped with `attachment_unavailable`. v0.7.63, released on 25 November, fixes it ([orbi#2388](https://github.com/orbi-build/orbi/pull/2388), for [orbi#2387](https://github.com/orbi-build/orbi/issues/2387)); if you run Orbi yourself, upgrade. Drafting and filing have worked on private repositories since v0.7.59; the run above was on a public one.
 
 ## How this compares
 
