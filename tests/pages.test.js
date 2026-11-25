@@ -2118,6 +2118,21 @@ describe("cost page leads with the 1511-delivery sample (Issues #886, #1453)", (
     }
   });
 
+  // Issue #1499: Search Console reports the Dataset as missing `creator` on both
+  // language pages. Both point at the same organization record — the Cloud
+  // product that recorded the sample.
+  it("names the dataset creator in both languages (Issue #1499)", () => {
+    for (const { output } of COST_PAGES) {
+      const raw = shipped.get(output).match(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/)?.[1];
+      const dataset = JSON.parse(raw)["@graph"].find((entry) => entry["@type"] === "Dataset");
+      expect(dataset.creator, `${output}: Dataset creator`).toEqual({
+        "@type": "Organization",
+        name: "Orbi Cloud",
+        url: "https://orbi.build/cloud/",
+      });
+    }
+  });
+
   // Issue #1453: the 2026-11-24 sample replaces the 2026-10-05 one, and the
   // external-user repositories get their own numbers. What the reader lands on
   // stays the same page: same URL, <title>, H1 and canonical — only the
