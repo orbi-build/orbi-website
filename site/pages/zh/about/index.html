@@ -1,0 +1,487 @@
+<!--orbi:page
+{
+  "output": "zh/about/index.html",
+  "lang": "zh",
+  "mirror": "about/index.html",
+  "layout": "pretty",
+  "nav": {
+    "navId": "primary-navigation-zh",
+    "systemHref": "/zh/#system",
+    "compareHref": "/zh/compare/",
+    "compareLabel": "竞品对比",
+    "compareDataCta": false,
+    "compareCurrent": false,
+    "costHref": "/zh/cloud/#pricing",
+    "costCurrent": false,
+    "compareCostSameLine": false,
+    "docsHref": "https://docs.orbi.build/zh",
+    "langSwitchHref": "/about/",
+    "langCurrentFirst": true
+  }
+}
+-->
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>关于 Orbi：是什么、谁在做、为什么做 | Orbi</title>
+  <meta name="description" content="Orbi 是软件黑灯工厂：一句话进去，一个 Release 出来。谁在做、为什么做、哪些交给 AI 哪些由人决定、靠什么赚钱、本站怎么写，以及公司主体和联系方式。">
+  <link rel="canonical" href="https://orbi.build/zh/about/">
+  <link rel="alternate" hreflang="en" href="https://orbi.build/about/">
+  <link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/about/">
+  <link rel="alternate" hreflang="x-default" href="https://orbi.build/about/">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <meta name="theme-color" content="#06151b">
+
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Orbi">
+  <meta property="og:locale" content="zh_CN">
+  <meta property="og:locale:alternate" content="en_US">
+  <meta property="og:url" content="https://orbi.build/zh/about/">
+  <meta property="og:title" content="关于 Orbi：是什么、谁在做、为什么做">
+  <meta property="og:description" content="Orbi 是软件黑灯工厂：一句话进去，一个 Release 出来。谁在做、为什么做、哪些交给 AI 哪些由人决定。">
+  <meta property="og:image" content="https://orbi.build/img/og.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:site" content="@xqliu">
+  <meta name="twitter:title" content="关于 Orbi：是什么、谁在做、为什么做">
+  <meta name="twitter:description" content="Orbi 是软件黑灯工厂：一句话进去，一个 Release 出来。谁在做、为什么做、哪些交给 AI 哪些由人决定。">
+  <meta name="twitter:image" content="https://orbi.build/img/og.png">
+  <link rel="stylesheet" href="/fonts/fonts.css">
+  <link rel="stylesheet" href="/styles.css">
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Organization",
+        "@id": "https://orbi.build/#organization",
+        "name": "Orbi",
+        "url": "https://orbi.build/",
+        "logo": "https://orbi.build/logo-mark.svg",
+        "founder": {
+          "@type": "Person",
+          "name": "Larry 🍀 Orbi",
+          "url": "https://orbi.build/zh/about/larry-orbi/",
+          "sameAs": [
+            "https://github.com/xqliu",
+            "https://x.com/xqliu"
+          ]
+        },
+        "sameAs": [
+          "https://github.com/orbi-build",
+          "https://x.com/xqliu",
+          "https://www.youtube.com/@orbibuild",
+          "https://www.reddit.com/r/OrbiBuild/"
+        ]
+      },
+      {
+        "@type": "AboutPage",
+        "@id": "https://orbi.build/zh/about/#about",
+        "url": "https://orbi.build/zh/about/",
+        "name": "关于 Orbi",
+        "description": "Orbi 是软件黑灯工厂：一句话进去，一个 Release 出来。谁在做、为什么做、哪些交给 AI 哪些由人决定、靠什么赚钱、本站怎么写，以及公司主体和联系方式。",
+        "inLanguage": "zh-CN",
+        "isPartOf": {
+          "@type": "WebSite",
+          "name": "Orbi",
+          "url": "https://orbi.build/zh/"
+        },
+        "mainEntity": { "@id": "https://orbi.build/#organization" }
+      }
+    ]
+  }
+  </script>
+
+  <style>
+    /* Page-scoped (Issue #1479): the portrait, the four counted numbers and the
+       two-column split of who does what. Tokens only — no new colours, radii or
+       component styles; the rest of the page reuses .night, .compare-hero,
+       .compare-section, .closing and the shared buttons. */
+    .about-kicker {
+      margin: 0 0 26px;
+      color: var(--signal-on-light);
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      font-weight: 500;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+    /* The design's hero headline is the homepage hero scale (the token's
+       display-hero maximum), not the smaller shared inner-page h1. */
+    .about-hero h1 { font-size: 64px; line-height: 1.04; }
+    /* 「软件黑灯工厂」 is one word, but CJK offers a break opportunity between 工
+       and 厂, and the browser takes it as soon as the first sentence stops fitting
+       (Issue #1488). Keep the six glyphs together; colour comes back from the
+       global `h1 span` accent to the headline's own.
+       「一直在」 is wrapped for the same reason: once 工厂 may not break, that
+       break lands a character earlier on a 360–375 px phone, leaving 「一」 alone
+       at the end of the line. Both words are short enough to fit the phone box. */
+    .about-hero h1 .about-title-word { white-space: nowrap; color: inherit; }
+    .about-numbers {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 0 28px;
+      padding-bottom: clamp(56px, 6vw, 84px);
+    }
+    .about-number {
+      display: block;
+      padding-top: 20px;
+      border-top: 1px solid var(--line-dark);
+      text-decoration: none;
+    }
+    .about-number strong {
+      display: block;
+      color: #edf5f0;
+      font-family: var(--display);
+      font-size: clamp(2.4rem, 3.5vw, 4rem);
+      font-variant-numeric: tabular-nums;
+      font-weight: 600;
+      letter-spacing: -0.06em;
+      line-height: 1;
+    }
+    /* The release count is the end of an Orbi delivery, so only it is teal. */
+    .about-number:first-child strong { color: var(--run); }
+    .about-number span {
+      display: block;
+      margin-top: 12px;
+      color: #9aada9;
+      font-size: 0.85rem;
+      line-height: 1.5;
+    }
+    .about-number:hover span { color: #edf5f0; }
+    .about-number-source {
+      grid-column: 1 / -1;
+      margin: 28px 0 0;
+      color: #7d9992;
+      font-family: var(--mono);
+      font-size: 0.72rem;
+      line-height: 1.6;
+    }
+
+    .about-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 0.34fr) minmax(0, 1fr);
+      column-gap: clamp(32px, 5vw, 88px);
+      align-items: start;
+    }
+    .about-grid > .about-kicker { grid-column: 1; grid-row: 1; }
+    .about-grid > .about-body { grid-column: 2; grid-row: 1; min-width: 0; }
+    .about-rail { grid-column: 1; grid-row: 1; min-width: 0; }
+    .about-rail .about-kicker { margin-bottom: 26px; }
+    .about-rail h2 { margin-bottom: 0; }
+    .about-grid > .about-body > :first-child { margin-top: 0; }
+
+    .about-who .about-kicker { grid-column: 1; grid-row: 1; }
+    .about-who-head { display: contents; }
+    .about-who .about-portrait { grid-column: 1; grid-row: 2; }
+    .about-who .about-intro { grid-column: 2; grid-row: 1; min-width: 0; }
+    .about-who > .about-body { grid-column: 2; grid-row: 2; }
+    .about-portrait {
+      width: max-content;
+      padding: 8px;
+      border: 1px solid var(--line);
+      background: var(--paper-2);
+      box-shadow: 9px 9px 0 var(--line);
+    }
+    .about-portrait img { width: 160px; height: 160px; }
+
+    .about-body h2 { margin-bottom: 22px; }
+    .about-intro h2 { margin-bottom: 8px; }
+    .about-role { margin: 0; color: var(--ink-soft); }
+    .about-who > .about-body { margin-top: 20px; }
+    .about-body ul,
+    .about-body ol {
+      margin: 0;
+      padding-left: 1.25rem;
+      color: var(--ink-soft);
+    }
+    .about-body li + li { margin-top: 10px; }
+    .about-body strong { color: var(--ink); }
+    .about-note { margin: 22px 0 0; color: var(--ink-soft); }
+    .about-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px 28px;
+      margin: 24px 0 0;
+    }
+    .about-links a {
+      font-size: 0.92rem;
+      font-weight: 600;
+      text-underline-offset: 4px;
+    }
+    .about-links a:hover { color: var(--run-on-light); }
+
+    .about-split {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 28px clamp(32px, 5vw, 72px);
+      margin-top: 16px;
+    }
+    .about-split > div { padding-top: 22px; border-top: 2px solid var(--run); }
+    .about-split > div + div { border-top-color: var(--signal); }
+    .about-split h3 {
+      margin: 0 0 18px;
+      font-family: var(--display);
+      font-size: 1.25rem;
+      font-weight: 600;
+      letter-spacing: -0.015em;
+    }
+    .about-split ul,
+    .about-split ol { margin: 0; padding-left: 1.25rem; color: var(--ink-soft); }
+    .about-split li + li { margin-top: 10px; }
+
+    .about-cardband {
+      padding: clamp(84px, 9vw, 140px) 0;
+      border-top: 1px solid var(--line);
+      background: var(--paper-2);
+    }
+    .about-cards {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 24px clamp(24px, 4vw, 56px);
+    }
+    .about-cards h3 {
+      margin: 0 0 14px;
+      font-family: var(--display);
+      font-size: 1.35rem;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+      line-height: 1.15;
+    }
+    .about-cards p { margin: 0 0 16px; color: var(--ink-soft); font-size: 0.95rem; }
+    .about-cards a { font-size: 0.92rem; font-weight: 600; text-underline-offset: 4px; }
+    .about-money {
+      margin-top: clamp(56px, 6vw, 84px);
+      padding-top: clamp(36px, 4vw, 48px);
+      border-top: 1px solid var(--line);
+    }
+    .about-money .about-kicker { margin-bottom: 22px; }
+    .about-money p { max-width: 52rem; margin: 0 0 14px; color: var(--ink-soft); }
+    .about-money p:last-child { margin-bottom: 0; }
+    .about-money a { text-underline-offset: 4px; }
+
+    .about-company {
+      display: grid;
+      grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+      gap: 32px clamp(32px, 5vw, 72px);
+    }
+    .about-company .about-kicker { margin-bottom: 22px; }
+    .about-company > div > p:not(.about-kicker) { margin: 0; color: var(--ink-soft); }
+    .about-contact { margin: 0; }
+    .about-contact div {
+      display: grid;
+      grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+      gap: 4px 16px;
+      padding: 9px 0;
+    }
+    .about-contact dt { color: #59706d; font-size: 0.92rem; }
+    .about-contact dd { margin: 0; font-size: 0.92rem; }
+    /* A contact link is one word, so it never breaks inside itself: at 390 px the
+       column is about 180 px, and 「每周邮件」 / 「weekly email」 used to split in the
+       middle of the word (Issue #1489). A row that runs out of room wraps between
+       its links, at the spaces around the 「·」 separators. */
+    .about-contact a { white-space: nowrap; text-underline-offset: 3px; }
+
+    .about-closing { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: end; gap: 24px 40px; }
+    .about-closing .orbi-closing-h2 { margin-bottom: 0; }
+    .about-closing .orbi-closing-h2 span { color: var(--signal-on-light); }
+    .about-closing .cta-row { flex-direction: row; flex-wrap: wrap; align-items: center; margin: 0; }
+
+    @media (max-width: 699px) {
+      .about-hero h1 { font-size: 42px; }
+    }
+
+    @media (max-width: 900px) {
+      .about-grid { grid-template-columns: minmax(0, 1fr); }
+      .about-grid > .about-kicker,
+      .about-grid > .about-body,
+      .about-grid > .about-rail { grid-column: 1; grid-row: auto; }
+      .about-rail .about-kicker { margin-bottom: 22px; }
+      .about-rail h2 { margin-bottom: 26px; }
+      .about-who .about-kicker { grid-column: 1; grid-row: auto; }
+      .about-who-head { display: flex; gap: 16px; align-items: flex-start; }
+      .about-who .about-portrait { padding: 4px; flex: none; box-shadow: 5px 5px 0 var(--line); }
+      .about-portrait img { width: 88px; height: 88px; }
+      .about-who .about-intro { grid-column: 1; grid-row: auto; }
+      .about-who > .about-body { grid-column: 1; grid-row: auto; margin-top: 26px; }
+      .about-intro h2 { margin-bottom: 4px; font-size: clamp(1.7rem, 7vw, 2.4rem); }
+      .about-role { font-size: 0.95rem; }
+      .about-numbers { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 28px 24px; }
+      .about-cardband { padding: 88px 0; }
+      .about-cards { grid-template-columns: minmax(0, 1fr); gap: 32px; }
+      .about-split { grid-template-columns: minmax(0, 1fr); }
+      .about-company { grid-template-columns: minmax(0, 1fr); }
+      .about-closing { grid-template-columns: minmax(0, 1fr); }
+      .about-closing .cta-row { flex-direction: column; align-items: stretch; }
+    }
+  </style>
+</head>
+<body>
+  <a class="skip-link" href="#main-content">跳到正文</a>
+
+<!--@nav-->
+
+  <main id="main-content">
+    <div class="night">
+      <section class="compare-hero shell about-hero" aria-labelledby="about-title">
+        <p class="eyebrow">关于 ORBI · 最后审阅 2026-11-25</p>
+        <h1 id="about-title">这座<span class="about-title-word">软件黑灯工厂</span>，<span><span class="about-title-word">一直在</span>造它自己。</span></h1>
+        <p class="hero-lede">一句话说清需求，Orbi 一路做到发版；Orbi 自己的代码也是这样交付的。</p>
+        <div class="cta-row">
+          <a class="button button-signal" href="/zh/cloud/login">用 GitHub 试用 Cloud</a>
+          <a class="button button-ghost" href="https://github.com/orbi-build/orbi">在 GitHub 上看引擎源码 ↗</a>
+        </div>
+      </section>
+
+      <section class="about-numbers shell" aria-label="Orbi 在 2026-11-25 的统计">
+        <a class="about-number" href="https://github.com/orbi-build/orbi/releases"><strong>164</strong><span>个引擎发布版本 ↗</span></a>
+        <a class="about-number" href="https://github.com/orbi-build/orbi/issues?q=is%3Aissue+label%3Aai-merged"><strong>995</strong><span>个 Issue 由 Orbi 从打标签做到合并，2026-08-26 起 ↗</span></a>
+        <a class="about-number" href="https://github.com/orbi-build/orbi/issues?q=is%3Aissue+label%3Aai-merged+closed%3A2026-10-26..2026-11-25"><strong>208</strong><span>个是近 30 天做完的 ↗</span></a>
+        <a class="about-number" href="https://status.orbi.build"><strong>100%</strong><span>Orbi Cloud 控制台可用率，2026-09-18 起监测 ↗</span></a>
+        <p class="about-number-source">2026-11-25 从公开仓库 orbi-build/orbi 和 status.orbi.build 统计。点数字打开对应来源。</p>
+      </section>
+    </div>
+
+    <section class="compare-section shell about-grid about-who" aria-labelledby="who-title">
+      <p class="about-kicker">谁在做 ORBI</p>
+      <div class="about-who-head">
+        <div class="about-portrait"><img src="/img/larry-orbi.png" alt="Larry 🍀 Orbi" width="320" height="320"></div>
+        <div class="about-intro">
+          <h2 id="who-title">Larry 🍀 Orbi</h2>
+          <p class="about-role">Orbi 的创始人</p>
+        </div>
+      </div>
+      <div class="about-body">
+        <ul>
+          <li>我定交付规则，决定 Orbi 下一步做什么。</li>
+          <li>交付停下来要人拿主意时，由我出面。</li>
+          <li>Orbi 自己的改动也交给 Orbi：我开 Issue，它规划、写代码、评审、发布。</li>
+          <li>本站文章由 AI 代理起草，选题、核对事实、决定发不发由我负责。</li>
+        </ul>
+        <p class="about-note">写了 20 年代码，两个孩子的爸爸，住在新加坡。在 X 上分享 AI 写代码时哪些管用、哪些会翻车。</p>
+        <p class="about-links"><a href="https://github.com/xqliu" rel="me">GitHub @xqliu ↗</a><a href="https://x.com/xqliu" rel="me">X @xqliu ↗</a><a href="/zh/about/larry-orbi/">Larry 的全部文章 →</a></p>
+      </div>
+    </section>
+
+    <section class="compare-section shell about-grid" aria-labelledby="why-title">
+      <p class="about-kicker">为什么做 ORBI</p>
+      <div class="about-body">
+        <h2 id="why-title">软件黑灯工厂</h2>
+        <ul>
+          <li><strong>一个人，好几条业务线。</strong>我一个人做 Muyan、supa.is 和 Orbi，需要能把研发整个接过去的代理。</li>
+          <li><strong>给 AI 留空间。</strong>今天 Orbi 从一句话做到发版；模型更强了，它能接的活更多。</li>
+          <li><strong>软件也会黑灯生产。</strong>工业生产早就有黑灯工厂，前提是验收标准定好；每个 Issue 写清怎样算做完，软件也能这样做。</li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="compare-section shell about-stack" aria-labelledby="how-title">
+      <p class="about-kicker">ORBI 怎么运转</p>
+      <h2 id="how-title">哪些交给 AI，哪些由人决定</h2>
+      <div class="about-split">
+        <div>
+          <h3>AI 代理负责</h3>
+          <ol>
+            <li>把你的一句话写成带验收条件的 Issue，再写计划</li>
+            <li>在分支上写代码和测试</li>
+            <li>由另一个独立代理评审，按评审意见修改</li>
+            <li>你的 CI 在最新主干上通过后合并</li>
+            <li>打标签发版，每一步记在 Issue 上；运维类 Issue（部署、合并指定 PR、排查）贴出真实的命令和输出</li>
+          </ol>
+        </div>
+        <div>
+          <h3>你来决定</h3>
+          <ul>
+            <li>做什么：你说想要什么，或认可 Orbi 写好的 Issue</li>
+            <li>Orbi 停下提问时怎么办</li>
+            <li>最终控制权：分支保护、必需检查和访问权限都留在 GitHub</li>
+            <li>用哪个模型：Pi 支持的任何模型，云端或本地都行</li>
+          </ul>
+        </div>
+      </div>
+      <p class="about-links"><a href="/zh/cloud/">看一次发布从头到尾怎么跑 →</a><a href="/zh/trust/#not-covered">Orbi 不承诺的事 →</a></p>
+    </section>
+
+    <section class="about-cardband">
+      <div class="shell">
+        <div class="about-cards">
+          <div>
+            <p class="about-kicker">开源</p>
+            <h3>引擎开源</h3>
+            <p>AGPL-3.0；不能用 AGPL 的话可选 Sustainable Use License。自己部署都免费，Orbi 做了什么，代码里都查得到。</p>
+            <a href="https://github.com/orbi-build/orbi">GitHub 上的 orbi-build/orbi ↗</a>
+          </div>
+          <div>
+            <p class="about-kicker">ORBI 做 ORBI</p>
+            <h3>Orbi 自己的交付全部公开</h3>
+            <p>Orbi 自己每次改动的计划、PR、独立评审和发布版本都在 GitHub 上，随时能点开看。</p>
+            <a href="/zh/evidence/">打开六次真实交付 →</a>
+          </div>
+          <div>
+            <p class="about-kicker">你的代码</p>
+            <h3>代码留在你的 GitHub</h3>
+            <p>每一步都记在你自己的仓库里，在 GitHub 上一步就能收回 Orbi Cloud 的访问权限。</p>
+            <a href="/zh/trust/">看九个关于信任的问题 →</a>
+          </div>
+        </div>
+
+        <div class="about-money" aria-labelledby="money-title">
+          <p class="about-kicker" id="money-title">ORBI 靠什么赚钱</p>
+          <p>引擎可以免费自己部署。Orbi Cloud 是替你运行它的付费托管服务，Orbi 靠这些订阅运转。<a href="/zh/cloud/#pricing">看套餐和免费试用 →</a></p>
+          <p>没有人投钱，Orbi 是自己出钱做的。</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="compare-section shell about-grid" aria-labelledby="writing-title">
+      <div class="about-rail">
+        <p class="about-kicker">本站怎么写</p>
+        <h2 id="writing-title">每一个说法都标出处</h2>
+      </div>
+      <div class="about-body">
+        <ol>
+          <li><strong>数字链接到来源：</strong>GitHub 记录、文档，或我跑过的查询。</li>
+          <li><strong>页面标日期。</strong>每篇文章写明首发日期，修订过的另写更新日期；内容改了才改日期。</li>
+          <li><strong>测评写明条件：</strong>版本、模型和日期。</li>
+          <li><strong>写别家产品，以对方当前的官方文档为准，</strong>写的时候现查。</li>
+          <li><strong>发现错误？</strong>在 Telegram 群里说，或者在 <a href="https://github.com/orbi-build/orbi-website/issues">orbi-build/orbi-website</a> 开 Issue。我改正后更新页面日期。</li>
+        </ol>
+      </div>
+    </section>
+
+    <section class="compare-section shell" aria-labelledby="company-title">
+      <div class="about-company">
+        <div>
+          <p class="about-kicker" id="company-title">公司</p>
+          <p>Orbi 和 Orbi Cloud 由在美国注册的有限责任公司 <strong>Low Code, LLC</strong> 运营。刷卡由 Stripe 处理，账单上显示 ORBI CLOUD。</p>
+        </div>
+        <div>
+          <p class="about-kicker">联系方式</p>
+          <dl class="about-contact">
+            <div><dt>求助和提问</dt><dd><a href="https://t.me/+kJRTTpFGBRU0M2Y9">Orbi Telegram 群 ↗</a></dd></div>
+            <div><dt>邮箱</dt><dd><a href="mailto:support@orbi.build">support@orbi.build</a></dd></div>
+            <div><dt>服务状态</dt><dd><a href="https://status.orbi.build">status.orbi.build ↗</a></dd></div>
+            <div><dt>引擎的缺陷</dt><dd><a href="https://github.com/orbi-build/orbi/issues">GitHub Issues ↗</a></dd></div>
+            <div><dt>动态</dt><dd><a href="https://x.com/xqliu" rel="me">X</a> · <a href="https://www.youtube.com/@orbibuild" rel="me">YouTube</a> · <a href="https://www.reddit.com/r/OrbiBuild/">Reddit</a> · <a href="#subscribe-title">每周邮件</a></dd></div>
+          </dl>
+        </div>
+      </div>
+    </section>
+
+    <section class="closing shell about-closing" aria-labelledby="about-cta-title">
+      <h2 class="orbi-closing-h2" id="about-cta-title">一句话进去，<span>Release 出来。</span></h2>
+      <div class="cta-row">
+        <a class="button button-signal" href="/zh/cloud/login">用 GitHub 试用 Cloud</a>
+        <a class="button button-outline" href="https://docs.orbi.build/zh">自己部署引擎 ↗</a>
+      </div>
+    </section>
+  </main>
+
+<!--@footer-->
+
+  <script src="/demo.js" defer></script>
+
+</body>
+</html>

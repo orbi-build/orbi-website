@@ -493,6 +493,8 @@ feed of the English posts: https://orbi.build/blog/feed.xml
 
 - Landing page (English): https://orbi.build/
 - Landing page (Chinese): https://orbi.build/zh/
+- About Orbi — what it is, who runs it, why it exists (English): https://orbi.build/about/
+- About Orbi — what it is, who runs it, why it exists (Chinese): https://orbi.build/zh/about/
 - Managed Cloud: https://orbi.build/cloud/
 - Comparison — Orbi vs Orca (English): https://orbi.build/compare/orca/
 - Comparisons index (English): https://orbi.build/compare/

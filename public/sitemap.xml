@@ -2,6 +2,12 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
         xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
+    <loc>https://orbi.build/about/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/about/"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/about/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://orbi.build/about/"/>
+  </url>
+  <url>
     <loc>https://orbi.build/about/larry-orbi/</loc>
     <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/about/larry-orbi/"/>
     <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/about/larry-orbi/"/>
@@ -192,6 +198,12 @@
     <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/trust/"/>
     <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/trust/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://orbi.build/trust/"/>
+  </url>
+  <url>
+    <loc>https://orbi.build/zh/about/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/about/"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/about/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://orbi.build/about/"/>
   </url>
   <url>
     <loc>https://orbi.build/zh/about/larry-orbi/</loc>
