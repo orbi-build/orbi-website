@@ -80,6 +80,8 @@ Usage 页面上那个 credits 数字，和套餐自带的 5 小时、每周额�
 
 *单位：每百万 token 的 credits，标准速度。*
 
+<!--@credits-calculator-->
+
 所以「几万 credits 能用多久」要先算一个任务花多少。举个例子：一个任务发出 5 万新输入 token、15 万缓存输入 token，拿回 1 万输出 token。用 GPT-6.1 Sol，是 2.5 + 0.375 + 2.5，约 5.4 credits；同一个任务换成 GPT-6 Luna，约 0.29 credits。用 credits 付费时，Fast 模式在这几个模型上扣得翻倍（扣套餐额度时是前面说的 2.5 倍）；Ultrafast（GPT-6.1 Sol 有，Luna 没有）扣得更多。按这个例子算，1000 credits 在 GPT-6.1 Sol 上大约够 186 个这样的任务，在 GPT-6 Luna 上大约 3,480 个。至于 1000 credits 要花多少钱，OpenAI 没公布统一单价，价格和折扣看套餐，结账页付款前会显示。你的任务和例子不会一样，最靠谱的办法是在 Usage 页面看最近几个任务实际花了多少，用余额去除。
 
 买之前先知道四件事：

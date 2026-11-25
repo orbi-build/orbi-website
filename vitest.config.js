@@ -24,10 +24,12 @@ import { defineConfig } from "vitest/config";
 // CI runs them on every PR, so a break still cannot reach main.
 const BROWSER_SUITES = [
   "tests/code-copy.browser.test.js",
+  "tests/credits-calculator.browser.test.js",
   "tests/blog-step-images.test.js",
   "tests/blog-table-overflow.test.js",
   "tests/cloud-layout.test.js",
   "tests/compare-cloud-cta.test.js",
+  "tests/cost-estimator.browser.test.js",
   "tests/film-dialog.test.js",
   "tests/footer-overflow.test.js",
   "tests/hero-counter.test.js",

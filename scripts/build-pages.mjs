@@ -707,6 +707,130 @@ export function wrapRenderedTables(html, lang) {
   return renderRange(0, html.length);
 }
 
+// Issue #1459: the credits estimator that sits under the rate table of the
+// Codex credits post. Its rates are the page's own: the build reads them out of
+// the article table above the marker and writes them onto each <option>, and
+// demo.js recalculates from those attributes, so the numbers exist once in the
+// source — in the rate table — instead of a second time inside a script. The
+// no-JavaScript result is computed here from the same rows, so it cannot drift
+// from the table either.
+const CREDITS_CALCULATOR_MARKER = "<!--@credits-calculator-->";
+// The example the prose quotes: one task on GPT-6.1 Sol, paid from 1,000
+// credits. The widget starts on these numbers.
+const CREDITS_CALCULATOR_DEFAULT_MODEL = "GPT-6.1 Sol";
+const CREDITS_CALCULATOR_EXAMPLE = { fresh: 50000, cached: 150000, output: 10000, balance: 1000 };
+
+const CREDITS_CALCULATOR_COPY = {
+  en: {
+    title: "Estimate what a task costs in credits",
+    model: "Model",
+    fresh: "Fresh input tokens",
+    cached: "Cached input tokens",
+    output: "Output tokens",
+    balance: "Credits balance",
+    fast: "Fast (credits double)",
+    error: "Enter 0 or a larger number in every token field and the balance.",
+    result: (cost, tasks) =>
+      `About <strong data-credits-cost>${cost}</strong> credits per task; your balance covers about <strong data-credits-tasks>${tasks}</strong> tasks like this.`,
+  },
+  zh: {
+    title: "算一下你的任务要多少 credits",
+    model: "模型",
+    fresh: "新输入 token",
+    cached: "缓存输入 token",
+    output: "输出 token",
+    balance: "credits 余额",
+    fast: "Fast（扣量翻倍）",
+    error: "每个 token 输入框和余额都填 0 或更大的数字。",
+    result: (cost, tasks) =>
+      `这个任务约花 <strong data-credits-cost>${cost}</strong> credits；手上的余额大约够 <strong data-credits-tasks>${tasks}</strong> 个这样的任务。`,
+  },
+};
+
+function trimTrailingZeros(text) {
+  return text.includes(".") ? text.replace(/0+$/, "").replace(/\.$/, "") : text;
+}
+
+// The prose quotes "about 5.4", "about 10.8" and "about 0.29" credits: one
+// decimal at or above 1, two below it, where one decimal would erase the
+// difference. A task count keeps three significant digits with thousands
+// separators — 186, 93, 3,480 — the way the article reads.
+export function formatCredits(value) {
+  return trimTrailingZeros(value.toFixed(value < 1 ? 2 : 1));
+}
+
+export function formatTasks(value) {
+  if (!(value >= 1)) return trimTrailingZeros(value.toFixed(2));
+  const step = 10 ** Math.max(0, String(Math.floor(value)).length - 3);
+  return String(Math.round(value / step) * step).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+}
+
+// The rows of the article table above the marker ("model | input | cached
+// input | output", per million tokens). Anything else fails the build rather
+// than shipping an estimator that reads a table it was not written for.
+function creditsRateRows(label, tableHtml) {
+  const body = tableHtml.match(/<tbody\b[^>]*>([\s\S]*?)<\/tbody>/i)?.[1];
+  if (!body) throw new Error(`${label}: the table above ${CREDITS_CALCULATOR_MARKER} has no body rows`);
+  const rows = [];
+  for (const row of body.matchAll(/<tr\b[^>]*>([\s\S]*?)<\/tr>/gi)) {
+    const cells = [...row[1].matchAll(/<t[hd]\b[^>]*>([\s\S]*?)<\/t[hd]>/gi)].map((cell) => tableCellText(cell[1]));
+    const rates = cells.slice(1).map((cell) => (/^\d[\d,]*(?:\.\d+)?$/.test(cell) ? Number(cell.replaceAll(",", "")) : NaN));
+    if (!cells[0] || rates.length !== 3 || rates.some((rate) => !Number.isFinite(rate))) {
+      throw new Error(`${label}: ${CREDITS_CALCULATOR_MARKER} needs a rate table of "model | input | cached input | output", got ${JSON.stringify(cells)}`);
+    }
+    rows.push({ model: cells[0], input: rates[0], cached: rates[1], output: rates[2] });
+  }
+  if (rows.length === 0) throw new Error(`${label}: the table above ${CREDITS_CALCULATOR_MARKER} has no rate rows`);
+  return rows;
+}
+
+// Replaces the marker with the widget, priced from the table above it. The
+// rates reach the browser as data attributes on each <option>, and demo.js
+// only re-reads them, so this page remains the one place the rates are written.
+export function renderCreditsCalculator(html, lang, label) {
+  if (!html.includes(CREDITS_CALCULATOR_MARKER)) return html;
+  if (html.indexOf(CREDITS_CALCULATOR_MARKER) !== html.lastIndexOf(CREDITS_CALCULATOR_MARKER)) {
+    throw new Error(`${label}: more than one ${CREDITS_CALCULATOR_MARKER} marker`);
+  }
+  const copy = CREDITS_CALCULATOR_COPY[lang];
+  if (!copy) throw new Error(`renderCreditsCalculator: no copy for language "${lang}"`);
+  const markerAt = html.indexOf(CREDITS_CALCULATOR_MARKER);
+  const tableEnd = html.lastIndexOf("</table>", markerAt);
+  const tableStart = html.lastIndexOf("<table", tableEnd);
+  if (tableEnd < 0 || tableStart < 0) {
+    throw new Error(`${label}: ${CREDITS_CALCULATOR_MARKER} needs the rate table directly above it`);
+  }
+  const rows = creditsRateRows(label, html.slice(tableStart, tableEnd));
+  const selected = rows.find(({ model }) => model === CREDITS_CALCULATOR_DEFAULT_MODEL);
+  if (!selected) {
+    throw new Error(`${label}: the rate table has no "${CREDITS_CALCULATOR_DEFAULT_MODEL}" row for the calculator's default example`);
+  }
+  const options = rows.map(({ model, input, cached, output }) =>
+    `<option value="${escAttr(model)}" data-rate-input="${input}" data-rate-cached="${cached}" data-rate-output="${output}"${model === selected.model ? " selected" : ""}>${escAttr(model)}</option>`).join("");
+  const cost = (CREDITS_CALCULATOR_EXAMPLE.fresh * selected.input
+    + CREDITS_CALCULATOR_EXAMPLE.cached * selected.cached
+    + CREDITS_CALCULATOR_EXAMPLE.output * selected.output) / 1_000_000;
+  const tasks = cost > 0 ? CREDITS_CALCULATOR_EXAMPLE.balance / cost : 0;
+  const field = (name, step, value) =>
+    `    <label class="credits-calculator-field"><span>${copy[name]}</span><input type="number" inputmode="decimal" min="0" step="${step}" value="${value}" data-credits-${name}></label>`;
+  const widget = [
+    `<div class="credits-calculator" data-credits-calculator>`,
+    `  <p class="credits-calculator-title" id="credits-calculator-title">${copy.title}</p>`,
+    `  <div class="credits-calculator-fields" role="group" aria-labelledby="credits-calculator-title">`,
+    `    <label class="credits-calculator-field"><span>${copy.model}</span><select data-credits-model>${options}</select></label>`,
+    field("fresh", 1, CREDITS_CALCULATOR_EXAMPLE.fresh),
+    field("cached", 1, CREDITS_CALCULATOR_EXAMPLE.cached),
+    field("output", 1, CREDITS_CALCULATOR_EXAMPLE.output),
+    field("balance", "any", CREDITS_CALCULATOR_EXAMPLE.balance),
+    `  </div>`,
+    `  <label class="credits-calculator-fast"><input type="checkbox" data-credits-fast><span>${copy.fast}</span></label>`,
+    `  <p class="credits-calculator-result" data-credits-result aria-live="polite">${copy.result(formatCredits(cost), formatTasks(tasks))}</p>`,
+    `  <p class="credits-calculator-error" data-credits-error aria-live="polite" hidden>${copy.error}</p>`,
+    `</div>`,
+  ].join("\n");
+  return html.replace(CREDITS_CALCULATOR_MARKER, () => widget);
+}
+
 // Issue #1181: every code block on every page — the homepage's install
 // commands, blog posts, Markdown guides, hand-written guide pages, and any page
 // added later — gets the same one-click copy button, labelled in the page's own
@@ -1012,6 +1136,8 @@ export function postFromSource(displayName, source) {
   validatePostBody(label, body);
   const parsedHtml = classifyInlineCode(wrapRenderedTables(marked.parse(body), lang));
   const { html, headings } = renderPostHeadings(parsedHtml, label);
+  // Issue #1459: the credits estimator, priced from the article's own table.
+  const withCalculator = renderCreditsCalculator(html, lang, label);
   const video = parseVideo(label, fields);
   const related = lang === "en" ? parseRelated(label, fields) : [];
   const slug = displayName.slice(displayName.lastIndexOf("/") + 1).replace(/\.md$/, "");
@@ -1035,7 +1161,7 @@ export function postFromSource(displayName, source) {
     // Optional series membership (Issue #826): the guide page rendering
     // <!--@series:<name>--> lists these posts and each post links back to it.
     series: fields.series,
-    html,
+    html: withCalculator,
     headings,
   };
 }

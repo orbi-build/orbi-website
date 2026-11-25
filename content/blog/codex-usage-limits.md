@@ -80,6 +80,8 @@ There is no fixed number of credits per message. OpenAI prices credits per milli
 
 *Credits per 1 million tokens, Standard speed.*
 
+<!--@credits-calculator-->
+
 To turn a balance into a number of tasks, price one task. Say a task sends 50,000 fresh input tokens, 150,000 cached input tokens and gets 10,000 output tokens back. On GPT-6.1 Sol that costs 2.5 + 0.375 + 2.5, about 5.4 credits. The same task on GPT-6 Luna costs about 0.29 credits. Paid from credits, Fast mode doubles the cost on these models (against included usage it counts 2.5 times, as noted earlier), and Ultrafast (offered on GPT-6.1 Sol, not Luna) costs more again. At those example rates, 1,000 credits cover about 186 such tasks on GPT-6.1 Sol, or about 3,480 on GPT-6 Luna. OpenAI does not publish a single price per credit; purchase prices and discounts depend on your plan, and checkout shows the price before you pay. Your own tasks will differ from this example, so take the per-task figure from your recent usage on the Usage page and divide your balance by it.
 
 Four rules worth knowing before you buy:
