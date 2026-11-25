@@ -256,7 +256,11 @@
     }
     .about-contact dt { color: #59706d; font-size: 0.92rem; }
     .about-contact dd { margin: 0; font-size: 0.92rem; }
-    .about-contact a { text-underline-offset: 3px; }
+    /* A contact link is one word, so it never breaks inside itself: at 390 px the
+       column is about 180 px, and 「每周邮件」 / 「weekly email」 used to split in the
+       middle of the word (Issue #1489). A row that runs out of room wraps between
+       its links, at the spaces around the 「·」 separators. */
+    .about-contact a { white-space: nowrap; text-underline-offset: 3px; }
 
     .about-closing { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: end; gap: 24px 40px; }
     .about-closing .orbi-closing-h2 { margin-bottom: 0; }
