@@ -30,6 +30,23 @@ const PAGES = [
   },
 ];
 
+// Issue #1486: the author page's first-screen link line carries, after GitHub
+// and X, one in-site link to that language's About page — so a reader who
+// arrives from a byline reaches "who Orbi is and why it exists" in one step.
+// The third link is a site link, not another profile: no rel="me".
+const LINK_LINES = [
+  {
+    output: "about/larry-orbi/index.html",
+    href: "/about/",
+    label: "About Orbi",
+  },
+  {
+    output: "zh/about/larry-orbi/index.html",
+    href: "/zh/about/",
+    label: "关于 Orbi",
+  },
+];
+
 // The claim the Issue replaces: no page may carry it in any language.
 const RETIRED = [
   "Every post on this blog is written by him.",
@@ -41,6 +58,7 @@ const RETIRED = [
 const metaContent = (html, opening) =>
   html.match(new RegExp(`<meta ${opening} content="([^"]*)">`))?.[1] ?? "";
 const ledeOf = (html) => html.match(/<p class="hero-lede">([\s\S]*?)<\/p>/)?.[1] ?? "";
+const linkLineOf = (html) => html.match(/<p class="author-links">([\s\S]*?)<\/p>/)?.[1] ?? "";
 
 let pages; // output → html
 
@@ -68,6 +86,18 @@ describe("the author page says how the posts are produced (Issue #1480)", () => 
         expect(content, `${page.output}: <meta ${opening}> missing`).not.toBe("");
         expect(content.endsWith(page.description), `${page.output}: <meta ${opening}> → ${content}`).toBe(true);
       }
+    }
+  });
+
+  it("ends the link line with a link to that language's About page (Issue #1486)", () => {
+    for (const { output, href, label } of LINK_LINES) {
+      const line = linkLineOf(pages.get(output));
+      expect(line, `${output}: missing <p class="author-links">`).not.toBe("");
+      const anchors = [...line.matchAll(/<a\b([^>]*)>([\s\S]*?)<\/a>/g)];
+      expect(anchors.map(([, , body]) => body.trim()), `${output}: link line order`)
+        .toEqual(["GitHub", "X", label]);
+      expect(anchors[2][1], `${output}: About href`).toContain(`href="${href}"`);
+      expect(anchors[2][1], `${output}: a site link carries no rel="me"`).not.toContain('rel="me"');
     }
   });
 
