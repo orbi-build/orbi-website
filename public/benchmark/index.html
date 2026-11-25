@@ -48,7 +48,7 @@
     "about": { "@id": "https://orbi.build/#software" },
     "datePublished": "2026-09-30",
     "dateModified": "2026-09-30",
-    "author": { "@type": "Person", "name": "Larry 🍀 Orbi" },
+    "author": {"@type":"Person","name":"Larry 🍀 Orbi","url":"https://orbi.build/about/larry-orbi/","sameAs":["https://github.com/xqliu","https://x.com/xqliu"]},
     "publisher": { "@type": "Organization", "name": "Orbi", "url": "https://orbi.build/", "logo": { "@type": "ImageObject", "url": "https://orbi.build/logo-mark.svg" } }
   }
   </script>
@@ -80,6 +80,7 @@
       <section class="compare-hero shell" aria-labelledby="bench-title">
         <p class="eyebrow">Benchmark · updated 2026-09-30</p>
         <h1 id="bench-title">How we test Orbi's harness</h1>
+        <p class="post-byline"><a href="/about/larry-orbi/">Larry 🍀 Orbi</a> · <time datetime="2026-09-30">2026-09-30</time></p>
         <p class="hero-lede"><strong>On eight bugs Orbi had never seen, where the Issue shows one narrow example of a wider problem, the original harness failed 4 of 12 runs and an always-on regression guard passed 9 of 10. On ordinary bugs the guard buys nothing and costs about twice the tokens, so it belongs behind a per-repository switch, off by default.</strong> A classifier that ran the guard only on text-handling changes saved about 10% and did worse. Strengthening only the reviewer, or enriching the ticket first, didn't close the gap either.</p>
         <div class="cta-row">
           <a class="button button-ghost" href="#studies">Read the studies</a>
