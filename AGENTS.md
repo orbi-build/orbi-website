@@ -144,7 +144,10 @@ belongs to decides where you edit it.
   section: land it there first, then consume it here.
 - `site/partials/nav.html`, `site/partials/footer.html` and
   `site/partials/post.html` — the shared navigation, footer and post template,
-  rendered into every page that needs them.
+  rendered into every page that needs them. The footer's directory badge row
+  (`footer-friends`) is wrapped in `<!--@footer-friends-->` /
+  `<!--@/footer-friends-->`: only `/` and `/zh/` render it, every other
+  page's footer carries no directory backlink (Issue #1466).
 - `site/llms.txt` — the hand-written llms.txt prose (every section except its
   two generated lists). The build replaces the `<!--@llms-blog-->` marker with
   the Blog section's post list, generated from `content/blog/**` one entry per
