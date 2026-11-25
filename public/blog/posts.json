@@ -3,8 +3,8 @@
     "slug": "claude-md-vs-agents-md",
     "title": "CLAUDE.md vs AGENTS.md: which file each agent reads",
     "summary": "I tested Claude Code 2.1.331, Codex 0.167.0 and Pi 1.6.0 in 11 repos. With both files, Claude Code reads only CLAUDE.md; the others read only AGENTS.md.",
-    "zhSlug": null,
-    "zhTitle": null,
+    "zhSlug": "claude-md-vs-agents-md",
+    "zhTitle": "CLAUDE.md 和 AGENTS.md：各家 agent 到底读哪个",
     "related": []
   },
   {
