@@ -387,6 +387,29 @@ export function renderNav(page, partial = NAV_PARTIAL) {
   });
 }
 
+// Issue #1466: site/partials/footer.html marks its directory badge row with
+// these two markers, so the footer keeps the row on the two language homes and
+// drops it whole from every other page — no inner page pays a backlink to each
+// directory.
+// Each marker owns its line, trailing newline included, so dropping the row
+// leaves no blank line behind and keeping it reproduces the partial as before.
+const FRIENDS_ROW_START = "<!--@footer-friends-->\n";
+const FRIENDS_ROW_END = "<!--@/footer-friends-->\n";
+
+function footerPartial(isHome) {
+  const start = FOOTER_PARTIAL.indexOf(FRIENDS_ROW_START);
+  const end = FOOTER_PARTIAL.indexOf(FRIENDS_ROW_END);
+  if (start < 0 || end < start) {
+    throw new Error(
+      "site/partials/footer.html: missing the <!--@footer-friends--> markers (Issue #1466)"
+    );
+  }
+  const before = FOOTER_PARTIAL.slice(0, start);
+  const row = FOOTER_PARTIAL.slice(start + FRIENDS_ROW_START.length, end);
+  const after = FOOTER_PARTIAL.slice(end + FRIENDS_ROW_END.length);
+  return before + (isHome ? row : "") + after;
+}
+
 export function renderFooter(page) {
   const t = LANG[page.lang];
   const isHome = page.output === "index.html" || page.output === "zh/index.html";
@@ -408,7 +431,7 @@ export function renderFooter(page) {
     ([en, zh, enLabel, zhLabel]) =>
       `      <a href="${base(t.langPrefix ? zh : en)}">${t.langPrefix ? zhLabel : enLabel}</a>`
   ).join("\n");
-  return `${renderSubscribe(page.lang)}\n  <script src="/subscribe.js" defer></script>\n\n${fill(FOOTER_PARTIAL, {
+  return `${renderSubscribe(page.lang)}\n  <script src="/subscribe.js" defer></script>\n\n${fill(footerPartial(isHome), {
     HOME_HREF: base(t.homeHref),
     HOME_ARIA: t.homeAria,
     TAGLINE: t.tagline,
