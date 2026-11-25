@@ -66,7 +66,6 @@ const PAGES = [
       "Tests say what they ran on:",
       "Other products are described from their current official docs,",
       "Orbi and Orbi Cloud are operated by <strong>Low Code, LLC</strong>, a limited liability company registered in the United States. Card payments are handled by Stripe and appear on statements as ORBI CLOUD.",
-      "7 One-North Gateway<br>Singapore 138642",
       "One sentence in. <span>A release out.</span>",
     ],
     numbers: [
@@ -122,7 +121,6 @@ const PAGES = [
       "测评写明条件：",
       "写别家产品，以对方当前的官方文档为准，",
       "Orbi 和 Orbi Cloud 由在美国注册的有限责任公司 <strong>Low Code, LLC</strong> 运营。刷卡由 Stripe 处理，账单上显示 ORBI CLOUD。",
-      "7 One-North Gateway<br>Singapore 138642",
       "一句话进去，<span>Release 出来。</span>",
     ],
     numbers: [
@@ -206,6 +204,10 @@ describe("the About pages ship the approved copy (Issue #1479)", () => {
         expect(html.replace(/\s+/g, " "), `${page.output}: copy "${textOf(sentence)}"`).toContain(sentence);
       }
       expect(html).toMatch(/<p class="eyebrow">[^<]*2026-11-25<\/p>/);
+      // Issue #1490: the Company section states the operator and the billing
+      // name only — no mailing address, and no styles left behind for one.
+      expect(html, `${page.output}: mailing address removed`).not.toContain("One-North Gateway");
+      expect(html, `${page.output}: address styles removed`).not.toContain("about-address");
     });
 
     it(`${page.output}: links the approved destinations with the approved labels`, () => {
