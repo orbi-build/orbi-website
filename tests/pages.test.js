@@ -14,6 +14,10 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { buildPages, collectGuides, collectPosts, insertInlinePostCta, loadPages, pathToHref, postFromSource, renderLlms, validateRenderedPostBody, wrapRenderedTables } from "../scripts/build-pages.mjs";
 
 const ROOT = fileURLToPath(new URL("..", import.meta.url));
+// Issue #1465: the dated comparison, benchmark and guide pages name the same
+// Person the posts do — the author page of their own language plus both
+// profiles, taken from the one author record.
+const AUTHOR_RECORD = JSON.parse(await readFile(join(ROOT, "site", "data", "authors.json"), "utf8"));
 let builtDir;
 let pages;
 let posts; // the posts collectPosts() derives from content/blog/**
@@ -1425,6 +1429,8 @@ describe("build output is committed (npm run build ran)", () => {
       expect(html).not.toContain("<!--@post-meta-->");
       expect(html).not.toContain("<!--@social-proof-->");
       expect(html).not.toContain("<!--@cloud-evidence-->");
+      expect(html).not.toContain("<!--@footer-friends-->");
+      expect(html).not.toContain("<!--@/footer-friends-->");
       expect(html).not.toMatch(/\{\{[A-Z_]+\}\}/);
     }
   });
@@ -1631,15 +1637,65 @@ describe("one unified footer on every content page", () => {
   // link back, right after Open Source Alternatives.
   // The link points at the free list (not the homepage) and must stay
   // crawlable (no nofollow, no ref parameter).
-  it("links Agentic.ai from the footer without nofollow on every footer page", () => {
+  // Issue #1466 moved the friend links onto the two language homes, with the
+  // rest of the badge row: an inner page's footer carries no directory link.
+  it("links Agentic.ai from the footer without nofollow on the language homes", () => {
     const anchor = '<a href="https://agentic.ai/best/free-coding-agents" rel="noopener">Agentic.ai</a>';
-    for (const page of content()) {
-      const footer = footerRegion(shipped.get(page.output));
-      expect(footer, `${page.output}: Agentic.ai footer anchor drifted`).toContain(anchor);
-      expect(footerAnchorTag(footer, "https://agentic.ai/best/free-coding-agents"), `${page.output}: the Agentic.ai backlink must be crawlable`)
+    for (const output of ["index.html", "zh/index.html"]) {
+      const footer = footerRegion(shipped.get(output));
+      expect(footer, `${output}: Agentic.ai footer anchor drifted`).toContain(anchor);
+      expect(footerAnchorTag(footer, "https://agentic.ai/best/free-coding-agents"), `${output}: the Agentic.ai backlink must be crawlable`)
         .not.toContain("nofollow");
-      expect(footer.indexOf(anchor), `${page.output}: Agentic.ai must follow Open Source Alternatives`)
+      expect(footer.indexOf(anchor), `${output}: Agentic.ai must follow Open Source Alternatives`)
         .toBeGreaterThan(footer.indexOf('<a href="https://www.opensourcealternatives.to/" rel="noopener">Open Source Alternatives</a>'));
+    }
+  });
+
+  // Issue #1466: the directory badge row stays on the two language homes, so the
+  // remaining pages pay no backlink to any directory. The assertion derives the
+  // row's links from the shipped home footers — never a hand-kept page list — and
+  // walks every other page under public/, so a page added later is covered
+  // without touching this test.
+  it("keeps the directory badge row on the language homes only (Issue #1466)", async () => {
+    const HOMES = ["index.html", "zh/index.html"];
+    const badgeRow = (html) =>
+      footerRegion(html).match(/<nav class="footer-friends"[\s\S]*?<\/nav>/)?.[0] ?? "";
+    const badgeHrefs = new Set(
+      HOMES.flatMap((output) =>
+        [...badgeRow(shipped.get(output)).matchAll(/<a\b[^>]*\shref="([^"]*)"/g)].map((match) => match[1])
+      )
+    );
+    // Non-vacuity guard: an empty set would make the "no row link" loop below
+    // pass on anything.
+    expect(badgeHrefs.size, "the home footer badge row must ship its directory links").toBeGreaterThan(3);
+
+    for (const output of HOMES) {
+      const footer = footerRegion(shipped.get(output));
+      expect(footer, `${output}: the home keeps the footer badge row`).toContain('class="footer-friends"');
+      expect(footer, `${output}: the home keeps the badge strip`).toContain("data-footer-badges-track");
+    }
+
+    const listHtml = async (dir, prefix = "") => {
+      const files = [];
+      for (const entry of await readdir(dir, { withFileTypes: true })) {
+        if (entry.isDirectory()) files.push(...(await listHtml(join(dir, entry.name), `${prefix}${entry.name}/`)));
+        else if (entry.name.endsWith(".html")) files.push(`${prefix}${entry.name}`);
+      }
+      return files;
+    };
+    const others = (await listHtml(join(ROOT, "public"))).filter((output) => !HOMES.includes(output));
+    expect(others.length, "the build must ship more than the two homes").toBeGreaterThan(10);
+    for (const output of others) {
+      const footer = footerRegion(await readFile(join(ROOT, "public", output), "utf8"));
+      expect(footer, `${output}: an inner page still ships the footer badge row`).not.toContain("footer-friends");
+      expect(footer, `${output}: an inner page still ships the badge strip`).not.toContain("footer-badges");
+      // Directory links only: the row's one internal link (the ToolPilot badge
+      // page) shares its href with the footer's language switch on that page,
+      // and the row's own absence above already covers it.
+      const leaked = [...badgeHrefs].filter(
+        (href) => /^https?:\/\//.test(href) && footer.includes(`href="${href}"`)
+      );
+      expect(leaked, `${output}: an inner page footer still links the badge row's ${leaked.join(", ")}`).toEqual([]);
     }
   });
 
@@ -2948,9 +3004,13 @@ describe("Article publish and update dates (Issue #889)", () => {
   // indexes series posts by their own publication date, and a newer post is not
   // the guide being re-verified, so only the page's own copy can raise
   // dateModified.
+  // Issue #1465 added the generated byline between the title and the lede; it
+  // repeats the page's own JSON-LD dates, so counting it here would let a
+  // guessed date pass by agreeing with itself — only the page's own copy counts.
   const visibleDates = (html) => [...html
     .replace(/<script type="application\/ld\+json">[\s\S]*?<\/script>/g, "")
     .replace(/<ul class="series-list">[\s\S]*?<\/ul>/g, "")
+    .replace(/<p class="post-byline">[\s\S]*?<\/p>/g, "")
     .matchAll(/\b\d{4}-\d{2}-\d{2}\b/g)].map((match) => match[0]);
 
   it("carries datePublished, dateModified, a Person author and a publisher", () => {
@@ -2961,7 +3021,12 @@ describe("Article publish and update dates (Issue #889)", () => {
       expect(article, `${output}: missing Article`).toBeTruthy();
       expect(article.datePublished, `${output}: datePublished`).toBe(published);
       expect(article.dateModified, `${output}: dateModified`).toBe(modified);
-      expect(article.author, output).toEqual({ "@type": "Person", name: "Larry 🍀 Orbi" });
+      expect(article.author, output).toEqual({
+        "@type": "Person",
+        name: AUTHOR_RECORD.name,
+        url: `https://orbi.build${output.startsWith("zh/") ? "/zh" : ""}/about/${AUTHOR_RECORD.slug}/`,
+        sameAs: AUTHOR_RECORD.sameAs,
+      });
       expect(article.publisher, output).toEqual(PUBLISHER);
     }
   });
