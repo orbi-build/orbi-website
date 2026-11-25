@@ -1,0 +1,488 @@
+<!--orbi:page
+{
+  "output": "about/index.html",
+  "lang": "en",
+  "mirror": "zh/about/index.html",
+  "layout": "pretty",
+  "nav": {
+    "navId": "primary-navigation",
+    "systemHref": "/#system",
+    "compareHref": "/compare/",
+    "compareLabel": "Compare",
+    "compareDataCta": false,
+    "compareCurrent": false,
+    "costHref": "/cloud/#pricing",
+    "costCurrent": false,
+    "compareCostSameLine": false,
+    "docsHref": "https://docs.orbi.build",
+    "langSwitchHref": "/zh/about/",
+    "langCurrentFirst": true
+  }
+}
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>About Orbi: what it is, who runs it, why it exists | Orbi</title>
+  <meta name="description" content="Orbi is a lights-out software factory: one sentence in, a release out. Who runs it, why it exists, what AI agents do and what a person decides.">
+  <link rel="canonical" href="https://orbi.build/about/">
+  <link rel="alternate" hreflang="en" href="https://orbi.build/about/">
+  <link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/about/">
+  <link rel="alternate" hreflang="x-default" href="https://orbi.build/about/">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <meta name="theme-color" content="#06151b">
+
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Orbi">
+  <meta property="og:locale" content="en_US">
+  <meta property="og:locale:alternate" content="zh_CN">
+  <meta property="og:url" content="https://orbi.build/about/">
+  <meta property="og:title" content="About Orbi: what it is, who runs it, why it exists">
+  <meta property="og:description" content="Orbi is a lights-out software factory: one sentence in, a release out. Who runs it, why it exists, what AI agents do and what a person decides.">
+  <meta property="og:image" content="https://orbi.build/img/og.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:site" content="@xqliu">
+  <meta name="twitter:title" content="About Orbi: what it is, who runs it, why it exists">
+  <meta name="twitter:description" content="Orbi is a lights-out software factory: one sentence in, a release out. Who runs it, why it exists, what AI agents do and what a person decides.">
+  <meta name="twitter:image" content="https://orbi.build/img/og.png">
+  <link rel="stylesheet" href="/fonts/fonts.css">
+  <link rel="stylesheet" href="/styles.css">
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Organization",
+        "@id": "https://orbi.build/#organization",
+        "name": "Orbi",
+        "url": "https://orbi.build/",
+        "logo": "https://orbi.build/logo-mark.svg",
+        "founder": {
+          "@type": "Person",
+          "name": "Larry 🍀 Orbi",
+          "url": "https://orbi.build/about/larry-orbi/",
+          "sameAs": [
+            "https://github.com/xqliu",
+            "https://x.com/xqliu"
+          ]
+        },
+        "sameAs": [
+          "https://github.com/orbi-build",
+          "https://x.com/xqliu",
+          "https://www.youtube.com/@orbibuild",
+          "https://www.reddit.com/r/OrbiBuild/"
+        ]
+      },
+      {
+        "@type": "AboutPage",
+        "@id": "https://orbi.build/about/#about",
+        "url": "https://orbi.build/about/",
+        "name": "About Orbi",
+        "description": "Orbi is a lights-out software factory: one sentence in, a release out. Who runs it, why it exists, what AI agents do and what a person decides.",
+        "inLanguage": "en",
+        "isPartOf": {
+          "@type": "WebSite",
+          "name": "Orbi",
+          "url": "https://orbi.build/"
+        },
+        "mainEntity": { "@id": "https://orbi.build/#organization" }
+      }
+    ]
+  }
+  </script>
+
+  <style>
+    /* Page-scoped (Issue #1479): the portrait, the four counted numbers and the
+       two-column split of who does what. Tokens only — no new colours, radii or
+       component styles; the rest of the page reuses .night, .compare-hero,
+       .compare-section, .closing and the shared buttons. */
+    .about-kicker {
+      margin: 0 0 26px;
+      color: var(--signal-on-light);
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      font-weight: 500;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+    /* The design's hero headline is the homepage hero scale (the token's
+       display-hero maximum), not the smaller shared inner-page h1. */
+    .about-hero h1 { font-size: 64px; line-height: 1.04; }
+    .about-numbers {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 0 28px;
+      padding-bottom: clamp(56px, 6vw, 84px);
+    }
+    .about-number {
+      display: block;
+      padding-top: 20px;
+      border-top: 1px solid var(--line-dark);
+      text-decoration: none;
+    }
+    .about-number strong {
+      display: block;
+      color: #edf5f0;
+      font-family: var(--display);
+      font-size: clamp(2.4rem, 3.5vw, 4rem);
+      font-variant-numeric: tabular-nums;
+      font-weight: 600;
+      letter-spacing: -0.06em;
+      line-height: 1;
+    }
+    /* The release count is the end of an Orbi delivery, so only it is teal. */
+    .about-number:first-child strong { color: var(--run); }
+    .about-number span {
+      display: block;
+      margin-top: 12px;
+      color: #9aada9;
+      font-size: 0.85rem;
+      line-height: 1.5;
+    }
+    .about-number:hover span { color: #edf5f0; }
+    .about-number-source {
+      grid-column: 1 / -1;
+      margin: 28px 0 0;
+      color: #7d9992;
+      font-family: var(--mono);
+      font-size: 0.72rem;
+      line-height: 1.6;
+    }
+
+    .about-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 0.34fr) minmax(0, 1fr);
+      column-gap: clamp(32px, 5vw, 88px);
+      align-items: start;
+    }
+    .about-grid > .about-kicker { grid-column: 1; grid-row: 1; }
+    .about-grid > .about-body { grid-column: 2; grid-row: 1; min-width: 0; }
+    .about-rail { grid-column: 1; grid-row: 1; min-width: 0; }
+    .about-rail .about-kicker { margin-bottom: 26px; }
+    .about-rail h2 { margin-bottom: 0; }
+    .about-grid > .about-body > :first-child { margin-top: 0; }
+
+    .about-who .about-kicker { grid-column: 1; grid-row: 1; }
+    .about-who-head { display: contents; }
+    .about-who .about-portrait { grid-column: 1; grid-row: 2; }
+    .about-who .about-intro { grid-column: 2; grid-row: 1; min-width: 0; }
+    .about-who > .about-body { grid-column: 2; grid-row: 2; }
+    .about-portrait {
+      width: max-content;
+      padding: 8px;
+      border: 1px solid var(--line);
+      background: var(--paper-2);
+      box-shadow: 9px 9px 0 var(--line);
+    }
+    .about-portrait img { width: 160px; height: 160px; }
+
+    .about-body h2 { margin-bottom: 22px; }
+    .about-intro h2 { margin-bottom: 8px; }
+    .about-role { margin: 0; color: var(--ink-soft); }
+    .about-who > .about-body { margin-top: 20px; }
+    .about-body ul,
+    .about-body ol {
+      margin: 0;
+      padding-left: 1.25rem;
+      color: var(--ink-soft);
+    }
+    .about-body li + li { margin-top: 10px; }
+    .about-body strong { color: var(--ink); }
+    .about-note { margin: 22px 0 0; color: var(--ink-soft); }
+    .about-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px 28px;
+      margin: 24px 0 0;
+    }
+    .about-links a {
+      font-size: 0.92rem;
+      font-weight: 600;
+      text-underline-offset: 4px;
+    }
+    .about-links a:hover { color: var(--run-on-light); }
+
+    .about-split {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 28px clamp(32px, 5vw, 72px);
+      margin-top: 16px;
+    }
+    .about-split > div { padding-top: 22px; border-top: 2px solid var(--run); }
+    .about-split > div + div { border-top-color: var(--signal); }
+    .about-split h3 {
+      margin: 0 0 18px;
+      font-family: var(--display);
+      font-size: 1.25rem;
+      font-weight: 600;
+      letter-spacing: -0.015em;
+    }
+    .about-split ul,
+    .about-split ol { margin: 0; padding-left: 1.25rem; color: var(--ink-soft); }
+    .about-split li + li { margin-top: 10px; }
+
+    .about-cardband {
+      padding: clamp(84px, 9vw, 140px) 0;
+      border-top: 1px solid var(--line);
+      background: var(--paper-2);
+    }
+    .about-cards {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 24px clamp(24px, 4vw, 56px);
+    }
+    .about-cards h3 {
+      margin: 0 0 14px;
+      font-family: var(--display);
+      font-size: 1.35rem;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+      line-height: 1.15;
+    }
+    .about-cards p { margin: 0 0 16px; color: var(--ink-soft); font-size: 0.95rem; }
+    .about-cards a { font-size: 0.92rem; font-weight: 600; text-underline-offset: 4px; }
+    .about-money {
+      margin-top: clamp(56px, 6vw, 84px);
+      padding-top: clamp(36px, 4vw, 48px);
+      border-top: 1px solid var(--line);
+    }
+    .about-money .about-kicker { margin-bottom: 22px; }
+    .about-money p { max-width: 52rem; margin: 0 0 14px; color: var(--ink-soft); }
+    .about-money p:last-child { margin-bottom: 0; }
+    .about-money a { text-underline-offset: 4px; }
+
+    .about-company {
+      display: grid;
+      grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+      gap: 32px clamp(32px, 5vw, 72px);
+    }
+    .about-company .about-kicker { margin-bottom: 22px; }
+    .about-company > div > p:not(.about-kicker) { margin: 0; color: var(--ink-soft); }
+    .about-company > div > .about-address { margin: 22px 0 0; }
+    .about-address {
+      margin-top: 22px;
+      color: var(--ink-soft);
+      font-size: 0.95rem;
+    }
+    .about-address span {
+      display: block;
+      color: #59706d;
+      font-family: var(--mono);
+      font-size: 0.72rem;
+      letter-spacing: 0.02em;
+    }
+    .about-contact { margin: 0; }
+    .about-contact div {
+      display: grid;
+      grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+      gap: 4px 16px;
+      padding: 9px 0;
+    }
+    .about-contact dt { color: #59706d; font-size: 0.92rem; }
+    .about-contact dd { margin: 0; font-size: 0.92rem; }
+    .about-contact a { text-underline-offset: 3px; }
+
+    .about-closing { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: end; gap: 24px 40px; }
+    .about-closing .orbi-closing-h2 { margin-bottom: 0; }
+    .about-closing .orbi-closing-h2 span { color: var(--signal-on-light); }
+    .about-closing .cta-row { flex-direction: row; flex-wrap: wrap; align-items: center; margin: 0; }
+
+    @media (max-width: 699px) {
+      .about-hero h1 { font-size: 42px; }
+    }
+
+    @media (max-width: 900px) {
+      .about-grid { grid-template-columns: minmax(0, 1fr); }
+      .about-grid > .about-kicker,
+      .about-grid > .about-body,
+      .about-grid > .about-rail { grid-column: 1; grid-row: auto; }
+      .about-rail .about-kicker { margin-bottom: 22px; }
+      .about-rail h2 { margin-bottom: 26px; }
+      .about-who .about-kicker { grid-column: 1; grid-row: auto; }
+      .about-who-head { display: flex; gap: 16px; align-items: flex-start; }
+      .about-who .about-portrait { padding: 4px; flex: none; box-shadow: 5px 5px 0 var(--line); }
+      .about-portrait img { width: 88px; height: 88px; }
+      .about-who .about-intro { grid-column: 1; grid-row: auto; }
+      .about-who > .about-body { grid-column: 1; grid-row: auto; margin-top: 26px; }
+      .about-intro h2 { margin-bottom: 4px; font-size: clamp(1.7rem, 7vw, 2.4rem); }
+      .about-role { font-size: 0.95rem; }
+      .about-numbers { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 28px 24px; }
+      .about-cardband { padding: 88px 0; }
+      .about-cards { grid-template-columns: minmax(0, 1fr); gap: 32px; }
+      .about-split { grid-template-columns: minmax(0, 1fr); }
+      .about-company { grid-template-columns: minmax(0, 1fr); }
+      .about-closing { grid-template-columns: minmax(0, 1fr); }
+      .about-closing .cta-row { flex-direction: column; align-items: stretch; }
+    }
+  </style>
+</head>
+<body>
+  <a class="skip-link" href="#main-content">Skip to content</a>
+
+<!--@nav-->
+
+  <main id="main-content">
+    <div class="night">
+      <section class="compare-hero shell about-hero" aria-labelledby="about-title">
+        <p class="eyebrow">About Orbi · page reviewed 2026-11-25</p>
+        <h1 id="about-title">The lights-out software factory <span>that builds itself.</span></h1>
+        <p class="hero-lede">Say what you want in one sentence and Orbi takes it all the way to a release. Orbi’s own code ships the same way.</p>
+        <div class="cta-row">
+          <a class="button button-signal" href="/cloud/login">Try Cloud with GitHub</a>
+          <a class="button button-ghost" href="https://github.com/orbi-build/orbi">Read the engine on GitHub ↗</a>
+        </div>
+      </section>
+
+      <section class="about-numbers shell" aria-label="Orbi counted on 2026-11-25">
+        <a class="about-number" href="https://github.com/orbi-build/orbi/releases"><strong>164</strong><span>tagged releases of the engine ↗</span></a>
+        <a class="about-number" href="https://github.com/orbi-build/orbi/issues?q=is%3Aissue+label%3Aai-merged"><strong>995</strong><span>Issues Orbi has taken from label to merge since 2026-08-26 ↗</span></a>
+        <a class="about-number" href="https://github.com/orbi-build/orbi/issues?q=is%3Aissue+label%3Aai-merged+closed%3A2026-10-26..2026-11-25"><strong>208</strong><span>of them in the last 30 days ↗</span></a>
+        <a class="about-number" href="https://status.orbi.build"><strong>100%</strong><span>Orbi Cloud dashboard uptime since monitoring began on 2026-09-18 ↗</span></a>
+        <p class="about-number-source">Counted on 2026-11-25 from the public orbi-build/orbi repository and status.orbi.build. Each number opens the page it was counted from.</p>
+      </section>
+    </div>
+
+    <section class="compare-section shell about-grid about-who" aria-labelledby="who-title">
+      <p class="about-kicker">Who runs Orbi</p>
+      <div class="about-who-head">
+        <div class="about-portrait"><img src="/img/larry-orbi.png" alt="Larry 🍀 Orbi" width="320" height="320"></div>
+        <div class="about-intro">
+          <h2 id="who-title">Larry 🍀 Orbi, creator of Orbi</h2>
+        </div>
+      </div>
+      <div class="about-body">
+        <ul>
+          <li>I write the delivery rules and decide what Orbi works on next.</li>
+          <li>I step in when a delivery stops for a human decision.</li>
+          <li>Orbi’s own changes go through Orbi: I file Issues, and it plans, codes, reviews and releases them.</li>
+          <li>Posts here are drafted with AI agents; I choose the topics, check the facts and decide what gets published.</li>
+        </ul>
+        <p class="about-note">20 years writing software. Father of two, based in Singapore. On X I share what works and what breaks when AI writes the code.</p>
+        <p class="about-links"><a href="https://github.com/xqliu" rel="me">GitHub @xqliu ↗</a><a href="https://x.com/xqliu" rel="me">X @xqliu ↗</a><a href="/about/larry-orbi/">All posts by Larry →</a></p>
+      </div>
+    </section>
+
+    <section class="compare-section shell about-grid" aria-labelledby="why-title">
+      <p class="about-kicker">Why Orbi exists</p>
+      <div class="about-body">
+        <h2 id="why-title">A lights-out factory for software</h2>
+        <ul>
+          <li><strong>One person, several businesses.</strong> I run Muyan, supa.is and Orbi on my own, so I needed agents that own development end to end.</li>
+          <li><strong>Room for AI to grow.</strong> Today Orbi takes a request to a release; as models improve, it can take on more.</li>
+          <li><strong>Software goes lights-out.</strong> Manufacturing already has lights-out factories, once the acceptance standard is set. Software can work the same way when each Issue says what done looks like.</li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="compare-section shell about-stack" aria-labelledby="how-title">
+      <p class="about-kicker">How Orbi works</p>
+      <h2 id="how-title">Where AI does the work, and where a person decides</h2>
+      <div class="about-split">
+        <div>
+          <h3>AI agents do</h3>
+          <ol>
+            <li>Turn your one-sentence request into an Issue with acceptance criteria, then write a plan</li>
+            <li>Write the code and the tests on a branch</li>
+            <li>Review it with a second, independent agent and fix what the review finds</li>
+            <li>Merge once your CI passes on the latest base</li>
+            <li>Tag the release and record every step on the Issue; ops Issues (deploy, merge a given PR, investigate) post the real commands and output</li>
+          </ol>
+        </div>
+        <div>
+          <h3>You decide</h3>
+          <ul>
+            <li>What gets built: you say what you want, or approve the Issue Orbi wrote</li>
+            <li>What happens when Orbi stops and asks a question</li>
+            <li>The final controls: branch protection, required checks and access all stay on GitHub</li>
+            <li>Which model runs: any model Pi supports, hosted or local</li>
+          </ul>
+        </div>
+      </div>
+      <p class="about-links"><a href="/cloud/">See how a release runs, end to end →</a><a href="/trust/#not-covered">What Orbi does not promise →</a></p>
+    </section>
+
+    <section class="about-cardband">
+      <div class="shell">
+        <div class="about-cards">
+          <div>
+            <p class="about-kicker">Open source</p>
+            <h3>The engine is open source</h3>
+            <p>AGPL-3.0, or the Sustainable Use License if AGPL is ruled out. Self-hosting is free either way, and you can read exactly what Orbi does in the code.</p>
+            <a href="https://github.com/orbi-build/orbi">orbi-build/orbi on GitHub ↗</a>
+          </div>
+          <div>
+            <p class="about-kicker">Orbi builds Orbi</p>
+            <h3>Orbi’s own deliveries are public</h3>
+            <p>The plan, the pull request, the independent review and the release for Orbi’s own changes are on GitHub, where you can open them.</p>
+            <a href="/evidence/">Open six real deliveries →</a>
+          </div>
+          <div>
+            <p class="about-kicker">Your code</p>
+            <h3>It stays in your GitHub</h3>
+            <p>Every step is recorded in your own repository, and one step on GitHub revokes Orbi Cloud’s access.</p>
+            <a href="/trust/">Read the nine trust questions →</a>
+          </div>
+        </div>
+
+        <div class="about-money" aria-labelledby="money-title">
+          <p class="about-kicker" id="money-title">How Orbi makes money</p>
+          <p>The engine is free to self-host. Orbi Cloud runs it for you as a paid hosted service, and those subscriptions are how Orbi is paid for. <a href="/cloud/#pricing">See plans and the free trial →</a></p>
+          <p>Orbi is self-funded, with no investors.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="compare-section shell about-grid" aria-labelledby="writing-title">
+      <div class="about-rail">
+        <p class="about-kicker">How I write this site</p>
+        <h2 id="writing-title">Every claim points to its source</h2>
+      </div>
+      <div class="about-body">
+        <ol>
+          <li><strong>Numbers link to where they came from:</strong> a GitHub record, a document or the query I ran.</li>
+          <li><strong>Pages show their dates.</strong> Each post shows when it was published, and an updated date when it has been revised. I change a date only when the content changes.</li>
+          <li><strong>Tests say what they ran on:</strong> the version, the model and the date.</li>
+          <li><strong>Other products are described from their current official docs,</strong> checked when the page is written.</li>
+          <li><strong>Found a mistake?</strong> Tell me in the Telegram group or open an Issue on <a href="https://github.com/orbi-build/orbi-website/issues">orbi-build/orbi-website</a>. I fix it and update the page’s date.</li>
+        </ol>
+      </div>
+    </section>
+
+    <section class="compare-section shell" aria-labelledby="company-title">
+      <div class="about-company">
+        <div>
+          <p class="about-kicker" id="company-title">Company</p>
+          <p>Orbi and Orbi Cloud are operated by <strong>Low Code, LLC</strong>, a limited liability company registered in the United States. Card payments are handled by Stripe and appear on statements as ORBI CLOUD.</p>
+          <p class="about-address"><span>Mailing address</span>7 One-North Gateway<br>Singapore 138642</p>
+        </div>
+        <div>
+          <p class="about-kicker">Contact</p>
+          <dl class="about-contact">
+            <div><dt>Help and questions</dt><dd><a href="https://t.me/+kJRTTpFGBRU0M2Y9">Orbi Telegram group ↗</a></dd></div>
+            <div><dt>Email</dt><dd><a href="mailto:support@orbi.build">support@orbi.build</a></dd></div>
+            <div><dt>Service status</dt><dd><a href="https://status.orbi.build">status.orbi.build ↗</a></dd></div>
+            <div><dt>Bugs in the engine</dt><dd><a href="https://github.com/orbi-build/orbi/issues">GitHub Issues ↗</a></dd></div>
+            <div><dt>News</dt><dd><a href="https://x.com/xqliu" rel="me">X</a> · <a href="https://www.youtube.com/@orbibuild" rel="me">YouTube</a> · <a href="https://www.reddit.com/r/OrbiBuild/">Reddit</a> · <a href="#subscribe-title">weekly email</a></dd></div>
+          </dl>
+        </div>
+      </div>
+    </section>
+
+    <section class="closing shell about-closing" aria-labelledby="about-cta-title">
+      <h2 class="orbi-closing-h2" id="about-cta-title">One sentence in. <span>A release out.</span></h2>
+      <div class="cta-row">
+        <a class="button button-signal" href="/cloud/login">Try Cloud with GitHub</a>
+        <a class="button button-outline" href="https://docs.orbi.build">Self-host the engine ↗</a>
+      </div>
+    </section>
+  </main>
+
+<!--@footer-->
+
+  <script src="/demo.js" defer></script>
+
+</body>
+</html>
