@@ -1572,16 +1572,76 @@ const TOC_HIGHLIGHT_SCRIPT = `<script>(()=>{try{const links=[...document.querySe
 // "更新于 2026-11-06" in Chinese (Issue #1226).
 const UPDATED_MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
+function updatedLabel(lang, updated) {
+  if (lang === "zh") return `更新于 ${updated}`;
+  const [year, month, day] = updated.split("-").map(Number);
+  return `Updated ${day} ${UPDATED_MONTHS[month - 1]} ${year}`;
+}
+
 function renderPostUpdated(post) {
   if (!post.updated) return "";
-  const when = post.lang === "zh"
-    ? post.updated
-    : (() => {
-        const [year, month, day] = post.updated.split("-").map(Number);
-        return `${day} ${UPDATED_MONTHS[month - 1]} ${year}`;
-      })();
-  const label = post.lang === "zh" ? `更新于 ${when}` : `Updated ${when}`;
-  return ` · <time class="post-updated" datetime="${post.updated}">${label}</time>`;
+  return ` · <time class="post-updated" datetime="${post.updated}">${updatedLabel(post.lang, post.updated)}</time>`;
+}
+
+// Issue #1465: the byline the posts carry, on every other page whose structured
+// data names an author — the comparison pages, the hand-written guides, the
+// Markdown guides and the benchmark page. Every such page runs through here, so
+// a page added later gets the byline too, and one that names an author without a
+// date, an author page or an <h1> to carry the byline fails the build instead of
+// shipping unattributed. The links and dates come from the page's own JSON-LD
+// and the one author record, so the visible byline cannot drift from either.
+export function applyAuthorAttribution(html, author, lang, label) {
+  let attributed = html;
+  let published = null;
+  let modified = null;
+  for (const block of html.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)) {
+    let data;
+    try {
+      data = JSON.parse(block[1]);
+    } catch (error) {
+      throw new Error(`${label}: JSON-LD does not parse: ${error.message}`);
+    }
+    if (data["@type"] !== "Article" || !data.author) continue;
+    if (data.author.name !== author.name) {
+      throw new Error(`${label}: structured data author "${data.author.name}" has no author page; site/data/authors.json publishes "${author.name}" at ${authorHref(author, lang)}`);
+    }
+    if (typeof data.datePublished !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(data.datePublished)) {
+      throw new Error(`${label}: structured data names an author but carries no datePublished (YYYY-MM-DD) to show beside the byline`);
+    }
+    published = data.datePublished;
+    modified = typeof data.dateModified === "string" ? data.dateModified : null;
+    // The page sources carry the name alone; the author page URL and the two
+    // profiles come from site/data/authors.json, exactly as the posts derive
+    // them, so no page can drift from the blog's attribution.
+    const person = {
+      "@type": "Person",
+      name: author.name,
+      url: `https://orbi.build${authorHref(author, lang)}`,
+      sameAs: [...author.sameAs],
+    };
+    const authorValue = /("author"\s*:\s*)\{[^{}]*\}/;
+    if (!authorValue.test(block[0])) {
+      throw new Error(`${label}: structured data author must be one Person object the build can fill in from site/data/authors.json`);
+    }
+    const enriched = block[0].replace(authorValue, (_, prefix) => `${prefix}${JSON.stringify(person)}`);
+    attributed = attributed.replace(block[0], () => enriched);
+  }
+  if (published === null) return attributed;
+  // The post template renders the byline from the post front matter.
+  if (attributed.includes('class="post-byline"')) return attributed;
+  const titleEnd = attributed.indexOf("</h1>");
+  if (titleEnd < 0) {
+    throw new Error(`${label}: structured data names an author but the page has no <h1> to carry the byline`);
+  }
+  const revised = modified && modified !== published
+    ? ` · <time class="post-updated" datetime="${modified}">${updatedLabel(lang, modified)}</time>`
+    : "";
+  const byline = `<p class="post-byline"><a href="${escAttr(authorHref(author, lang))}">${escAttr(author.name)}</a> · <time datetime="${published}">${published}</time>${revised}</p>`;
+  const at = titleEnd + "</h1>".length;
+  // Keep the byline's indentation on the title's line, so a pretty-printed
+  // page stays readable and a minified one gets no stray indentation.
+  const indent = attributed.slice(attributed.lastIndexOf("\n", at) + 1).match(/^[ \t]*/)[0];
+  return `${attributed.slice(0, at)}\n${indent}${byline}${attributed.slice(at)}`;
 }
 
 // `seriesGuide` is the same-language guide page that renders this post's
@@ -1945,7 +2005,9 @@ export async function buildPages(outDir, { contentDir = CONTENT_DIR, guidesDir =
     // homepage's install commands, blog posts, Markdown guides, the
     // hand-written guide panels and whatever page is added next. It is applied
     // where each page is written, so no page marks a block by hand.
-    const shipped = wrapCodeBlocks(html, page.lang);
+    // Issue #1465: the same place adds the author byline to every page whose
+    // structured data names an author.
+    const shipped = applyAuthorAttribution(wrapCodeBlocks(html, page.lang), author, page.lang, page.output);
     await mkdir(dirname(out), { recursive: true });
     await writeFile(out, shipped);
     renderedPages.set(page.output, shipped);
@@ -1954,12 +2016,18 @@ export async function buildPages(outDir, { contentDir = CONTENT_DIR, guidesDir =
     const out = join(outDir, post.output);
     await mkdir(dirname(out), { recursive: true });
     const seriesGuide = post.series ? guideBySeries.get(`${post.lang}/${post.series}`) : null;
-    await writeFile(out, wrapCodeBlocks(renderPost(post, POST_TEMPLATE, seriesGuide, author), post.lang));
+    await writeFile(out, applyAuthorAttribution(
+      wrapCodeBlocks(renderPost(post, POST_TEMPLATE, seriesGuide, author), post.lang),
+      author, post.lang, `content/blog/${post.source}`,
+    ));
   }
   for (const guide of guides) {
     const out = join(outDir, guide.output);
     await mkdir(dirname(out), { recursive: true });
-    await writeFile(out, wrapCodeBlocks(renderGuide(guide, GUIDE_TEMPLATE, posts, guidesData), guide.lang));
+    await writeFile(out, applyAuthorAttribution(
+      wrapCodeBlocks(renderGuide(guide, GUIDE_TEMPLATE, posts, guidesData), guide.lang),
+      author, guide.lang, `content/guides/${guide.source}`,
+    ));
   }
   await writeFile(
     join(outDir, "sitemap.xml"),

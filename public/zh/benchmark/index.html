@@ -48,7 +48,7 @@
     "about": { "@id": "https://orbi.build/#software" },
     "datePublished": "2026-09-30",
     "dateModified": "2026-09-30",
-    "author": { "@type": "Person", "name": "Larry 🍀 Orbi" },
+    "author": {"@type":"Person","name":"Larry 🍀 Orbi","url":"https://orbi.build/zh/about/larry-orbi/","sameAs":["https://github.com/xqliu","https://x.com/xqliu"]},
     "publisher": { "@type": "Organization", "name": "Orbi", "url": "https://orbi.build/", "logo": { "@type": "ImageObject", "url": "https://orbi.build/logo-mark.svg" } }
   }
   </script>
@@ -80,6 +80,7 @@
       <section class="compare-hero shell" aria-labelledby="bench-title">
         <p class="eyebrow">Benchmark · 更新于 2026-09-30</p>
         <h1 id="bench-title">我们怎么测 Orbi 的 harness</h1>
+        <p class="post-byline"><a href="/zh/about/larry-orbi/">Larry 🍀 Orbi</a> · <time datetime="2026-09-30">2026-09-30</time></p>
         <p class="hero-lede"><strong>八个 Orbi 没见过的真实 bug，issue 都只给一个窄例子。原版 harness 12 次挂了 4 次，常开的回归防护 10 次过 9 次。普通 bug 上防护什么也换不来，token 却多花一倍左右，所以它该做成按仓库的开关，默认关。</strong>只在文本处理类改动上启用防护的分类器省了约 10%，效果还更差；只加强评审或先把工单写细，都补不上这个缺口。</p>
         <div class="cta-row">
           <a class="button button-ghost" href="#studies">看研究</a>
