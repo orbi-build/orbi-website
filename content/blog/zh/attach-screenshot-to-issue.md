@@ -62,7 +62,7 @@ orbi draft --attach screen.png --attach spec.html \
 附件常常就是需求本身。写代码的会话要是跳过了 `screen.png`，手里只剩「照截图里圈出的两处改」，却没有圈，它照样会写出点什么来；评审会话也没有截图，只能对着这些代码下结论。所以 Orbi 选择停下：
 
 - 起草时有文件读不到，这一轮直接失败，并点名是哪个文件。
-- 交付或评审时读不到，会话根本不开。Issue 打上 `ai-blocked`，留一条评论写明是哪张图、怎么修：重新上传（这张图确实用不上时才删掉它），再把 `ai-blocked` 换成 `ai-ready`（已经有 PR 就换成 `ai-fix-needed`）。私有仓库里这个办法暂时不管用，见下面的限制。之后不会自己重试，坏掉的图不会每隔几分钟刷一条评论。
+- 交付或评审时读不到，会话根本不开。Issue 打上 `ai-blocked`，留一条评论写明是哪张图、怎么修：重新上传（这张图确实用不上时才删掉它），再把 `ai-blocked` 换成 `ai-ready`（已经有 PR 就换成 `ai-fix-needed`）。私有仓库里，这个办法要 v0.7.63 或更新才行，见下面的限制。之后不会自己重试，坏掉的图不会每隔几分钟刷一条评论。
 
 有两种情况不会停，值得知道：
 
@@ -78,12 +78,12 @@ orbi draft --attach screen.png --attach spec.html \
 | 数量和大小 | 最多 10 个，单个不超过 10 MB；所有 HTML 和文本加起来不超过 5 万字符，好放进 Issue 正文 |
 | 模型 | 交付和评审要用声明了能看图的模型，比如自带的 DeepSeek 模板；否则截图会被忽略，也没有提示 |
 | 其他类型 | 直接拒绝并说明原因，比如 PDF、视频 |
-| Orbi | v0.7.59 或更新（[github.com/orbi-build/orbi](https://github.com/orbi-build/orbi)） |
+| Orbi | v0.7.59 或更新（[github.com/orbi-build/orbi](https://github.com/orbi-build/orbi)）；私有仓库交付要 v0.7.63 或更新 |
 | gh | 2.99 或更新，用本人账号登录（`gh auth login`） |
 
 `--attach` 只在开始起草时生效。给已有 Issue 追加内容不会带附件，已经建好的 Issue 要补图，直接在 GitHub 上贴进去。
 
-两点提醒。公开仓库里，附上的东西谁都看得到：图片，还有写进正文的 HTML 和文本（折叠只是收起，不是隐藏）。附之前先把不该公开的内容去掉。私有仓库里，截至我写这篇时最新发布的 v0.7.62，交付还读不到 Orbi 上传的原生图片：它去下载的地址仍然要登录，交付会以 `attachment_unavailable` 停下。修复（[orbi#2388](https://github.com/orbi-build/orbi/pull/2388)，对应 [orbi#2387](https://github.com/orbi-build/orbi/issues/2387)）已经合进主线，下一个版本发布。在那之前，私有仓库里重新上传也没用。起草和建票在私有仓库里现在就能用；上面这次运行是在公开仓库上跑的。
+两点提醒。公开仓库里，附上的东西谁都看得到：图片，还有写进正文的 HTML 和文本（折叠只是收起，不是隐藏）。附之前先把不该公开的内容去掉。私有仓库里，v0.7.63 之前的版本交付读不到 Orbi 上传的原生图片：它去下载的地址仍然要登录，交付会以 `attachment_unavailable` 停下。11 月 25 日发布的 v0.7.63 修好了这个问题（[orbi#2388](https://github.com/orbi-build/orbi/pull/2388)，对应 [orbi#2387](https://github.com/orbi-build/orbi/issues/2387)），自己部署 Orbi 的升级即可。起草和建票从 v0.7.59 起就能在私有仓库里用；上面这次运行是在公开仓库上跑的。
 
 ## 和同类工具比
 
