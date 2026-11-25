@@ -1733,6 +1733,42 @@ describe("one unified footer on every content page", () => {
     }
   });
 
+  // TheDevToolsIndex is the same series as the already-live TheDevToolsList,
+  // TheMicroSaaSDir and TheAIToolsDir badges. Its official /badge/orbi.svg is
+  // 182x46 (viewBox 0 0 182 46, 1306 bytes, checked 2026-11-25) and the
+  // shared strip ships that snippet once on each language's home page, with
+  // a crawlable dofollow link to /product/orbi?ref=badge.
+  it("carries the TheDevToolsIndex badge in the footer, on en and zh", () => {
+    const badge = '<a href="https://thedevtoolsindex.com/product/orbi?ref=badge" rel="dofollow">'
+      + '<img src="https://thedevtoolsindex.com/badge/orbi.svg" alt="Featured on TheDevToolsIndex" width="182" height="46"></a>';
+    for (const output of ["index.html", "zh/index.html"]) {
+      const footer = footerRegion(shipped.get(output));
+      const occurrences = footer.split(badge).length - 1;
+      expect(occurrences, `${output}: the TheDevToolsIndex badge must ship exactly once in the footer`)
+        .toBe(1);
+      expect(footerAnchorTag(footer, "https://thedevtoolsindex.com/product/orbi?ref=badge"), `${output}: the badge must stay a crawlable backlink`)
+        .not.toContain("nofollow");
+    }
+  });
+
+  // PeplioHUB (listing id 10123, orbi-growth #1701) publishes an official
+  // badge at /wp-json/pepliohub/v1/badge/10123, 250x56 (viewBox 0 0 250 56,
+  // 724 bytes, checked 2026-11-25). Shipping it on the live footer is what
+  // the directory uses for priority review. The shared strip ships that
+  // snippet once on each language's home page.
+  it("carries the PeplioHUB badge in the footer, on en and zh", () => {
+    const badge = '<a href="https://peplio.com/pepliohub/?tool=10123" target="_blank" title="Featured on PeplioHUB">'
+      + '<img src="https://peplio.com/wp-json/pepliohub/v1/badge/10123" alt="Featured on PeplioHUB" width="250" height="56"></a>';
+    for (const output of ["index.html", "zh/index.html"]) {
+      const footer = footerRegion(shipped.get(output));
+      const occurrences = footer.split(badge).length - 1;
+      expect(occurrences, `${output}: the PeplioHUB badge must ship exactly once in the footer`)
+        .toBe(1);
+      expect(footerAnchorTag(footer, "https://peplio.com/pepliohub/?tool=10123"), `${output}: the badge must stay a crawlable backlink`)
+        .not.toContain("nofollow");
+    }
+  });
+
   it("carries the 11 compare deep dives, in the right language tree", () => {
     for (const page of content()) {
       const footer = footerRegion(shipped.get(page.output));
