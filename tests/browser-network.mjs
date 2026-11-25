@@ -398,6 +398,14 @@ export const BADGE_PLACEHOLDER_SIZES = [
   // snippet declares the same 272x58 box). The snippet's /v/orbi.build?t=<token>
   // link answers 307 to /launches/orbi.build, the listing (Issue #1454).
   { host: "www.launchscaler.com", width: 272, height: 58 },
+  // 2026-11-25 TheDevToolsIndex official badge, measured on the live URL:
+  // /badge/orbi.svg 182x46 (SVG, 1306 bytes, width/height and viewBox 0 0 182 46;
+  // same series and box as TheDevToolsList / TheMicroSaaSDir / TheAIToolsDir).
+  { host: "thedevtoolsindex.com", width: 182, height: 46 },
+  // 2026-11-25 PeplioHUB official badge for listing 10123, measured on the live
+  // URL: /wp-json/pepliohub/v1/badge/10123 250x56 (SVG, 724 bytes, width/height
+  // and viewBox 0 0 250 56; the vendor snippet declares the same 250x56 box).
+  { host: "peplio.com", width: 250, height: 56 },
 ];
 const FALLBACK_PLACEHOLDER_SIZE = { width: 1, height: 1 };
 
