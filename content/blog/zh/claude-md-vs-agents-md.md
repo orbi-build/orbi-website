@@ -163,9 +163,9 @@ codex exec -c project_doc_max_bytes=65536 --skip-git-repo-check -s read-only "$P
 - Ask before changing public API contracts or database schemas.
 ```
 
-## AGENTS.md 和 skills 的分工
+## AGENTS.md 和 skills（SKILL.md）的分工
 
-只要没有显式关闭（比如 Pi 的 `--no-context-files` 或 `-nc` 参数），Pi 每次会话都会加载当前工作目录及各级上级目录里适用的文件；Codex 会加载全局 `~/.codex/AGENTS.md`，再加上从 Git 根目录到当前工作目录之间的项目文件，并受字节上限约束。两者在同目录有 `AGENTS.override.md` 时都以它为准；Claude Code 则在没有 `CLAUDE.md` 或通过 `@AGENTS.md` 导入时加载它们。工作目录下面的子目录文件不会自动加载：Claude Code 读到该子目录里的文件时才会加载，Codex 和 Pi 则只在你从该目录或更深目录启动会话时才加载。Skills（`SKILL.md`）是按需加载的：按 [Claude Code skills 文档](https://code.claude.com/docs/en/skills)，上下文里只留 skill 描述，完整正文等调用时再加载。Pi 的 `docs/skills.md` 也是这套做法：启动时把每个 skill 的名称、描述和路径写进系统提示，任务匹配时模型再去读 `SKILL.md`。
+skill 的文件名是 `SKILL.md`，不是 `skills.md`。只要没有显式关闭（比如 Pi 的 `--no-context-files` 或 `-nc` 参数），Pi 每次会话都会加载当前工作目录及各级上级目录里适用的文件；Codex 会加载全局 `~/.codex/AGENTS.md`，再加上从 Git 根目录到当前工作目录之间的项目文件，并受字节上限约束。两者在同目录有 `AGENTS.override.md` 时都以它为准；Claude Code 则在没有 `CLAUDE.md` 或通过 `@AGENTS.md` 导入时加载它们。工作目录下面的子目录文件不会自动加载：Claude Code 读到该子目录里的文件时才会加载，Codex 和 Pi 则只在你从该目录或更深目录启动会话时才加载。Skills（`SKILL.md`）是按需加载的：按 [Claude Code skills 文档](https://code.claude.com/docs/en/skills)，上下文里只留 skill 描述，完整正文等调用时再加载。Pi 的 skills 文档（`docs/skills.md`）也是这套做法：启动时把每个 skill 的名称、描述和路径写进系统提示，任务匹配时模型再去读 `SKILL.md`。
 
 每次改动都必须遵守的仓库级硬约束（比如测试门禁和生成文件的边界）写进 `AGENTS.md`；偶尔才用的流程（比如发布检查单或迁移指南）放进 `SKILL.md`，省得每次会话都占上下文，也免得把 `AGENTS.md` 撑过 32 KiB。
 
