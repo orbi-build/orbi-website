@@ -386,6 +386,9 @@
     <xhtml:link rel="alternate" hreflang="x-default" href="https://orbi.build/trust/"/>
   </url>
   <url>
+    <loc>https://orbi.build/blog/claude-md-vs-agents-md/</loc>
+  </url>
+  <url>
     <loc>https://orbi.build/blog/pi-vs-oh-my-pi/</loc>
     <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/blog/pi-vs-oh-my-pi/"/>
     <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/blog/pi-vs-oh-my-pi/"/>
