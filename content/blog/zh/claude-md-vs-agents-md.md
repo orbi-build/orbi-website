@@ -8,13 +8,13 @@ image: /img/blog-claude-md-vs-agents-md-card.png
 mirror: claude-md-vs-agents-md
 ---
 
-`AGENTS.md` 是不绑定具体工具的开放指令文件（[agents.md](https://agents.md/) 称已有超过 6 万个开源项目在用），`CLAUDE.md` 是 Claude Code 自己的指令文件；从 2.1.277 起，Claude Code 只在没有 `CLAUDE.md` 时才读 `AGENTS.md`，而 Codex 和 Pi 默认读 `AGENTS.md`，会忽略 `CLAUDE.md` 或把它排在后面。如果你在同一个仓库里混用多个编程 agent（比如 Claude Code、Codex、Pi、Cursor、Copilot 或 OpenCode），下面整理了九种文件布局的实测加载表和一套三家 CLI 通用的配置写法，也记下了 `CLAUDE.local.md` 陷阱和 Codex 的 32 KiB 截断上限。
+`AGENTS.md` 是不绑定具体工具的开放指令文件（[agents.md](https://agents.md/) 称已有超过 6 万个开源项目在用），`CLAUDE.md` 是 Claude Code 自己的指令文件。从 2.1.277 起，Claude Code 只在没有 `CLAUDE.md` 时才读 `AGENTS.md`，而 Codex 和 Pi 默认读 `AGENTS.md`，会忽略 `CLAUDE.md` 或把它排在后面。同一个仓库混用 Claude Code、Codex、Pi、Cursor、Copilot 或 OpenCode 时，这些差异很容易让不同 agent 读到不同的规则。这篇是写给这类仓库的维护者的：有九种文件布局的实测加载表、一套三家 CLI 通用的写法，还有 `CLAUDE.local.md` 陷阱和 Codex 的 32 KiB 截断。
 
 我是 Larry 🍀 Orbi，Orbi 的创始人。Orbi 用开源编程 agent 命令行工具 Pi，把 GitHub Issue 做成合并进仓库的改动，交付和评审会话都会读目标仓库的 `AGENTS.md`，各家在读取规则上的分叉我一直很关心。
 
-## CLAUDE.md 和 AGENTS.md 区别：各家到底读哪个
+## 两个文件都在时，三家各读哪个
 
-2026 年 11 月 25 日，我在自己的 Linux 机器上实测了 Claude Code 2.1.331、Pi 1.6.0（`@earendil-works/pi-coding-agent`）和 Codex CLI 0.167.0（`@openai/codex`）。下表是三个工具在九种文件布局下直接探测上下文（P2）的加载结果，另附两条用 `-c` 参数测 Codex 回退配置的结果（参数见下文“容易踩的坑”一节）。除非特别注明，普通 prompt（P1）的结果和 P2 一样。
+2026 年 11 月 25 日，我在自己的 Linux 机器上实测了 Claude Code 2.1.331、Pi 1.6.0（`@earendil-works/pi-coding-agent`）和 Codex CLI 0.167.0（`@openai/codex`）。下表是三个工具在九种文件布局下用探测 prompt 测出的加载结果，另附两条用 `-c` 参数测 Codex 回退配置的结果（参数见下文“容易踩的坑”一节）。探测 prompt（P2）和普通 prompt（P1）的定义见下一节；除非特别注明，P1 的结果和 P2 一样。
 
 | 仓库里的文件 | Claude Code 2.1.331 | Pi 1.6.0 | Codex 0.167.0 |
 |---|---|---|---|
@@ -32,11 +32,11 @@ mirror: claude-md-vs-agents-md
 
 第四行最容易悄悄出问题。仓库里同时放了内容不同的 `AGENTS.md` 和 `CLAUDE.md` 时，Claude Code 只认 `CLAUDE.md`，Codex 和 Pi 只认 `AGENTS.md`。两份文件分开维护，运行时不会报任何错，不同 agent 读到的却已经是两套规则。
 
-看一下各家 CLI 的查找顺序，表里每一列的结果就清楚了。Pi 1.6.0 在每个目录下依次找 `AGENTS.override.md`、`AGENTS.md`、`AGENTS.MD`、`CLAUDE.md`、`CLAUDE.MD`，先命中哪个就加载哪个（`dist/core/resource-loader.js` 第 130 行）。按 [Codex AGENTS.md 文档](https://developers.openai.com/codex/guides/agents-md)，Codex 从项目根目录（通常是 Git 根目录）一路往下查到当前工作目录，每个目录依次找 `AGENTS.override.md`、`AGENTS.md` 和 `project_doc_fallback_filenames` 里的文件名，每个目录最多取一个，再按从根到当前的顺序拼起来。Claude Code 则只在找不到 `CLAUDE.md` 文件时才读 `AGENTS.md`。
+Pi 1.6.0 在每个目录下依次找 `AGENTS.override.md`、`AGENTS.md`、`AGENTS.MD`、`CLAUDE.md`、`CLAUDE.MD`，先命中哪个就加载哪个（`dist/core/resource-loader.js` 第 130 行）。按 [Codex AGENTS.md 文档](https://developers.openai.com/codex/guides/agents-md)，Codex 从项目根目录（通常是 Git 根目录）一路往下查到当前工作目录，每个目录依次找 `AGENTS.override.md`、`AGENTS.md` 和 `project_doc_fallback_filenames` 里的文件名，每个目录最多取一个，再按从根到当前的顺序拼起来。Claude Code 则只在找不到 `CLAUDE.md` 文件时才读 `AGENTS.md`。
 
 ## 我是怎么测的
 
-我在 `/tmp/agentsmd-lab` 下建了 11 个临时 git 仓库，对应上表的 9 种布局，外加 1 个体积上限用例和 1 个 `CLAUDE.local.md` 补测（后两个下文再说）。`/tmp` 和 `/` 下都没有指令文件。每份规则文件里只写一句话："End every reply with the word MARK-X on its own line."，不同文件换不同的 `MARK-` 标记词。Pi（`~/.pi/agent/AGENTS.md`）和第一轮 Codex 运行（`~/.codex/AGENTS.md`）照常加载了我自己的用户级文件，里面没有 `MARK-` 标记词，下面的空仓库对照也能验证这一点。测 Claude Code 时跳过了我的用户级文件（原因见命令下方说明）。运行参数分别是：Claude Code 用 `--model haiku` 并关掉所有工具（`--tools ""`）；Pi 用默认的 `deepseek/deepseek-flash` 并关工具（`-nt`，另加 `-ne -ns --no-mcp`）；Codex 用 `gpt-6-luna` 加 `-s read-only`，这个沙箱只禁写不禁读，所以 Codex 不调工具靠的是 prompt 里的要求。
+我在 `/tmp/agentsmd-lab` 下建了 11 个临时 git 仓库，对应上表的 9 种布局，外加 1 个体积上限用例，以及 1 个在 `CLAUDE.local.md` 首行写 `@AGENTS.md` 的补测（后两个下文再说）。`/tmp` 和 `/` 下都没有指令文件。每份规则文件里只写一句话："End every reply with the word MARK-X on its own line."，不同文件换不同的 `MARK-` 标记词。Pi（`~/.pi/agent/AGENTS.md`）和第一轮 Codex 运行（`~/.codex/AGENTS.md`）照常加载了我自己的用户级文件，里面没有 `MARK-` 标记词，下面的空仓库对照也能验证这一点。测 Claude Code 时跳过了我的用户级文件（原因见命令下方说明）。运行参数分别是：Claude Code 用 `--model haiku` 并关掉所有工具（`--tools ""`）；Pi 用默认的 `deepseek/deepseek-flash` 并关工具（`-nt`，另加 `-ne -ns --no-mcp`）；Codex 用 `gpt-6-luna` 加 `-s read-only`，这个沙箱只禁写不禁读，所以 Codex 不调工具靠的是 prompt 里的要求。
 
 每个仓库都跑两条 prompt：普通 prompt P1（"Reply with the single word OK."）和探测 prompt P2（要求模型不调工具，列出上下文指令要求添加的所有 `MARK-` 标记词，没有就回 `NONE`）。空仓库当阴性对照（三个工具在 P1 和 P2 下都没返回标记词），只有 `AGENTS.md` 的仓库当阳性对照（三个工具都返回了 `MARK-AGENTS`）。想自己复现，跑下面三条命令就行：
 
@@ -120,9 +120,9 @@ codex exec -c 'project_doc_fallback_filenames=["CLAUDE.md"]' --skip-git-repo-che
 
 ## AGENTS.md 能写多长？
 
-[Claude Code memory 文档](https://code.claude.com/docs/en/memory)建议单个 `CLAUDE.md` 控制在 200 行以内，但实际要超过 4 MiB 时 Claude Code 才会跳过。Codex 则是合并后的指令文件总大小一到 `project_doc_max_bytes` 就停止追加，按 Codex 文档，默认上限是 32 KiB（32,768 字节）。
+[Claude Code memory 文档](https://code.claude.com/docs/en/memory)建议单个 `CLAUDE.md` 控制在 200 行以内，不过按同一份文档，文件超过 4 MiB 时 Claude Code 才会跳过（这条没有实测）。Codex 则是合并后的指令文件总大小一到 `project_doc_max_bytes` 就停止追加，按 Codex 文档，默认上限是 32 KiB（32,768 字节）。
 
-拿我自己的仓库来看，这份文件涨过上限的速度很快。Orbi 的交付 prompt 会让 Pi 读目标仓库的 `AGENTS.md` 并满足里面的测试要求，评审 prompt 同样会读 `AGENTS.md`；这两类会话都开着上下文文件加载（`no_context_files = False`），只有 draft 和 suggest 辅助会话把它关掉。PR #237（针对 Issue #232，2026 年 9 月 2 日合并）之前，`orbi-build/orbi` 的 `AGENTS.md` 有 630 行。PR #237 把它砍到 129 行，压回了 200 行以内。但我没守住：2026 年 9 月 10 日涨回 154 行，2026 年 9 月 20 日涨到 248 行，2026 年 10 月 1 日到 435 行，2026 年 11 月 1 日到 439 行，到 2026 年 11 月 21 日最后一次改动时，已经是 444 行（39,565 字节）。
+Orbi 自己的 `AGENTS.md` 就没守住 200 行。Orbi 的交付 prompt 会让 Pi 读目标仓库的 `AGENTS.md` 并满足里面的测试要求，评审 prompt 同样会读 `AGENTS.md`；这两类会话都开着上下文文件加载（`no_context_files = False`），只有 draft 和 suggest 辅助会话把它关掉。PR #237（针对 Issue #232，2026 年 9 月 2 日合并）之前，`orbi-build/orbi` 的 `AGENTS.md` 有 630 行。PR #237 把它砍到 129 行，压回了 200 行以内。但我没守住：2026 年 9 月 10 日涨回 154 行，2026 年 9 月 20 日涨到 248 行，2026 年 10 月 1 日到 435 行，2026 年 11 月 1 日到 439 行，到 2026 年 11 月 21 日最后一次改动时，已经是 444 行（39,565 字节）。
 
 我拿这份 39,565 字节的文件测了下 Codex 的 32 KiB 截断：在 Orbi 的 `AGENTS.md` 开头加了一条 `MARK-HEAD` 规则，末尾加了一条 `MARK-TAIL` 规则（共 448 行，39,681 字节），然后用三个工具跑 P2。Claude Code 和 Pi 都返回了 `MARK-HEAD` 和 `MARK-TAIL`。默认配置的 Codex 跑了两次，两次都只回 `MARK-HEAD`，末尾那条规则根本没传给 Codex。把上限调大就好了：
 
@@ -135,13 +135,13 @@ codex exec -c project_doc_max_bytes=65536 --skip-git-repo-check -s read-only "$P
 ## AGENTS.md 怎么写
 
 - 把 `AGENTS.md` 当作共享规则的唯一源文件，免得 Claude Code、Codex 和 Pi 读到不同版本。
-- 要兼容 `CLAUDE.md` 时用 `@AGENTS.md` 导入（或建软链接），别在 `CLAUDE.md` 里用自然语言写“请读 `AGENTS.md`”，普通文字不会触发导入，而且只要有 `CLAUDE.md`，`AGENTS.md` 的直接加载就已经关掉了。
+- 要兼容 `CLAUDE.md` 时用 `@AGENTS.md` 导入或建软链接。`CLAUDE.md` 里写一句普通文字的“请读 `AGENTS.md`”不会触发导入，反而会关掉自动加载。
 - 必须遵守的硬规则写在最前面：Codex 从末尾截断，靠前的规则才能留下来。
 - 合并后的指令体积压在 Codex 默认的 32 KiB 以内（或调高 `project_doc_max_bytes`），行数尽量往 Claude Code 建议的 200 行靠。
-- 子目录专用规则拆到嵌套的 `AGENTS.md` 里；我的嵌套测试（根目录 `AGENTS.md` 加 `pkg/AGENTS.md`，在 `pkg/` 下运行）里，三个工具两份都读到了。
+- 子目录专用规则拆到嵌套的 `AGENTS.md` 里；我的嵌套测试（根目录 `AGENTS.md` 加 `pkg/AGENTS.md`，在 `pkg/` 下运行）里，P2 探测显示三个工具两份都读到了。
 - 用类似 P2 的探测 prompt 查一下实际加载了什么，别以为文件放在磁盘上就一定进了上下文。
 
-下面是一份示例（不来自任何真实仓库），极简的 `AGENTS.md` 只写每次改动都必须遵守的规则就够了：
+极简的 `AGENTS.md` 只需写每次改动都必须遵守的规则。下面是一份示例（不来自任何真实仓库）：
 
 ```markdown
 # AGENTS.md
