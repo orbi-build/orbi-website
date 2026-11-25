@@ -227,3 +227,58 @@ describe("the Chinese About hero keeps 「软件黑灯工厂」 whole (Issue #14
     }
   }, 40_000);
 });
+
+// Issue #1489: CJK offers a break opportunity between any two characters, so the
+// 「每周邮件」 link in the Chinese contact list broke between 邮 and 件 on a phone
+// (390 px, the width the ticket names). The rule is per link: a link's text is one
+// word, so it occupies one line — one client rect — and a row that runs out of room
+// wraps between its links, never inside one. The English page has the same defect
+// at 390 (「weekly email」 splits at the space inside the link), so both pages are
+// pinned here. A link that stayed on one line by growing past its column would
+// press on the label column or the viewport, so its right edge is checked too.
+describe("the About contact links stay whole (Issue #1489)", () => {
+  for (const target of PAGES) {
+    it(`${target.name}: every contact link sits on one line inside its column at ${WIDTHS.join(" / ")} px`, async () => {
+      const { page, errors } = await openPage();
+      try {
+        await page.goto(`${baseUrl}${target.path}`, { waitUntil: "load", timeout: 25_000 });
+        await page.evaluate(() => document.fonts.ready);
+        for (const width of WIDTHS) {
+          await page.setViewportSize({ width, height: 900 });
+          const measured = await page.evaluate(() => {
+            const rows = [...document.querySelectorAll(".about-contact > div")];
+            return {
+              overflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
+              rows: rows.map((row) => {
+                const column = row.querySelector("dd").getBoundingClientRect();
+                return {
+                  label: row.querySelector("dt").textContent.trim(),
+                  columnRight: column.right,
+                  links: [...row.querySelectorAll("a")].map((link) => ({
+                    text: link.textContent.trim(),
+                    lines: link.getClientRects().length,
+                    right: link.getBoundingClientRect().right,
+                  })),
+                };
+              }),
+            };
+          });
+          expect(measured.rows.length, `${target.path} at ${width}px: contact rows`).toBe(5);
+          for (const row of measured.rows) {
+            expect(row.links.length, `${target.path} at ${width}px: ${row.label} links`).toBeGreaterThan(0);
+            for (const link of row.links) {
+              const where = `${target.path} at ${width}px: ${row.label} → 「${link.text}」`;
+              expect(link.lines, `${where} lines`).toBe(1);
+              expect(link.right, `${where} right edge past its column`).toBeLessThanOrEqual(row.columnRight + 0.5);
+            }
+          }
+          expect(measured.overflow, `${target.path} at ${width}px: document overflow`).toBeLessThanOrEqual(0);
+        }
+        expect(errors, `${target.path}: browser errors\n${errors.join("\n")}`).toEqual([]);
+      } finally {
+        await page.close();
+      }
+    }, 40_000);
+  }
+});
+
