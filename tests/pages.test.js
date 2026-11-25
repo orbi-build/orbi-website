@@ -14,6 +14,10 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { buildPages, collectGuides, collectPosts, insertInlinePostCta, loadPages, pathToHref, postFromSource, renderLlms, validateRenderedPostBody, wrapRenderedTables } from "../scripts/build-pages.mjs";
 
 const ROOT = fileURLToPath(new URL("..", import.meta.url));
+// Issue #1465: the dated comparison, benchmark and guide pages name the same
+// Person the posts do — the author page of their own language plus both
+// profiles, taken from the one author record.
+const AUTHOR_RECORD = JSON.parse(await readFile(join(ROOT, "site", "data", "authors.json"), "utf8"));
 let builtDir;
 let pages;
 let posts; // the posts collectPosts() derives from content/blog/**
@@ -2961,7 +2965,12 @@ describe("Article publish and update dates (Issue #889)", () => {
       expect(article, `${output}: missing Article`).toBeTruthy();
       expect(article.datePublished, `${output}: datePublished`).toBe(published);
       expect(article.dateModified, `${output}: dateModified`).toBe(modified);
-      expect(article.author, output).toEqual({ "@type": "Person", name: "Larry 🍀 Orbi" });
+      expect(article.author, output).toEqual({
+        "@type": "Person",
+        name: AUTHOR_RECORD.name,
+        url: `https://orbi.build${output.startsWith("zh/") ? "/zh" : ""}/about/${AUTHOR_RECORD.slug}/`,
+        sameAs: AUTHOR_RECORD.sameAs,
+      });
       expect(article.publisher, output).toEqual(PUBLISHER);
     }
   });

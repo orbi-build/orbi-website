@@ -516,6 +516,27 @@ h1 span { color: var(--signal); }
 }
 
 .hero-lede strong { color: #edf5f0; font-weight: 600; }
+
+/* Issue #1465: the author byline sits between the title and the lede on the
+   night hero of every page whose structured data names an author — the posts,
+   the comparison pages, the guides and /benchmark/. Mono label type and the
+   night band's secondary colour, the treatment the post byline already used;
+   one definition here so a page outside the post template renders it too. */
+.post-byline {
+  margin: 0 0 24px;
+  color: #9aada9;
+  font-family: var(--mono);
+  font-size: 0.85rem;
+}
+
+.post-byline a {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.post-byline a:hover { color: #edf5f0; }
+
 /* Issue #1371: a paid user circled the English homepage lede on a phone
    screenshot — secondary ink on the night ground, and three sentences to
    decode. The English home is the only one that now carries the ink colour
