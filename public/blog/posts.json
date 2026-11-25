@@ -1,5 +1,13 @@
 [
   {
+    "slug": "attach-screenshot-to-issue",
+    "title": "Attach a screenshot to the issue your AI agent builds",
+    "summary": "orbi draft --attach puts screenshots, HTML and text files in the GitHub Issue, where drafting, delivery and review read them. A real run and the limits.",
+    "zhSlug": "attach-screenshot-to-issue",
+    "zhTitle": "让 AI 改页面，把截图直接附进 Issue",
+    "related": []
+  },
+  {
     "slug": "claude-md-vs-agents-md",
     "title": "CLAUDE.md vs AGENTS.md: which file each agent reads",
     "summary": "I tested Claude Code 2.1.331, Codex 0.167.0 and Pi 1.6.0 in 12 repos. With both files, Claude Code reads only CLAUDE.md; Pi and Codex read only AGENTS.md.",

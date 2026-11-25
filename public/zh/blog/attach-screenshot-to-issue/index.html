@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>让 AI 改页面，把截图直接附进 Issue | Orbi</title>
+  <meta name="description" content="orbi draft --attach 把截图、HTML 和文本文件写进 GitHub Issue，起草、交付、评审三个阶段都看得到。文中用一次真实运行讲清附件的上限，以及读不到附件时 Orbi 为什么停下。">
+  <link rel="canonical" href="https://orbi.build/zh/blog/attach-screenshot-to-issue/">
+  <link rel="alternate" hreflang="en" href="https://orbi.build/blog/attach-screenshot-to-issue/">
+  <link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/blog/attach-screenshot-to-issue/">
+  <link rel="alternate" hreflang="x-default" href="https://orbi.build/blog/attach-screenshot-to-issue/">
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="让 AI 改页面，把截图直接附进 Issue">
+  <meta property="og:description" content="orbi draft --attach 把截图、HTML 和文本文件写进 GitHub Issue，起草、交付、评审三个阶段都看得到。文中用一次真实运行讲清附件的上限，以及读不到附件时 Orbi 为什么停下。">
+  <meta property="og:url" content="https://orbi.build/zh/blog/attach-screenshot-to-issue/">
+  <meta property="og:image" content="https://orbi.build/img/blog-attach-screenshot-to-issue-card.png">
+  <meta property="og:image:alt" content="让 AI 改页面，把截图直接附进 Issue">
+  <meta property="article:published_time" content="2026-11-25">
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"让 AI 改页面，把截图直接附进 Issue","datePublished":"2026-11-25","author":{"@type":"Person","name":"Larry 🍀 Orbi","url":"https://orbi.build/zh/about/larry-orbi/","sameAs":["https://github.com/xqliu","https://x.com/xqliu"]},"publisher":{"@type":"Organization","name":"Orbi","url":"https://orbi.build/","logo":{"@type":"ImageObject","url":"https://orbi.build/logo-mark.svg"}},"mainEntityOfPage":"https://orbi.build/zh/blog/attach-screenshot-to-issue/","image":"https://orbi.build/img/blog-attach-screenshot-to-issue-card.png","inLanguage":"zh-CN","description":"orbi draft --attach 把截图、HTML 和文本文件写进 GitHub Issue，起草、交付、评审三个阶段都看得到。文中用一次真实运行讲清附件的上限，以及读不到附件时 Orbi 为什么停下。","url":"https://orbi.build/zh/blog/attach-screenshot-to-issue/"}</script>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <meta name="theme-color" content="#06151b">
+
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="stylesheet" href="/fonts/fonts.css">
+  <link rel="stylesheet" href="/styles.css">
+
+  <style>
+    /* Blog-only layout: the shared .shell/.compare-hero rules stay unchanged. */
+    .post-grid { max-width: 52rem; margin: 0 auto; padding: 0 24px; }
+    .post-hero { padding: 84px 0 68px; }
+    /* Issue #860: the body text column is wider than --hero-copy-width, so the
+       hero fills it and the h1/lede right edge lands on the body text. */
+    .post-hero h1, .post-hero .hero-lede { max-width: none; }
+    .post-body { padding-top: 12px; padding-bottom: 30px; }
+    .post-body h2, .post-body .related-links h2 { font-family: var(--display); font-size: 1.5rem; line-height: 1.25; margin: 42px 0 10px; scroll-margin-top: 24px; }
+    .post-body .related-links { margin: 0; }
+    .post-cta {
+      margin: 42px 0 12px;
+      padding: 30px;
+      border-radius: var(--radius-card);
+      background: var(--night);
+      color: #edf5f0;
+      text-align: center;
+    }
+    .post-cta h2 { margin: 0 0 18px; color: #edf5f0; font-family: var(--display); font-size: 1.5rem; line-height: 1.25; }
+    .post-cta .button { margin: 0 auto; color: var(--night); text-decoration: none; }
+    .post-cta-note { margin: 10px 0 18px; color: #aec2bd; font-size: 0.9rem; }
+    .post-cta .post-cta-link { color: #edf5f0; font-size: 0.9rem; text-underline-offset: 3px; }
+    .post-cta .post-cta-link:hover { color: #fff; }
+    .post-cta-inline {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin: 28px 0;
+      padding: 12px 16px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-card);
+      background: var(--paper-2);
+    }
+    .post-cta-inline span { color: var(--ink); font-size: 0.95rem; }
+    .post-cta-inline .button { flex: 0 0 auto; min-height: 40px; padding: 0 14px; font-size: 0.85rem; }
+    .post-toc { position: sticky; top: 24px; max-height: calc(100vh - 48px); overflow-y: auto; align-self: start; padding-top: 26px; }
+    .post-toc h2 { margin: 0 0 10px; padding: 0; font: 500 0.75rem/1.5rem var(--mono); letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-soft); }
+    .post-toc ol { list-style: none; margin: 0; padding: 0; border-left: 1px solid var(--line); }
+    .post-toc ol ol { border-left: 0; }
+    .post-body .post-toc-inline ol { margin: 0; padding-left: 2.2em; }
+    .post-body .post-toc-inline ol ol { list-style: none; padding-left: 1em; margin-top: 0; }
+    .post-toc li { margin: 0; }
+    .post-toc-inline li { margin: 6px 0; }
+    .post-toc-link { display: block; color: var(--ink-soft); font-size: 0.92rem; line-height: 1.4; text-decoration: none; overflow-wrap: anywhere; }
+    .post-toc .post-toc-link { padding: 6px 0 6px 15px; margin-left: -1px; border-left: 1px solid transparent; font-size: 0.875rem; line-height: 1.25rem; }
+    .post-toc ol ol .post-toc-link { padding-left: 27px; }
+    .post-toc-link:hover, .post-toc-link.is-current { color: var(--ink); }
+    .post-toc .post-toc-link.is-current { border-left-color: var(--ink); color: var(--ink); font-weight: 600; }
+    .post-toc-inline { display: none; margin: 0 0 28px; border: 1px solid var(--line); border-radius: var(--radius-card); padding: 12px 16px; }
+    .post-toc-inline summary { cursor: pointer; font-weight: 600; }
+    .post-toc-inline ol { margin-top: 12px; }
+
+    .post-body h3 { font-family: var(--display); font-size: 1.13rem; line-height: 1.3; margin: 30px 0 6px; }
+    .post-body p { margin: 14px 0; }
+    /* Issue #833: this line sits on the dark .night hero, so it uses the dark-band secondary color. */
+    .post-series { margin: 10px 0 6px; color: #9aada9; font-size: 0.95rem; }
+    .post-series a { color: inherit; text-decoration: underline; text-underline-offset: 3px; }
+    /* Issue #887 shipped the byline here; Issue #1465 moved its rules to
+       styles.css so the comparison, guide and benchmark pages share them. */
+    .post-body ul, .post-body ol { margin: 14px 0; padding-left: 22px; }
+    .post-body li { margin: 6px 0; }
+    .post-body a { color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
+    .post-body code { font-family: var(--mono); font-size: 0.88em; background: var(--paper-2); border: 1px solid var(--line); border-radius: var(--radius-control); padding: 1px 5px; white-space: nowrap; display: inline-block; max-width: 100%; overflow-x: auto; vertical-align: bottom; }
+    .post-body code.post-code--spaced { white-space: normal; display: inline; }
+    .post-body pre { background: var(--paper-2); border: 1px solid var(--line); border-radius: var(--radius-card); padding: 14px 16px; overflow-x: auto; margin: 18px 0; }
+    .post-body pre code, .post-body pre code.post-code--spaced, .post-body pre code.post-code--single { background: none; border: none; padding: 0; font-size: 0.85rem; white-space: pre; overflow-wrap: normal; display: inline; max-width: none; overflow: visible; }
+    .post-table-scroll { overflow-x: auto; }
+    .post-body table { width: 100%; border-collapse: collapse; }
+    .post-body th, .post-body td { border: 1px solid var(--line); padding: 8px 10px; text-align: left; }
+    .post-body th { background: var(--paper-2); }
+    .post-body strong { font-weight: 600; }
+    .post-media { margin: 24px 0; }
+    .post-body svg { max-width: 100%; height: auto; }
+    .post-media img, .post-media iframe, .post-media svg { display: block; width: 100%; border: 0; border-radius: var(--radius-card); }
+    .post-media img, .post-media svg { height: auto; }
+    .post-media iframe { aspect-ratio: 16 / 9; }
+    .post-media figcaption { color: var(--muted); font-size: 0.9rem; margin-top: 8px; }
+    @media (min-width: 1200px) {
+      .post-grid { display: grid; grid-template-columns: minmax(0, 52rem) 200px; column-gap: 56px; max-width: calc(52rem + 256px); padding: 0; }
+      .post-hero, .post-body { grid-column: 1; padding-left: 16px; padding-right: 16px; }
+      .post-toc { grid-column: 2; grid-row: 1; }
+    }
+    @media (max-width: 1199px) {
+      .post-toc { display: none; }
+      .post-toc-inline { display: block; }
+    }
+    @media (max-width: 760px) {
+      .post-hero { padding-top: 64px; padding-bottom: 48px; }
+      .post-cta { padding: 24px 18px; }
+      .post-cta .button { width: 100%; }
+      .post-cta-inline { align-items: stretch; flex-direction: column; gap: 10px; }
+      .post-cta-inline .button { width: 100%; }
+    }
+  </style>
+
+</head>
+<body>
+  <a class="skip-link" href="#main-content">跳到正文</a>
+
+  <div class="night nav-shell">
+    <header class="site-header">
+      <a class="wordmark" href="/zh/" aria-label="Orbi 首页">
+        <img class="wordmark-mark" src="/logo-mark-on-dark.svg" width="28" height="28" alt="">
+        <span>Orbi</span>
+      </a>
+      <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="primary-navigation-zh" aria-label="打开导航菜单" data-label-open="打开导航菜单" data-label-close="关闭导航菜单" data-menu-toggle>
+        <span aria-hidden="true"><i></i><i></i><i></i></span>
+      </button>
+      <nav id="primary-navigation-zh" aria-label="主导航" data-primary-nav>
+        <a href="/zh/#system">产品怎么运作</a>
+        <a href="/zh/cloud/#pricing">价格</a>
+        <a href="https://cloud-docs.orbi.build/zh/?ref=nav">文档</a>
+        <a data-cta="nav-github" href="https://github.com/orbi-build/orbi">GitHub</a>
+        <a class="nav-apply" data-cta="nav-start" href="/zh/cloud/login">用 GitHub 试用 Cloud</a>
+      </nav>
+    </header>
+  </div>
+
+  <main id="main-content">
+    <div class="night">
+      <div class="post-grid">
+        <section class="post-hero" aria-labelledby="post-title">
+          <p class="eyebrow">博客</p>
+          <h1 id="post-title">让 AI 改页面，把截图直接附进 Issue</h1>
+          <p class="post-byline"><a href="/zh/about/larry-orbi/">Larry 🍀 Orbi</a> · <time datetime="2026-11-25">2026-11-25</time></p>
+
+          <p class="hero-lede">orbi draft --attach 把截图、HTML 和文本文件写进 GitHub Issue，起草、交付、评审三个阶段都看得到。文中用一次真实运行讲清附件的上限，以及读不到附件时 Orbi 为什么停下。</p>
+        </section>
+      </div>
+    </div>
+
+    <div class="post-grid">
+        <nav class="post-toc" aria-label="本页目录">
+          <h2>本页目录</h2>
+          <ol>
+          <li><a class="post-toc-link" href="#起草-issue-时把截图附上">起草 Issue 时把截图附上</a></li>
+          <li><a class="post-toc-link" href="#附件怎样从起草传到评审">附件怎样从起草传到评审</a></li>
+          <li><a class="post-toc-link" href="#交付做成了什么样">交付做成了什么样</a></li>
+          <li><a class="post-toc-link" href="#读不到附件-orbi-就停下">读不到附件，Orbi 就停下</a></li>
+          <li><a class="post-toc-link" href="#上限和前提">上限和前提</a></li>
+          <li><a class="post-toc-link" href="#和同类工具比">和同类工具比</a></li>
+          <li><a class="post-toc-link" href="#相关">相关</a></li>
+          </ol>
+        </nav>
+      <article class="post-body">
+        <details class="post-toc-inline">
+          <summary>本页目录 · 7 节</summary>
+          <ol>
+          <li><a class="post-toc-link" href="#起草-issue-时把截图附上">起草 Issue 时把截图附上</a></li>
+          <li><a class="post-toc-link" href="#附件怎样从起草传到评审">附件怎样从起草传到评审</a></li>
+          <li><a class="post-toc-link" href="#交付做成了什么样">交付做成了什么样</a></li>
+          <li><a class="post-toc-link" href="#读不到附件-orbi-就停下">读不到附件，Orbi 就停下</a></li>
+          <li><a class="post-toc-link" href="#上限和前提">上限和前提</a></li>
+          <li><a class="post-toc-link" href="#和同类工具比">和同类工具比</a></li>
+          <li><a class="post-toc-link" href="#相关">相关</a></li>
+          </ol>
+        </details>
+<p>让 AI 改页面，最费劲的常常是用文字讲清「哪里不对」，截张图一眼就懂。Orbi 是一个开源系统，把 GitHub Issue 一路做成合并好的 PR；从 v0.7.59 起，<code class="post-code--spaced">orbi draft --attach</code> 可以把截图直接附进 Issue。这篇用一次真实运行，从敲命令讲到两个 PR 合并，再讲文件去了哪里、读不到时会怎样，以及有哪些限制。</p>
+<p>我是 Larry 🍀 Orbi，Orbi 的创始人。</p><aside class="post-cta-inline"><span>Orbi 把你的 Issue 一路做到发版。</span><a class="button button-signal" data-cta="post-inline-start" href="/zh/cloud/login">免费试用 Orbi Cloud →</a></aside>
+<p>我敲进去的需求只有一句：「收据页 docs/receipt.html 照截图里圈出的两处改，样式按 spec.html」。不看图，这句话什么也没说清。看了图，谁都能一眼看出两处毛病：下载按钮是灰的，像点不了；金额那一列没右对齐，小数点上下错开。在交互式工具里，你会把这张图贴进会话：Claude Code 的<a href="https://code.claude.com/docs/en/common-workflows.md">官方文档</a>写了三种办法，拖进窗口、<code class="post-code--single">Ctrl+V</code> 粘贴、或者给一个图片路径。用 Orbi 时，你在终端里确认草稿，之后就没人守在会话里了，交付和评审自己跑。所以截图得跟着 Issue 走，每个碰到这张 Issue 的会话都得看到它。</p>
+<h2 id="起草-issue-时把截图附上">起草 Issue 时把截图附上</h2>
+<p><code class="post-code--spaced">orbi draft</code> 把一句话变成 Orbi 能直接交付的 Issue：先读仓库，需要时问你几个问题，写好预期结果和验收条件，你按回车就建票。<code class="post-code--single">--attach</code> 往这次起草里加一个文件，可以写多次：</p>
+<div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="已复制">复制</button><pre><code class="language-bash" data-copy-source>orbi draft --attach screen.png --attach spec.html \
+  &quot;收据页 docs/receipt.html 照截图里圈出的两处改，样式按 spec.html&quot;
+</code></pre></div>
+<p><code class="post-code--single">screen.png</code> 是收据页，上面两个红框：① 「下载 PDF」按钮是灰的，像不能点；② 金额没右对齐，小数点对不上。<code class="post-code--single">spec.html</code> 是一份很短的样式约定：主按钮背景 <code class="post-code--single">#2563EB</code>、白字，悬停 <code class="post-code--single">#1D4ED8</code>；灰色 <code class="post-code--single">#9CA3AF</code> 只给不可点的按钮；金额右对齐、用等宽数字；退款用红色 <code class="post-code--single">#DC2626</code>。</p>
+<img src="/img/blog-attach-screen.webp" alt="一张付款收据卡片，上面两个红框：一个框住灰色的「下载 PDF」按钮，标 ①；一个框住左对齐的金额列，标 ②；旁边写着按钮像不能点、小数点对不上。" width="1056" height="740"><p>这次是在一个公开的测试仓库 <a href="https://github.com/xqliu/orbi-e2e-2609260042">xqliu/orbi-e2e-2609260042</a> 里跑的，收据页是我为这次演示加的一个小页面。Orbi 一个问题也没问，直接给了两张票，因为两处改动可以分开验收：</p>
+<ul>
+<li><a href="https://github.com/xqliu/orbi-e2e-2609260042/issues/521">#521</a>：「下载 PDF」改成主按钮，背景 <code class="post-code--single">#2563EB</code>、白字，悬停变 <code class="post-code--single">#1D4ED8</code>。</li>
+<li><a href="https://github.com/xqliu/orbi-e2e-2609260042/issues/522">#522</a>：表头、每行金额和合计都右对齐，用等宽数字；退款那行的 <code class="post-code--single">-$29.00</code> 显示成 <code class="post-code--single">#DC2626</code>。</li>
+</ul>
+<p>两张票的内容都来自附件。按钮色值和悬停色只写在 <code class="post-code--single">spec.html</code> 里，「像不能点」「小数点对不上」只在截图上，我那句话里一样都没有。</p>
+<p>有一处超出了我圈的范围：退款红色我在截图上没圈，#522 也写进去了。票面「假设」一节说了原因：截图只圈了对齐，但 <code class="post-code--single">spec.html</code> 把退款红色写在同一节「金额列」约定里，所以一并实现。这一节在终端里的草稿上就看得到，那时还什么都没建。不想要，在提示符那里输入一句修改；觉得约定没错，直接按回车。票一建好就带着 <code class="post-code--single">ai-ready</code> 进了队列，事后再改，可能已经开工了。</p>
+<h2 id="附件怎样从起草传到评审">附件怎样从起草传到评审</h2>
+<p><strong>起草。</strong> 每个文件先复制进起草会话自己的目录，改用生成的名字（<code class="post-code--single">1.png</code>、<code class="post-code--single">2.html</code>），文件名再怎么写也跑不出这个目录。会话收到一行说明（<code class="post-code--spaced">The person attached: 1.png = screen.png, 2.html = spec.html</code>），HTML 和文本用读文件工具读。图片只有在模型目录里声明了能看图时，才按图片交给模型；Orbi 自带的 DeepSeek 模板声明了。</p>
+<p><strong>Issue。</strong> 你确认以后，每张新 Issue 末尾有一节 <code class="post-code--spaced">## Attachments</code>，只放这张票用到的文件。本地图片用你自己的 <code class="post-code--single">gh</code> 登录上传（<code class="post-code--spaced">gh issue create --attach</code>），成为 GitHub 原生附件；HTML 和文本折叠在正文里。模型能看图时，在 GitHub 上打开 Issue 的人，看到的和 AI 看到的是同一份东西。</p>
+<img src="/img/blog-attach-issue.webp" alt="GitHub 上的 Issue #521，滚动到 Attachments 一节：标注过的收据截图以图片显示，下面是折叠起来的 spec.html，右侧栏有 ai-ready 标签。" width="1200" height="737"><p><strong>交付和评审。</strong> 写代码的会话和评审的会话都会收到 Attachments 一节里的图片，以及正文、有写权限的人在评论里贴的 GitHub 原生图片。评审每一轮都重新读一遍，所以评审拿来对照的，和写代码时看的是同一张截图。HTML 和文本本来就在两个会话都会读的 Issue 正文里。其他人评论里贴的图片和链接一律不取。</p>
+<h2 id="交付做成了什么样">交付做成了什么样</h2>
+<p>这次我在自己电脑上跑开源引擎，和自建部署的跑法一样，所以 PR 是用我自己的 GitHub 账号开的。两张票都在 11 月 25 日交付并合并（UTC 时间）：</p>
+<ul>
+<li>#521 对应 <a href="https://github.com/xqliu/orbi-e2e-2609260042/pull/523">PR #523</a>：按钮背景从 <code class="post-code--single">#9ca3af</code> 改成 <code class="post-code--single">#2563EB</code>，加了一条 <code class="post-code--single">.btn:hover</code>，颜色 <code class="post-code--single">#1D4ED8</code>。02:33 开始交付，评审一轮通过，02:50 合并。</li>
+<li>#522 对应 <a href="https://github.com/xqliu/orbi-e2e-2609260042/pull/524">PR #524</a>：金额单元格加上右对齐和 <code class="post-code--single">tabular-nums</code>，退款那格加上 <code class="post-code--single">#DC2626</code>。02:39 开始，03:08 合并，中间经过三次评审：第一次输出的结论格式不对，引擎重试；第二次没挑出问题，但把 <code class="post-code--single">main</code> 上的 #523 合进分支之后，检查没过；第三次评审会话自己修好了那个失败的测试（评审发现问题会在同一个会话里修），然后通过。</li>
+</ul>
+<img src="/img/blog-attach-before-after-zh.webp" alt="同一张收据改前改后并排对比。改之前：灰色的「下载 PDF」按钮，金额左对齐。改之后：蓝色按钮，金额右对齐、小数点上下对齐，退款金额是红色。" width="1230" height="475"><p>每个会话都拿到了截图。两次写代码、四次评审，一共六个会话，会话记录里都有这张图，而且是每个会话各自重新取的。</p>
+<h2 id="读不到附件-orbi-就停下">读不到附件，Orbi 就停下</h2>
+<p>附件常常就是需求本身。写代码的会话要是跳过了 <code class="post-code--single">screen.png</code>，手里只剩「照截图里圈出的两处改」，却没有圈，它照样会写出点什么来；评审会话也没有截图，只能对着这些代码下结论。所以 Orbi 选择停下：</p>
+<ul>
+<li>起草时有文件读不到，这一轮直接失败，并点名是哪个文件。</li>
+<li>交付或评审时读不到，会话根本不开。Issue 打上 <code class="post-code--single">ai-blocked</code>，留一条评论写明是哪张图、怎么修：重新上传（这张图确实用不上时才删掉它），再把 <code class="post-code--single">ai-blocked</code> 换成 <code class="post-code--single">ai-ready</code>（已经有 PR 就换成 <code class="post-code--single">ai-fix-needed</code>）。私有仓库里这个办法暂时不管用，见下面的限制。之后不会自己重试，坏掉的图不会每隔几分钟刷一条评论。</li>
+</ul>
+<p>有两种情况不会停，值得知道：</p>
+<ul>
+<li><strong>上传被拒。</strong> <code class="post-code--single">gh</code> 拒绝上传时，比如登录的是 GitHub App 令牌而不是你本人的账号，Issue 照样建出来，只是少了那张图，命令会打印哪些图没传上去。先摘掉这张 Issue 的 <code class="post-code--single">ai-ready</code>，去 GitHub 上把图贴进去，再把 <code class="post-code--single">ai-ready</code> 加回来。在这之前已经开工的那一轮看不到后补的图。如果用 <code class="post-code--spaced">gh auth login</code> 换成自己的账号重新起草，会建出一张新票，记得把缺图的那张关掉。</li>
+<li><strong>模型看不了图。</strong> 起草时，没有声明能看图的模型会被告知这张图看不了，需要时请你用文字描述。交付和评审时，这样的模型拿不到图，也不会收到任何提示，只按 Issue 里的文字往下做。截图要起作用，就得给 Orbi 配一个声明了能看图的模型，比如它自带的 DeepSeek 模板。</li>
+</ul>
+<h2 id="上限和前提">上限和前提</h2>
+<p class="post-table-hint" hidden>左右滑动查看所有列。</p><div class="post-table-scroll" tabindex="0" role="region" aria-label="左右滑动查看所有列。"><table class="table-comparison">
+<thead>
+<tr>
+<th scope="col"></th>
+<th scope="col"></th>
+</tr>
+</thead>
+<tbody><tr>
+<th scope="row">图片</th>
+<td><code class="post-code--single">png</code>、<code class="post-code--single">jpg</code>、<code class="post-code--single">jpeg</code>、<code class="post-code--single">gif</code>、<code class="post-code--single">webp</code></td>
+</tr>
+<tr>
+<th scope="row">HTML 和文本</th>
+<td><code class="post-code--single">html</code>、<code class="post-code--single">htm</code>、<code class="post-code--single">txt</code>、<code class="post-code--single">md</code>、<code class="post-code--single">csv</code>、<code class="post-code--single">tsv</code>、<code class="post-code--single">json</code>、<code class="post-code--single">log</code></td>
+</tr>
+<tr>
+<th scope="row">数量和大小</th>
+<td>最多 10 个，单个不超过 10 MB；所有 HTML 和文本加起来不超过 5 万字符，好放进 Issue 正文</td>
+</tr>
+<tr>
+<th scope="row">模型</th>
+<td>交付和评审要用声明了能看图的模型，比如自带的 DeepSeek 模板；否则截图会被忽略，也没有提示</td>
+</tr>
+<tr>
+<th scope="row">其他类型</th>
+<td>直接拒绝并说明原因，比如 PDF、视频</td>
+</tr>
+<tr>
+<th scope="row">Orbi</th>
+<td>v0.7.59 或更新（<a href="https://github.com/orbi-build/orbi">github.com/orbi-build/orbi</a>）</td>
+</tr>
+<tr>
+<th scope="row">gh</th>
+<td>2.99 或更新，用本人账号登录（<code class="post-code--spaced">gh auth login</code>）</td>
+</tr>
+</tbody></table></div>
+<p><code class="post-code--single">--attach</code> 只在开始起草时生效。给已有 Issue 追加内容不会带附件，已经建好的 Issue 要补图，直接在 GitHub 上贴进去。</p>
+<p>两点提醒。公开仓库里，附上的东西谁都看得到：图片，还有写进正文的 HTML 和文本（折叠只是收起，不是隐藏）。附之前先把不该公开的内容去掉。私有仓库里，截至我写这篇时最新发布的 v0.7.62，交付还读不到 Orbi 上传的原生图片：它去下载的地址仍然要登录，交付会以 <code class="post-code--single">attachment_unavailable</code> 停下。修复（<a href="https://github.com/orbi-build/orbi/pull/2388">orbi#2388</a>，对应 <a href="https://github.com/orbi-build/orbi/issues/2387">orbi#2387</a>）已经合进主线，下一个版本发布。在那之前，私有仓库里重新上传也没用。起草和建票在私有仓库里现在就能用；上面这次运行是在公开仓库上跑的。</p>
+<h2 id="和同类工具比">和同类工具比</h2>
+<p>把截图放进 Issue 不是新鲜事。GitHub Copilot 的云端 agent <a href="https://docs.github.com/en/copilot/how-tos/use-copilot-agents/coding-agent/provide-visual-inputs">会看 Issue 正文里拖进去的截图</a>，<code class="post-code--single">gh</code> 2.99 也<a href="https://github.blog/changelog/2026-09-01-github-cli-media-in-issues-pull-requests-and-comments/">给所有人加了 <code class="post-code--single">--attach</code></a>，Orbi 用的就是这个上传。区别在上传前后：起草会话先读附件再写 Issue，预期结果和验收条件按截图和约定里的内容写；评审每一轮都重新看；附进来的文件读不出来，就停下说清是哪个文件，不带着半份需求往下做。</p>
+<aside class="post-cta">
+  <h2>Orbi 把你的 Issue 一路做到发版。</h2>
+  <a class="button button-signal" data-cta="post-start" href="/zh/cloud/login">免费试用 Orbi Cloud →</a>
+  <p class="post-cta-note">不用绑定信用卡 · 只授权你选的仓库</p>
+  <a class="post-cta-link" data-cta="post-selfhost" href="https://github.com/orbi-build/orbi">想自己部署？开源免费（AGPL）→</a>
+</aside><h2 id="相关">相关</h2>
+<ul>
+<li><a href="/zh/guides/issue-to-release/">AI agent：从 GitHub Issue 到合并与发版</a></li>
+<li><a href="/zh/blog/vague-request-to-merged-pr/">一句话需求，怎么走到 PR 合并</a></li>
+<li><a href="/zh/blog/write-a-request/">写需求：说一句话，Orbi Cloud 替你写好 GitHub Issue</a></li>
+<li><a href="/zh/blog/stuck-delivery-one-click/">AI 编码交付卡住后，怎么让 Orbi 继续</a></li>
+<li><a href="/zh/compare/?ref=blog-attach">Orbi 与其他编程 agent 对比</a></li>
+<li><a href="/zh/cloud/?ref=blog-attach">Orbi Cloud</a></li>
+</ul>
+
+<!--orbi:related-posts-->
+      </article>
+    </div>
+  </main>
+
+<section class="subscribe-box shell" aria-labelledby="subscribe-title">
+  <h2 class="subscribe-title" id="subscribe-title">Orbi 这周又能多做什么</h2>
+  <form class="subscribe-form" action="/subscribe" method="post" data-subscribe-form data-success="请到邮箱点确认链接，确认后就订阅好了。" data-invalid="邮箱格式不对" data-unavailable="暂时无法订阅，请重试。">
+    <label class="sr-only" for="subscribe-email-zh">邮箱地址</label>
+    <input id="subscribe-email-zh" type="email" name="email" autocomplete="email" required placeholder="你的邮箱">
+    <input type="hidden" name="lang" value="zh">
+    <button class="button button-ghost" type="submit">订阅</button>
+    <p class="subscribe-status" data-subscribe-status aria-live="polite"></p>
+  </form>
+  <p class="subscribe-note">每周一封：新功能、实测文章，还有我们自己用 Orbi 干活的数据。随时退订。</p>
+</section>
+
+  <script src="/subscribe.js" defer></script>
+
+  <footer class="site-footer shell">
+    <div class="footer-brand">
+      <a class="wordmark wordmark-footer" href="/zh/" aria-label="Orbi 首页">
+        <img class="wordmark-mark" src="/logo-mark.svg" width="28" height="28" alt="">
+        <span>Orbi</span>
+      </a>
+      <p class="orbi-site-footer-p">不会随 Session 消失的软件生产。</p>
+    </div>
+    <nav aria-label="页脚导航">
+      <div class="footer-group">
+        <h2>产品</h2>
+        <ul><li><a href="/zh/cloud/">Cloud</a></li><li><a href="/zh/cloud/#pricing">价格</a></li><li><a href="/zh/#system">产品怎么运作</a></li><li><a href="/zh/evidence/">Orbi 交付自己的记录</a></li><li><a href="/zh/trust/">信任与安全</a></li><li><a href="https://github.com/orbi-build/orbi/releases">发布记录</a></li><li><a href="https://status.orbi.build">状态</a></li></ul>
+      </div>
+      <div class="footer-group">
+        <h2>资源</h2>
+        <ul><li><a href="/zh/evidence/">Orbi 交付自己的记录</a></li><li><a href="/zh/benchmark/">我们怎么测 harness</a></li><li><a href="/zh/guides/pi-coding-agent/">Pi 系列：Orbi 是怎么实现的</a></li><li><a href="/zh/cost/">每个 PR 花多少钱</a></li><li><a href="/aiready/zh/">ai-ready 12 要素</a></li><li><a href="/zh/compare/">与同类工具对比</a></li><li><a href="/zh/blog/">博客</a></li><li><a href="/zh/blog/ai-contribute-to-open-source/">开源贡献</a></li><li><a href="https://docs.orbi.build/zh">自托管文档</a></li><li><a href="https://cloud-docs.orbi.build/?ref=footer">Cloud 文档</a></li><li><a href="/zh/#faq">常见问题</a></li></ul>
+      </div>
+      <div class="footer-group footer-guides">
+        <h2>指南</h2>
+        <ul><li><a href="/zh/guides/">指南</a></li><li><a href="/zh/guides/issue-to-release/">Issue 到发版</a></li><li><a href="/zh/guides/ci-gates/">CI 门禁</a></li><li><a href="/zh/guides/auto-merge-ai-prs/">自动合并 AI PR</a></li><li><a href="/zh/guides/autonomous-coding-agent/">自主编程 agent</a></li><li><a href="/zh/guides/self-hosted-coding-agent/">自托管编程 agent</a></li><li><a href="/zh/guides/codex-github-issues/">Codex 处理 GitHub Issue</a></li><li><a href="https://aiready.sh/zh/">ai-ready 十二要素</a></li></ul>
+      </div>
+      <div class="footer-group footer-compare">
+        <h2>对比</h2>
+        <ul><li><a href="/zh/compare/orca/">Orbi vs Orca</a></li><li><a href="/zh/compare/openclaw/">Orbi vs OpenClaw</a></li><li><a href="/zh/compare/github-copilot-coding-agent/">Orbi vs GitHub Copilot cloud agent</a></li><li><a href="/zh/compare/managed-agents/">Orbi vs Claude Managed Agents</a></li><li><a href="/zh/compare/claude-code/">Orbi vs Claude Code</a></li><li><a href="/zh/compare/openhands/">Orbi vs OpenHands</a></li><li><a href="/zh/compare/hermes-agent/">Orbi vs Hermes Agent</a></li><li><a href="/zh/compare/keelen/">Orbi vs Keelen</a></li><li><a href="/zh/compare/codex/">Orbi vs OpenAI Codex</a></li><li><a href="/zh/compare/devin/">Orbi vs Devin</a></li><li><a href="/zh/compare/jules/">Orbi vs Google Jules</a></li><li><a href="/zh/compare/cursor/">Orbi vs Cursor Cloud Agents</a></li><li><a href="/zh/compare/">全部对比</a></li></ul>
+      </div>
+      <div class="footer-group">
+        <h2>公司</h2>
+        <ul><li><a href="/zh/support/">支持</a></li><li><a href="https://github.com/orbi-build/orbi/milestones">路线图</a></li><li><a href="/zh/privacy/">隐私政策</a></li><li><a href="/zh/terms/">服务条款</a></li><li><a href="https://github.com/orbi-build/orbi">GitHub</a></li><li><a href="https://x.com/xqliu" rel="me">X</a></li><li><a href="https://www.youtube.com/@orbibuild" rel="me">YouTube</a></li><li><a href="https://www.reddit.com/r/OrbiBuild/">Reddit</a></li></ul>
+      </div>
+    </nav>
+    <div class="footer-language language" role="group" aria-label="语言"><span aria-current="page">ZH</span><a href="/blog/attach-screenshot-to-issue/" lang="en" aria-label="English">EN</a></div>
+    <p class="footer-legal">© 2026 Low Code, LLC</p>
+  </footer>
+
+  <script src="/demo.js" defer></script>
+
+<script>(()=>{try{const links=[...document.querySelectorAll('.post-toc-link')];const targetOf=(link)=>link.getAttribute('href').slice(1);const headings=[...new Set(links.map(link=>document.getElementById(targetOf(link))).filter(Boolean))];const setCurrent=(heading)=>{links.forEach((link)=>link.classList.toggle('is-current',targetOf(link)===heading.id));};if('IntersectionObserver' in window){const update=()=>{const current=headings.findLast((heading)=>heading.getBoundingClientRect().top<=innerHeight*.4)??headings[0];if(current)setCurrent(current);};const observer=new IntersectionObserver(update,{rootMargin:'-24px 0px -60% 0px',threshold:0});headings.forEach((heading)=>observer.observe(heading));addEventListener('scroll',update,{passive:true});update();}}catch(error){console.warn('post_toc_observer_failed',error);}})();</script><script>(()=>{
+  const endpoint="/cloud/e", start=Date.now();
+  let visible=document.visibilityState!=="hidden", visibleAt=visible?start:0, visibleMs=0, interacted=false, engagedSent=false, depthSent=false, maxDepth=0;
+  const send=(kind,detail,extra)=>{const body={kind,path:location.pathname};if(detail!==undefined)body.detail=String(detail);if(extra)Object.assign(body,extra);try{if(!navigator.sendBeacon(endpoint,new Blob([JSON.stringify(body)],{type:"application/json"})))console.warn("engagement_report_failed","sendBeacon returned false");}catch(error){console.warn("engagement_report_failed",error);}};
+  send("visit",undefined,{search:location.search,referrer:document.referrer});
+  const elapsed=()=>visibleMs+(visible?Date.now()-visibleAt:0);
+  const check=()=>{if(!engagedSent&&interacted&&elapsed()>=10000){engagedSent=true;send("engaged");}};
+  const schedule=()=>setTimeout(check,Math.max(0,10000-elapsed()));
+  const markInteraction=()=>{interacted=true;check();};
+  ["scroll","pointerdown","keydown","touchstart"].forEach(type=>addEventListener(type,markInteraction,{passive:true}));
+  const depth=()=>{const height=document.documentElement.scrollHeight;maxDepth=Math.max(maxDepth,height<=0?100:Math.min(100,Math.floor((scrollY+innerHeight)/height*100)));};
+  addEventListener("scroll",depth,{passive:true});
+  schedule();
+  const hide=()=>{depth();if(visible){visibleMs+=Date.now()-visibleAt;visible=false;}check();if(!depthSent){depthSent=true;send("scroll_depth",Math.max(25,Math.min(100,Math.floor(maxDepth/25)*25)));}};
+  const show=()=>{if(!visible){visible=true;visibleAt=Date.now();schedule();}};
+  addEventListener("visibilitychange",()=>document.visibilityState==="hidden"?hide():show());
+  addEventListener("pagehide",hide);
+  addEventListener("click",event=>{const link=event.target.closest?.("[data-cta]");if(link)send("cta_click",link.dataset.cta);},{passive:true});
+  const sectionViews=new Set();
+  const sectionDetail=section=>section.id||section.classList?.[0];
+  if(typeof IntersectionObserver!=="undefined"){
+    const sections=[...document.querySelectorAll("main section")].filter(section=>!section.parentElement?.closest("section"));
+    const thresholds=[.3,...sections.map(section=>{const height=section.getBoundingClientRect().height;return height>0?Math.min(.3,innerHeight*.5/height):.3;})];
+    const sectionObserver=new IntersectionObserver(entries=>{entries.forEach(entry=>{
+      const detail=sectionDetail(entry.target);
+      if(detail&&!sectionViews.has(entry.target)&&((entry.intersectionRatio||0)>=.3||(entry.intersectionRect?.height||0)>=innerHeight*.5)){
+        sectionViews.add(entry.target);send("section_view",detail);sectionObserver.unobserve(entry.target);
+      }
+    });},{threshold:thresholds});
+    sections.forEach(section=>sectionObserver.observe(section));
+  }
+})();</script><script data-login-handoff>(()=>{
+  const login=new RegExp("^(?:/zh)?/cloud/login/?$"), pending=new Map();
+  const pendingLabel=/^zh/i.test(document.documentElement.lang)?"正在打开 GitHub…":"Opening GitHub…";
+  addEventListener("click",event=>{
+    if(event.metaKey||event.ctrlKey||event.shiftKey||event.altKey)return;
+    const link=event.target.closest?.("a[href]");
+    if(!link||!login.test(link.pathname))return;
+    if(pending.has(link)){event.preventDefault();return;}
+    pending.set(link,link.innerHTML);
+    link.setAttribute("aria-disabled","true");
+    setTimeout(()=>{link.textContent=pendingLabel;},0);
+  },true);
+  addEventListener("pageshow",event=>{
+    if(!event.persisted)return;
+    pending.forEach((html,link)=>{link.innerHTML=html;link.removeAttribute("aria-disabled");});
+    pending.clear();
+  });
+})();</script><script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "44c2c3310e2e46b7955bb09f04c93fd1"}'></script><script>(function(){
+  var start=function(){
+    !function(t,e){var o,n,p,r;e.__SV||(window.posthog=e,e._i=[],e.init=function(i,s,a){function g(t,e){var o=e.split(".");2==o.length&&(t=t[o[0]],e=o[1]),t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}}(p=t.createElement("script")).type="text/javascript",p.crossOrigin="anonymous",p.async=!0,p.src=s.api_host.replace(".i.posthog.com","-assets.i.posthog.com")+"/static/array.js",(r=t.getElementsByTagName("script")[0]).parentNode.insertBefore(p,r);var u=e;for(void 0!==a?u=e[a]=[]:a="posthog",u.people=u.people||[],Object.defineProperty(u,"toString",{configurable:!0,enumerable:!0,writable:!0,value:function(t){var e="posthog";return"posthog"!==a&&(e+="."+a),t||(e+=" (stub)"),e}}),Object.defineProperty(u.people,"toString",{configurable:!0,enumerable:!0,writable:!0,value:function(){return u.toString(1)+".people (stub)"}}),o="init capture register register_once register_for_session unregister unregister_for_session getFeatureFlag getFeatureFlagResult isFeatureEnabled reloadFeatureFlags updateEarlyAccessFeatureEnrollment getEarlyAccessFeatures on onFeatureFlags onSessionId getSurveys getActiveMatchingSurveys renderSurvey canRenderSurvey getNextSurveyStep identify setPersonProperties group resetGroups setPersonPropertiesForFlags resetPersonPropertiesForFlags setGroupPropertiesForFlags resetGroupPropertiesForFlags reset get_distinct_id getGroups get_session_id get_session_replay_url alias set_config startSessionRecording stopSessionRecording sessionRecordingStarted captureException loadToolbar get_property getSessionProperty createPersonProfile opt_in_capturing opt_out_capturing has_opted_in_capturing has_opted_out_capturing clear_opt_in_out_capturing debug".split(" "),n=0;n<o.length;n++)g(u,o[n]);e._i.push([i,s,a])},e.__SV=1)}(document,window.posthog||[]);
+    posthog.init("phc_nhxAwie7BY0blOSHfAbNzRGcb2rGDJInLUGPh93i8Mx",{api_host:"/api/ph",ui_host:"https://us.posthog.com",autocapture:true,disable_session_recording:false});
+  };
+  if(document.readyState==="complete")start();else addEventListener("load",start,{once:true});
+})();</script></body>
+</html>

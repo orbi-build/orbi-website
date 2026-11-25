@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Attach a screenshot to the issue your AI agent builds | Orbi</title>
+  <meta name="description" content="orbi draft --attach puts screenshots, HTML and text files in the GitHub Issue, where drafting, delivery and review read them. A real run and the limits.">
+  <link rel="canonical" href="https://orbi.build/blog/attach-screenshot-to-issue/">
+  <link rel="alternate" hreflang="en" href="https://orbi.build/blog/attach-screenshot-to-issue/">
+  <link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/blog/attach-screenshot-to-issue/">
+  <link rel="alternate" hreflang="x-default" href="https://orbi.build/blog/attach-screenshot-to-issue/">
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="Attach a screenshot to the issue your AI agent builds">
+  <meta property="og:description" content="orbi draft --attach puts screenshots, HTML and text files in the GitHub Issue, where drafting, delivery and review read them. A real run and the limits.">
+  <meta property="og:url" content="https://orbi.build/blog/attach-screenshot-to-issue/">
+  <meta property="og:image" content="https://orbi.build/img/blog-attach-screenshot-to-issue-card.png">
+  <meta property="og:image:alt" content="Attach a screenshot to the issue your AI agent builds">
+  <meta property="article:published_time" content="2026-11-25">
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"Attach a screenshot to the issue your AI agent builds","datePublished":"2026-11-25","author":{"@type":"Person","name":"Larry 🍀 Orbi","url":"https://orbi.build/about/larry-orbi/","sameAs":["https://github.com/xqliu","https://x.com/xqliu"]},"publisher":{"@type":"Organization","name":"Orbi","url":"https://orbi.build/","logo":{"@type":"ImageObject","url":"https://orbi.build/logo-mark.svg"}},"mainEntityOfPage":"https://orbi.build/blog/attach-screenshot-to-issue/","image":"https://orbi.build/img/blog-attach-screenshot-to-issue-card.png","inLanguage":"en","description":"orbi draft --attach puts screenshots, HTML and text files in the GitHub Issue, where drafting, delivery and review read them. A real run and the limits.","url":"https://orbi.build/blog/attach-screenshot-to-issue/"}</script>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <meta name="theme-color" content="#06151b">
+
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="stylesheet" href="/fonts/fonts.css">
+  <link rel="stylesheet" href="/styles.css">
+
+  <style>
+    /* Blog-only layout: the shared .shell/.compare-hero rules stay unchanged. */
+    .post-grid { max-width: 52rem; margin: 0 auto; padding: 0 24px; }
+    .post-hero { padding: 84px 0 68px; }
+    /* Issue #860: the body text column is wider than --hero-copy-width, so the
+       hero fills it and the h1/lede right edge lands on the body text. */
+    .post-hero h1, .post-hero .hero-lede { max-width: none; }
+    .post-body { padding-top: 12px; padding-bottom: 30px; }
+    .post-body h2, .post-body .related-links h2 { font-family: var(--display); font-size: 1.5rem; line-height: 1.25; margin: 42px 0 10px; scroll-margin-top: 24px; }
+    .post-body .related-links { margin: 0; }
+    .post-cta {
+      margin: 42px 0 12px;
+      padding: 30px;
+      border-radius: var(--radius-card);
+      background: var(--night);
+      color: #edf5f0;
+      text-align: center;
+    }
+    .post-cta h2 { margin: 0 0 18px; color: #edf5f0; font-family: var(--display); font-size: 1.5rem; line-height: 1.25; }
+    .post-cta .button { margin: 0 auto; color: var(--night); text-decoration: none; }
+    .post-cta-note { margin: 10px 0 18px; color: #aec2bd; font-size: 0.9rem; }
+    .post-cta .post-cta-link { color: #edf5f0; font-size: 0.9rem; text-underline-offset: 3px; }
+    .post-cta .post-cta-link:hover { color: #fff; }
+    .post-cta-inline {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin: 28px 0;
+      padding: 12px 16px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-card);
+      background: var(--paper-2);
+    }
+    .post-cta-inline span { color: var(--ink); font-size: 0.95rem; }
+    .post-cta-inline .button { flex: 0 0 auto; min-height: 40px; padding: 0 14px; font-size: 0.85rem; }
+    .post-toc { position: sticky; top: 24px; max-height: calc(100vh - 48px); overflow-y: auto; align-self: start; padding-top: 26px; }
+    .post-toc h2 { margin: 0 0 10px; padding: 0; font: 500 0.75rem/1.5rem var(--mono); letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-soft); }
+    .post-toc ol { list-style: none; margin: 0; padding: 0; border-left: 1px solid var(--line); }
+    .post-toc ol ol { border-left: 0; }
+    .post-body .post-toc-inline ol { margin: 0; padding-left: 2.2em; }
+    .post-body .post-toc-inline ol ol { list-style: none; padding-left: 1em; margin-top: 0; }
+    .post-toc li { margin: 0; }
+    .post-toc-inline li { margin: 6px 0; }
+    .post-toc-link { display: block; color: var(--ink-soft); font-size: 0.92rem; line-height: 1.4; text-decoration: none; overflow-wrap: anywhere; }
+    .post-toc .post-toc-link { padding: 6px 0 6px 15px; margin-left: -1px; border-left: 1px solid transparent; font-size: 0.875rem; line-height: 1.25rem; }
+    .post-toc ol ol .post-toc-link { padding-left: 27px; }
+    .post-toc-link:hover, .post-toc-link.is-current { color: var(--ink); }
+    .post-toc .post-toc-link.is-current { border-left-color: var(--ink); color: var(--ink); font-weight: 600; }
+    .post-toc-inline { display: none; margin: 0 0 28px; border: 1px solid var(--line); border-radius: var(--radius-card); padding: 12px 16px; }
+    .post-toc-inline summary { cursor: pointer; font-weight: 600; }
+    .post-toc-inline ol { margin-top: 12px; }
+
+    .post-body h3 { font-family: var(--display); font-size: 1.13rem; line-height: 1.3; margin: 30px 0 6px; }
+    .post-body p { margin: 14px 0; }
+    /* Issue #833: this line sits on the dark .night hero, so it uses the dark-band secondary color. */
+    .post-series { margin: 10px 0 6px; color: #9aada9; font-size: 0.95rem; }
+    .post-series a { color: inherit; text-decoration: underline; text-underline-offset: 3px; }
+    /* Issue #887 shipped the byline here; Issue #1465 moved its rules to
+       styles.css so the comparison, guide and benchmark pages share them. */
+    .post-body ul, .post-body ol { margin: 14px 0; padding-left: 22px; }
+    .post-body li { margin: 6px 0; }
+    .post-body a { color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
+    .post-body code { font-family: var(--mono); font-size: 0.88em; background: var(--paper-2); border: 1px solid var(--line); border-radius: var(--radius-control); padding: 1px 5px; white-space: nowrap; display: inline-block; max-width: 100%; overflow-x: auto; vertical-align: bottom; }
+    .post-body code.post-code--spaced { white-space: normal; display: inline; }
+    .post-body pre { background: var(--paper-2); border: 1px solid var(--line); border-radius: var(--radius-card); padding: 14px 16px; overflow-x: auto; margin: 18px 0; }
+    .post-body pre code, .post-body pre code.post-code--spaced, .post-body pre code.post-code--single { background: none; border: none; padding: 0; font-size: 0.85rem; white-space: pre; overflow-wrap: normal; display: inline; max-width: none; overflow: visible; }
+    .post-table-scroll { overflow-x: auto; }
+    .post-body table { width: 100%; border-collapse: collapse; }
+    .post-body th, .post-body td { border: 1px solid var(--line); padding: 8px 10px; text-align: left; }
+    .post-body th { background: var(--paper-2); }
+    .post-body strong { font-weight: 600; }
+    .post-media { margin: 24px 0; }
+    .post-body svg { max-width: 100%; height: auto; }
+    .post-media img, .post-media iframe, .post-media svg { display: block; width: 100%; border: 0; border-radius: var(--radius-card); }
+    .post-media img, .post-media svg { height: auto; }
+    .post-media iframe { aspect-ratio: 16 / 9; }
+    .post-media figcaption { color: var(--muted); font-size: 0.9rem; margin-top: 8px; }
+    @media (min-width: 1200px) {
+      .post-grid { display: grid; grid-template-columns: minmax(0, 52rem) 200px; column-gap: 56px; max-width: calc(52rem + 256px); padding: 0; }
+      .post-hero, .post-body { grid-column: 1; padding-left: 16px; padding-right: 16px; }
+      .post-toc { grid-column: 2; grid-row: 1; }
+    }
+    @media (max-width: 1199px) {
+      .post-toc { display: none; }
+      .post-toc-inline { display: block; }
+    }
+    @media (max-width: 760px) {
+      .post-hero { padding-top: 64px; padding-bottom: 48px; }
+      .post-cta { padding: 24px 18px; }
+      .post-cta .button { width: 100%; }
+      .post-cta-inline { align-items: stretch; flex-direction: column; gap: 10px; }
+      .post-cta-inline .button { width: 100%; }
+    }
+  </style>
+
+</head>
+<body>
+  <a class="skip-link" href="#main-content">Skip to content</a>
+
+  <div class="night nav-shell">
+    <header class="site-header">
+      <a class="wordmark" href="/" aria-label="Orbi home">
+        <img class="wordmark-mark" src="/logo-mark-on-dark.svg" width="28" height="28" alt="">
+        <span>Orbi</span>
+      </a>
+      <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="primary-navigation" aria-label="Open navigation" data-label-open="Open navigation" data-label-close="Close navigation" data-menu-toggle>
+        <span aria-hidden="true"><i></i><i></i><i></i></span>
+      </button>
+      <nav id="primary-navigation" aria-label="Primary navigation" data-primary-nav>
+        <a href="/#system">How it works</a>
+        <a href="/cloud/#pricing">Pricing</a>
+        <a href="https://cloud-docs.orbi.build/?ref=nav">Docs</a>
+        <a data-cta="nav-github" href="https://github.com/orbi-build/orbi">GitHub</a>
+        <a class="nav-apply" data-cta="nav-start" href="/cloud/login">Try Cloud with GitHub</a>
+      </nav>
+    </header>
+  </div>
+
+  <main id="main-content">
+    <div class="night">
+      <div class="post-grid">
+        <section class="post-hero" aria-labelledby="post-title">
+          <p class="eyebrow">Blog</p>
+          <h1 id="post-title">Attach a screenshot to the issue your AI agent builds</h1>
+          <p class="post-byline"><a href="/about/larry-orbi/">Larry 🍀 Orbi</a> · <time datetime="2026-11-25">2026-11-25</time></p>
+
+          <p class="hero-lede">orbi draft --attach puts screenshots, HTML and text files in the GitHub Issue, where drafting, delivery and review read them. A real run and the limits.</p>
+        </section>
+      </div>
+    </div>
+
+    <div class="post-grid">
+        <nav class="post-toc" aria-label="On this page">
+          <h2>On this page</h2>
+          <ol>
+          <li><a class="post-toc-link" href="#attach-a-screenshot-when-you-draft-the-issue">Attach a screenshot when you draft the Issue</a></li>
+          <li><a class="post-toc-link" href="#where-the-files-go-drafting-the-issue-delivery-and-review">Where the files go: drafting, the Issue, delivery and review</a></li>
+          <li><a class="post-toc-link" href="#what-the-delivery-did-with-it">What the delivery did with it</a></li>
+          <li><a class="post-toc-link" href="#when-a-file-can-t-be-read-orbi-stops">When a file can't be read, Orbi stops</a></li>
+          <li><a class="post-toc-link" href="#limits-and-what-you-need">Limits and what you need</a></li>
+          <li><a class="post-toc-link" href="#how-this-compares">How this compares</a></li>
+          <li><a class="post-toc-link" href="#related">Related</a></li>
+          </ol>
+        </nav>
+      <article class="post-body">
+        <details class="post-toc-inline">
+          <summary>On this page · 7 sections</summary>
+          <ol>
+          <li><a class="post-toc-link" href="#attach-a-screenshot-when-you-draft-the-issue">Attach a screenshot when you draft the Issue</a></li>
+          <li><a class="post-toc-link" href="#where-the-files-go-drafting-the-issue-delivery-and-review">Where the files go: drafting, the Issue, delivery and review</a></li>
+          <li><a class="post-toc-link" href="#what-the-delivery-did-with-it">What the delivery did with it</a></li>
+          <li><a class="post-toc-link" href="#when-a-file-can-t-be-read-orbi-stops">When a file can't be read, Orbi stops</a></li>
+          <li><a class="post-toc-link" href="#limits-and-what-you-need">Limits and what you need</a></li>
+          <li><a class="post-toc-link" href="#how-this-compares">How this compares</a></li>
+          <li><a class="post-toc-link" href="#related">Related</a></li>
+          </ol>
+        </details>
+<p>When you ask an AI coding agent to fix a page, the hard part is often putting &quot;what&#39;s wrong&quot; into words, and a screenshot does it in one look. Orbi, an open-source system that turns a GitHub Issue into a merged pull request, lets you attach that screenshot to the Issue with <code class="post-code--spaced">orbi draft --attach</code> since v0.7.59. This post walks through one real run, from the command to two merged pull requests, then covers where each file goes, what happens when one can&#39;t be read, and the limits.</p>
+<p>I&#39;m Larry 🍀 Orbi, the creator of Orbi.</p><aside class="post-cta-inline"><span>Orbi takes your Issues all the way to a release.</span><a class="button button-signal" data-cta="post-inline-start" href="/cloud/login">Try Orbi Cloud free →</a></aside>
+<p>The request I typed was one sentence: &quot;Fix the two things circled in the screenshot on docs/receipt.html, styled per spec.html.&quot; Without the picture it says nothing. With the picture, anyone can see a grey button that looks disabled and an amount column whose decimal points don&#39;t line up. In an interactive tool you would paste that picture into the session: Claude Code <a href="https://code.claude.com/docs/en/common-workflows.md">takes an image</a> by drag and drop, <code class="post-code--single">Ctrl+V</code>, or a file path. With Orbi you confirm the draft in your terminal, and from then on nobody is in the session: the delivery and review run on their own. So the screenshot has to travel inside the Issue, and every session that touches the Issue has to look at it.</p>
+<h2 id="attach-a-screenshot-when-you-draft-the-issue">Attach a screenshot when you draft the Issue</h2>
+<p><code class="post-code--spaced">orbi draft</code> turns one sentence into Issues Orbi can deliver: it reads the repository, asks what it needs to know, writes the outcome and acceptance criteria, and creates the Issues when you press Enter. <code class="post-code--single">--attach</code> adds a file to that draft, and you can repeat it:</p>
+<div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="Copied">Copy</button><pre><code class="language-bash" data-copy-source>orbi draft --attach screen.png --attach spec.html \
+  &quot;Fix the two things circled in the screenshot on docs/receipt.html, styled per spec.html&quot;
+</code></pre></div>
+<p>The screenshot carried the request. <code class="post-code--single">screen.png</code> was the receipt page with two red boxes: ① the &quot;Download PDF&quot; button is grey and looks disabled, ② the amounts aren&#39;t right-aligned, so the decimal points don&#39;t line up. <code class="post-code--single">spec.html</code> was a short style note: primary buttons are <code class="post-code--single">#2563EB</code> with white text and <code class="post-code--single">#1D4ED8</code> on hover, grey <code class="post-code--single">#9CA3AF</code> is only for disabled buttons, amounts are right-aligned in tabular figures, and refunds are red <code class="post-code--single">#DC2626</code>.</p>
+<img src="/img/blog-attach-screen.webp" alt="A payment receipt card with two red boxes: one around the grey Download PDF button labelled 1, one around the left-aligned amount column labelled 2, with notes saying the button looks disabled and the decimal points don't line up." width="1056" height="740"><p>I ran this in a public test repository, <a href="https://github.com/xqliu/orbi-e2e-2609260042">xqliu/orbi-e2e-2609260042</a>, against a small receipt page I added for the demo. Orbi asked no questions and came back with two Issues, because the two fixes can be accepted separately:</p>
+<ul>
+<li><a href="https://github.com/xqliu/orbi-e2e-2609260042/issues/521">#521</a>: make the &quot;Download PDF&quot; button a primary button, <code class="post-code--single">#2563EB</code> with white text and <code class="post-code--single">#1D4ED8</code> on hover.</li>
+<li><a href="https://github.com/xqliu/orbi-e2e-2609260042/issues/522">#522</a>: right-align the header, each amount and the total in tabular figures, and show the refund row&#39;s <code class="post-code--single">-$29.00</code> in <code class="post-code--single">#DC2626</code>.</li>
+</ul>
+<p>Both came out of the attachments. The button colours and the hover colour are only in <code class="post-code--single">spec.html</code>. &quot;Looks disabled&quot; and &quot;decimal points don&#39;t line up&quot; are only in the image. My sentence held neither.</p>
+<p>One part went beyond what I circled. I hadn&#39;t marked the refund colour in the screenshot, and #522 includes it. The Issue says why under its assumptions: the screenshot only circled the alignment, but <code class="post-code--single">spec.html</code> puts the red refund rule in the same amount-column section, so it was implemented too. That is the place to catch scope you didn&#39;t ask for, and the draft in the terminal shows it before anything is created. At the prompt, type an edit to drop it, or press Enter if the spec is right. Once created, the Issue is queued with <code class="post-code--single">ai-ready</code>, so a later edit can race the delivery.</p>
+<h2 id="where-the-files-go-drafting-the-issue-delivery-and-review">Where the files go: drafting, the Issue, delivery and review</h2>
+<p><strong>Drafting.</strong> Each file is copied into the drafting session&#39;s own directory under a generated name (<code class="post-code--single">1.png</code>, <code class="post-code--single">2.html</code>), so a file name can&#39;t point outside it. The session gets one line naming them (<code class="post-code--spaced">The person attached: 1.png = screen.png, 2.html = spec.html</code>). It reads the HTML and text with its read tool. An image goes to the model as an image only when the model&#39;s catalog entry declares image input. The DeepSeek template Orbi ships declares it.</p>
+<p><strong>The Issue.</strong> When you confirm, each new Issue gets an <code class="post-code--spaced">## Attachments</code> section with only the files that Issue uses. A local image is uploaded through your own <code class="post-code--single">gh</code> login (<code class="post-code--spaced">gh issue create --attach</code>) and becomes a native GitHub attachment. An HTML or text file is written into the body as a collapsed block. With a model that can see images, anyone reading the Issue on GitHub sees what the agent will see.</p>
+<img src="/img/blog-attach-issue.webp" alt="GitHub Issue 521 scrolled to its Attachments section: the annotated receipt screenshot rendered as an image, a collapsed spec.html block below it, and the ai-ready label in the sidebar." width="1200" height="737"><p><strong>Delivery and review.</strong> The delivery session and the review session both receive the images from the Attachments section, and from native images in the body or in comments by people with write access. Review reads them again every round, so the reviewer checks the change against the same screenshot the coder worked from. The HTML and text are already in the Issue body that both sessions read. Images and links in comments from anyone else are never fetched.</p>
+<h2 id="what-the-delivery-did-with-it">What the delivery did with it</h2>
+<p>I ran the open-source engine on my own machine for this, the way a self-hosted install runs it, so the pull requests are opened under my own GitHub account. Both Issues were delivered and merged on 25 November (UTC):</p>
+<ul>
+<li><a href="https://github.com/xqliu/orbi-e2e-2609260042/pull/523">PR #523</a> for #521 changes the button&#39;s background from <code class="post-code--single">#9ca3af</code> to <code class="post-code--single">#2563EB</code> and adds a <code class="post-code--single">.btn:hover</code> rule with <code class="post-code--single">#1D4ED8</code>. Delivery started at 02:33, one review round passed, merged at 02:50.</li>
+<li><a href="https://github.com/xqliu/orbi-e2e-2609260042/pull/524">PR #524</a> for #522 adds right alignment and <code class="post-code--single">tabular-nums</code> to the amount cells, and <code class="post-code--single">#DC2626</code> to the refund cell. Delivery started at 02:39 and merged at 03:08, after three review sessions: the first ended with a malformed verdict and was retried; the next found no problems, but CI failed after the branch took in #523 from <code class="post-code--single">main</code>; the last fixed the failing test itself, since a review session fixes what it finds, and passed.</li>
+</ul>
+<img src="/img/blog-attach-before-after.webp" alt="Two renderings of the same receipt side by side. Before: grey Download PDF button and left-aligned amounts. After: a blue button, right-aligned amounts with the decimal points stacked, and the refund amount in red." width="1230" height="475"><p>Every session got the screenshot. The session logs of all six sessions, the two that wrote code and the four review attempts, each carry the image, fetched again for every one of them.</p>
+<h2 id="when-a-file-can-t-be-read-orbi-stops">When a file can&#39;t be read, Orbi stops</h2>
+<p>An attachment is often the request itself. If the coder skipped <code class="post-code--single">screen.png</code>, it would have &quot;fix the two things circled&quot; and no circles, and it would write something. The review session would then judge that something without the screenshot either. So Orbi stops:</p>
+<ul>
+<li>In drafting, a file it can&#39;t read fails the round and names the file.</li>
+<li>In delivery or review, the session doesn&#39;t start. The Issue gets <code class="post-code--single">ai-blocked</code> and one comment naming the image and the fix: upload it again (or remove it, if the request doesn&#39;t need it), then swap <code class="post-code--single">ai-blocked</code> for <code class="post-code--single">ai-ready</code> (or <code class="post-code--single">ai-fix-needed</code> when a pull request is open). On a private repository that fix doesn&#39;t work yet; see the limits below. Later runs don&#39;t retry it on their own, so a broken image doesn&#39;t post a new comment every few minutes.</li>
+</ul>
+<p>Two cases don&#39;t stop, and they&#39;re worth knowing:</p>
+<ul>
+<li><strong>The upload is refused.</strong> If <code class="post-code--single">gh</code> refuses an upload, for example because it&#39;s signed in with a GitHub App token instead of your own account, the Issue is still created without that image, and the command prints which images didn&#39;t upload. Take <code class="post-code--single">ai-ready</code> off the Issue, paste them into it on GitHub, then put <code class="post-code--single">ai-ready</code> back. A delivery that already started before you did this won&#39;t see them. Drafting again after <code class="post-code--spaced">gh auth login</code> creates a new Issue, so close the one without the image if you go that way.</li>
+<li><strong>The model can&#39;t see images.</strong> In drafting, a model that doesn&#39;t declare image input is told the image can&#39;t be viewed and to ask you to describe it when it matters. In delivery and review, such a model gets no image and no notice: the session runs on the Issue text alone. If the screenshot matters, run Orbi with a model that declares image input, like the DeepSeek template it ships.</li>
+</ul>
+<h2 id="limits-and-what-you-need">Limits and what you need</h2>
+<p class="post-table-hint" hidden>Swipe horizontally to see all columns.</p><div class="post-table-scroll" tabindex="0" role="region" aria-label="Swipe horizontally to see all columns."><table class="table-comparison">
+<thead>
+<tr>
+<th scope="col"></th>
+<th scope="col"></th>
+</tr>
+</thead>
+<tbody><tr>
+<th scope="row">Images</th>
+<td><code class="post-code--single">png</code>, <code class="post-code--single">jpg</code>, <code class="post-code--single">jpeg</code>, <code class="post-code--single">gif</code>, <code class="post-code--single">webp</code></td>
+</tr>
+<tr>
+<th scope="row">HTML and text</th>
+<td><code class="post-code--single">html</code>, <code class="post-code--single">htm</code>, <code class="post-code--single">txt</code>, <code class="post-code--single">md</code>, <code class="post-code--single">csv</code>, <code class="post-code--single">tsv</code>, <code class="post-code--single">json</code>, <code class="post-code--single">log</code></td>
+</tr>
+<tr>
+<th scope="row">Count and size</th>
+<td>at most 10 files, 10 MB each; all HTML and text together at most 50,000 characters, so it fits in the Issue body</td>
+</tr>
+<tr>
+<th scope="row">Model</th>
+<td>for delivery and review, one that declares image input, like the bundled DeepSeek template; otherwise the screenshot is ignored without notice</td>
+</tr>
+<tr>
+<th scope="row">Anything else</th>
+<td>refused with the reason, for example a PDF or a video</td>
+</tr>
+<tr>
+<th scope="row">Orbi</th>
+<td>v0.7.59 or later (<a href="https://github.com/orbi-build/orbi">github.com/orbi-build/orbi</a>)</td>
+</tr>
+<tr>
+<th scope="row">gh</th>
+<td>2.99 or later, signed in as a person (<code class="post-code--spaced">gh auth login</code>)</td>
+</tr>
+</tbody></table></div>
+<p><code class="post-code--single">--attach</code> applies when a draft starts. Amending an existing Issue carries no attachments, so for an Issue that already exists, paste the image into it on GitHub instead.</p>
+<p>Two cautions. On a public repository, everything you attach is public: the images, and the HTML and text written into the body (collapsed is not hidden). Remove anything private before you attach it. And on a private repository, delivery in v0.7.62, the latest release as I write this, can&#39;t read the native images Orbi uploads: the address it fetches still needs a login, so the delivery stops with <code class="post-code--single">attachment_unavailable</code>. The fix (<a href="https://github.com/orbi-build/orbi/pull/2388">orbi#2388</a>, for <a href="https://github.com/orbi-build/orbi/issues/2387">orbi#2387</a>) is merged and goes out in the next release. Until then, uploading the image again doesn&#39;t help there. Drafting and the Issue itself work on private repositories today, and the run above was on a public one.</p>
+<h2 id="how-this-compares">How this compares</h2>
+<p>Putting the screenshot in the Issue isn&#39;t new. GitHub Copilot&#39;s cloud agent <a href="https://docs.github.com/en/copilot/how-tos/use-copilot-agents/coding-agent/provide-visual-inputs">reads screenshots dropped into an Issue body</a>, and <code class="post-code--single">gh</code> 2.99 <a href="https://github.blog/changelog/2026-09-01-github-cli-media-in-issues-pull-requests-and-comments/">added <code class="post-code--single">--attach</code></a> for anyone. Orbi uses that same upload. What it adds is in the steps around it. The drafting session reads the files before it writes the Issue, so the outcome and acceptance criteria come from what&#39;s in the screenshot and the spec. The review session reads them again every round. And when an attached file can&#39;t be read, the run stops and says which file, instead of carrying on with half the request.</p>
+<aside class="post-cta">
+  <h2>Orbi takes your Issues all the way to a release.</h2>
+  <a class="button button-signal" data-cta="post-start" href="/cloud/login">Try Orbi Cloud free →</a>
+  <p class="post-cta-note">No credit card required · Orbi only sees the repos you pick</p>
+  <a class="post-cta-link" data-cta="post-selfhost" href="https://github.com/orbi-build/orbi">Prefer to self-host? It's open source (AGPL) →</a>
+</aside><h2 id="related">Related</h2>
+<ul>
+<li><a href="/guides/issue-to-release/">AI agent: GitHub Issue to merged PR and release</a></li>
+<li><a href="/blog/vague-request-to-merged-pr/">From a vague request to a merged PR with Orbi</a></li>
+<li><a href="/blog/write-a-request/">Write a request: Orbi Cloud drafts your GitHub Issue</a></li>
+<li><a href="/blog/stuck-delivery-one-click/">When an AI coding run stops and needs your answer</a></li>
+<li><a href="/compare/?ref=blog-attach">Compare Orbi with coding agents</a></li>
+<li><a href="/cloud/?ref=blog-attach">Orbi Cloud</a></li>
+</ul>
+
+<!--orbi:related-posts-->
+      </article>
+    </div>
+  </main>
+
+<section class="subscribe-box shell" aria-labelledby="subscribe-title">
+  <h2 class="subscribe-title" id="subscribe-title">What is new in Orbi, every week</h2>
+  <form class="subscribe-form" action="/subscribe" method="post" data-subscribe-form data-success="Check your inbox and click the confirmation link to finish subscribing." data-invalid="That email address doesn't look right" data-unavailable="Subscription is temporarily unavailable. Please try again.">
+    <label class="sr-only" for="subscribe-email-en">Email address</label>
+    <input id="subscribe-email-en" type="email" name="email" autocomplete="email" required placeholder="you@example.com">
+    <input type="hidden" name="lang" value="en">
+    <button class="button button-ghost" type="submit">Subscribe</button>
+    <p class="subscribe-status" data-subscribe-status aria-live="polite"></p>
+  </form>
+  <p class="subscribe-note">One email a week: new features, hands-on posts and numbers from our own work with Orbi. Unsubscribe anytime.</p>
+</section>
+
+  <script src="/subscribe.js" defer></script>
+
+  <footer class="site-footer shell">
+    <div class="footer-brand">
+      <a class="wordmark wordmark-footer" href="/" aria-label="Orbi home">
+        <img class="wordmark-mark" src="/logo-mark.svg" width="28" height="28" alt="">
+        <span>Orbi</span>
+      </a>
+      <p class="orbi-site-footer-p">Software production that survives the session.</p>
+    </div>
+    <nav aria-label="Footer navigation">
+      <div class="footer-group">
+        <h2>Product</h2>
+        <ul><li><a href="/cloud/">Cloud</a></li><li><a href="/cloud/#pricing">Pricing</a></li><li><a href="/#system">How it works</a></li><li><a href="/evidence/">Orbi builds Orbi</a></li><li><a href="/trust/">Trust & security</a></li><li><a href="https://github.com/orbi-build/orbi/releases">Releases</a></li><li><a href="https://status.orbi.build">Status</a></li></ul>
+      </div>
+      <div class="footer-group">
+        <h2>Resources</h2>
+        <ul><li><a href="/evidence/">Orbi builds Orbi</a></li><li><a href="/benchmark/">How we test the harness</a></li><li><a href="/guides/pi-coding-agent/">Pi series: how Orbi is built</a></li><li><a href="/cost/">Cost per merged PR</a></li><li><a href="/aiready/">ai-ready: 12 factors</a></li><li><a href="/compare/">Orbi vs alternatives</a></li><li><a href="/blog/">Blog</a></li><li><a href="/blog/ai-contribute-to-open-source/">Open source contributions</a></li><li><a href="https://docs.orbi.build">Self-hosted Docs</a></li><li><a href="https://cloud-docs.orbi.build/?ref=footer">Cloud Docs</a></li><li><a href="/#faq">FAQ</a></li></ul>
+      </div>
+      <div class="footer-group footer-guides">
+        <h2>Guides</h2>
+        <ul><li><a href="/guides/">Guides</a></li><li><a href="/guides/issue-to-release/">Issue to release</a></li><li><a href="/guides/ci-gates/">CI gates</a></li><li><a href="/guides/auto-merge-ai-prs/">Auto-merge AI PRs</a></li><li><a href="/guides/autonomous-coding-agent/">Autonomous coding agent</a></li><li><a href="/guides/self-hosted-coding-agent/">Self-hosted coding agent</a></li><li><a href="/guides/codex-github-issues/">Codex on GitHub Issues</a></li><li><a href="https://aiready.sh/">ai-ready: 12 factors</a></li></ul>
+      </div>
+      <div class="footer-group footer-compare">
+        <h2>Compare</h2>
+        <ul><li><a href="/compare/orca/">Orbi vs Orca</a></li><li><a href="/compare/openclaw/">Orbi vs OpenClaw</a></li><li><a href="/compare/github-copilot-coding-agent/">Orbi vs GitHub Copilot cloud agent</a></li><li><a href="/compare/managed-agents/">Orbi vs Claude Managed Agents</a></li><li><a href="/compare/claude-code/">Orbi vs Claude Code</a></li><li><a href="/compare/openhands/">Orbi vs OpenHands</a></li><li><a href="/compare/hermes-agent/">Orbi vs Hermes Agent</a></li><li><a href="/compare/keelen/">Orbi vs Keelen</a></li><li><a href="/compare/codex/">Orbi vs OpenAI Codex</a></li><li><a href="/compare/devin/">Orbi vs Devin</a></li><li><a href="/compare/jules/">Orbi vs Google Jules</a></li><li><a href="/compare/cursor/">Orbi vs Cursor Cloud Agents</a></li><li><a href="/compare/">All comparisons</a></li></ul>
+      </div>
+      <div class="footer-group">
+        <h2>Company</h2>
+        <ul><li><a href="/support/">Support</a></li><li><a href="https://github.com/orbi-build/orbi/milestones">Roadmap</a></li><li><a href="/privacy/">Privacy</a></li><li><a href="/terms/">Terms</a></li><li><a href="https://github.com/orbi-build/orbi">GitHub</a></li><li><a href="https://x.com/xqliu" rel="me">X</a></li><li><a href="https://www.youtube.com/@orbibuild" rel="me">YouTube</a></li><li><a href="https://www.reddit.com/r/OrbiBuild/">Reddit</a></li></ul>
+      </div>
+    </nav>
+    <div class="footer-language language" role="group" aria-label="Language"><span aria-current="page">EN</span><a href="/zh/blog/attach-screenshot-to-issue/" lang="zh-CN" aria-label="简体中文">ZH</a></div>
+    <p class="footer-legal">© 2026 Low Code, LLC</p>
+  </footer>
+
+  <script src="/demo.js" defer></script>
+
+<script>(()=>{try{const links=[...document.querySelectorAll('.post-toc-link')];const targetOf=(link)=>link.getAttribute('href').slice(1);const headings=[...new Set(links.map(link=>document.getElementById(targetOf(link))).filter(Boolean))];const setCurrent=(heading)=>{links.forEach((link)=>link.classList.toggle('is-current',targetOf(link)===heading.id));};if('IntersectionObserver' in window){const update=()=>{const current=headings.findLast((heading)=>heading.getBoundingClientRect().top<=innerHeight*.4)??headings[0];if(current)setCurrent(current);};const observer=new IntersectionObserver(update,{rootMargin:'-24px 0px -60% 0px',threshold:0});headings.forEach((heading)=>observer.observe(heading));addEventListener('scroll',update,{passive:true});update();}}catch(error){console.warn('post_toc_observer_failed',error);}})();</script><script>(()=>{
+  const endpoint="/cloud/e", start=Date.now();
+  let visible=document.visibilityState!=="hidden", visibleAt=visible?start:0, visibleMs=0, interacted=false, engagedSent=false, depthSent=false, maxDepth=0;
+  const send=(kind,detail,extra)=>{const body={kind,path:location.pathname};if(detail!==undefined)body.detail=String(detail);if(extra)Object.assign(body,extra);try{if(!navigator.sendBeacon(endpoint,new Blob([JSON.stringify(body)],{type:"application/json"})))console.warn("engagement_report_failed","sendBeacon returned false");}catch(error){console.warn("engagement_report_failed",error);}};
+  send("visit",undefined,{search:location.search,referrer:document.referrer});
+  const elapsed=()=>visibleMs+(visible?Date.now()-visibleAt:0);
+  const check=()=>{if(!engagedSent&&interacted&&elapsed()>=10000){engagedSent=true;send("engaged");}};
+  const schedule=()=>setTimeout(check,Math.max(0,10000-elapsed()));
+  const markInteraction=()=>{interacted=true;check();};
+  ["scroll","pointerdown","keydown","touchstart"].forEach(type=>addEventListener(type,markInteraction,{passive:true}));
+  const depth=()=>{const height=document.documentElement.scrollHeight;maxDepth=Math.max(maxDepth,height<=0?100:Math.min(100,Math.floor((scrollY+innerHeight)/height*100)));};
+  addEventListener("scroll",depth,{passive:true});
+  schedule();
+  const hide=()=>{depth();if(visible){visibleMs+=Date.now()-visibleAt;visible=false;}check();if(!depthSent){depthSent=true;send("scroll_depth",Math.max(25,Math.min(100,Math.floor(maxDepth/25)*25)));}};
+  const show=()=>{if(!visible){visible=true;visibleAt=Date.now();schedule();}};
+  addEventListener("visibilitychange",()=>document.visibilityState==="hidden"?hide():show());
+  addEventListener("pagehide",hide);
+  addEventListener("click",event=>{const link=event.target.closest?.("[data-cta]");if(link)send("cta_click",link.dataset.cta);},{passive:true});
+  const sectionViews=new Set();
+  const sectionDetail=section=>section.id||section.classList?.[0];
+  if(typeof IntersectionObserver!=="undefined"){
+    const sections=[...document.querySelectorAll("main section")].filter(section=>!section.parentElement?.closest("section"));
+    const thresholds=[.3,...sections.map(section=>{const height=section.getBoundingClientRect().height;return height>0?Math.min(.3,innerHeight*.5/height):.3;})];
+    const sectionObserver=new IntersectionObserver(entries=>{entries.forEach(entry=>{
+      const detail=sectionDetail(entry.target);
+      if(detail&&!sectionViews.has(entry.target)&&((entry.intersectionRatio||0)>=.3||(entry.intersectionRect?.height||0)>=innerHeight*.5)){
+        sectionViews.add(entry.target);send("section_view",detail);sectionObserver.unobserve(entry.target);
+      }
+    });},{threshold:thresholds});
+    sections.forEach(section=>sectionObserver.observe(section));
+  }
+})();</script><script data-login-handoff>(()=>{
+  const login=new RegExp("^(?:/zh)?/cloud/login/?$"), pending=new Map();
+  const pendingLabel=/^zh/i.test(document.documentElement.lang)?"正在打开 GitHub…":"Opening GitHub…";
+  addEventListener("click",event=>{
+    if(event.metaKey||event.ctrlKey||event.shiftKey||event.altKey)return;
+    const link=event.target.closest?.("a[href]");
+    if(!link||!login.test(link.pathname))return;
+    if(pending.has(link)){event.preventDefault();return;}
+    pending.set(link,link.innerHTML);
+    link.setAttribute("aria-disabled","true");
+    setTimeout(()=>{link.textContent=pendingLabel;},0);
+  },true);
+  addEventListener("pageshow",event=>{
+    if(!event.persisted)return;
+    pending.forEach((html,link)=>{link.innerHTML=html;link.removeAttribute("aria-disabled");});
+    pending.clear();
+  });
+})();</script><script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "44c2c3310e2e46b7955bb09f04c93fd1"}'></script><script>(function(){
+  var start=function(){
+    !function(t,e){var o,n,p,r;e.__SV||(window.posthog=e,e._i=[],e.init=function(i,s,a){function g(t,e){var o=e.split(".");2==o.length&&(t=t[o[0]],e=o[1]),t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}}(p=t.createElement("script")).type="text/javascript",p.crossOrigin="anonymous",p.async=!0,p.src=s.api_host.replace(".i.posthog.com","-assets.i.posthog.com")+"/static/array.js",(r=t.getElementsByTagName("script")[0]).parentNode.insertBefore(p,r);var u=e;for(void 0!==a?u=e[a]=[]:a="posthog",u.people=u.people||[],Object.defineProperty(u,"toString",{configurable:!0,enumerable:!0,writable:!0,value:function(t){var e="posthog";return"posthog"!==a&&(e+="."+a),t||(e+=" (stub)"),e}}),Object.defineProperty(u.people,"toString",{configurable:!0,enumerable:!0,writable:!0,value:function(){return u.toString(1)+".people (stub)"}}),o="init capture register register_once register_for_session unregister unregister_for_session getFeatureFlag getFeatureFlagResult isFeatureEnabled reloadFeatureFlags updateEarlyAccessFeatureEnrollment getEarlyAccessFeatures on onFeatureFlags onSessionId getSurveys getActiveMatchingSurveys renderSurvey canRenderSurvey getNextSurveyStep identify setPersonProperties group resetGroups setPersonPropertiesForFlags resetPersonPropertiesForFlags setGroupPropertiesForFlags resetGroupPropertiesForFlags reset get_distinct_id getGroups get_session_id get_session_replay_url alias set_config startSessionRecording stopSessionRecording sessionRecordingStarted captureException loadToolbar get_property getSessionProperty createPersonProfile opt_in_capturing opt_out_capturing has_opted_in_capturing has_opted_out_capturing clear_opt_in_out_capturing debug".split(" "),n=0;n<o.length;n++)g(u,o[n]);e._i.push([i,s,a])},e.__SV=1)}(document,window.posthog||[]);
+    posthog.init("phc_nhxAwie7BY0blOSHfAbNzRGcb2rGDJInLUGPh93i8Mx",{api_host:"/api/ph",ui_host:"https://us.posthog.com",autocapture:true,disable_session_recording:false});
+  };
+  if(document.readyState==="complete")start();else addEventListener("load",start,{once:true});
+})();</script></body>
+</html>
