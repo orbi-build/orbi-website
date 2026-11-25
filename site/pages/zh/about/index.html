@@ -111,6 +111,14 @@
     /* The design's hero headline is the homepage hero scale (the token's
        display-hero maximum), not the smaller shared inner-page h1. */
     .about-hero h1 { font-size: 64px; line-height: 1.04; }
+    /* 「软件黑灯工厂」 is one word, but CJK offers a break opportunity between 工
+       and 厂, and the browser takes it as soon as the first sentence stops fitting
+       (Issue #1488). Keep the six glyphs together; colour comes back from the
+       global `h1 span` accent to the headline's own.
+       「一直在」 is wrapped for the same reason: once 工厂 may not break, that
+       break lands a character earlier on a 360–375 px phone, leaving 「一」 alone
+       at the end of the line. Both words are short enough to fit the phone box. */
+    .about-hero h1 .about-title-word { white-space: nowrap; color: inherit; }
     .about-numbers {
       display: grid;
       grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -328,7 +336,7 @@
     <div class="night">
       <section class="compare-hero shell about-hero" aria-labelledby="about-title">
         <p class="eyebrow">关于 ORBI · 最后审阅 2026-11-25</p>
-        <h1 id="about-title">这座软件黑灯工厂，<span>一直在造它自己。</span></h1>
+        <h1 id="about-title">这座<span class="about-title-word">软件黑灯工厂</span>，<span><span class="about-title-word">一直在</span>造它自己。</span></h1>
         <p class="hero-lede">一句话说清需求，Orbi 一路做到发版；Orbi 自己的代码也是这样交付的。</p>
         <div class="cta-row">
           <a class="button button-signal" href="/zh/cloud/login">用 GitHub 试用 Cloud</a>
