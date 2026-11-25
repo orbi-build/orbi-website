@@ -6,6 +6,20 @@
     <description>Notes from shipping Orbi in the open: delivery runs, failures, fixes, and measurements.</description>
     <language>en</language>
     <item>
+      <title>Attach a screenshot to the issue your AI agent builds</title>
+      <link>https://orbi.build/blog/attach-screenshot-to-issue/</link>
+      <guid isPermaLink="true">https://orbi.build/blog/attach-screenshot-to-issue/</guid>
+      <pubDate>Wed, 25 Nov 2026 00:00:00 GMT</pubDate>
+      <description>orbi draft --attach puts screenshots, HTML and text files in the GitHub Issue, where drafting, delivery and review read them. A real run and the limits.</description>
+    </item>
+    <item>
+      <title>CLAUDE.md vs AGENTS.md: which file each agent reads</title>
+      <link>https://orbi.build/blog/claude-md-vs-agents-md/</link>
+      <guid isPermaLink="true">https://orbi.build/blog/claude-md-vs-agents-md/</guid>
+      <pubDate>Wed, 25 Nov 2026 00:00:00 GMT</pubDate>
+      <description>I tested Claude Code 2.1.331, Codex 0.167.0 and Pi 1.6.0 in 12 repos. With both files, Claude Code reads only CLAUDE.md; Pi and Codex read only AGENTS.md.</description>
+    </item>
+    <item>
       <title>Pi vs omp (Oh My Pi): same model, run unattended</title>
       <link>https://orbi.build/blog/pi-vs-oh-my-pi/</link>
       <guid isPermaLink="true">https://orbi.build/blog/pi-vs-oh-my-pi/</guid>

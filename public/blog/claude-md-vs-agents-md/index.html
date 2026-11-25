@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>CLAUDE.md vs AGENTS.md: which file each agent reads | Orbi</title>
+  <meta name="description" content="I tested Claude Code 2.1.331, Codex 0.167.0 and Pi 1.6.0 in 12 repos. With both files, Claude Code reads only CLAUDE.md; Pi and Codex read only AGENTS.md.">
+  <link rel="canonical" href="https://orbi.build/blog/claude-md-vs-agents-md/">
+  <link rel="alternate" hreflang="en" href="https://orbi.build/blog/claude-md-vs-agents-md/">
+  <link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/blog/claude-md-vs-agents-md/">
+  <link rel="alternate" hreflang="x-default" href="https://orbi.build/blog/claude-md-vs-agents-md/">
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="CLAUDE.md vs AGENTS.md: which file each agent reads">
+  <meta property="og:description" content="I tested Claude Code 2.1.331, Codex 0.167.0 and Pi 1.6.0 in 12 repos. With both files, Claude Code reads only CLAUDE.md; Pi and Codex read only AGENTS.md.">
+  <meta property="og:url" content="https://orbi.build/blog/claude-md-vs-agents-md/">
+  <meta property="og:image" content="https://orbi.build/img/blog-claude-md-vs-agents-md-card.png">
+  <meta property="og:image:alt" content="CLAUDE.md vs AGENTS.md: which file each agent reads">
+  <meta property="article:published_time" content="2026-11-25">
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"CLAUDE.md vs AGENTS.md: which file each agent reads","datePublished":"2026-11-25","author":{"@type":"Person","name":"Larry 🍀 Orbi","url":"https://orbi.build/about/larry-orbi/","sameAs":["https://github.com/xqliu","https://x.com/xqliu"]},"publisher":{"@type":"Organization","name":"Orbi","url":"https://orbi.build/","logo":{"@type":"ImageObject","url":"https://orbi.build/logo-mark.svg"}},"mainEntityOfPage":"https://orbi.build/blog/claude-md-vs-agents-md/","image":"https://orbi.build/img/blog-claude-md-vs-agents-md-card.png","inLanguage":"en","description":"I tested Claude Code 2.1.331, Codex 0.167.0 and Pi 1.6.0 in 12 repos. With both files, Claude Code reads only CLAUDE.md; Pi and Codex read only AGENTS.md.","url":"https://orbi.build/blog/claude-md-vs-agents-md/"}</script>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <meta name="theme-color" content="#06151b">
+
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="stylesheet" href="/fonts/fonts.css">
+  <link rel="stylesheet" href="/styles.css">
+
+  <style>
+    /* Blog-only layout: the shared .shell/.compare-hero rules stay unchanged. */
+    .post-grid { max-width: 52rem; margin: 0 auto; padding: 0 24px; }
+    .post-hero { padding: 84px 0 68px; }
+    /* Issue #860: the body text column is wider than --hero-copy-width, so the
+       hero fills it and the h1/lede right edge lands on the body text. */
+    .post-hero h1, .post-hero .hero-lede { max-width: none; }
+    .post-body { padding-top: 12px; padding-bottom: 30px; }
+    .post-body h2, .post-body .related-links h2 { font-family: var(--display); font-size: 1.5rem; line-height: 1.25; margin: 42px 0 10px; scroll-margin-top: 24px; }
+    .post-body .related-links { margin: 0; }
+    .post-cta {
+      margin: 42px 0 12px;
+      padding: 30px;
+      border-radius: var(--radius-card);
+      background: var(--night);
+      color: #edf5f0;
+      text-align: center;
+    }
+    .post-cta h2 { margin: 0 0 18px; color: #edf5f0; font-family: var(--display); font-size: 1.5rem; line-height: 1.25; }
+    .post-cta .button { margin: 0 auto; color: var(--night); text-decoration: none; }
+    .post-cta-note { margin: 10px 0 18px; color: #aec2bd; font-size: 0.9rem; }
+    .post-cta .post-cta-link { color: #edf5f0; font-size: 0.9rem; text-underline-offset: 3px; }
+    .post-cta .post-cta-link:hover { color: #fff; }
+    .post-cta-inline {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin: 28px 0;
+      padding: 12px 16px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-card);
+      background: var(--paper-2);
+    }
+    .post-cta-inline span { color: var(--ink); font-size: 0.95rem; }
+    .post-cta-inline .button { flex: 0 0 auto; min-height: 40px; padding: 0 14px; font-size: 0.85rem; }
+    .post-toc { position: sticky; top: 24px; max-height: calc(100vh - 48px); overflow-y: auto; align-self: start; padding-top: 26px; }
+    .post-toc h2 { margin: 0 0 10px; padding: 0; font: 500 0.75rem/1.5rem var(--mono); letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-soft); }
+    .post-toc ol { list-style: none; margin: 0; padding: 0; border-left: 1px solid var(--line); }
+    .post-toc ol ol { border-left: 0; }
+    .post-body .post-toc-inline ol { margin: 0; padding-left: 2.2em; }
+    .post-body .post-toc-inline ol ol { list-style: none; padding-left: 1em; margin-top: 0; }
+    .post-toc li { margin: 0; }
+    .post-toc-inline li { margin: 6px 0; }
+    .post-toc-link { display: block; color: var(--ink-soft); font-size: 0.92rem; line-height: 1.4; text-decoration: none; overflow-wrap: anywhere; }
+    .post-toc .post-toc-link { padding: 6px 0 6px 15px; margin-left: -1px; border-left: 1px solid transparent; font-size: 0.875rem; line-height: 1.25rem; }
+    .post-toc ol ol .post-toc-link { padding-left: 27px; }
+    .post-toc-link:hover, .post-toc-link.is-current { color: var(--ink); }
+    .post-toc .post-toc-link.is-current { border-left-color: var(--ink); color: var(--ink); font-weight: 600; }
+    .post-toc-inline { display: none; margin: 0 0 28px; border: 1px solid var(--line); border-radius: var(--radius-card); padding: 12px 16px; }
+    .post-toc-inline summary { cursor: pointer; font-weight: 600; }
+    .post-toc-inline ol { margin-top: 12px; }
+
+    .post-body h3 { font-family: var(--display); font-size: 1.13rem; line-height: 1.3; margin: 30px 0 6px; }
+    .post-body p { margin: 14px 0; }
+    /* Issue #833: this line sits on the dark .night hero, so it uses the dark-band secondary color. */
+    .post-series { margin: 10px 0 6px; color: #9aada9; font-size: 0.95rem; }
+    .post-series a { color: inherit; text-decoration: underline; text-underline-offset: 3px; }
+    /* Issue #887 shipped the byline here; Issue #1465 moved its rules to
+       styles.css so the comparison, guide and benchmark pages share them. */
+    .post-body ul, .post-body ol { margin: 14px 0; padding-left: 22px; }
+    .post-body li { margin: 6px 0; }
+    .post-body a { color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
+    .post-body code { font-family: var(--mono); font-size: 0.88em; background: var(--paper-2); border: 1px solid var(--line); border-radius: var(--radius-control); padding: 1px 5px; white-space: nowrap; display: inline-block; max-width: 100%; overflow-x: auto; vertical-align: bottom; }
+    .post-body code.post-code--spaced { white-space: normal; display: inline; }
+    .post-body pre { background: var(--paper-2); border: 1px solid var(--line); border-radius: var(--radius-card); padding: 14px 16px; overflow-x: auto; margin: 18px 0; }
+    .post-body pre code, .post-body pre code.post-code--spaced, .post-body pre code.post-code--single { background: none; border: none; padding: 0; font-size: 0.85rem; white-space: pre; overflow-wrap: normal; display: inline; max-width: none; overflow: visible; }
+    .post-table-scroll { overflow-x: auto; }
+    .post-body table { width: 100%; border-collapse: collapse; }
+    .post-body th, .post-body td { border: 1px solid var(--line); padding: 8px 10px; text-align: left; }
+    .post-body th { background: var(--paper-2); }
+    .post-body strong { font-weight: 600; }
+    .post-media { margin: 24px 0; }
+    .post-body svg { max-width: 100%; height: auto; }
+    .post-media img, .post-media iframe, .post-media svg { display: block; width: 100%; border: 0; border-radius: var(--radius-card); }
+    .post-media img, .post-media svg { height: auto; }
+    .post-media iframe { aspect-ratio: 16 / 9; }
+    .post-media figcaption { color: var(--muted); font-size: 0.9rem; margin-top: 8px; }
+    @media (min-width: 1200px) {
+      .post-grid { display: grid; grid-template-columns: minmax(0, 52rem) 200px; column-gap: 56px; max-width: calc(52rem + 256px); padding: 0; }
+      .post-hero, .post-body { grid-column: 1; padding-left: 16px; padding-right: 16px; }
+      .post-toc { grid-column: 2; grid-row: 1; }
+    }
+    @media (max-width: 1199px) {
+      .post-toc { display: none; }
+      .post-toc-inline { display: block; }
+    }
+    @media (max-width: 760px) {
+      .post-hero { padding-top: 64px; padding-bottom: 48px; }
+      .post-cta { padding: 24px 18px; }
+      .post-cta .button { width: 100%; }
+      .post-cta-inline { align-items: stretch; flex-direction: column; gap: 10px; }
+      .post-cta-inline .button { width: 100%; }
+    }
+  </style>
+
+</head>
+<body>
+  <a class="skip-link" href="#main-content">Skip to content</a>
+
+  <div class="night nav-shell">
+    <header class="site-header">
+      <a class="wordmark" href="/" aria-label="Orbi home">
+        <img class="wordmark-mark" src="/logo-mark-on-dark.svg" width="28" height="28" alt="">
+        <span>Orbi</span>
+      </a>
+      <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="primary-navigation" aria-label="Open navigation" data-label-open="Open navigation" data-label-close="Close navigation" data-menu-toggle>
+        <span aria-hidden="true"><i></i><i></i><i></i></span>
+      </button>
+      <nav id="primary-navigation" aria-label="Primary navigation" data-primary-nav>
+        <a href="/#system">How it works</a>
+        <a href="/cloud/#pricing">Pricing</a>
+        <a href="https://cloud-docs.orbi.build/?ref=nav">Docs</a>
+        <a data-cta="nav-github" href="https://github.com/orbi-build/orbi">GitHub</a>
+        <a class="nav-apply" data-cta="nav-start" href="/cloud/login">Try Cloud with GitHub</a>
+      </nav>
+    </header>
+  </div>
+
+  <main id="main-content">
+    <div class="night">
+      <div class="post-grid">
+        <section class="post-hero" aria-labelledby="post-title">
+          <p class="eyebrow">Blog</p>
+          <h1 id="post-title">CLAUDE.md vs AGENTS.md: which file each agent reads</h1>
+          <p class="post-byline"><a href="/about/larry-orbi/">Larry 🍀 Orbi</a> · <time datetime="2026-11-25">2026-11-25</time></p>
+
+          <p class="hero-lede">I tested Claude Code 2.1.331, Codex 0.167.0 and Pi 1.6.0 in 12 repos. With both files, Claude Code reads only CLAUDE.md; Pi and Codex read only AGENTS.md.</p>
+        </section>
+      </div>
+    </div>
+
+    <div class="post-grid">
+        <nav class="post-toc" aria-label="On this page">
+          <h2>On this page</h2>
+          <ol>
+          <li><a class="post-toc-link" href="#claude-md-vs-agents-md-test-results-claude-code-codex-and-pi">CLAUDE.md vs AGENTS.md test results: Claude Code, Codex and Pi</a></li>
+          <li><a class="post-toc-link" href="#how-i-tested-it">How I tested it</a></li>
+          <li><a class="post-toc-link" href="#does-claude-code-read-agents-md">Does Claude Code read AGENTS.md?</a></li>
+          <li><a class="post-toc-link" href="#one-setup-for-claude-code-codex-and-pi">One setup for Claude Code, Codex and Pi</a></li>
+          <li><a class="post-toc-link" href="#traps">Traps</a></li>
+          <li><a class="post-toc-link" href="#how-long-can-agents-md-be">How long can AGENTS.md be?</a></li>
+          <li><a class="post-toc-link" href="#agents-md-best-practices">AGENTS.md best practices</a></li>
+          <li><a class="post-toc-link" href="#agents-md-vs-skills-skill-md">AGENTS.md vs skills (SKILL.md)</a></li>
+          <li><a class="post-toc-link" href="#other-tools">Other tools</a></li>
+          <li><a class="post-toc-link" href="#related">Related</a></li>
+          </ol>
+        </nav>
+      <article class="post-body">
+        <details class="post-toc-inline">
+          <summary>On this page · 10 sections</summary>
+          <ol>
+          <li><a class="post-toc-link" href="#claude-md-vs-agents-md-test-results-claude-code-codex-and-pi">CLAUDE.md vs AGENTS.md test results: Claude Code, Codex and Pi</a></li>
+          <li><a class="post-toc-link" href="#how-i-tested-it">How I tested it</a></li>
+          <li><a class="post-toc-link" href="#does-claude-code-read-agents-md">Does Claude Code read AGENTS.md?</a></li>
+          <li><a class="post-toc-link" href="#one-setup-for-claude-code-codex-and-pi">One setup for Claude Code, Codex and Pi</a></li>
+          <li><a class="post-toc-link" href="#traps">Traps</a></li>
+          <li><a class="post-toc-link" href="#how-long-can-agents-md-be">How long can AGENTS.md be?</a></li>
+          <li><a class="post-toc-link" href="#agents-md-best-practices">AGENTS.md best practices</a></li>
+          <li><a class="post-toc-link" href="#agents-md-vs-skills-skill-md">AGENTS.md vs skills (SKILL.md)</a></li>
+          <li><a class="post-toc-link" href="#other-tools">Other tools</a></li>
+          <li><a class="post-toc-link" href="#related">Related</a></li>
+          </ol>
+        </details>
+<p>The CLAUDE.md vs AGENTS.md difference: <code class="post-code--single">CLAUDE.md</code> is Claude Code&#39;s own instructions file, and <code class="post-code--single">AGENTS.md</code> is the open, tool-neutral one. Claude Code 2.1.277+ reads <code class="post-code--single">AGENTS.md</code> only when no <code class="post-code--single">CLAUDE.md</code> is present (a few sessions are exceptions, listed below). Codex reads <code class="post-code--single">AGENTS.md</code> and ignores <code class="post-code--single">CLAUDE.md</code> unless you configure it, and Pi, an open-source coding agent CLI, reads <code class="post-code--single">CLAUDE.md</code> only in a directory that has no <code class="post-code--single">AGENTS.md</code> (<a href="https://agents.md/">agents.md</a> says over 60k open-source projects use <code class="post-code--single">AGENTS.md</code>). If your repo gets touched by more than one coding agent, such as Claude Code alongside Codex, Pi, Cursor, Copilot or OpenCode, it is easy to end up feeding different tools different rules.</p>
+<p>I&#39;m Larry 🍀 Orbi, the creator of Orbi. Orbi runs Pi, an open-source coding agent CLI, to turn GitHub Issues into merged changes. Its delivery and review sessions read the target repository&#39;s <code class="post-code--single">AGENTS.md</code>. That&#39;s why I tested 12 repos across Claude Code, Pi and Codex: nine file layouts, two <code class="post-code--single">CLAUDE.local.md</code> follow-ups and Codex&#39;s 32 KiB cap.</p><aside class="post-cta-inline"><span>Orbi takes your Issues all the way to a release.</span><a class="button button-signal" data-cta="post-inline-start" href="/cloud/login">Try Orbi Cloud free →</a></aside>
+<h2 id="claude-md-vs-agents-md-test-results-claude-code-codex-and-pi">CLAUDE.md vs AGENTS.md test results: Claude Code, Codex and Pi</h2>
+<p>On 25 November 2026, I tested Claude Code 2.1.331, Pi 1.6.0 (<code class="post-code--single">@earendil-works/pi-coding-agent</code>) and Codex CLI 0.167.0 (<code class="post-code--single">@openai/codex</code>) on my Linux machine across nine file layouts, plus two Codex fallback runs using the <code class="post-code--single">-c</code> flag covered in Traps below. Each cell shows what reached the prompt: by input-token count where I measured it (for Pi, by the system prompt text itself), checked against the model&#39;s own answer, and by the model&#39;s answer alone for the two fallback rows. The method is in the next section.</p>
+<p class="post-table-hint" hidden>Swipe horizontally to see all columns.</p><div class="post-table-scroll" tabindex="0" role="region" aria-label="Swipe horizontally to see all columns."><table class="table-comparison">
+<thead>
+<tr>
+<th scope="col">Repo has</th>
+<th scope="col">Claude Code 2.1.331</th>
+<th scope="col">Pi 1.6.0</th>
+<th scope="col">Codex 0.167.0</th>
+</tr>
+</thead>
+<tbody><tr>
+<th scope="row">nothing</th>
+<td>none</td>
+<td>none</td>
+<td>none</td>
+</tr>
+<tr>
+<th scope="row"><code class="post-code--single">AGENTS.md</code> only</th>
+<td><code class="post-code--single">AGENTS.md</code></td>
+<td><code class="post-code--single">AGENTS.md</code></td>
+<td><code class="post-code--single">AGENTS.md</code></td>
+</tr>
+<tr>
+<th scope="row"><code class="post-code--single">CLAUDE.md</code> only</th>
+<td><code class="post-code--single">CLAUDE.md</code></td>
+<td><code class="post-code--single">CLAUDE.md</code></td>
+<td>none</td>
+</tr>
+<tr>
+<th scope="row">both, different text</th>
+<td><code class="post-code--single">CLAUDE.md</code> only</td>
+<td><code class="post-code--single">AGENTS.md</code> only</td>
+<td><code class="post-code--single">AGENTS.md</code> only</td>
+</tr>
+<tr>
+<th scope="row"><code class="post-code--single">CLAUDE.md</code> symlink to <code class="post-code--single">AGENTS.md</code></th>
+<td><code class="post-code--single">AGENTS.md</code> text (once)</td>
+<td><code class="post-code--single">AGENTS.md</code></td>
+<td><code class="post-code--single">AGENTS.md</code></td>
+</tr>
+<tr>
+<th scope="row"><code class="post-code--single">CLAUDE.md</code> = <code class="post-code--single">@AGENTS.md</code> + one Claude line</th>
+<td>both texts</td>
+<td><code class="post-code--single">AGENTS.md</code> only</td>
+<td><code class="post-code--single">AGENTS.md</code> only</td>
+</tr>
+<tr>
+<th scope="row"><code class="post-code--single">AGENTS.md</code> + <code class="post-code--single">CLAUDE.local.md</code></th>
+<td><code class="post-code--single">CLAUDE.local.md</code> only (<code class="post-code--single">AGENTS.md</code> dropped)</td>
+<td><code class="post-code--single">AGENTS.md</code></td>
+<td><code class="post-code--single">AGENTS.md</code></td>
+</tr>
+<tr>
+<th scope="row"><code class="post-code--single">AGENTS.md</code> + <code class="post-code--single">AGENTS.override.md</code></th>
+<td><code class="post-code--single">AGENTS.md</code> (override ignored)</td>
+<td><code class="post-code--single">AGENTS.override.md</code> only</td>
+<td><code class="post-code--single">AGENTS.override.md</code> only</td>
+</tr>
+<tr>
+<th scope="row">root <code class="post-code--single">AGENTS.md</code> + <code class="post-code--single">pkg/AGENTS.md</code>, run in <code class="post-code--single">pkg/</code></th>
+<td>both</td>
+<td>both</td>
+<td>both</td>
+</tr>
+<tr>
+<th scope="row">Codex fallback flag, <code class="post-code--single">CLAUDE.md</code> only</th>
+<td>—</td>
+<td>—</td>
+<td><code class="post-code--single">CLAUDE.md</code></td>
+</tr>
+<tr>
+<th scope="row">Codex fallback flag, both files</th>
+<td>—</td>
+<td>—</td>
+<td><code class="post-code--single">AGENTS.md</code> only</td>
+</tr>
+</tbody></table></div>
+<p>Row four is where repos drift apart. When a repository has both <code class="post-code--single">AGENTS.md</code> and <code class="post-code--single">CLAUDE.md</code> with different text, Claude Code follows only <code class="post-code--single">CLAUDE.md</code>, while Codex and Pi follow only <code class="post-code--single">AGENTS.md</code>. Maintaining both files separately means different agents follow different rules.</p>
+<p>Each column comes from that CLI&#39;s lookup order. In <code class="post-code--single">dist/core/resource-loader.js</code> (line 130), Pi 1.6.0 checks <code class="post-code--single">AGENTS.override.md</code>, <code class="post-code--single">AGENTS.md</code>, <code class="post-code--single">AGENTS.MD</code>, <code class="post-code--single">CLAUDE.md</code> and <code class="post-code--single">CLAUDE.MD</code> in each directory and loads the first match. According to the <a href="https://developers.openai.com/codex/guides/agents-md">Codex AGENTS.md guide</a>, Codex walks from the project root (usually the Git root) down to the working directory, checking <code class="post-code--single">AGENTS.override.md</code>, then <code class="post-code--single">AGENTS.md</code>, then <code class="post-code--single">project_doc_fallback_filenames</code>; it takes at most one file per directory and concatenates them root-down. Claude Code uses <code class="post-code--single">AGENTS.md</code> only when no <code class="post-code--single">CLAUDE.md</code> file is present.</p>
+<h2 id="how-i-tested-it">How I tested it</h2>
+<p>I set up 12 throwaway git repositories under <code class="post-code--single">/tmp/agentsmd-lab</code>: the nine layouts in the table, one size-limit case and two <code class="post-code--single">CLAUDE.local.md</code> follow-ups (all covered below). The two Codex fallback rows are extra runs in the <code class="post-code--single">CLAUDE.md</code>-only and both-files repos. Neither <code class="post-code--single">/tmp</code> nor <code class="post-code--single">/</code> had instruction files. Each rules file contained only &quot;End every reply with the word MARK-X on its own line.&quot; with a distinct <code class="post-code--single">MARK-</code> word per file.</p>
+<p>Pi loaded my personal <code class="post-code--single">~/.pi/agent/AGENTS.md</code> as usual, and the first Codex run loaded <code class="post-code--single">~/.codex/AGENTS.md</code>; neither file has a <code class="post-code--single">MARK-</code> word, which the empty-repo control confirmed. Claude Code skipped my user-level files because of the <code class="post-code--single">--setting-sources</code> flag shown below. Claude Code ran <code class="post-code--spaced">--model haiku</code> with tools off (<code class="post-code--spaced">--tools &quot;&quot;</code>), and Pi ran its default <code class="post-code--single">deepseek/deepseek-flash</code> with tools off (<code class="post-code--single">-nt</code>, plus <code class="post-code--spaced">-ne -ns --no-mcp</code>). Codex ran <code class="post-code--single">gpt-6-luna</code> (reasoning effort <code class="post-code--single">medium</code>) with <code class="post-code--spaced">-s read-only</code>, a sandbox that blocks writes but still allows reads. In the token pass, its <code class="post-code--single">--json</code> event log showed no tool calls, only the final message.</p>
+<p>I read each case two ways. First, a probe prompt (P2) asked the model to list every <code class="post-code--single">MARK-</code> word already in its context without using tools, or reply <code class="post-code--single">NONE</code>. Second, I measured what reached the prompt. Pi&#39;s JSON output includes the system prompt, and the <code class="post-code--single">MARK-</code> text appears in it verbatim. Claude Code went from 3,841 input tokens in the empty repo to 3,987–4,000 with one rules file loaded and 4,064–4,085 with two. Codex went from 19,452 to 19,491–19,497 with one file, and stayed at 19,458 in the <code class="post-code--single">CLAUDE.md</code>-only repo. Most cells have one probe run and one token run; the fallback rows were probe-only, and I ran Codex three more times in the <code class="post-code--single">CLAUDE.local.md</code> repo (below); the empty repo was the control and the <code class="post-code--single">AGENTS.md</code>-only repo the positive check.</p>
+<p>Asking the model is not enough. In the import repo, Claude Code once reported only <code class="post-code--single">MARK-CLAUDE</code> while its token count showed both files. I ran Codex three more times in the <code class="post-code--single">CLAUDE.local.md</code> repo: all three had the same 19,491 tokens, and the third reply was <code class="post-code--single">NONE</code>. To check your own setup, look at token counts, Pi&#39;s JSON output, or Claude Code&#39;s <code class="post-code--spaced">/context all</code> (the docs say <code class="post-code--single">CLAUDE.md</code> should appear under Memory files). I also sent a plain &quot;Reply with the single word OK.&quot; prompt, but it conflicts with a rule that adds a word, so I did not use it to judge loading.</p>
+<p>To repeat the probe in a throwaway repo (a project <code class="post-code--single">.claude/settings.json</code> would load its own hooks):</p>
+<div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="Copied">Copy</button><pre><code class="language-bash" data-copy-source>P2=&#39;Without using any tools or reading any files, list every marker word (words in capitals that start with MARK-) that the instructions already in your context ask you to add. If there are none, reply NONE.&#39;
+
+claude -p &quot;$P2&quot; --model haiku --tools &quot;&quot; --setting-sources project,local --no-session-persistence --output-format json
+pi -p --no-session -nt -ne -ns --no-mcp --mode json &quot;$P2&quot;
+codex exec --json --skip-git-repo-check -s read-only &quot;$P2&quot;
+</code></pre></div>
+<p>The JSON outputs carry the token counts (<code class="post-code--single">usage</code> in Claude Code and Pi, <code class="post-code--single">turn.completed</code> in Codex). Compare against an empty repo on the same model, since the baseline changes with the model and version.</p>
+<p>I passed <code class="post-code--spaced">--setting-sources project,local</code> to keep my own hooks out of the Claude Code runs. That skips both <code class="post-code--single">~/.claude/settings.json</code> and <code class="post-code--single">~/.claude/CLAUDE.md</code> (I checked by probing for my user file&#39;s first heading, and it answered <code class="post-code--single">NONE</code>). Drop that flag if you want to test the setting below, since Claude Code reads it from <code class="post-code--single">~/.claude/settings.json</code>.</p>
+<p>The Codex rows come from a clean <code class="post-code--single">CODEX_HOME</code> that held only <code class="post-code--single">auth.json</code> and <code class="post-code--single">config.toml</code>. An earlier Codex run with my personal <code class="post-code--single">~/.codex/AGENTS.md</code> loaded gave the same probe answers.</p>
+<h2 id="does-claude-code-read-agents-md">Does Claude Code read AGENTS.md?</h2>
+<p>Yes. Starting in 2.1.277, Claude Code reads <code class="post-code--single">AGENTS.md</code> when there is no <code class="post-code--single">CLAUDE.md</code> file in the working directory or any parent directory. In the <a href="https://code.claude.com/docs/en/memory">Claude Code memory docs</a>, <code class="post-code--single">CLAUDE.md</code>, <code class="post-code--single">.claude/CLAUDE.md</code> and <code class="post-code--single">CLAUDE.local.md</code> in the working directory or above count as a <code class="post-code--single">CLAUDE.md</code> for that check; <code class="post-code--single">~/.claude/CLAUDE.md</code>, managed <code class="post-code--single">CLAUDE.md</code> and <code class="post-code--single">.claude/rules/</code> do not. The docs also say Claude Code does not read <code class="post-code--single">AGENTS.local.md</code>, <code class="post-code--single">AGENTS.override.md</code> or anything under <code class="post-code--single">.agents/</code>; I tested only <code class="post-code--single">AGENTS.override.md</code> (row eight).</p>
+<p>A few sessions still read <code class="post-code--single">CLAUDE.md</code> only: versions before 2.1.277, sessions where the built-in plugin was disabled with <code class="post-code--single">/plugin</code>, and in some cases the first session after upgrading from 2.1.276 or earlier. Before v2.1.281, some sessions, such as those on Amazon Bedrock or with telemetry disabled, did the same. In those cases, import <code class="post-code--single">AGENTS.md</code> from a <code class="post-code--single">CLAUDE.md</code>.</p>
+<p>If you want Claude Code to load both files without an import, it documents a &quot;Project instructions&quot; setting in <code class="post-code--single">/config</code> with four values: <code class="post-code--single">claude-md-or-agents-md</code> (default), <code class="post-code--single">claude-md-and-agents-md</code>, <code class="post-code--single">claude-md</code> and <code class="post-code--single">managed-only</code>. The docs give this config for 2.1.285 and later; before v2.1.285 the plugin ID was <code class="post-code--single">agents-md@builtin</code> (I didn&#39;t test either):</p>
+<div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="Copied">Copy</button><pre><code class="language-json" data-copy-source>{
+  &quot;pluginConfigs&quot;: {
+    &quot;cc-plugin-agents-md@builtin&quot;: {
+      &quot;options&quot;: {
+        &quot;instructionFiles&quot;: &quot;claude-md-and-agents-md&quot;
+      }
+    }
+  }
+}
+</code></pre></div>
+<p>Claude Code reads this option from <code class="post-code--single">~/.claude/settings.json</code>, a <code class="post-code--single">--settings</code> file or managed settings, and ignores it in project or local settings.</p>
+<h2 id="one-setup-for-claude-code-codex-and-pi">One setup for Claude Code, Codex and Pi</h2>
+<p>Put shared project rules in <code class="post-code--single">AGENTS.md</code>. If Claude Code needs extra lines of its own, add a <code class="post-code--single">CLAUDE.md</code> that starts with <code class="post-code--single">@AGENTS.md</code>:</p>
+<div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="Copied">Copy</button><pre><code class="language-markdown" data-copy-source>@AGENTS.md
+
+End every reply with the word MARK-CLAUDE on its own line.
+</code></pre></div>
+<p>In my test, Claude Code read both texts while Pi and Codex read only <code class="post-code--single">AGENTS.md</code>, so the Claude-only lines stayed in Claude Code. The Claude Code docs note that <code class="post-code--single">@AGENTS.md</code> never causes Claude Code to read <code class="post-code--single">AGENTS.md</code> twice.</p>
+<p>If you have no Claude-specific lines, a <code class="post-code--single">CLAUDE.md</code> that holds only <code class="post-code--single">@AGENTS.md</code> is still the safest choice: it also covers the sessions above that read <code class="post-code--single">CLAUDE.md</code> only. Skipping <code class="post-code--single">CLAUDE.md</code> works in normal sessions on 2.1.277+ (<code class="post-code--single">orbi-build/orbi</code> itself has <code class="post-code--single">AGENTS.md</code> and no <code class="post-code--single">CLAUDE.md</code>). A symlink is the third option:</p>
+<div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="Copied">Copy</button><pre><code class="language-bash" data-copy-source>ln -s AGENTS.md CLAUDE.md
+</code></pre></div>
+<p>Claude Code read the <code class="post-code--single">AGENTS.md</code> text through the symlink, once, as its docs say. Pi and Codex read the real <code class="post-code--single">AGENTS.md</code>: Pi checks it before <code class="post-code--single">CLAUDE.md</code>, and Codex&#39;s default lookup includes <code class="post-code--single">AGENTS.md</code> but not <code class="post-code--single">CLAUDE.md</code>. If anyone clones the repo on Windows, don&#39;t commit a symlink; commit a regular <code class="post-code--single">CLAUDE.md</code> containing <code class="post-code--single">@AGENTS.md</code>. The same docs point out that Git checks a committed symlink out as a plain text file unless <code class="post-code--single">core.symlinks</code> is enabled, leaving a one-line <code class="post-code--single">CLAUDE.md</code> that stops Claude Code from reading <code class="post-code--single">AGENTS.md</code>.</p>
+<p>Don&#39;t write a <code class="post-code--single">CLAUDE.md</code> that only says in prose &quot;read <code class="post-code--single">AGENTS.md</code>&quot;. Having <code class="post-code--single">CLAUDE.md</code> present has already turned off automatic <code class="post-code--single">AGENTS.md</code> loading, so according to the Claude Code docs, Claude sees <code class="post-code--single">AGENTS.md</code> in that setup only if it decides to open the file itself.</p>
+<h2 id="traps">Traps</h2>
+<p>A private <code class="post-code--single">CLAUDE.local.md</code> beside <code class="post-code--single">AGENTS.md</code> makes Claude Code drop <code class="post-code--single">AGENTS.md</code>. In my test, Claude Code loaded only <code class="post-code--single">CLAUDE.local.md</code>, while Pi and Codex kept reading <code class="post-code--single">AGENTS.md</code>. Because <code class="post-code--single">CLAUDE.local.md</code> counts as a <code class="post-code--single">CLAUDE.md</code> file, an untracked local note can turn off the team&#39;s <code class="post-code--single">AGENTS.md</code> in your Claude sessions. Putting <code class="post-code--single">@AGENTS.md</code> on the first line of <code class="post-code--single">CLAUDE.local.md</code> fixed it in my follow-up test (Claude Code then loaded both files). The other option from the docs, which I didn&#39;t test, is setting <code class="post-code--single">claude-md-and-agents-md</code> in <code class="post-code--single">~/.claude/settings.json</code>. Both fixes are per developer. With the import setup above, a teammate&#39;s <code class="post-code--single">CLAUDE.local.md</code> is added on top instead: in a repo with <code class="post-code--single">AGENTS.md</code>, a <code class="post-code--single">CLAUDE.md</code> starting with <code class="post-code--single">@AGENTS.md</code> and a <code class="post-code--single">CLAUDE.local.md</code>, Claude Code loaded all three.</p>
+<p><code class="post-code--single">AGENTS.override.md</code> splits the tools the other way. In my test, Pi and Codex loaded only <code class="post-code--single">AGENTS.override.md</code>, while Claude Code ignored it and read <code class="post-code--single">AGENTS.md</code>. In Pi&#39;s <code class="post-code--single">docs/configuration.md</code>, <code class="post-code--single">AGENTS.override.md</code> replaces <code class="post-code--single">AGENTS.md</code> or <code class="post-code--single">CLAUDE.md</code> only in the same directory and does not suppress files from <code class="post-code--single">~/.pi/agent</code> or other directories; Codex documents the same per-directory precedence and also supports <code class="post-code--single">AGENTS.override.md</code> in <code class="post-code--single">~/.codex</code> or <code class="post-code--single">CODEX_HOME</code>.</p>
+<p>By default, Codex ignores a <code class="post-code--single">CLAUDE.md</code>-only repo (P2 answered <code class="post-code--single">NONE</code>). To let Codex fall back to <code class="post-code--single">CLAUDE.md</code>, set <code class="post-code--single">project_doc_fallback_filenames</code> in <code class="post-code--single">~/.codex/config.toml</code> (the Codex docs give <code class="post-code--single">TEAM_GUIDE.md</code> and <code class="post-code--single">.agents.md</code> as examples):</p>
+<div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="Copied">Copy</button><pre><code class="language-toml" data-copy-source>project_doc_fallback_filenames = [&quot;CLAUDE.md&quot;]
+</code></pre></div>
+<p>I tested this with Codex&#39;s <code class="post-code--single">-c</code> flag:</p>
+<div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="Copied">Copy</button><pre><code class="language-bash" data-copy-source>codex exec -c &#39;project_doc_fallback_filenames=[&quot;CLAUDE.md&quot;]&#39; --skip-git-repo-check -s read-only &quot;$P2&quot;
+</code></pre></div>
+<p>Codex loaded <code class="post-code--single">CLAUDE.md</code> in the <code class="post-code--single">CLAUDE.md</code>-only repo, and still loaded only <code class="post-code--single">AGENTS.md</code> when both files existed.</p>
+<h2 id="how-long-can-agents-md-be">How long can AGENTS.md be?</h2>
+<p>The <a href="https://code.claude.com/docs/en/memory">Claude Code memory docs</a> advise staying under 200 lines per <code class="post-code--single">CLAUDE.md</code> file, though Claude Code skips a file only above 4 MiB. The Codex docs say it stops adding instruction files once the combined size reaches <code class="post-code--single">project_doc_max_bytes</code>, 32 KiB (32,768 bytes) by default. In my test below, Codex kept the start of a large file and cut the rest, rather than skipping the whole file.</p>
+<p>It doesn&#39;t take long for a real repo to cross 32 KiB. Orbi&#39;s delivery and review sessions load the target repo&#39;s <code class="post-code--single">AGENTS.md</code> through Pi, and Orbi&#39;s own repo is no exception. Before PR #237 (merged 2 September 2026 for Issue #232), <code class="post-code--single">orbi-build/orbi</code>&#39;s <code class="post-code--single">AGENTS.md</code> was 630 lines. PR #237 cut it to 129 lines, aiming for 200 or fewer (Claude Code&#39;s guideline is written for <code class="post-code--single">CLAUDE.md</code>; I used it as a rough target, not a documented <code class="post-code--single">AGENTS.md</code> limit). I didn&#39;t keep it short: it crept back to 154 lines by 10 September 2026, 248 by 20 September 2026, 435 by 1 October 2026, 439 by 1 November 2026, and 444 lines (39,565 bytes) on its last change on 21 November 2026.</p>
+<p>To test that 39,565-byte file against Codex&#39;s 32 KiB cap, I put a <code class="post-code--single">MARK-HEAD</code> rule before Orbi&#39;s <code class="post-code--single">AGENTS.md</code> and a <code class="post-code--single">MARK-TAIL</code> rule after it (448 lines, 39,681 bytes) and ran P2 on all three tools. Claude Code and Pi returned both <code class="post-code--single">MARK-HEAD</code> and <code class="post-code--single">MARK-TAIL</code>. Default Codex returned only <code class="post-code--single">MARK-HEAD</code> in 2 of 2 runs, dropping the tail rule; in the token pass it used 27,191 input tokens, about 7,700 above its empty-repo baseline, which fits a file cut near 32 KiB. Raising <code class="post-code--single">project_doc_max_bytes</code> fixed that:</p>
+<div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="Copied">Copy</button><pre><code class="language-bash" data-copy-source>codex exec -c project_doc_max_bytes=65536 --skip-git-repo-check -s read-only &quot;$P2&quot;
+</code></pre></div>
+<p>With <code class="post-code--single">project_doc_max_bytes=65536</code>, Codex returned both markers. Orbi runs Pi, which got the whole file, so our 444 lines lose nothing there; a Codex user with the same file would lose its end. If Codex is in your mix, keep the combined files under 32 KiB or raise the limit, put rules every session must follow near the top, and move rarely needed instructions into skills.</p>
+<h2 id="agents-md-best-practices">AGENTS.md best practices</h2>
+<ul>
+<li>Keep <code class="post-code--single">AGENTS.md</code> as the single source of shared rules so Claude Code, Codex and Pi do not diverge.</li>
+<li>If you need a <code class="post-code--single">CLAUDE.md</code>, use <code class="post-code--single">@AGENTS.md</code> or a symlink. Prose telling the agent to read <code class="post-code--single">AGENTS.md</code> is not an import, and having <code class="post-code--single">CLAUDE.md</code> turns off automatic <code class="post-code--single">AGENTS.md</code> loading.</li>
+<li>Put non-negotiable rules first, since Codex cuts from the end.</li>
+<li>Keep combined instructions under Codex&#39;s 32 KiB default (or raise <code class="post-code--single">project_doc_max_bytes</code>).</li>
+<li>Look for a <code class="post-code--single">CLAUDE.md</code>, <code class="post-code--single">.claude/CLAUDE.md</code> or <code class="post-code--single">CLAUDE.local.md</code> above the working directory too, for example in a monorepo root: Claude Code counts any of them in the working directory or above, and one is enough to stop it from reading <code class="post-code--single">AGENTS.md</code> automatically.</li>
+<li>Split subdirectory rules into nested <code class="post-code--single">AGENTS.md</code> files. In my nested test (<code class="post-code--single">AGENTS.md</code> plus <code class="post-code--single">pkg/AGENTS.md</code>, run in <code class="post-code--single">pkg/</code>), all three tools loaded both.</li>
+<li>Check what loaded with token counts, Pi&#39;s JSON output or Claude Code&#39;s <code class="post-code--single">/context</code>, not only by asking the model; having a file on disk doesn&#39;t mean it reached the prompt.</li>
+</ul>
+<p>A minimal <code class="post-code--single">AGENTS.md</code> only needs the rules every change must obey (this example is made up, not from a real repo):</p>
+<div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="Copied">Copy</button><pre><code class="language-markdown" data-copy-source># AGENTS.md
+
+- Run the project test suite before finishing and report exact failing commands and exit codes.
+- Do not edit generated output directories by hand; edit source files and rebuild.
+- Keep changes scoped to the assigned issue and avoid unrelated refactors.
+- Add a regression test for every bug fix before writing the patch.
+- Never commit secrets, tokens or local `.env` files.
+- Ask before changing public API contracts or database schemas.
+</code></pre></div>
+<h2 id="agents-md-vs-skills-skill-md">AGENTS.md vs skills (SKILL.md)</h2>
+<p>The skill file is named <code class="post-code--single">SKILL.md</code>, not <code class="post-code--single">skills.md</code>. Unless disabled (for example, with Pi&#39;s <code class="post-code--single">--no-context-files</code> or <code class="post-code--single">-nc</code> flag), Pi loads the applicable file in your working directory and each parent directory on every session, and Codex loads its global <code class="post-code--single">~/.codex/AGENTS.md</code> plus the project files from the Git root down to the working directory, up to its byte cap. In both, an <code class="post-code--single">AGENTS.override.md</code> replaces the <code class="post-code--single">AGENTS.md</code> in its directory. Claude Code loads them when there is no <code class="post-code--single">CLAUDE.md</code>, or through an <code class="post-code--single">@AGENTS.md</code> import. A nested file below the working directory works differently: Claude Code loads it when it reads a file in that subdirectory, while Codex and Pi load it only when you start the session in that directory or below it. Skills (<code class="post-code--single">SKILL.md</code>) load on demand. In the <a href="https://code.claude.com/docs/en/skills">Claude Code skills docs</a>, skill descriptions stay in context while full skill content loads only when invoked. Pi&#39;s skills documentation (<code class="post-code--single">docs/skills.md</code>) describes the same pattern, adding each skill&#39;s name, description and path to the system prompt at startup so the model reads <code class="post-code--single">SKILL.md</code> only when a task matches.</p>
+<p>Keep repo-wide rules that every change has to follow (test gates, generated-file boundaries) in <code class="post-code--single">AGENTS.md</code>. Move occasional procedures (release checklists, migration guides) into <code class="post-code--single">SKILL.md</code> files so they don&#39;t fill every session or push <code class="post-code--single">AGENTS.md</code> past 32 KiB.</p>
+<h2 id="other-tools">Other tools</h2>
+<p>I didn&#39;t test GitHub Copilot or Cursor, and I didn&#39;t re-test OpenCode on 25 November 2026.</p>
+<p class="post-table-hint" hidden>Swipe horizontally to see all columns.</p><div class="post-table-scroll" tabindex="0" role="region" aria-label="Swipe horizontally to see all columns."><table class="table-comparison">
+<thead>
+<tr>
+<th scope="col">Tool</th>
+<th scope="col">Instruction files loaded</th>
+<th scope="col">Basis</th>
+</tr>
+</thead>
+<tbody><tr>
+<th scope="row">GitHub Copilot</th>
+<td><code class="post-code--single">AGENTS.md</code> anywhere in the repo (nearest takes precedence); alternatively a single root <code class="post-code--single">CLAUDE.md</code> or <code class="post-code--single">GEMINI.md</code></td>
+<td><a href="https://docs.github.com/en/copilot/how-tos/configure-custom-instructions/add-repository-instructions">GitHub Copilot docs</a>, not tested</td>
+</tr>
+<tr>
+<th scope="row">Cursor</th>
+<td>Docs list <code class="post-code--single">AGENTS.md</code> in project root and subdirectories (nested files combined with parents); the rules page does not mention <code class="post-code--single">CLAUDE.md</code>, so its support is undocumented there</td>
+<td><a href="https://cursor.com/docs/context/rules">Cursor rules docs</a>, not tested</td>
+</tr>
+<tr>
+<th scope="row">OpenCode 2.2.5</th>
+<td>Loaded project <code class="post-code--single">AGENTS.md</code>; did not load project <code class="post-code--single">CLAUDE.md</code> or <code class="post-code--single">~/.claude/CLAUDE.md</code></td>
+<td>My test on 2 November 2026 in <a href="/blog/opencode-vs-claude-code/">OpenCode vs Claude Code</a>, not re-tested</td>
+</tr>
+</tbody></table></div>
+<aside class="post-cta">
+  <h2>Orbi takes your Issues all the way to a release.</h2>
+  <a class="button button-signal" data-cta="post-start" href="/cloud/login">Try Orbi Cloud free →</a>
+  <p class="post-cta-note">No credit card required · Orbi only sees the repos you pick</p>
+  <a class="post-cta-link" data-cta="post-selfhost" href="https://github.com/orbi-build/orbi">Prefer to self-host? It's open source (AGPL) →</a>
+</aside><h2 id="related">Related</h2>
+<p>If you want to see the delivery loop these instructions feed into, start with <a href="/guides/issue-to-release/?ref=blog-agents-md">From GitHub Issue to merged PR and release</a>. My 2 November 2026 OpenCode <code class="post-code--single">AGENTS.md</code> test is in <a href="/blog/opencode-vs-claude-code/">OpenCode vs Claude Code</a>, with Codex CLI behavior in <a href="/blog/opencode-vs-codex/">OpenCode vs Codex</a> and how Pi compares with Claude Code in <a href="/blog/pi-coding-agent-vs-claude-code/">Pi coding agent vs Claude Code</a>. For how Orbi uses Pi and your repository&#39;s <code class="post-code--single">AGENTS.md</code> to turn GitHub Issues into reviewed, merged pull requests, see <a href="/compare/claude-code/?ref=blog-agents-md">Orbi vs Claude Code</a> and <a href="/cloud/?ref=blog-agents-md">Orbi Cloud</a>.</p>
+
+<!--orbi:related-posts-->
+      </article>
+    </div>
+  </main>
+
+<section class="subscribe-box shell" aria-labelledby="subscribe-title">
+  <h2 class="subscribe-title" id="subscribe-title">What is new in Orbi, every week</h2>
+  <form class="subscribe-form" action="/subscribe" method="post" data-subscribe-form data-success="Check your inbox and click the confirmation link to finish subscribing." data-invalid="That email address doesn't look right" data-unavailable="Subscription is temporarily unavailable. Please try again.">
+    <label class="sr-only" for="subscribe-email-en">Email address</label>
+    <input id="subscribe-email-en" type="email" name="email" autocomplete="email" required placeholder="you@example.com">
+    <input type="hidden" name="lang" value="en">
+    <button class="button button-ghost" type="submit">Subscribe</button>
+    <p class="subscribe-status" data-subscribe-status aria-live="polite"></p>
+  </form>
+  <p class="subscribe-note">One email a week: new features, hands-on posts and numbers from our own work with Orbi. Unsubscribe anytime.</p>
+</section>
+
+  <script src="/subscribe.js" defer></script>
+
+  <footer class="site-footer shell">
+    <div class="footer-brand">
+      <a class="wordmark wordmark-footer" href="/" aria-label="Orbi home">
+        <img class="wordmark-mark" src="/logo-mark.svg" width="28" height="28" alt="">
+        <span>Orbi</span>
+      </a>
+      <p class="orbi-site-footer-p">Software production that survives the session.</p>
+    </div>
+    <nav aria-label="Footer navigation">
+      <div class="footer-group">
+        <h2>Product</h2>
+        <ul><li><a href="/cloud/">Cloud</a></li><li><a href="/cloud/#pricing">Pricing</a></li><li><a href="/#system">How it works</a></li><li><a href="/evidence/">Orbi builds Orbi</a></li><li><a href="/trust/">Trust & security</a></li><li><a href="https://github.com/orbi-build/orbi/releases">Releases</a></li><li><a href="https://status.orbi.build">Status</a></li></ul>
+      </div>
+      <div class="footer-group">
+        <h2>Resources</h2>
+        <ul><li><a href="/evidence/">Orbi builds Orbi</a></li><li><a href="/benchmark/">How we test the harness</a></li><li><a href="/guides/pi-coding-agent/">Pi series: how Orbi is built</a></li><li><a href="/cost/">Cost per merged PR</a></li><li><a href="/aiready/">ai-ready: 12 factors</a></li><li><a href="/compare/">Orbi vs alternatives</a></li><li><a href="/blog/">Blog</a></li><li><a href="/blog/ai-contribute-to-open-source/">Open source contributions</a></li><li><a href="https://docs.orbi.build">Self-hosted Docs</a></li><li><a href="https://cloud-docs.orbi.build/?ref=footer">Cloud Docs</a></li><li><a href="/#faq">FAQ</a></li></ul>
+      </div>
+      <div class="footer-group footer-guides">
+        <h2>Guides</h2>
+        <ul><li><a href="/guides/">Guides</a></li><li><a href="/guides/issue-to-release/">Issue to release</a></li><li><a href="/guides/ci-gates/">CI gates</a></li><li><a href="/guides/auto-merge-ai-prs/">Auto-merge AI PRs</a></li><li><a href="/guides/autonomous-coding-agent/">Autonomous coding agent</a></li><li><a href="/guides/self-hosted-coding-agent/">Self-hosted coding agent</a></li><li><a href="/guides/codex-github-issues/">Codex on GitHub Issues</a></li><li><a href="https://aiready.sh/">ai-ready: 12 factors</a></li></ul>
+      </div>
+      <div class="footer-group footer-compare">
+        <h2>Compare</h2>
+        <ul><li><a href="/compare/orca/">Orbi vs Orca</a></li><li><a href="/compare/openclaw/">Orbi vs OpenClaw</a></li><li><a href="/compare/github-copilot-coding-agent/">Orbi vs GitHub Copilot cloud agent</a></li><li><a href="/compare/managed-agents/">Orbi vs Claude Managed Agents</a></li><li><a href="/compare/claude-code/">Orbi vs Claude Code</a></li><li><a href="/compare/openhands/">Orbi vs OpenHands</a></li><li><a href="/compare/hermes-agent/">Orbi vs Hermes Agent</a></li><li><a href="/compare/keelen/">Orbi vs Keelen</a></li><li><a href="/compare/codex/">Orbi vs OpenAI Codex</a></li><li><a href="/compare/devin/">Orbi vs Devin</a></li><li><a href="/compare/jules/">Orbi vs Google Jules</a></li><li><a href="/compare/cursor/">Orbi vs Cursor Cloud Agents</a></li><li><a href="/compare/">All comparisons</a></li></ul>
+      </div>
+      <div class="footer-group">
+        <h2>Company</h2>
+        <ul><li><a href="/support/">Support</a></li><li><a href="https://github.com/orbi-build/orbi/milestones">Roadmap</a></li><li><a href="/privacy/">Privacy</a></li><li><a href="/terms/">Terms</a></li><li><a href="https://github.com/orbi-build/orbi">GitHub</a></li><li><a href="https://x.com/xqliu" rel="me">X</a></li><li><a href="https://www.youtube.com/@orbibuild" rel="me">YouTube</a></li><li><a href="https://www.reddit.com/r/OrbiBuild/">Reddit</a></li></ul>
+      </div>
+    </nav>
+    <div class="footer-language language" role="group" aria-label="Language"><span aria-current="page">EN</span><a href="/zh/blog/claude-md-vs-agents-md/" lang="zh-CN" aria-label="简体中文">ZH</a></div>
+    <p class="footer-legal">© 2026 Low Code, LLC</p>
+  </footer>
+
+  <script src="/demo.js" defer></script>
+
+<script>(()=>{try{const links=[...document.querySelectorAll('.post-toc-link')];const targetOf=(link)=>link.getAttribute('href').slice(1);const headings=[...new Set(links.map(link=>document.getElementById(targetOf(link))).filter(Boolean))];const setCurrent=(heading)=>{links.forEach((link)=>link.classList.toggle('is-current',targetOf(link)===heading.id));};if('IntersectionObserver' in window){const update=()=>{const current=headings.findLast((heading)=>heading.getBoundingClientRect().top<=innerHeight*.4)??headings[0];if(current)setCurrent(current);};const observer=new IntersectionObserver(update,{rootMargin:'-24px 0px -60% 0px',threshold:0});headings.forEach((heading)=>observer.observe(heading));addEventListener('scroll',update,{passive:true});update();}}catch(error){console.warn('post_toc_observer_failed',error);}})();</script><script>(()=>{
+  const endpoint="/cloud/e", start=Date.now();
+  let visible=document.visibilityState!=="hidden", visibleAt=visible?start:0, visibleMs=0, interacted=false, engagedSent=false, depthSent=false, maxDepth=0;
+  const send=(kind,detail,extra)=>{const body={kind,path:location.pathname};if(detail!==undefined)body.detail=String(detail);if(extra)Object.assign(body,extra);try{if(!navigator.sendBeacon(endpoint,new Blob([JSON.stringify(body)],{type:"application/json"})))console.warn("engagement_report_failed","sendBeacon returned false");}catch(error){console.warn("engagement_report_failed",error);}};
+  send("visit",undefined,{search:location.search,referrer:document.referrer});
+  const elapsed=()=>visibleMs+(visible?Date.now()-visibleAt:0);
+  const check=()=>{if(!engagedSent&&interacted&&elapsed()>=10000){engagedSent=true;send("engaged");}};
+  const schedule=()=>setTimeout(check,Math.max(0,10000-elapsed()));
+  const markInteraction=()=>{interacted=true;check();};
+  ["scroll","pointerdown","keydown","touchstart"].forEach(type=>addEventListener(type,markInteraction,{passive:true}));
+  const depth=()=>{const height=document.documentElement.scrollHeight;maxDepth=Math.max(maxDepth,height<=0?100:Math.min(100,Math.floor((scrollY+innerHeight)/height*100)));};
+  addEventListener("scroll",depth,{passive:true});
+  schedule();
+  const hide=()=>{depth();if(visible){visibleMs+=Date.now()-visibleAt;visible=false;}check();if(!depthSent){depthSent=true;send("scroll_depth",Math.max(25,Math.min(100,Math.floor(maxDepth/25)*25)));}};
+  const show=()=>{if(!visible){visible=true;visibleAt=Date.now();schedule();}};
+  addEventListener("visibilitychange",()=>document.visibilityState==="hidden"?hide():show());
+  addEventListener("pagehide",hide);
+  addEventListener("click",event=>{const link=event.target.closest?.("[data-cta]");if(link)send("cta_click",link.dataset.cta);},{passive:true});
+  const sectionViews=new Set();
+  const sectionDetail=section=>section.id||section.classList?.[0];
+  if(typeof IntersectionObserver!=="undefined"){
+    const sections=[...document.querySelectorAll("main section")].filter(section=>!section.parentElement?.closest("section"));
+    const thresholds=[.3,...sections.map(section=>{const height=section.getBoundingClientRect().height;return height>0?Math.min(.3,innerHeight*.5/height):.3;})];
+    const sectionObserver=new IntersectionObserver(entries=>{entries.forEach(entry=>{
+      const detail=sectionDetail(entry.target);
+      if(detail&&!sectionViews.has(entry.target)&&((entry.intersectionRatio||0)>=.3||(entry.intersectionRect?.height||0)>=innerHeight*.5)){
+        sectionViews.add(entry.target);send("section_view",detail);sectionObserver.unobserve(entry.target);
+      }
+    });},{threshold:thresholds});
+    sections.forEach(section=>sectionObserver.observe(section));
+  }
+})();</script><script data-login-handoff>(()=>{
+  const login=new RegExp("^(?:/zh)?/cloud/login/?$"), pending=new Map();
+  const pendingLabel=/^zh/i.test(document.documentElement.lang)?"正在打开 GitHub…":"Opening GitHub…";
+  addEventListener("click",event=>{
+    if(event.metaKey||event.ctrlKey||event.shiftKey||event.altKey)return;
+    const link=event.target.closest?.("a[href]");
+    if(!link||!login.test(link.pathname))return;
+    if(pending.has(link)){event.preventDefault();return;}
+    pending.set(link,link.innerHTML);
+    link.setAttribute("aria-disabled","true");
+    setTimeout(()=>{link.textContent=pendingLabel;},0);
+  },true);
+  addEventListener("pageshow",event=>{
+    if(!event.persisted)return;
+    pending.forEach((html,link)=>{link.innerHTML=html;link.removeAttribute("aria-disabled");});
+    pending.clear();
+  });
+})();</script><script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "44c2c3310e2e46b7955bb09f04c93fd1"}'></script><script>(function(){
+  var start=function(){
+    !function(t,e){var o,n,p,r;e.__SV||(window.posthog=e,e._i=[],e.init=function(i,s,a){function g(t,e){var o=e.split(".");2==o.length&&(t=t[o[0]],e=o[1]),t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}}(p=t.createElement("script")).type="text/javascript",p.crossOrigin="anonymous",p.async=!0,p.src=s.api_host.replace(".i.posthog.com","-assets.i.posthog.com")+"/static/array.js",(r=t.getElementsByTagName("script")[0]).parentNode.insertBefore(p,r);var u=e;for(void 0!==a?u=e[a]=[]:a="posthog",u.people=u.people||[],Object.defineProperty(u,"toString",{configurable:!0,enumerable:!0,writable:!0,value:function(t){var e="posthog";return"posthog"!==a&&(e+="."+a),t||(e+=" (stub)"),e}}),Object.defineProperty(u.people,"toString",{configurable:!0,enumerable:!0,writable:!0,value:function(){return u.toString(1)+".people (stub)"}}),o="init capture register register_once register_for_session unregister unregister_for_session getFeatureFlag getFeatureFlagResult isFeatureEnabled reloadFeatureFlags updateEarlyAccessFeatureEnrollment getEarlyAccessFeatures on onFeatureFlags onSessionId getSurveys getActiveMatchingSurveys renderSurvey canRenderSurvey getNextSurveyStep identify setPersonProperties group resetGroups setPersonPropertiesForFlags resetPersonPropertiesForFlags setGroupPropertiesForFlags resetGroupPropertiesForFlags reset get_distinct_id getGroups get_session_id get_session_replay_url alias set_config startSessionRecording stopSessionRecording sessionRecordingStarted captureException loadToolbar get_property getSessionProperty createPersonProfile opt_in_capturing opt_out_capturing has_opted_in_capturing has_opted_out_capturing clear_opt_in_out_capturing debug".split(" "),n=0;n<o.length;n++)g(u,o[n]);e._i.push([i,s,a])},e.__SV=1)}(document,window.posthog||[]);
+    posthog.init("phc_nhxAwie7BY0blOSHfAbNzRGcb2rGDJInLUGPh93i8Mx",{api_host:"/api/ph",ui_host:"https://us.posthog.com",autocapture:true,disable_session_recording:false});
+  };
+  if(document.readyState==="complete")start();else addEventListener("load",start,{once:true});
+})();</script></body>
+</html>

@@ -816,7 +816,10 @@ async function assertHomepage(browser, path, comparisonPath, size, screenshot) {
     throw new Error(`${path}: hero h1 overflows horizontally at ${size.width}px`);
   }
   const lede = (await hero.locator(".hero-lede").textContent()).replace(/\s+/g, " ").trim();
-  if ([...lede].length < 40) {
+  // Issue #1469: the floor only has to reject a label ("Orbi Cloud" is 10
+  // characters); it was 40, sized to the old three-sentence Chinese lede. The
+  // one-line lede is 29 code points and still a sentence.
+  if ([...lede].length < 20) {
     throw new Error(`${path}: hero lede is ${JSON.stringify(lede)}, expected a definition sentence`);
   }
   // Issue #899: the button says where the click goes, and the one small line

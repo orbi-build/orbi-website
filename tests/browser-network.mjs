@@ -1,7 +1,8 @@
 // Shared third-party request guard for the Playwright browser suites.
 //
-// Every page ships forty footer badge images (site/partials/footer.html) plus
-// Cloudflare Web Analytics' beacon (scripts/build-pages.mjs), and some posts
+// The two language homes ship forty footer badge images (site/partials/footer.html,
+// Issue #1466 keeps that row on the homes only) plus Cloudflare Web Analytics'
+// beacon (scripts/build-pages.mjs), and some posts
 // embed a YouTube iframe. The suites navigate with
 // `goto(..., { waitUntil: "load" })`, which waits for all of them, so every run
 // raced servers the tests do not own. On 2026-10-05 that turned CI's
