@@ -196,7 +196,7 @@
 <li><a href="https://github.com/xqliu/orbi-e2e-2609260042/issues/521">#521</a>：「下载 PDF」改成主按钮，背景 <code class="post-code--single">#2563EB</code>、白字，悬停变 <code class="post-code--single">#1D4ED8</code>。</li>
 <li><a href="https://github.com/xqliu/orbi-e2e-2609260042/issues/522">#522</a>：表头、每行金额和合计都右对齐，用等宽数字；退款那行的 <code class="post-code--single">-$29.00</code> 显示成 <code class="post-code--single">#DC2626</code>。</li>
 </ul>
-<p>两张票的内容都来自附件。按钮色值和悬停色只写在 <code class="post-code--single">spec.html</code> 里，「像不能点」「小数点对不上」只在截图上，我那句话里一样都没有。</p>
+<p>两张票的内容都来自附件。按钮色值和悬停色只写在 <code class="post-code--single">spec.html</code> 里，「像不能点」「小数点对不上」只在截图上，我那句话里一样都没有。所以这句话是交给 <code class="post-code--spaced">orbi draft</code> 的，不是直接写成 Issue：起草会把截图里的内容用文字写进票里。手写 Issue 的话，也要用文字写清改什么，截图只当辅助。开了 <code class="post-code--single">clarify_thin_tickets</code> 检查时，Orbi 认领前只读 Issue 的文字，正文只有一句「照截图做」的票会被打上 <code class="post-code--single">ai-needs-detail</code> 退回来。</p>
 <p>有一处超出了我圈的范围：退款红色我在截图上没圈，#522 也写进去了。票面「假设」一节说了原因：截图只圈了对齐，但 <code class="post-code--single">spec.html</code> 把退款红色写在同一节「金额列」约定里，所以一并实现。这一节在终端里的草稿上就看得到，那时还什么都没建。不想要，在提示符那里输入一句修改；觉得约定没错，直接按回车。票一建好就带着 <code class="post-code--single">ai-ready</code> 进了队列，事后再改，可能已经开工了。</p>
 <h2 id="附件怎样从起草传到评审">附件怎样从起草传到评审</h2>
 <p><strong>起草。</strong> 每个文件先复制进起草会话自己的目录，改用生成的名字（<code class="post-code--single">1.png</code>、<code class="post-code--single">2.html</code>），文件名再怎么写也跑不出这个目录。会话收到一行说明（<code class="post-code--spaced">The person attached: 1.png = screen.png, 2.html = spec.html</code>），HTML 和文本用读文件工具读。图片只有在模型目录里声明了能看图时，才按图片交给模型；Orbi 自带的 DeepSeek 模板声明了。</p>
