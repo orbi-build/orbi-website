@@ -2466,8 +2466,13 @@ h2 {
    (from 981px up) never sees these rules. 480px is the phone width this
    stylesheet already breaks at (footer badges), and the ticket names it. */
 @media (max-width: 480px) {
-  /* The stack's own margins space it: a 16px grid gap would double them. */
-  .hero.homepage-hero { gap: 0; }
+  /* The stack's own margins space it: a 16px grid gap would double them.
+     Issue #1469: once the one-line lede left the stack shorter than the hero's
+     min-height, the stretched rows shared that slack out — a 390x1000 phone
+     read 31px between the CTA and its note instead of 12. Size the rows to
+     their content and leave the slack at the bottom, so the spacing the page
+     sets stays the spacing the reader sees at every phone height. */
+  .hero.homepage-hero { gap: 0; align-content: start; }
   .hero.homepage-hero .hero-copy { display: contents; }
   .hero.homepage-hero .hero-kicker { order: 1; }
   .hero.homepage-hero h1 { order: 2; }
