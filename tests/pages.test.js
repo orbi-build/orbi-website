@@ -4216,6 +4216,9 @@ describe("homepage evidence screenshots lazy-load (Issue #586)", () => {
 // description; the assertion follows the new copy.
 // Issue #1212: the definition's words are copy; what the page must keep is a
 // real definition paragraph under the H1 — body text, not only metadata.
+// Issue #1469: the guard is "a sentence, not a label" ("Orbi Cloud" is 10
+// characters), so its floor is 20 code points. It was 40, tuned to the old
+// three-sentence Chinese lede; the one-line lede is 29 and still a sentence.
 describe("homepage body carries an Orbi definition sentence (Issues #890, #899, #977)", () => {
   for (const output of ["index.html", "zh/index.html"]) {
     it(`${output} states the definition in the rendered body`, () => {
@@ -4224,7 +4227,7 @@ describe("homepage body carries an Orbi definition sentence (Issues #890, #899, 
         .replace(/<[^>]+>/g, "")
         .trim();
       expect(lede, `${output}: definition under the H1`).toContain("Orbi");
-      expect([...lede].length, `${output}: a real sentence, not a label`).toBeGreaterThan(40);
+      expect([...lede].length, `${output}: a real sentence, not a label`).toBeGreaterThan(20);
       expect(html.slice(html.indexOf("<body")), `${output}: body definition`).toContain(lede);
     });
   }
@@ -4235,6 +4238,9 @@ describe("homepage body carries an Orbi definition sentence (Issues #890, #899, 
 // sentence now, in the ink colour the page already gives its <strong> runs,
 // scoped so the Chinese home and every other .hero-lede page keep the
 // secondary ink.
+// Issue #1469: the one line now sells the entry a visitor actually takes — say
+// what you want, Orbi writes the Issue and ships the release — so both homes
+// carry that sentence and the pinned copy follows it.
 describe("homepage hero lede is one readable sentence in English (Issue #1371)", () => {
   const ledeOf = (output) =>
     region(shipped.get(output), '<p class="hero-lede">', "</p>")
@@ -4243,7 +4249,7 @@ describe("homepage hero lede is one readable sentence in English (Issue #1371)",
 
   it("the English home ships the one-sentence lede", () => {
     expect(ledeOf("index.html"))
-      .toBe("Orbi turns your GitHub Issues into reviewed, merged code and real releases.");
+      .toBe("Say what you want in a sentence; Orbi writes the Issue and ships the release.");
   });
 
   it("scopes the bright ink to the English homepage hero", () => {
@@ -4254,9 +4260,9 @@ describe("homepage hero lede is one readable sentence in English (Issue #1371)",
       .toMatch(/color:\s*#b6c7c3;/);
   });
 
-  it("leaves the Chinese home lede unchanged", () => {
+  it("the Chinese home ships the same one-line lede", () => {
     expect(ledeOf("zh/index.html"))
-      .toBe("Orbi 用 AI 完成 GitHub 上的开发任务。代码经过独立 AI 评审，通过后自动合并，再按仓库流程发版。你不用一直守着。");
+      .toBe("一句话说清需求，Orbi 写成 Issue，一路做到发版。");
   });
 });
 
