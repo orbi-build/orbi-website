@@ -10,7 +10,7 @@ mirror: claude-ship
 
 Claude Ship 是 Anthropic 在 2026 年 11 月 23 日[发布](https://claude.com/blog/introducing-claude-ship)的三个 GitHub PR agent（Code Review、PR Steward 和 Claude Approvals），面向 Claude Team 和 Enterprise 套餐。这篇写给在考虑要不要开它的团队。
 
-我是 Larry 🍀 Orbi，Orbi 的创始人。Orbi 是 Agent 时代的开源软件黑灯工厂：你给它一个打好标签的 Issue，它自己认领、写代码、交给独立评审、修完问题，CI 通过后合并，中间不用人守着；你开一张发版单并打上 `ai-release`，等里程碑下其他 Issue 关完，它就发版。它运行的是开源编程 agent Pi，不运行 Claude Code，也不运行 Claude Ship。2026 年 11 月 26 日我读了官方文档，并在 Claude Code 里亲手试了 `/ship`。组织级的三个 agent 我测不了，因为它们需要 Team 或 Enterprise 组织。
+我是 Larry 🍀 Orbi，Orbi 的创始人。Orbi 是 Agent 时代的开源软件黑灯工厂：你给它一个打好标签的 Issue，它自己认领、写代码、交给独立评审、修完问题，CI 通过后合并，中间不用人守着；你开一张发版单并打上 `ai-release`，等里程碑下其他 Issue 关完，它就发版。它运行的是开源编程 agent Pi，不运行 Claude Code，也不运行 Claude Ship。2026 年 11 月 26 日我读了官方文档，并在 Claude Code 里试着运行 `/ship`（两次都被拒，见后文）。组织级的三个 agent 我测不了，因为它们需要 Team 或 Enterprise 组织。
 
 ## Code Review、PR Steward 和 Claude Approvals 怎么分工
 
@@ -36,7 +36,7 @@ Claude Ship 需要 Claude Team 或 Enterprise 套餐，且只支持 GitHub 仓�
 
 三个 agent 都按 token 用量从组织的 usage credits 里扣费，和套餐本身包含的用量分开算。Approvals 没有基础月费，但根据 [Approvals 配置文档](https://code.claude.com/docs/en/approvals-setup)，分类器运行会计费，如果策略里要求跑 Code Review，即便处于 observe 模式也会触发计费审查。
 
-在组织设置里关掉 usage credits 并不会停掉已经打开的 agent，它们还会继续跑、继续计费。要停用必须直接关掉 agent，并且按顺序来：先关 Approvals，再关 PR Steward，最后关 Code Review。Approvals 要最先关，因为策略里只要要求了 Code Review，就算你关掉了自动 Code Review，策略仍会继续触发计费的审查。
+在组织设置里关掉 usage credits 并不会停掉已经打开的 agent，它们还会继续跑，按文档会继续向组织计费。要停用必须直接关掉 agent，并且按顺序来：先关 Approvals，再关 PR Steward，最后关 Code Review。Approvals 要最先关，因为策略里只要要求了 Code Review，就算你关掉了自动 Code Review，策略仍会继续触发计费的审查。
 
 根据[发布公告](https://claude.com/blog/introducing-claude-ship)，符合条件的 Enterprise 组织在 2027 年 1 月 15 日前可以领取至少 10,000 美元的 Claude Ship 额度，领取后 30 天内有效。
 
@@ -46,7 +46,7 @@ Claude Ship 没有合并步骤。PR Steward 按设计不会合并，[PR Steward 
 
 就算把这项检查设成了必需且强制执行，[Approvals 与 GitHub 规则文档](https://code.claude.com/docs/en/approvals-github-rules)还列出了几种不需要作者以外的真人也能通过的情况：
 
-- `seats: 0`，允许机器人打开的 PR 在没人看的情况下通过。
+- `seats: 0`，不要求任何人批准，所以机器人打开的 PR 可以在没人看的情况下通过。
 - `seats: 1`，PR 作者自己就能占满这个席位。
 - `from` 列表里放行了机器人。
 - 机器账号（machine user，也就是脚本或 agent 驱动的账号），Approvals 会把它算作一个人。
@@ -58,7 +58,7 @@ Claude Ship 没有合并步骤。PR Steward 按设计不会合并，[PR Steward 
 
 要把“没审过”和“没真人审过”分开看。一条写了 `claude: approves` 又没配 `claude/code_review = pass` 条件的规则，会让 Claude 在完全没做审查的情况下就批准 PR。如果是 Code Review 通过，但规则是 `seats: 1`（由作者自己填满）或 `seats: 0`，那这个 PR 只有 AI 审查，作者之外并没有真人看过。
 
-要让每一条路径都至少经过一位非作者的批准，就在 `.claude/approvals.yml` 里强制执行下面这段规则，同时在 GitHub 里把 Claude Approvals 设为必需检查、来源指定为 Claude app。这段 YAML 是我从 [Approvals GitHub 规则文档](https://code.claude.com/docs/en/approvals-github-rules)原样复制的；我只检查过它能按 YAML 正常解析，没有在 Approvals 下实际跑过。照原样放进默认分支就会立即强制执行；想先观察，就在顶层加一行 `mode: observe`。删掉这行切到强制执行后，已打开的 PR 在你逐个评论 `@claude approvals rerun` 之前，可能仍带着 GitHub 当作通过的检查，见[强制执行步骤](https://code.claude.com/docs/en/approvals-setup)。
+要让每一条路径都至少经过一位非作者的批准，就在 `.claude/approvals.yml` 里强制执行下面这段规则，同时在 GitHub 里把 Claude Approvals 设为必需检查、来源指定为 Claude app，并要求默认分支只能通过 PR 合并。这段 YAML 是我从 [Approvals GitHub 规则文档](https://code.claude.com/docs/en/approvals-github-rules)原样复制的；我只检查过它能按 YAML 正常解析，没有在 Approvals 下实际跑过。照原样放进默认分支就会立即强制执行；想先观察，就在顶层加一行 `mode: observe`。删掉这行切到强制执行后，已打开的 PR 在你逐个评论 `@claude approvals rerun` 之前，可能仍带着 GitHub 当作通过的检查，见[强制执行步骤](https://code.claude.com/docs/en/approvals-setup)。
 
 ```yaml
 # .claude/approvals.yml
