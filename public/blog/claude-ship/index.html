@@ -182,7 +182,7 @@
           </ol>
         </details>
 <p>Claude Ship is Anthropic&#39;s set of three agents for GitHub pull requests — Code Review, PR Steward and Claude Approvals — <a href="https://claude.com/blog/introducing-claude-ship">announced</a> on 23 November 2026 for Claude Team and Enterprise plans. This post is for teams deciding whether to turn it on. It covers the agent-by-agent scope, billing, the settings that let a PR merge with no human review, what the separate <code class="post-code--single">/ship</code> command does, and where Claude Ship stops compared with a pipeline that starts from the Issue.</p>
-<p>I&#39;m Larry 🍀 Orbi, the creator of Orbi. Orbi turns GitHub Issues into reviewed, merged pull requests and releases; it runs the open-source coding agent Pi and does not run Claude Code or Claude Ship. I read the docs on 26 November 2026 and tried <code class="post-code--single">/ship</code> myself in Claude Code; I could not test the org-level agents because they require a Team or Enterprise org.</p><aside class="post-cta-inline"><span>Orbi takes your Issues all the way to a release.</span><a class="button button-signal" data-cta="post-inline-start" href="/cloud/login">Try Orbi Cloud free →</a></aside>
+<p>I&#39;m Larry 🍀 Orbi, the creator of Orbi. Orbi turns GitHub Issues into reviewed, merged pull requests and runs the releases you start; it runs the open-source coding agent Pi and does not run Claude Code or Claude Ship. I read the docs on 26 November 2026 and tried <code class="post-code--single">/ship</code> myself in Claude Code; I could not test the org-level agents because they require a Team or Enterprise org.</p><aside class="post-cta-inline"><span>Orbi takes your Issues all the way to a release.</span><a class="button button-signal" data-cta="post-inline-start" href="/cloud/login">Try Orbi Cloud free →</a></aside>
 <h2 id="what-claude-ship-is-three-agents-one-pr">What Claude Ship is: three agents, one PR</h2>
 <p>In the <a href="https://code.claude.com/docs/en/claude-ship">Claude Ship docs</a>, three agents divide the work on an open GitHub pull request:</p>
 <p class="post-table-hint" hidden>Swipe horizontally to see all columns.</p><div class="post-table-scroll" tabindex="0" role="region" aria-label="Swipe horizontally to see all columns."><table class="table-comparison">
@@ -215,15 +215,15 @@
 </tbody></table></div>
 <p>Code Review is generally available and looks for bugs rather than formatting preferences. An Owner can choose Quick, Standard (default) or Deep review levels per repository. By itself, Code Review neither approves nor blocks a pull request.</p>
 <p>PR Steward is in public beta. Per the <a href="https://code.claude.com/docs/en/pr-steward">PR Steward docs</a>, it works on failing checks, merge conflicts, and review comments from people and review bots such as Code Review, then pushes commits. After each push, it comments with what it changed and how to undo it. Commenting <code class="post-code--spaced">@claude stop</code> (or removing the <code class="post-code--single">claude-pr-steward-watching</code> label) makes it step back. It is &quot;designed not to approve or merge pull requests&quot; and has no spend limit of its own until you set one.</p>
-<p>Claude Approvals is in public beta. It adds a check that reports who still has to approve under a <code class="post-code--single">.claude/approvals.yml</code> policy file you commit on the default branch, and can post Claude&#39;s approving review where policy allows. The check blocks a merge only where you make it a required check in GitHub. You start in observe mode, which is still billed.</p>
-<p>Merges follow your GitHub branch rules; Claude Ship itself does not merge pull requests.</p>
+<p>Claude Approvals is in public beta. It adds a check that reports who still has to approve under a <code class="post-code--single">.claude/approvals.yml</code> policy file you commit on the default branch, and can post Claude&#39;s approving review where policy allows. The check blocks a merge only where you make it a required check in GitHub. A policy file enforces by default; Anthropic recommends starting with <code class="post-code--spaced">mode: observe</code> in the file, and observe mode is still billed.</p>
+<p>Claude Ship has no merge step of its own; what merges is decided by your GitHub branch rules.</p>
 <h2 id="who-can-use-claude-ship-and-what-it-costs">Who can use Claude Ship and what it costs</h2>
-<p>Claude Ship requires a Claude Team or Enterprise plan and works with GitHub repositories only. It is not available to organizations with Zero Data Retention, the HIPAA configuration, or customer-managed encryption keys (Approvals also cannot start with FERPA or Access Transparency settings). Changing settings requires an Owner role in the Claude organization.</p>
+<p>Claude Ship requires a Claude Team or Enterprise plan and works with GitHub repositories only. It is not available to organizations with Zero Data Retention, the HIPAA configuration, or customer-managed encryption keys (Approvals also cannot start with FERPA or Access Transparency settings). Changing settings requires an Owner role in the Claude organization. Approvals is the exception: once its prerequisites are met (the Claude GitHub App is connected), anyone who can merge a policy file into a repository&#39;s default branch turns it on, and starts its billing, unless an Owner has turned Approvals off for the whole organization.</p>
 <p>Each agent is billed on token usage through the org&#39;s usage credits, separately from the plan&#39;s included usage. Approvals has no base charge: as the <a href="https://code.claude.com/docs/en/approvals-setup">Approvals setup docs</a> state, classifier runs are billed, and a policy that asks for Code Review triggers billed reviews even in observe mode.</p>
 <p>Turning off usage credits in org settings does not stop an agent that is already on — it keeps running and billing. Turn the agents off directly, in order: Approvals first, then PR Steward, then Code Review. Approvals comes first because a policy file can keep starting billed Code Reviews even while Code Review is off.</p>
 <p>Per the <a href="https://claude.com/blog/introducing-claude-ship">announcement</a>, eligible Enterprise organizations can claim at least $10,000 in Claude Ship credits, to use within 30 days of claiming, if claimed by 15 January 2027.</p>
 <h2 id="when-a-pr-can-merge-with-no-human-review">When a PR can merge with no human review</h2>
-<p>Claude Ship never merges; GitHub does. The main reason a PR merges unreviewed is that the <strong>Claude Approvals</strong> check is not required in GitHub, so it blocks nothing (observe mode also normally counts as passing).</p>
+<p>Claude Ship has no merge step: PR Steward is designed not to merge, and the <a href="https://code.claude.com/docs/en/pr-steward-security">PR Steward security docs</a> say its guard against merge and auto-merge commands is a text rule plus a model&#39;s judgment that a command written another way can pass, so your GitHub branch rules are the real limit. The main reason a PR merges unreviewed is that the <strong>Claude Approvals</strong> check is not required in GitHub, so it blocks nothing (observe mode also normally counts as passing).</p>
 <p>Even when the check is required and enforced, the <a href="https://code.claude.com/docs/en/approvals-github-rules">Approvals and GitHub rules docs</a> list ways it can pass with no person besides the author:</p>
 <ul>
 <li><code class="post-code--spaced">seats: 0</code>, which lets a bot-opened PR pass with no human looking at it.</li>
@@ -252,7 +252,7 @@ rules:
 <ul>
 <li>No <code class="post-code--single">if</code> or <code class="post-code--single">override</code> means no classifier answer can loosen the rule, and <code class="post-code--spaced">nested: inherit</code> keeps it active under subdirectory policy files.</li>
 <li><code class="post-code--spaced">claude: comments</code> prevents Claude from posting an approving review.</li>
-<li><code class="post-code--single">&quot;!pr/authors&quot;</code> excludes PR authors from filling the seat.</li>
+<li><code class="post-code--single">&quot;!pr/authors&quot;</code> excludes PR authors from filling the seat. On a pull request from a fork, no approval counts toward this seat, so repositories that take fork PRs need another path for them.</li>
 <li><code class="post-code--single">humans</code> still includes machine users; exclude one by adding its login with <code class="post-code--single">&quot;!&quot;</code>, as in <code class="post-code--spaced">[humans, &quot;!pr/authors&quot;, &quot;!acme-ci&quot;]</code>.</li>
 <li><code class="post-code--spaced">advisory: [claude/code_review]</code> keeps automatic Code Reviews running (a policy file otherwise turns them off on covered files unless a rule names <code class="post-code--single">claude/code_review</code>).</li>
 </ul>
@@ -310,27 +310,27 @@ rules:
 <tr>
 <th scope="row">Merge</th>
 <td>GitHub branch rules, you or auto-merge</td>
-<td>Merges once the merge gate passes: head contains latest base, CI concluded, PR mergeable, head unchanged</td>
+<td>Merges once the merge gate passes: head contains latest base, CI finished with no failing check, PR mergeable, head unchanged</td>
 </tr>
 <tr>
 <th scope="row">Release</th>
 <td>Not covered</td>
-<td>Separate milestone-level <code class="post-code--single">ai-release</code> ticket, claimed after the milestone&#39;s other Issues close, run by a deterministic release state machine (no Pi, no PR)</td>
+<td>You open the release Issue and add <code class="post-code--single">ai-release</code> (a label only people set); Orbi claims it after the milestone&#39;s other Issues close and runs a deterministic release state machine (no Pi, no PR)</td>
 </tr>
 <tr>
 <th scope="row">Runs without anyone typing</th>
-<td>Org agents start automatically on PRs in enabled repos; <code class="post-code--single">/ship</code> needs you to type it</td>
-<td>Yes</td>
+<td>Code Review starts on PRs in enabled repos; PR Steward starts by itself only if set to On (the docs suggest starting with Manual, <code class="post-code--spaced">@claude steward</code>); Approvals starts from the policy file; <code class="post-code--single">/ship</code> needs you to type it</td>
+<td>Yes, from the labelled Issue to the merged PR; releases start when you open the release Issue</td>
 </tr>
 </tbody></table></div>
-<p>Claude Ship and Orbi have no integration, and I have not run both on one repository. The only link between Claude Code and Orbi is the plugin handing an Issue over. Ordinary Orbi delivery ends at the merged PR; not every Issue triggers a release.</p>
+<p>Claude Ship and Orbi have no integration, and I have not run both on one repository. The only link between Claude Code and Orbi is the plugin handing an Issue over. Ordinary Orbi delivery ends at the merged PR. Releases are never automatic: a person opens the release Issue, and Orbi runs it.</p>
 <h2 id="one-orbi-delivery-timed">One Orbi delivery, timed</h2>
-<p>In <code class="post-code--single">orbi-build/orbi</code>, I opened <a href="https://github.com/orbi-build/orbi/issues/2387">Issue #2387</a> on 25 November 2026 at 10:08 UTC+8. Orbi started Pi at 10:12 UTC+8, and the <code class="post-code--single">orbi-build</code> app opened <a href="https://github.com/orbi-build/orbi/pull/2388">PR #2388</a> at 10:51 UTC+8. After one review round, the <code class="post-code--single">orbi-build</code> app merged PR #2388 at 11:04 UTC+8. Release ticket #2389 was opened at 11:14 UTC+8, and <code class="post-code--single">orbi-build[bot]</code> published <a href="https://github.com/orbi-build/orbi/releases/tag/v0.7.63">v0.7.63</a> at 11:31 UTC+8.</p>
+<p>In <code class="post-code--single">orbi-build/orbi</code>, I opened <a href="https://github.com/orbi-build/orbi/issues/2387">Issue #2387</a> on 25 November 2026 at 10:08 UTC+8. Orbi started Pi at 10:12 UTC+8, and the <code class="post-code--single">orbi-build</code> app opened <a href="https://github.com/orbi-build/orbi/pull/2388">PR #2388</a> at 10:51 UTC+8. After one review round, the <code class="post-code--single">orbi-build</code> app merged PR #2388 at 11:04 UTC+8. I opened release ticket #2389 at 11:14 UTC+8, and <code class="post-code--single">orbi-build[bot]</code> published <a href="https://github.com/orbi-build/orbi/releases/tag/v0.7.63">v0.7.63</a> at 11:31 UTC+8.</p>
 <p>Over the 30-day window from 27 October to 25 November 2026 (UTC dates) in the same repository, 182 pull requests merged — 164 opened and merged by the <code class="post-code--single">orbi-build</code> app — alongside 46 releases (<code class="post-code--single">v0.7.19</code>–<code class="post-code--single">v0.7.64</code>). Caveat: this is Orbi&#39;s own repository (dogfooding), and these are counts of throughput, not a quality measure.</p>
 <h2 id="which-one-fits-your-team">Which one fits your team</h2>
 <ul>
 <li>Choose Claude Ship if your team (people or Claude Code) already writes the code, you are on Team or Enterprise with GitHub, and your bottleneck is review, fixes and approval policy; start in observe mode and add the non-author rule before enforcing.</li>
-<li>Choose Orbi if you want the Issue-to-merged-PR-to-release loop to run unattended at a fixed monthly price: Orbi Cloud starts at US$29/month (Solo; see <a href="/cloud/?ref=blog-claude-ship">Orbi Cloud</a> for current pricing).</li>
+<li>Choose Orbi if you want the Issue-to-merged-PR loop to run unattended, with releases run for you once you open the release Issue, at a fixed monthly price: Orbi Cloud Solo lists at US$29/month (see <a href="/cloud/?ref=blog-claude-ship">Orbi Cloud</a> for the current price and any founding-member discount).</li>
 <li>If you are not on Team or Enterprise, Claude Ship is not available; <code class="post-code--single">/ship</code> still is, billed as regular Claude Code usage.</li>
 </ul>
 <aside class="post-cta">
