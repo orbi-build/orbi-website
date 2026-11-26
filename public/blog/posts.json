@@ -3,8 +3,8 @@
     "slug": "claude-ship",
     "title": "Claude Ship: what it automates and where it stops",
     "summary": "Claude Ship adds three GitHub PR agents for Team and Enterprise plans. Scope, billing, merges without human review, /ship, and how it compares with Orbi.",
-    "zhSlug": null,
-    "zhTitle": null,
+    "zhSlug": "claude-ship",
+    "zhTitle": "Claude Ship：它自动做了什么，又停在哪一步",
     "related": []
   },
   {
