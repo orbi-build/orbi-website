@@ -10,7 +10,7 @@
       <link>https://orbi.build/blog/claude-ship/</link>
       <guid isPermaLink="true">https://orbi.build/blog/claude-ship/</guid>
       <pubDate>Thu, 26 Nov 2026 00:00:00 GMT</pubDate>
-      <description>Claude Ship adds three GitHub PR agents for Team and Enterprise plans: agent scope, billing, merges with no human review, /ship, and how Orbi compares.</description>
+      <description>Claude Ship adds three GitHub PR agents for Team and Enterprise. None of them merges, so your branch rules decide if a PR gets in with no human review.</description>
     </item>
     <item>
       <title>Attach a screenshot to the issue your AI agent builds</title>
