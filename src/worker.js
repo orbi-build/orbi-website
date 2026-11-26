@@ -1202,6 +1202,18 @@ async function handleFetch(request, env, ctx) {
       return Response.redirect(`https://${url.hostname}${prefix}/cloud/#pricing`, 301);
     }
 
+    // Issue #1514: /docs is the URL visitors, crawlers and AI guess, and the
+    // top bar's "Docs / 文档" already points at the Cloud manual (#762), so
+    // /docs goes to the same place. Cross-host, so it cannot live in
+    // PATH_REDIRECTS. 302 rather than 301: two doc sites exist today and the
+    // target may move, while a 301 is cached by the browser with no way back.
+    if (route === "/docs" || route === "/zh/docs") {
+      return Response.redirect(
+        route === "/docs" ? "https://cloud-docs.orbi.build/" : "https://cloud-docs.orbi.build/zh",
+        302,
+      );
+    }
+
     // Issue #251: beta-only request.cf diagnostic; production falls through
     // to the assets and 404s.
     if (route === "/__cf" && !PROD_HOSTS.has(url.hostname)) {
