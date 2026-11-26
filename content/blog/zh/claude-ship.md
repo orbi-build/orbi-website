@@ -12,7 +12,7 @@ Claude Ship 是 Anthropic 在 2026 年 11 月 23 日[发布](https://claude.com/
 
 我是 Larry 🍀 Orbi，Orbi 的创始人。Orbi 从 GitHub Issue 出发，写代码、评审，再把 PR 合进仓库，也在你发起时执行发版；它运行的是开源编程 agent Pi，不运行 Claude Code，也不运行 Claude Ship。2026 年 11 月 26 日我读了官方文档，并在 Claude Code 里亲手试了 `/ship`。组织级的三个 agent 我测不了，因为它们需要 Team 或 Enterprise 组织。
 
-## Claude Ship 的三个 agent 怎么分工
+## Code Review、PR Steward 和 Claude Approvals 怎么分工
 
 按 [Claude Ship 文档](https://code.claude.com/docs/en/claude-ship)，三个 agent 分工处理已经打开的 GitHub PR：
 
@@ -85,9 +85,9 @@ rules:
 
 ## /ship 命令不是 Claude Ship
 
-三个名字长得很像，干的是不同的事。Claude Ship 是组织级的三个 GitHub agent，走组织 usage credits 计费。Claude Code 的 `/ship` 命令跑在你本地终端会话里，算你自己的 Claude Code 用量。Orbi 的 `/orbi:ship` 命令（来自 Orbi 的 Claude Code 插件）把任务写成带 `ai-ready` 标签的 GitHub Issue 交给 Orbi，它不合并任何东西。
+四个名字长得很像，干的是不同的事。Claude Ship 是组织级的三个 GitHub agent，走组织 usage credits 计费。Claude Code 的 `/ship` 命令跑在你本地终端会话里，算你自己的 Claude Code 用量。Orbi 的 `/orbi:ship` 命令（来自 Orbi 的 Claude Code 插件）把任务写成带 `ai-ready` 标签的 GitHub Issue 交给 Orbi，它不合并任何东西。Claude Code 还有个 `/steward`，在你自己已打开的 PR 上直接开始同样的 watch、不先审查；文档说明它和组织级的 PR Steward 是两回事，PR Steward 已在处理的 PR 上它不会启动。
 
-在 [`/ship` 命令文档](https://code.claude.com/docs/en/ship-command)里，`/ship` 会以你的身份提交、推送并打开 GitHub PR，跑一次 `/code-review`（这是 Claude Code 的本地审查命令，算你自己的用量，不是组织级的 Code Review agent），再在当前会话里启动一个“watch”，持续处理失败的检查、合并冲突、审查评论和审查问题；合并 PR 仍要你自己操作。
+在 [`/ship` 命令文档](https://code.claude.com/docs/en/ship-command)里，`/ship` 会以你的身份提交、推送并打开 GitHub PR，跑一次 `/code-review`（这是 Claude Code 的本地审查命令，算你自己的用量，不是组织级的 Code Review agent），再在当前会话里启动一个“watch”，持续处理失败的检查、合并冲突、审查评论和审查问题；通常由你自己合并 PR，但文档里[「When a watch can lead to a merge」](https://code.claude.com/docs/en/ship-command#when-a-watch-can-lead-to-a-merge)一节列了例外：PR 开了 auto-merge 时，Claude 推上去的修复可能直接触发合并；在 auto 模式下，Claude 回复你输入的消息期间，watch 的限制是关着的，它可能被允许合并。
 
 使用 `/ship` 需要 Claude Code v2.1.330+、已登录的 GitHub CLI 2.63+ 和 `git` 2.38+。无人看守的 watch 需要 auto 模式（`bypassPermissions` 不会启动 watch，v2.1.331+ 上 `/ship` 在 plan 模式下也不会启动），原生 Windows 和后台会话里同样不会启动 watch。在公开仓库里，`/ship` 不会替你提交工作区里还没提交的改动；在允许提交和推送的仓库里，它不会弹确认提示，只会在提交前和推送前各打出一行 `Esc to cancel`。
 
