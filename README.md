@@ -1,5 +1,7 @@
 # orbi.build
 
+[![Orbi deliveries](https://orbi.build/proof/orbi-build/orbi-website/badge.svg)](https://orbi.build/zh/proof/orbi-build/orbi-website?ref=badge-orbi-website)
+
 Orbi 官网 landing page。产品定位入口，不是文档站。文档后续放 `docs.orbi.build`。
 
 部署：Cloudflare Worker + Workers Assets（不是 Pages）。
