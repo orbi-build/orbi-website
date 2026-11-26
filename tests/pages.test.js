@@ -1826,6 +1826,24 @@ describe("one unified footer on every content page", () => {
     }
   });
 
+  // SwipeToLaunch free listing goes live only after the official badge is
+  // found in the server-rendered homepage HTML and "Check my site" is pressed
+  // at /badge/orbi. The official snippet is 220x48 (viewBox 0 0 220 48, 9357
+  // bytes, checked 2026-11-26). The shared strip ships that snippet once on
+  // each language's home page, with rel="noopener" only (no nofollow).
+  it("carries the SwipeToLaunch badge in the footer, on en and zh", () => {
+    const badge = '<a href="https://swipetolaunch.com/p/orbi?ref=badge" target="_blank" rel="noopener">'
+      + '<img src="https://swipetolaunch.com/api/badge/orbi" alt="Featured on SwipeToLaunch" width="220" height="48" loading="lazy" /></a>';
+    for (const output of ["index.html", "zh/index.html"]) {
+      const footer = footerRegion(shipped.get(output));
+      const occurrences = footer.split(badge).length - 1;
+      expect(occurrences, `${output}: the SwipeToLaunch badge must ship exactly once in the footer`)
+        .toBe(1);
+      expect(footerAnchorTag(footer, "https://swipetolaunch.com/p/orbi?ref=badge"), `${output}: the badge must stay a crawlable backlink`)
+        .not.toContain("nofollow");
+    }
+  });
+
   it("carries the 11 compare deep dives, in the right language tree", () => {
     for (const page of content()) {
       const footer = footerRegion(shipped.get(page.output));

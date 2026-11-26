@@ -407,6 +407,11 @@ export const BADGE_PLACEHOLDER_SIZES = [
   // URL: /wp-json/pepliohub/v1/badge/10123 250x56 (SVG, 724 bytes, width/height
   // and viewBox 0 0 250 56; the vendor snippet declares the same 250x56 box).
   { host: "peplio.com", width: 250, height: 56 },
+  // 2026-11-26 SwipeToLaunch official badge, measured on the live URL:
+  // /api/badge/orbi 220x48 (SVG, 9357 bytes, width/height and viewBox 0 0 220 48;
+  // the vendor snippet declares the same 220x48 box). The free listing at
+  // /p/orbi goes live after this badge is found in the server-rendered homepage.
+  { host: "swipetolaunch.com", width: 220, height: 48 },
 ];
 const FALLBACK_PLACEHOLDER_SIZE = { width: 1, height: 1 };
 
