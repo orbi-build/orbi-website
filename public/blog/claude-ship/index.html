@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Claude Ship: what it automates and where it stops | Orbi</title>
+  <meta name="description" content="Claude Ship adds three GitHub PR agents for Team and Enterprise plans: agent scope, billing, merges with no human review, /ship, and how Orbi compares.">
+  <link rel="canonical" href="https://orbi.build/blog/claude-ship/">
+  <link rel="alternate" hreflang="en" href="https://orbi.build/blog/claude-ship/">
+  <link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/blog/claude-ship/">
+  <link rel="alternate" hreflang="x-default" href="https://orbi.build/blog/claude-ship/">
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="Claude Ship: what it automates and where it stops">
+  <meta property="og:description" content="Claude Ship adds three GitHub PR agents for Team and Enterprise plans: agent scope, billing, merges with no human review, /ship, and how Orbi compares.">
+  <meta property="og:url" content="https://orbi.build/blog/claude-ship/">
+  <meta property="og:image" content="https://orbi.build/img/blog-claude-ship-card.png">
+  <meta property="og:image:alt" content="Claude Ship: what it automates and where it stops">
+  <meta property="article:published_time" content="2026-11-26">
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"Claude Ship: what it automates and where it stops","datePublished":"2026-11-26","author":{"@type":"Person","name":"Larry 🍀 Orbi","url":"https://orbi.build/about/larry-orbi/","sameAs":["https://github.com/xqliu","https://x.com/xqliu"]},"publisher":{"@type":"Organization","name":"Orbi","url":"https://orbi.build/","logo":{"@type":"ImageObject","url":"https://orbi.build/logo-mark.svg"}},"mainEntityOfPage":"https://orbi.build/blog/claude-ship/","image":"https://orbi.build/img/blog-claude-ship-card.png","inLanguage":"en","description":"Claude Ship adds three GitHub PR agents for Team and Enterprise plans: agent scope, billing, merges with no human review, /ship, and how Orbi compares.","url":"https://orbi.build/blog/claude-ship/"}</script>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <meta name="theme-color" content="#06151b">
+
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="stylesheet" href="/fonts/fonts.css">
+  <link rel="stylesheet" href="/styles.css">
+
+  <style>
+    /* Blog-only layout: the shared .shell/.compare-hero rules stay unchanged. */
+    .post-grid { max-width: 52rem; margin: 0 auto; padding: 0 24px; }
+    .post-hero { padding: 84px 0 68px; }
+    /* Issue #860: the body text column is wider than --hero-copy-width, so the
+       hero fills it and the h1/lede right edge lands on the body text. */
+    .post-hero h1, .post-hero .hero-lede { max-width: none; }
+    .post-body { padding-top: 12px; padding-bottom: 30px; }
+    .post-body h2, .post-body .related-links h2 { font-family: var(--display); font-size: 1.5rem; line-height: 1.25; margin: 42px 0 10px; scroll-margin-top: 24px; }
+    .post-body .related-links { margin: 0; }
+    .post-cta {
+      margin: 42px 0 12px;
+      padding: 30px;
+      border-radius: var(--radius-card);
+      background: var(--night);
+      color: #edf5f0;
+      text-align: center;
+    }
+    .post-cta h2 { margin: 0 0 18px; color: #edf5f0; font-family: var(--display); font-size: 1.5rem; line-height: 1.25; }
+    .post-cta .button { margin: 0 auto; color: var(--night); text-decoration: none; }
+    .post-cta-note { margin: 10px 0 18px; color: #aec2bd; font-size: 0.9rem; }
+    .post-cta .post-cta-link { color: #edf5f0; font-size: 0.9rem; text-underline-offset: 3px; }
+    .post-cta .post-cta-link:hover { color: #fff; }
+    .post-cta-inline {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin: 28px 0;
+      padding: 12px 16px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-card);
+      background: var(--paper-2);
+    }
+    .post-cta-inline span { color: var(--ink); font-size: 0.95rem; }
+    .post-cta-inline .button { flex: 0 0 auto; min-height: 40px; padding: 0 14px; font-size: 0.85rem; }
+    .post-toc { position: sticky; top: 24px; max-height: calc(100vh - 48px); overflow-y: auto; align-self: start; padding-top: 26px; }
+    .post-toc h2 { margin: 0 0 10px; padding: 0; font: 500 0.75rem/1.5rem var(--mono); letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-soft); }
+    .post-toc ol { list-style: none; margin: 0; padding: 0; border-left: 1px solid var(--line); }
+    .post-toc ol ol { border-left: 0; }
+    .post-body .post-toc-inline ol { margin: 0; padding-left: 2.2em; }
+    .post-body .post-toc-inline ol ol { list-style: none; padding-left: 1em; margin-top: 0; }
+    .post-toc li { margin: 0; }
+    .post-toc-inline li { margin: 6px 0; }
+    .post-toc-link { display: block; color: var(--ink-soft); font-size: 0.92rem; line-height: 1.4; text-decoration: none; overflow-wrap: anywhere; }
+    .post-toc .post-toc-link { padding: 6px 0 6px 15px; margin-left: -1px; border-left: 1px solid transparent; font-size: 0.875rem; line-height: 1.25rem; }
+    .post-toc ol ol .post-toc-link { padding-left: 27px; }
+    .post-toc-link:hover, .post-toc-link.is-current { color: var(--ink); }
+    .post-toc .post-toc-link.is-current { border-left-color: var(--ink); color: var(--ink); font-weight: 600; }
+    .post-toc-inline { display: none; margin: 0 0 28px; border: 1px solid var(--line); border-radius: var(--radius-card); padding: 12px 16px; }
+    .post-toc-inline summary { cursor: pointer; font-weight: 600; }
+    .post-toc-inline ol { margin-top: 12px; }
+
+    .post-body h3 { font-family: var(--display); font-size: 1.13rem; line-height: 1.3; margin: 30px 0 6px; }
+    .post-body p { margin: 14px 0; }
+    /* Issue #833: this line sits on the dark .night hero, so it uses the dark-band secondary color. */
+    .post-series { margin: 10px 0 6px; color: #9aada9; font-size: 0.95rem; }
+    .post-series a { color: inherit; text-decoration: underline; text-underline-offset: 3px; }
+    /* Issue #887 shipped the byline here; Issue #1465 moved its rules to
+       styles.css so the comparison, guide and benchmark pages share them. */
+    .post-body ul, .post-body ol { margin: 14px 0; padding-left: 22px; }
+    .post-body li { margin: 6px 0; }
+    .post-body a { color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
+    .post-body code { font-family: var(--mono); font-size: 0.88em; background: var(--paper-2); border: 1px solid var(--line); border-radius: var(--radius-control); padding: 1px 5px; white-space: nowrap; display: inline-block; max-width: 100%; overflow-x: auto; vertical-align: bottom; }
+    .post-body code.post-code--spaced { white-space: normal; display: inline; }
+    .post-body pre { background: var(--paper-2); border: 1px solid var(--line); border-radius: var(--radius-card); padding: 14px 16px; overflow-x: auto; margin: 18px 0; }
+    .post-body pre code, .post-body pre code.post-code--spaced, .post-body pre code.post-code--single { background: none; border: none; padding: 0; font-size: 0.85rem; white-space: pre; overflow-wrap: normal; display: inline; max-width: none; overflow: visible; }
+    .post-table-scroll { overflow-x: auto; }
+    .post-body table { width: 100%; border-collapse: collapse; }
+    .post-body th, .post-body td { border: 1px solid var(--line); padding: 8px 10px; text-align: left; }
+    .post-body th { background: var(--paper-2); }
+    .post-body strong { font-weight: 600; }
+    .post-media { margin: 24px 0; }
+    .post-body svg { max-width: 100%; height: auto; }
+    .post-media img, .post-media iframe, .post-media svg { display: block; width: 100%; border: 0; border-radius: var(--radius-card); }
+    .post-media img, .post-media svg { height: auto; }
+    .post-media iframe { aspect-ratio: 16 / 9; }
+    .post-media figcaption { color: var(--muted); font-size: 0.9rem; margin-top: 8px; }
+    @media (min-width: 1200px) {
+      .post-grid { display: grid; grid-template-columns: minmax(0, 52rem) 200px; column-gap: 56px; max-width: calc(52rem + 256px); padding: 0; }
+      .post-hero, .post-body { grid-column: 1; padding-left: 16px; padding-right: 16px; }
+      .post-toc { grid-column: 2; grid-row: 1; }
+    }
+    @media (max-width: 1199px) {
+      .post-toc { display: none; }
+      .post-toc-inline { display: block; }
+    }
+    @media (max-width: 760px) {
+      .post-hero { padding-top: 64px; padding-bottom: 48px; }
+      .post-cta { padding: 24px 18px; }
+      .post-cta .button { width: 100%; }
+      .post-cta-inline { align-items: stretch; flex-direction: column; gap: 10px; }
+      .post-cta-inline .button { width: 100%; }
+    }
+  </style>
+
+</head>
+<body>
+  <a class="skip-link" href="#main-content">Skip to content</a>
+
+  <div class="night nav-shell">
+    <header class="site-header">
+      <a class="wordmark" href="/" aria-label="Orbi home">
+        <img class="wordmark-mark" src="/logo-mark-on-dark.svg" width="28" height="28" alt="">
+        <span>Orbi</span>
+      </a>
+      <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="primary-navigation" aria-label="Open navigation" data-label-open="Open navigation" data-label-close="Close navigation" data-menu-toggle>
+        <span aria-hidden="true"><i></i><i></i><i></i></span>
+      </button>
+      <nav id="primary-navigation" aria-label="Primary navigation" data-primary-nav>
+        <a href="/#system">How it works</a>
+        <a href="/cloud/#pricing">Pricing</a>
+        <a href="https://cloud-docs.orbi.build/?ref=nav">Docs</a>
+        <a data-cta="nav-github" href="https://github.com/orbi-build/orbi">GitHub</a>
+        <a class="nav-apply" data-cta="nav-start" href="/cloud/login">Try Cloud with GitHub</a>
+      </nav>
+    </header>
+  </div>
+
+  <main id="main-content">
+    <div class="night">
+      <div class="post-grid">
+        <section class="post-hero" aria-labelledby="post-title">
+          <p class="eyebrow">Blog</p>
+          <h1 id="post-title">Claude Ship: what it automates and where it stops</h1>
+          <p class="post-byline"><a href="/about/larry-orbi/">Larry 🍀 Orbi</a> · <time datetime="2026-11-26">2026-11-26</time></p>
+
+          <p class="hero-lede">Claude Ship adds three GitHub PR agents for Team and Enterprise plans: agent scope, billing, merges with no human review, /ship, and how Orbi compares.</p>
+        </section>
+      </div>
+    </div>
+
+    <div class="post-grid">
+        <nav class="post-toc" aria-label="On this page">
+          <h2>On this page</h2>
+          <ol>
+          <li><a class="post-toc-link" href="#what-claude-ship-is-three-agents-on-one-pr">What Claude Ship is: three agents on one PR</a></li>
+          <li><a class="post-toc-link" href="#who-can-use-claude-ship-and-what-it-costs">Who can use Claude Ship and what it costs</a></li>
+          <li><a class="post-toc-link" href="#when-a-pr-can-merge-with-no-human-review">When a PR can merge with no human review</a></li>
+          <li><a class="post-toc-link" href="#the-ship-command-is-not-claude-ship">The /ship command is not Claude Ship</a></li>
+          <li><a class="post-toc-link" href="#claude-ship-vs-orbi-who-owns-each-step">Claude Ship vs Orbi: who owns each step</a></li>
+          <li><a class="post-toc-link" href="#timing-one-orbi-delivery">Timing one Orbi delivery</a></li>
+          <li><a class="post-toc-link" href="#which-one-fits-your-team">Which one fits your team</a></li>
+          <li><a class="post-toc-link" href="#related">Related</a></li>
+          </ol>
+        </nav>
+      <article class="post-body">
+        <details class="post-toc-inline">
+          <summary>On this page · 8 sections</summary>
+          <ol>
+          <li><a class="post-toc-link" href="#what-claude-ship-is-three-agents-on-one-pr">What Claude Ship is: three agents on one PR</a></li>
+          <li><a class="post-toc-link" href="#who-can-use-claude-ship-and-what-it-costs">Who can use Claude Ship and what it costs</a></li>
+          <li><a class="post-toc-link" href="#when-a-pr-can-merge-with-no-human-review">When a PR can merge with no human review</a></li>
+          <li><a class="post-toc-link" href="#the-ship-command-is-not-claude-ship">The /ship command is not Claude Ship</a></li>
+          <li><a class="post-toc-link" href="#claude-ship-vs-orbi-who-owns-each-step">Claude Ship vs Orbi: who owns each step</a></li>
+          <li><a class="post-toc-link" href="#timing-one-orbi-delivery">Timing one Orbi delivery</a></li>
+          <li><a class="post-toc-link" href="#which-one-fits-your-team">Which one fits your team</a></li>
+          <li><a class="post-toc-link" href="#related">Related</a></li>
+          </ol>
+        </details>
+<p>Claude Ship is Anthropic&#39;s set of three agents for GitHub pull requests (Code Review, PR Steward, and Claude Approvals), <a href="https://claude.com/blog/introducing-claude-ship">announced</a> on 23 November 2026 for Claude Team and Enterprise plans. Before turning it on, a team needs to know what each agent handles, how billing behaves, which settings let a PR merge with no human review, how the separate <code class="post-code--single">/ship</code> command differs, and where Claude Ship stops compared with a pipeline that starts from the Issue.</p>
+<p>I&#39;m Larry 🍀 Orbi, the creator of Orbi. Orbi turns GitHub Issues into reviewed, merged pull requests and runs the releases you start. It uses the open-source coding agent Pi and does not run Claude Code or Claude Ship. On 26 November 2026, I read the docs and tried <code class="post-code--single">/ship</code> myself in Claude Code, though I could not test the org-level agents because they require a Team or Enterprise org.</p><aside class="post-cta-inline"><span>Orbi takes your Issues all the way to a release.</span><a class="button button-signal" data-cta="post-inline-start" href="/cloud/login">Try Orbi Cloud free →</a></aside>
+<h2 id="what-claude-ship-is-three-agents-on-one-pr">What Claude Ship is: three agents on one PR</h2>
+<p>In the <a href="https://code.claude.com/docs/en/claude-ship">Claude Ship docs</a>, three agents divide the work on an open GitHub pull request:</p>
+<p class="post-table-hint" hidden>Swipe horizontally to see all columns.</p><div class="post-table-scroll" tabindex="0" role="region" aria-label="Swipe horizontally to see all columns."><table class="table-comparison">
+<thead>
+<tr>
+<th scope="col">Agent</th>
+<th scope="col">What it does</th>
+<th scope="col">Status</th>
+<th scope="col">Billed</th>
+</tr>
+</thead>
+<tbody><tr>
+<th scope="row">Code Review</th>
+<td>Reads the change with surrounding code; posts inline findings ranked by severity</td>
+<td>Generally available</td>
+<td>Org usage credits (tokens)</td>
+</tr>
+<tr>
+<th scope="row">PR Steward</th>
+<td>Fixes failing checks, merge conflicts and review comments; pushes commits</td>
+<td>Public beta</td>
+<td>Org usage credits (tokens); no default spend limit</td>
+</tr>
+<tr>
+<th scope="row">Claude Approvals</th>
+<td>Runs a PR check against <code class="post-code--single">.claude/approvals.yml</code>; can approve where policy allows</td>
+<td>Public beta</td>
+<td>Classifier runs and policy-triggered Code Reviews (observe mode too)</td>
+</tr>
+</tbody></table></div>
+<p>Code Review is generally available and checks for bugs, leaving formatting preferences alone. An Owner can choose Quick, Standard (default), or Deep review levels per repository. On its own, Code Review neither approves nor blocks a pull request.</p>
+<p>According to the <a href="https://code.claude.com/docs/en/pr-steward">PR Steward docs</a>, PR Steward (in public beta) handles failing checks, merge conflicts, and review comments from people and review bots such as Code Review, then pushes commits. After each push, it comments with what it changed and how to undo it. Commenting <code class="post-code--spaced">@claude stop</code> (or removing the <code class="post-code--single">claude-pr-steward-watching</code> label) makes it step back. It is &quot;designed not to approve or merge pull requests&quot; and has no spend limit of its own until you set one.</p>
+<p>Claude Approvals, also in public beta, adds a check that reports who still has to approve under a <code class="post-code--single">.claude/approvals.yml</code> policy file committed on the default branch, and can post Claude&#39;s approving review where policy allows. The check blocks a merge only if you configure it as a required check in GitHub. A policy file enforces by default. Anthropic recommends starting with <code class="post-code--spaced">mode: observe</code> in the file, though observe mode is still billed.</p>
+<p>None of the three agents has a merge step, so your GitHub branch rules decide what merges.</p>
+<h2 id="who-can-use-claude-ship-and-what-it-costs">Who can use Claude Ship and what it costs</h2>
+<p>Claude Ship requires a Claude Team or Enterprise plan and works with GitHub repositories only. Organizations with Zero Data Retention, the HIPAA configuration, or customer-managed encryption keys cannot use it (Approvals also cannot start with FERPA or Access Transparency settings). Changing settings requires an Owner role in the Claude organization, except for Approvals: once its prerequisites are met (the Claude GitHub App is connected), anyone who can merge a policy file into a repository&#39;s default branch turns Approvals on and starts its billing, unless an Owner has turned Approvals off for the whole organization.</p>
+<p>All three agents bill token usage against the org&#39;s usage credits, separate from the plan&#39;s included usage. Approvals has no base charge, though the <a href="https://code.claude.com/docs/en/approvals-setup">Approvals setup docs</a> state that classifier runs are billed, and a policy that asks for Code Review triggers billed reviews even in observe mode.</p>
+<p>Turning off usage credits in org settings does not stop an agent that is already on; it keeps running and billing. You have to turn the agents off directly, in order: Approvals first, then PR Steward, then Code Review. Approvals goes first because a policy that asks for Code Review keeps starting billed reviews even after automatic Code Review is switched off.</p>
+<p>The <a href="https://claude.com/blog/introducing-claude-ship">announcement</a> says eligible Enterprise organizations can claim at least $10,000 in Claude Ship credits by 15 January 2027, with 30 days to use them after claiming.</p>
+<h2 id="when-a-pr-can-merge-with-no-human-review">When a PR can merge with no human review</h2>
+<p>Claude Ship has no merge step. PR Steward is designed not to merge, and the <a href="https://code.claude.com/docs/en/pr-steward-security">PR Steward security docs</a> explain that its guard against merge and auto-merge commands relies on a text rule and model judgment, which a differently written command can get past. That leaves your GitHub branch rules to stop a merge. The main reason a PR merges unreviewed is that the Claude Approvals check is not required in GitHub, so it blocks nothing (observe mode also normally counts as passing).</p>
+<p>Even when the check is required and enforced, the <a href="https://code.claude.com/docs/en/approvals-github-rules">Approvals and GitHub rules docs</a> list ways it can pass with no person besides the author:</p>
+<ul>
+<li><code class="post-code--spaced">seats: 0</code>, which lets a bot-opened PR pass with no human looking at it.</li>
+<li><code class="post-code--spaced">seats: 1</code>, which the PR author can fill.</li>
+<li>A <code class="post-code--single">from</code> list that admits bots.</li>
+<li>A machine user (an account a script or agent drives), which Approvals counts as a person.</li>
+<li><code class="post-code--single">reuse</code> keeping earlier seats after a new push.</li>
+<li>Files no rule covers, where GitHub counts the neutral result as passing.</li>
+<li>A condition reading a classifier answer (in <code class="post-code--single">if</code>, an override&#39;s <code class="post-code--single">if</code>, or <code class="post-code--single">reuse</code>) that the PR&#39;s own text can steer.</li>
+</ul>
+<p>Direct pushes to the default branch get no check, so GitHub branch rules still need to require pull requests. With GitHub auto-merge or a merge queue and a policy that does not require a person, a change can merge without anyone acting. Where policy lets Claude approve, Claude&#39;s approving review can also satisfy a GitHub rule that requires one approval.</p>
+<p>&quot;No review&quot; and &quot;no human review&quot; are two different cases. A rule with <code class="post-code--spaced">claude: approves</code> and no <code class="post-code--spaced">claude/code_review = pass</code> condition lets Claude approve with no review at all. When Code Review passes under <code class="post-code--spaced">seats: 1</code> (filled by the author) or <code class="post-code--spaced">seats: 0</code>, the PR gets an AI review, while no human besides the author reviews it.</p>
+<p>To require one approver who is not an author on every path, enforce the rule below in <code class="post-code--single">.claude/approvals.yml</code> and require the Claude Approvals check in GitHub, with the Claude app as its source. I copied this YAML verbatim from the <a href="https://code.claude.com/docs/en/approvals-github-rules">Approvals GitHub rules docs</a>. I only checked that it parses as YAML and have not run it under Approvals. As written it enforces as soon as it lands on the default branch; to start in observe mode, add a top-level <code class="post-code--spaced">mode: observe</code> line. When you delete it to enforce, open pull requests can keep a check GitHub counts as passing until you comment <code class="post-code--spaced">@claude approvals rerun</code> on each of them, as the <a href="https://code.claude.com/docs/en/approvals-setup">enforcement steps</a> describe.</p>
+<div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="Copied">Copy</button><pre><code class="language-yaml" data-copy-source># .claude/approvals.yml
+version: 1
+rules:
+  - purpose: &quot;A change takes one person who isn&#39;t an author.&quot;
+    paths: [&quot;**&quot;]
+    nested: inherit
+    verdict:
+      claude: comments
+      seats: [{ count: 1, from: [humans, &quot;!pr/authors&quot;] }]
+    advisory: [claude/code_review]
+</code></pre></div>
+<p>What each part does:</p>
+<ul>
+<li>No <code class="post-code--single">if</code> or <code class="post-code--single">override</code> means no classifier answer can loosen the rule, and <code class="post-code--spaced">nested: inherit</code> keeps it active under subdirectory policy files.</li>
+<li><code class="post-code--spaced">claude: comments</code> prevents Claude from posting an approving review.</li>
+<li><code class="post-code--single">&quot;!pr/authors&quot;</code> excludes PR authors from filling the seat. On a pull request from a fork, no approval counts toward this seat, so with the check required, this rule blocks every pull request from a fork.</li>
+<li><code class="post-code--single">humans</code> still includes machine users, so the seat can be filled by an account a script drives; that is why the rule asks for one non-author approver, not necessarily a human. Exclude each machine user by adding its login with <code class="post-code--single">&quot;!&quot;</code>, as in <code class="post-code--spaced">[humans, &quot;!pr/authors&quot;, &quot;!acme-ci&quot;]</code>.</li>
+<li><code class="post-code--spaced">advisory: [claude/code_review]</code> keeps automatic Code Reviews running (a policy file otherwise turns them off on covered files unless a rule names <code class="post-code--single">claude/code_review</code>).</li>
+</ul>
+<p>If GitHub requires approvals, also enable dismissing stale approvals when new commits are pushed (or requiring approval of the most recent reviewable push), so an older approval cannot carry over to later commits.</p>
+<h2 id="the-ship-command-is-not-claude-ship">The /ship command is not Claude Ship</h2>
+<p>Three names look similar and do different things. Claude Ship is the set of org-level GitHub agents billed to org usage credits. Claude Code&#39;s <code class="post-code--single">/ship</code> command runs locally in your terminal session and counts against your Claude Code usage. Orbi&#39;s <code class="post-code--single">/orbi:ship</code> command (from Orbi&#39;s Claude Code plugin) writes the task as a GitHub Issue labelled <code class="post-code--single">ai-ready</code> for Orbi; it does not merge anything.</p>
+<p>In the <a href="https://code.claude.com/docs/en/ship-command"><code class="post-code--single">/ship</code> command docs</a>, <code class="post-code--single">/ship</code> commits, pushes, and opens a GitHub pull request as you, runs <code class="post-code--single">/code-review</code> (Claude Code&#39;s local review command, counted as your usage, not the org&#39;s Code Review agent), and starts a &quot;watch&quot; in your session to work on failing checks, merge conflicts, review comments, and review findings. You merge the PR yourself.</p>
+<p>It requires Claude Code v2.1.330+, a signed-in GitHub CLI 2.63+, and <code class="post-code--single">git</code> 2.38+. Unattended watch work requires auto mode (<code class="post-code--single">bypassPermissions</code> starts no watch, and on v2.1.331+ <code class="post-code--single">/ship</code> does not start in plan mode), and no watch starts on native Windows or in a background session. In a public repo, <code class="post-code--single">/ship</code> will not commit uncommitted changes. When it does commit and push, it runs without a confirmation prompt, printing an <code class="post-code--spaced">Esc to cancel</code> line before the commit and again before the push.</p>
+<p>On 26 November 2026, I tested the <code class="post-code--single">/ship</code> command in Claude Code 2.1.331 inside a private throwaway repo. Typing <code class="post-code--single">/ship</code> inside a session launched by another agent session returned:</p>
+<div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="Copied">Copy</button><pre><code class="language-text" data-copy-source>This session was started by another session, so /ship can&#39;t run here. Run it in a session you started yourself.
+</code></pre></div>
+<p>Running <code class="post-code--spaced">claude -p &quot;/ship&quot;</code> returned:</p>
+<div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="Copied">Copy</button><pre><code class="language-text" data-copy-source>Nothing started. Claude Code&#39;s built-in /ship doesn&#39;t start in this kind of session. Run claude in a terminal, and type it there.
+</code></pre></div>
+<p>Neither run committed, pushed, or opened a PR. Both refusals appear in the <a href="https://code.claude.com/docs/en/ship-command-troubleshooting"><code class="post-code--single">/ship</code> troubleshooting table</a>, which states that <code class="post-code--single">/ship</code> only starts from a line typed interactively by a person at the keyboard, so a program, cron job, or another agent cannot invoke it. I did not run the full flow in a session I started by hand.</p>
+<h2 id="claude-ship-vs-orbi-who-owns-each-step">Claude Ship vs Orbi: who owns each step</h2>
+<p class="post-table-hint" hidden>Swipe horizontally to see all columns.</p><div class="post-table-scroll" tabindex="0" role="region" aria-label="Swipe horizontally to see all columns."><table class="table-comparison">
+<thead>
+<tr>
+<th scope="col">Step</th>
+<th scope="col">Claude Ship</th>
+<th scope="col">Orbi</th>
+</tr>
+</thead>
+<tbody><tr>
+<th scope="row">Write the task (Issue)</th>
+<td>No (you or Claude Code write the code)</td>
+<td>An Issue with <code class="post-code--single">ai-ready</code> (written by you, <code class="post-code--spaced">orbi draft</code> or <code class="post-code--single">/orbi:ship</code>)</td>
+</tr>
+<tr>
+<th scope="row">Claim and implement</th>
+<td>No</td>
+<td>Claims it and implements on its runner with Pi</td>
+</tr>
+<tr>
+<th scope="row">Open the PR</th>
+<td><code class="post-code--single">/ship</code> can open it as you; org agents start on existing PRs</td>
+<td>Opens it, verified (fresh base, <code class="post-code--spaced">Fixes #N</code>)</td>
+</tr>
+<tr>
+<th scope="row">Review</th>
+<td>Code Review</td>
+<td>Independent review session on exact base and head SHAs</td>
+</tr>
+<tr>
+<th scope="row">Fix review findings / failing CI</th>
+<td>PR Steward</td>
+<td>Fixes in the same review session; unfixable findings set <code class="post-code--single">ai-fix-needed</code> for the next review round on the same PR</td>
+</tr>
+<tr>
+<th scope="row">Approval decision</th>
+<td>Claude Approvals check per your policy</td>
+<td>No policy file; a repository rule Orbi cannot satisfy (such as a required human approval) parks the Issue at <code class="post-code--single">ai-awaiting-merge</code> naming the one maintainer action, and Orbi merges after that action</td>
+</tr>
+<tr>
+<th scope="row">Merge</th>
+<td>GitHub branch rules, you or auto-merge</td>
+<td>Merges once the merge gate passes: head contains latest base, CI finished with no failing check, PR mergeable, head unchanged</td>
+</tr>
+<tr>
+<th scope="row">Release</th>
+<td>Not covered</td>
+<td>You open the release Issue and add <code class="post-code--single">ai-release</code> (a label only people set); Orbi claims it after the milestone&#39;s other Issues close and runs a deterministic release state machine (no Pi, no PR)</td>
+</tr>
+<tr>
+<th scope="row">Runs without anyone typing</th>
+<td>Code Review starts on PRs in enabled repos; PR Steward starts by itself only if set to On (the docs suggest starting with Manual, <code class="post-code--spaced">@claude steward</code>); Approvals starts from the policy file; <code class="post-code--single">/ship</code> needs you to type it</td>
+<td>Yes, from the labelled Issue to the merged PR; releases start when you open the release Issue</td>
+</tr>
+</tbody></table></div>
+<p>Claude Ship and Orbi have no integration, and I have not run both on one repository. The only handoff between Claude Code and Orbi is the plugin writing an Issue. Ordinary Orbi delivery stops at the merged PR. Releases are never automatic: a person opens the release Issue, and Orbi runs it.</p>
+<h2 id="timing-one-orbi-delivery">Timing one Orbi delivery</h2>
+<p>In <code class="post-code--single">orbi-build/orbi</code>, I opened <a href="https://github.com/orbi-build/orbi/issues/2387">Issue #2387</a> on 25 November 2026 at 10:08 UTC+8. Orbi started Pi at 10:12 UTC+8. At 10:51 UTC+8, the <code class="post-code--single">orbi-build</code> app opened <a href="https://github.com/orbi-build/orbi/pull/2388">PR #2388</a>, and after one review round it merged the PR at 11:04 UTC+8. I opened release ticket #2389 at 11:14 UTC+8, and <code class="post-code--single">orbi-build[bot]</code> published <a href="https://github.com/orbi-build/orbi/releases/tag/v0.7.63">v0.7.63</a> at 11:31 UTC+8.</p>
+<p>Over the 30-day window from 27 October to 25 November 2026 (UTC dates) in the same repository, 182 pull requests merged (164 opened and merged by the <code class="post-code--single">orbi-build</code> app) alongside 46 releases (<code class="post-code--single">v0.7.19</code> to <code class="post-code--single">v0.7.64</code>). One caveat: this is Orbi&#39;s own repository (dogfooding), and those numbers measure throughput and say nothing about quality.</p>
+<h2 id="which-one-fits-your-team">Which one fits your team</h2>
+<ul>
+<li>Pick Claude Ship if your team (people or Claude Code) already writes the code, you are on Team or Enterprise with GitHub, and your bottleneck is review, fixes, and approval policy. Start in observe mode and add the non-author rule before enforcing.</li>
+<li>Pick Orbi if you want the Issue-to-merged-PR loop to run unattended, with releases run for you once you open the release Issue, at a fixed monthly price. Orbi Cloud Solo lists at US$29/month (see <a href="/cloud/?ref=blog-claude-ship">Orbi Cloud</a> for the current price and any founding-member discount).</li>
+<li>Without a Team or Enterprise plan, Claude Ship is unavailable, though <code class="post-code--single">/ship</code> still works under regular Claude Code usage.</li>
+</ul>
+<aside class="post-cta">
+  <h2>Orbi takes your Issues all the way to a release.</h2>
+  <a class="button button-signal" data-cta="post-start" href="/cloud/login">Try Orbi Cloud free →</a>
+  <p class="post-cta-note">No credit card required · Orbi only sees the repos you pick</p>
+  <a class="post-cta-link" data-cta="post-selfhost" href="https://github.com/orbi-build/orbi">Prefer to self-host? It's open source (AGPL) →</a>
+</aside><h2 id="related">Related</h2>
+<p>For how merge gates and CI checks protect automated pull requests, see <a href="/guides/auto-merge-ai-prs/?ref=blog-claude-ship">Auto-merge AI pull requests</a> and <a href="/guides/ci-gates/?ref=blog-claude-ship">CI gates</a>. I covered where GitHub Actions stops in <a href="/blog/claude-code-github-actions-who-merges/">Claude Code in Actions: who presses merge?</a> and measured post-merge wait times in <a href="/blog/ai-code-review-bottleneck/">AI code review bottleneck? Our PRs wait after merge</a>. The side-by-side workflow breakdown is on <a href="/compare/claude-code/?ref=blog-claude-ship">Orbi vs Claude Code</a>, and hosted pricing is on <a href="/cloud/?ref=blog-claude-ship">Orbi Cloud</a>.</p>
+
+<!--orbi:related-posts-->
+      </article>
+    </div>
+  </main>
+
+<section class="subscribe-box shell" aria-labelledby="subscribe-title">
+  <h2 class="subscribe-title" id="subscribe-title">What is new in Orbi, every week</h2>
+  <form class="subscribe-form" action="/subscribe" method="post" data-subscribe-form data-success="Check your inbox and click the confirmation link to finish subscribing." data-invalid="That email address doesn't look right" data-unavailable="Subscription is temporarily unavailable. Please try again.">
+    <label class="sr-only" for="subscribe-email-en">Email address</label>
+    <input id="subscribe-email-en" type="email" name="email" autocomplete="email" required placeholder="you@example.com">
+    <input type="hidden" name="lang" value="en">
+    <button class="button button-ghost" type="submit">Subscribe</button>
+    <p class="subscribe-status" data-subscribe-status aria-live="polite"></p>
+  </form>
+  <p class="subscribe-note">One email a week: new features, hands-on posts and numbers from our own work with Orbi. Unsubscribe anytime.</p>
+</section>
+
+  <script src="/subscribe.js" defer></script>
+
+  <footer class="site-footer shell">
+    <div class="footer-brand">
+      <a class="wordmark wordmark-footer" href="/" aria-label="Orbi home">
+        <img class="wordmark-mark" src="/logo-mark.svg" width="28" height="28" alt="">
+        <span>Orbi</span>
+      </a>
+      <p class="orbi-site-footer-p">Software production that survives the session.</p>
+    </div>
+    <nav aria-label="Footer navigation">
+      <div class="footer-group">
+        <h2>Product</h2>
+        <ul><li><a href="/cloud/">Cloud</a></li><li><a href="/cloud/#pricing">Pricing</a></li><li><a href="/#system">How it works</a></li><li><a href="/evidence/">Orbi builds Orbi</a></li><li><a href="/trust/">Trust & security</a></li><li><a href="https://github.com/orbi-build/orbi/releases">Releases</a></li><li><a href="https://status.orbi.build">Status</a></li></ul>
+      </div>
+      <div class="footer-group">
+        <h2>Resources</h2>
+        <ul><li><a href="/evidence/">Orbi builds Orbi</a></li><li><a href="/benchmark/">How we test the harness</a></li><li><a href="/guides/pi-coding-agent/">Pi series: how Orbi is built</a></li><li><a href="/cost/">Cost per merged PR</a></li><li><a href="/aiready/">ai-ready: 12 factors</a></li><li><a href="/compare/">Orbi vs alternatives</a></li><li><a href="/blog/">Blog</a></li><li><a href="/blog/ai-contribute-to-open-source/">Open source contributions</a></li><li><a href="https://docs.orbi.build">Self-hosted Docs</a></li><li><a href="https://cloud-docs.orbi.build/?ref=footer">Cloud Docs</a></li><li><a href="/#faq">FAQ</a></li></ul>
+      </div>
+      <div class="footer-group footer-guides">
+        <h2>Guides</h2>
+        <ul><li><a href="/guides/">Guides</a></li><li><a href="/guides/issue-to-release/">Issue to release</a></li><li><a href="/guides/ci-gates/">CI gates</a></li><li><a href="/guides/auto-merge-ai-prs/">Auto-merge AI PRs</a></li><li><a href="/guides/autonomous-coding-agent/">Autonomous coding agent</a></li><li><a href="/guides/self-hosted-coding-agent/">Self-hosted coding agent</a></li><li><a href="/guides/codex-github-issues/">Codex on GitHub Issues</a></li><li><a href="https://aiready.sh/">ai-ready: 12 factors</a></li></ul>
+      </div>
+      <div class="footer-group footer-compare">
+        <h2>Compare</h2>
+        <ul><li><a href="/compare/orca/">Orbi vs Orca</a></li><li><a href="/compare/openclaw/">Orbi vs OpenClaw</a></li><li><a href="/compare/github-copilot-coding-agent/">Orbi vs GitHub Copilot cloud agent</a></li><li><a href="/compare/managed-agents/">Orbi vs Claude Managed Agents</a></li><li><a href="/compare/claude-code/">Orbi vs Claude Code</a></li><li><a href="/compare/openhands/">Orbi vs OpenHands</a></li><li><a href="/compare/hermes-agent/">Orbi vs Hermes Agent</a></li><li><a href="/compare/keelen/">Orbi vs Keelen</a></li><li><a href="/compare/codex/">Orbi vs OpenAI Codex</a></li><li><a href="/compare/devin/">Orbi vs Devin</a></li><li><a href="/compare/jules/">Orbi vs Google Jules</a></li><li><a href="/compare/cursor/">Orbi vs Cursor Cloud Agents</a></li><li><a href="/compare/">All comparisons</a></li></ul>
+      </div>
+      <div class="footer-group">
+        <h2>Company</h2>
+        <ul><li><a href="/about/">About</a></li><li><a href="/support/">Support</a></li><li><a href="https://github.com/orbi-build/orbi/milestones">Roadmap</a></li><li><a href="/privacy/">Privacy</a></li><li><a href="/terms/">Terms</a></li><li><a href="https://github.com/orbi-build/orbi">GitHub</a></li><li><a href="https://x.com/xqliu" rel="me">X</a></li><li><a href="https://www.youtube.com/@orbibuild" rel="me">YouTube</a></li><li><a href="https://www.reddit.com/r/OrbiBuild/">Reddit</a></li></ul>
+      </div>
+    </nav>
+    <div class="footer-language language" role="group" aria-label="Language"><span aria-current="page">EN</span><a href="/zh/blog/claude-ship/" lang="zh-CN" aria-label="简体中文">ZH</a></div>
+    <p class="footer-legal">© 2026 Low Code, LLC</p>
+  </footer>
+
+  <script src="/demo.js" defer></script>
+
+<script>(()=>{try{const links=[...document.querySelectorAll('.post-toc-link')];const targetOf=(link)=>link.getAttribute('href').slice(1);const headings=[...new Set(links.map(link=>document.getElementById(targetOf(link))).filter(Boolean))];const setCurrent=(heading)=>{links.forEach((link)=>link.classList.toggle('is-current',targetOf(link)===heading.id));};if('IntersectionObserver' in window){const update=()=>{const current=headings.findLast((heading)=>heading.getBoundingClientRect().top<=innerHeight*.4)??headings[0];if(current)setCurrent(current);};const observer=new IntersectionObserver(update,{rootMargin:'-24px 0px -60% 0px',threshold:0});headings.forEach((heading)=>observer.observe(heading));addEventListener('scroll',update,{passive:true});update();}}catch(error){console.warn('post_toc_observer_failed',error);}})();</script><script>(()=>{
+  const endpoint="/cloud/e", start=Date.now();
+  let visible=document.visibilityState!=="hidden", visibleAt=visible?start:0, visibleMs=0, interacted=false, engagedSent=false, depthSent=false, maxDepth=0;
+  const send=(kind,detail,extra)=>{const body={kind,path:location.pathname};if(detail!==undefined)body.detail=String(detail);if(extra)Object.assign(body,extra);try{if(!navigator.sendBeacon(endpoint,new Blob([JSON.stringify(body)],{type:"application/json"})))console.warn("engagement_report_failed","sendBeacon returned false");}catch(error){console.warn("engagement_report_failed",error);}};
+  send("visit",undefined,{search:location.search,referrer:document.referrer});
+  const elapsed=()=>visibleMs+(visible?Date.now()-visibleAt:0);
+  const check=()=>{if(!engagedSent&&interacted&&elapsed()>=10000){engagedSent=true;send("engaged");}};
+  const schedule=()=>setTimeout(check,Math.max(0,10000-elapsed()));
+  const markInteraction=()=>{interacted=true;check();};
+  ["scroll","pointerdown","keydown","touchstart"].forEach(type=>addEventListener(type,markInteraction,{passive:true}));
+  const depth=()=>{const height=document.documentElement.scrollHeight;maxDepth=Math.max(maxDepth,height<=0?100:Math.min(100,Math.floor((scrollY+innerHeight)/height*100)));};
+  addEventListener("scroll",depth,{passive:true});
+  schedule();
+  const hide=()=>{depth();if(visible){visibleMs+=Date.now()-visibleAt;visible=false;}check();if(!depthSent){depthSent=true;send("scroll_depth",Math.max(25,Math.min(100,Math.floor(maxDepth/25)*25)));}};
+  const show=()=>{if(!visible){visible=true;visibleAt=Date.now();schedule();}};
+  addEventListener("visibilitychange",()=>document.visibilityState==="hidden"?hide():show());
+  addEventListener("pagehide",hide);
+  addEventListener("click",event=>{const link=event.target.closest?.("[data-cta]");if(link)send("cta_click",link.dataset.cta);},{passive:true});
+  const sectionViews=new Set();
+  const sectionDetail=section=>section.id||section.classList?.[0];
+  if(typeof IntersectionObserver!=="undefined"){
+    const sections=[...document.querySelectorAll("main section")].filter(section=>!section.parentElement?.closest("section"));
+    const thresholds=[.3,...sections.map(section=>{const height=section.getBoundingClientRect().height;return height>0?Math.min(.3,innerHeight*.5/height):.3;})];
+    const sectionObserver=new IntersectionObserver(entries=>{entries.forEach(entry=>{
+      const detail=sectionDetail(entry.target);
+      if(detail&&!sectionViews.has(entry.target)&&((entry.intersectionRatio||0)>=.3||(entry.intersectionRect?.height||0)>=innerHeight*.5)){
+        sectionViews.add(entry.target);send("section_view",detail);sectionObserver.unobserve(entry.target);
+      }
+    });},{threshold:thresholds});
+    sections.forEach(section=>sectionObserver.observe(section));
+  }
+})();</script><script data-login-handoff>(()=>{
+  const login=new RegExp("^(?:/zh)?/cloud/login/?$"), pending=new Map();
+  const pendingLabel=/^zh/i.test(document.documentElement.lang)?"正在打开 GitHub…":"Opening GitHub…";
+  addEventListener("click",event=>{
+    if(event.metaKey||event.ctrlKey||event.shiftKey||event.altKey)return;
+    const link=event.target.closest?.("a[href]");
+    if(!link||!login.test(link.pathname))return;
+    if(pending.has(link)){event.preventDefault();return;}
+    pending.set(link,link.innerHTML);
+    link.setAttribute("aria-disabled","true");
+    setTimeout(()=>{link.textContent=pendingLabel;},0);
+  },true);
+  addEventListener("pageshow",event=>{
+    if(!event.persisted)return;
+    pending.forEach((html,link)=>{link.innerHTML=html;link.removeAttribute("aria-disabled");});
+    pending.clear();
+  });
+})();</script><script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "44c2c3310e2e46b7955bb09f04c93fd1"}'></script><script>(function(){
+  var start=function(){
+    !function(t,e){var o,n,p,r;e.__SV||(window.posthog=e,e._i=[],e.init=function(i,s,a){function g(t,e){var o=e.split(".");2==o.length&&(t=t[o[0]],e=o[1]),t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}}(p=t.createElement("script")).type="text/javascript",p.crossOrigin="anonymous",p.async=!0,p.src=s.api_host.replace(".i.posthog.com","-assets.i.posthog.com")+"/static/array.js",(r=t.getElementsByTagName("script")[0]).parentNode.insertBefore(p,r);var u=e;for(void 0!==a?u=e[a]=[]:a="posthog",u.people=u.people||[],Object.defineProperty(u,"toString",{configurable:!0,enumerable:!0,writable:!0,value:function(t){var e="posthog";return"posthog"!==a&&(e+="."+a),t||(e+=" (stub)"),e}}),Object.defineProperty(u.people,"toString",{configurable:!0,enumerable:!0,writable:!0,value:function(){return u.toString(1)+".people (stub)"}}),o="init capture register register_once register_for_session unregister unregister_for_session getFeatureFlag getFeatureFlagResult isFeatureEnabled reloadFeatureFlags updateEarlyAccessFeatureEnrollment getEarlyAccessFeatures on onFeatureFlags onSessionId getSurveys getActiveMatchingSurveys renderSurvey canRenderSurvey getNextSurveyStep identify setPersonProperties group resetGroups setPersonPropertiesForFlags resetPersonPropertiesForFlags setGroupPropertiesForFlags resetGroupPropertiesForFlags reset get_distinct_id getGroups get_session_id get_session_replay_url alias set_config startSessionRecording stopSessionRecording sessionRecordingStarted captureException loadToolbar get_property getSessionProperty createPersonProfile opt_in_capturing opt_out_capturing has_opted_in_capturing has_opted_out_capturing clear_opt_in_out_capturing debug".split(" "),n=0;n<o.length;n++)g(u,o[n]);e._i.push([i,s,a])},e.__SV=1)}(document,window.posthog||[]);
+    posthog.init("phc_nhxAwie7BY0blOSHfAbNzRGcb2rGDJInLUGPh93i8Mx",{api_host:"/api/ph",ui_host:"https://us.posthog.com",autocapture:true,disable_session_recording:false});
+  };
+  if(document.readyState==="complete")start();else addEventListener("load",start,{once:true});
+})();</script></body>
+</html>
