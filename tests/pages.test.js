@@ -1826,6 +1826,24 @@ describe("one unified footer on every content page", () => {
     }
   });
 
+  // SwipeToLaunch free listing goes live only after the official badge is
+  // found in the server-rendered homepage HTML and "Check my site" is pressed
+  // at /badge/orbi. The official snippet is 220x48 (viewBox 0 0 220 48, 9357
+  // bytes, checked 2026-11-26). The shared strip ships that snippet once on
+  // each language's home page, with rel="noopener" only (no nofollow).
+  it("carries the SwipeToLaunch badge in the footer, on en and zh", () => {
+    const badge = '<a href="https://swipetolaunch.com/p/orbi?ref=badge" target="_blank" rel="noopener">'
+      + '<img src="https://swipetolaunch.com/api/badge/orbi" alt="Featured on SwipeToLaunch" width="220" height="48" loading="lazy" /></a>';
+    for (const output of ["index.html", "zh/index.html"]) {
+      const footer = footerRegion(shipped.get(output));
+      const occurrences = footer.split(badge).length - 1;
+      expect(occurrences, `${output}: the SwipeToLaunch badge must ship exactly once in the footer`)
+        .toBe(1);
+      expect(footerAnchorTag(footer, "https://swipetolaunch.com/p/orbi?ref=badge"), `${output}: the badge must stay a crawlable backlink`)
+        .not.toContain("nofollow");
+    }
+  });
+
   it("carries the 11 compare deep dives, in the right language tree", () => {
     for (const page of content()) {
       const footer = footerRegion(shipped.get(page.output));
@@ -2115,6 +2133,21 @@ describe("cost page leads with the 1511-delivery sample (Issues #886, #1453)", (
       expect(dataset.url, `${output}: Dataset url`).toBe(datasetUrl);
       expect(dataset.temporalCoverage, `${output}: temporalCoverage`).toBe("2026-09-22/2026-11-24");
       expect(JSON.stringify(dataset), `${output}: Dataset must describe 1511 samples`).toContain("1511");
+    }
+  });
+
+  // Issue #1499: Search Console reports the Dataset as missing `creator` on both
+  // language pages. Both point at the same organization record — the Cloud
+  // product that recorded the sample.
+  it("names the dataset creator in both languages (Issue #1499)", () => {
+    for (const { output } of COST_PAGES) {
+      const raw = shipped.get(output).match(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/)?.[1];
+      const dataset = JSON.parse(raw)["@graph"].find((entry) => entry["@type"] === "Dataset");
+      expect(dataset.creator, `${output}: Dataset creator`).toEqual({
+        "@type": "Organization",
+        name: "Orbi Cloud",
+        url: "https://orbi.build/cloud/",
+      });
     }
   });
 
