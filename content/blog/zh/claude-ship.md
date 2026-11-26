@@ -36,7 +36,7 @@ Claude Ship 需要 Claude Team 或 Enterprise 套餐，且只支持 GitHub 仓�
 
 三个 agent 都按 token 用量从组织的 usage credits 里扣费，和套餐本身包含的用量分开算。Approvals 没有基础月费，但根据 [Approvals 配置文档](https://code.claude.com/docs/en/approvals-setup)，分类器运行会计费，如果策略里要求跑 Code Review，即便处于 observe 模式也会触发计费审查。
 
-在组织设置里关掉 usage credits 并不会停掉已经打开的 agent，它们还会继续跑、继续计费。要停用必须直接关掉 agent，并且按顺序来：先关 Approvals，再关 PR Steward，最后关 Code Review。Approvals 要最先关，因为就算你把 Code Review 关了，策略文件仍会继续触发计费的 Code Review。
+在组织设置里关掉 usage credits 并不会停掉已经打开的 agent，它们还会继续跑、继续计费。要停用必须直接关掉 agent，并且按顺序来：先关 Approvals，再关 PR Steward，最后关 Code Review。Approvals 要最先关，因为策略里只要要求了 Code Review，就算你关掉了自动 Code Review，策略仍会继续触发计费的审查。
 
 根据[发布公告](https://claude.com/blog/introducing-claude-ship)，符合条件的 Enterprise 组织在 2027 年 1 月 15 日前可以领取至少 10,000 美元的 Claude Ship 额度，领取后 30 天内有效。
 
@@ -49,7 +49,7 @@ Claude Ship 没有合并步骤。PR Steward 设计为不执行合并，[PR Stewa
 - `seats: 0`，允许机器人打开的 PR 在没人看的情况下通过。
 - `seats: 1`，PR 作者自己就能占满这个席位。
 - `from` 列表里放行了机器人。
-- 机器账号（machine user，也就是脚本或 agent 驱动的账号），Approvals 会把它当成真人。
+- 机器账号（machine user，也就是脚本或 agent 驱动的账号），Approvals 会把它算作一个人（person）。
 - `reuse` 在新提交推送后沿用了早先的批准席位。
 - 没有任何规则覆盖到的文件，GitHub 会把 neutral 结果当成通过。
 - 用了分类器判断的条件（写在 `if`、override 的 `if` 或 `reuse` 里），PR 自身的文本可能把分类器带偏。
@@ -58,7 +58,7 @@ Claude Ship 没有合并步骤。PR Steward 设计为不执行合并，[PR Stewa
 
 要把“没审过”和“没真人审过”分开看。一条写了 `claude: approves` 又没配 `claude/code_review = pass` 条件的规则，会让 Claude 在完全没做审查的情况下就批准 PR。如果是 Code Review 通过，但规则是 `seats: 1`（由作者自己填满）或 `seats: 0`，那这个 PR 只有 AI 审查，作者之外并没有真人看过。
 
-要让每一条路径都至少经过一位非作者的真人批准，就在 `.claude/approvals.yml` 里强制执行下面这段规则，同时在 GitHub 里把 Claude Approvals 设为必需检查、来源指定为 Claude app。这段 YAML 是我从 [Approvals GitHub 规则文档](https://code.claude.com/docs/en/approvals-github-rules)原样复制的；我只检查过它能按 YAML 正常解析，没有在 Approvals 下实际跑过。
+要让每一条路径都至少经过一位非作者的批准，就在 `.claude/approvals.yml` 里强制执行下面这段规则，同时在 GitHub 里把 Claude Approvals 设为必需检查、来源指定为 Claude app。这段 YAML 是我从 [Approvals GitHub 规则文档](https://code.claude.com/docs/en/approvals-github-rules)原样复制的；我只检查过它能按 YAML 正常解析，没有在 Approvals 下实际跑过。照原样放进默认分支就会立即强制执行；想先观察，就在顶层加一行 `mode: observe`。删掉这行切到强制执行后，已打开的 PR 在你逐个评论 `@claude approvals rerun` 之前，可能仍带着 GitHub 当作通过的检查，见[强制执行步骤](https://code.claude.com/docs/en/approvals-setup)。
 
 ```yaml
 # .claude/approvals.yml
@@ -77,8 +77,8 @@ rules:
 
 - 不写 `if` 和 `override`，避免分类器回答把规则放宽；`nested: inherit` 让它在子目录策略文件下继续生效。
 - `claude: comments` 防止 Claude 发出批准评审。
-- `"!pr/authors"` 把 PR 作者排除在席位之外。对于来自 fork 的 PR，任何批准都不会计入这个席位，所以接受 fork PR 的仓库需要另配一条路径。
-- `humans` 依然包含机器账号；要把某个机器账号排除掉，用 `"!"` 加上它的登录名，比如 `[humans, "!pr/authors", "!acme-ci"]`。
+- `"!pr/authors"` 把 PR 作者排除在席位之外。对于来自 fork 的 PR，任何批准都不会计入这个席位，所以把这项检查设为必需检查后，这条规则会让所有来自 fork 的 PR 都无法通过。
+- `humans` 依然包含机器账号，脚本驱动的账号也能占这个席位，所以这条规则要的是一位非作者批准者，这位批准者可能是机器账号。要把某个机器账号排除掉，用 `"!"` 加上它的登录名，比如 `[humans, "!pr/authors", "!acme-ci"]`。
 - `advisory: [claude/code_review]` 让自动 Code Review 继续运行（否则文件一旦被策略覆盖，只要规则里没写 `claude/code_review`，自动审查就会关掉）。
 
 如果 GitHub 规则要求批准，也要打开“推送新提交时使旧批准失效”（或要求批准最新的可审查推送），免得早先的批准在后面新推的提交上继续生效。
@@ -87,7 +87,7 @@ rules:
 
 三个名字长得很像，干的是不同的事。Claude Ship 是组织级的三个 GitHub agent，走组织 usage credits 计费。Claude Code 的 `/ship` 命令跑在你本地终端会话里，算你自己的 Claude Code 用量。Orbi 的 `/orbi:ship` 命令（来自 Orbi 的 Claude Code 插件）把任务写成带 `ai-ready` 标签的 GitHub Issue 交给 Orbi，它不合并任何东西。
 
-在 [`/ship` 命令文档](https://code.claude.com/docs/en/ship-command)里，`/ship` 会以你的身份提交、推送并打开 GitHub PR，跑一次 `/code-review`，再在当前会话里启动一个“watch”，持续处理失败的检查、合并冲突、审查评论和审查问题；合并 PR 仍要你自己操作。
+在 [`/ship` 命令文档](https://code.claude.com/docs/en/ship-command)里，`/ship` 会以你的身份提交、推送并打开 GitHub PR，跑一次 `/code-review`（这是 Claude Code 的本地审查命令，算你自己的用量，不是组织级的 Code Review agent），再在当前会话里启动一个“watch”，持续处理失败的检查、合并冲突、审查评论和审查问题；合并 PR 仍要你自己操作。
 
 使用 `/ship` 需要 Claude Code v2.1.330+、已登录的 GitHub CLI 2.63+ 和 `git` 2.38+。无人看守的 watch 需要 auto 模式（`bypassPermissions` 不会启动 watch，v2.1.331+ 上 `/ship` 在 plan 模式下也不会启动），原生 Windows 和后台会话里同样不会启动 watch。在公开仓库里，`/ship` 不会替你提交工作区里还没提交的改动；在允许提交和推送的仓库里，它不会弹确认提示，只会在提交前和推送前各打出一行 `Esc to cancel`。
 

@@ -35,7 +35,7 @@ Claude Ship requires a Claude Team or Enterprise plan and works with GitHub repo
 
 All three agents bill token usage against the org's usage credits, separate from the plan's included usage. Approvals has no base charge, though the [Approvals setup docs](https://code.claude.com/docs/en/approvals-setup) state that classifier runs are billed, and a policy that asks for Code Review triggers billed reviews even in observe mode.
 
-Turning off usage credits in org settings does not stop an agent that is already on; it keeps running and billing. You have to turn the agents off directly, in order: Approvals first, then PR Steward, then Code Review. Approvals goes first because a policy file can keep starting billed Code Reviews even while Code Review is switched off.
+Turning off usage credits in org settings does not stop an agent that is already on; it keeps running and billing. You have to turn the agents off directly, in order: Approvals first, then PR Steward, then Code Review. Approvals goes first because a policy that asks for Code Review keeps starting billed reviews even after automatic Code Review is switched off.
 
 The [announcement](https://claude.com/blog/introducing-claude-ship) says eligible Enterprise organizations can claim at least $10,000 in Claude Ship credits by 15 January 2027, with 30 days to use them after claiming.
 
@@ -57,7 +57,7 @@ Direct pushes to the default branch get no check, so GitHub branch rules still n
 
 "No review" and "no human review" are two different cases. A rule with `claude: approves` and no `claude/code_review = pass` condition lets Claude approve with no review at all. When Code Review passes under `seats: 1` (filled by the author) or `seats: 0`, the PR gets an AI review, while no human besides the author reviews it.
 
-To require one person who is not an author on every path, enforce the rule below in `.claude/approvals.yml` and require the Claude Approvals check in GitHub, with the Claude app as its source. I copied this YAML verbatim from the [Approvals GitHub rules docs](https://code.claude.com/docs/en/approvals-github-rules). I only checked that it parses as YAML and have not run it under Approvals.
+To require one approver who is not an author on every path, enforce the rule below in `.claude/approvals.yml` and require the Claude Approvals check in GitHub, with the Claude app as its source. I copied this YAML verbatim from the [Approvals GitHub rules docs](https://code.claude.com/docs/en/approvals-github-rules). I only checked that it parses as YAML and have not run it under Approvals. As written it enforces as soon as it lands on the default branch; to start in observe mode, add a top-level `mode: observe` line. When you delete it to enforce, open pull requests can keep a check GitHub counts as passing until you comment `@claude approvals rerun` on each of them, as the [enforcement steps](https://code.claude.com/docs/en/approvals-setup) describe.
 
 ```yaml
 # .claude/approvals.yml
@@ -76,8 +76,8 @@ What each part does:
 
 - No `if` or `override` means no classifier answer can loosen the rule, and `nested: inherit` keeps it active under subdirectory policy files.
 - `claude: comments` prevents Claude from posting an approving review.
-- `"!pr/authors"` excludes PR authors from filling the seat. On a pull request from a fork, no approval counts toward this seat, so repositories that take fork PRs need another path for them.
-- `humans` still includes machine users; exclude one by adding its login with `"!"`, as in `[humans, "!pr/authors", "!acme-ci"]`.
+- `"!pr/authors"` excludes PR authors from filling the seat. On a pull request from a fork, no approval counts toward this seat, so with the check required, this rule blocks every pull request from a fork.
+- `humans` still includes machine users, so the seat can be filled by an account a script drives; that is why the rule asks for one non-author approver, not necessarily a human. Exclude each machine user by adding its login with `"!"`, as in `[humans, "!pr/authors", "!acme-ci"]`.
 - `advisory: [claude/code_review]` keeps automatic Code Reviews running (a policy file otherwise turns them off on covered files unless a rule names `claude/code_review`).
 
 If GitHub requires approvals, also enable dismissing stale approvals when new commits are pushed (or requiring approval of the most recent reviewable push), so an older approval cannot carry over to later commits.
@@ -86,7 +86,7 @@ If GitHub requires approvals, also enable dismissing stale approvals when new co
 
 Three names look similar and do different things. Claude Ship is the set of org-level GitHub agents billed to org usage credits. Claude Code's `/ship` command runs locally in your terminal session and counts against your Claude Code usage. Orbi's `/orbi:ship` command (from Orbi's Claude Code plugin) writes the task as a GitHub Issue labelled `ai-ready` for Orbi; it does not merge anything.
 
-In the [`/ship` command docs](https://code.claude.com/docs/en/ship-command), `/ship` commits, pushes, and opens a GitHub pull request as you, runs `/code-review`, and starts a "watch" in your session to work on failing checks, merge conflicts, review comments, and review findings. You merge the PR yourself.
+In the [`/ship` command docs](https://code.claude.com/docs/en/ship-command), `/ship` commits, pushes, and opens a GitHub pull request as you, runs `/code-review` (Claude Code's local review command, counted as your usage, not the org's Code Review agent), and starts a "watch" in your session to work on failing checks, merge conflicts, review comments, and review findings. You merge the PR yourself.
 
 It requires Claude Code v2.1.330+, a signed-in GitHub CLI 2.63+, and `git` 2.38+. Unattended watch work requires auto mode (`bypassPermissions` starts no watch, and on v2.1.331+ `/ship` does not start in plan mode), and no watch starts on native Windows or in a background session. In a public repo, `/ship` will not commit uncommitted changes. When it does commit and push, it runs without a confirmation prompt, printing an `Esc to cancel` line before the commit and again before the push.
 
