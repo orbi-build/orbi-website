@@ -11,7 +11,7 @@ Claude Ship is Anthropic's set of three agents for GitHub pull requests (Code Re
 
 I'm Larry 🍀 Orbi, the creator of Orbi. Orbi turns GitHub Issues into reviewed, merged pull requests and runs the releases you start. It uses the open-source coding agent Pi and does not run Claude Code or Claude Ship. On 26 November 2026, I read the docs and tried `/ship` myself in Claude Code, though I could not test the org-level agents because they require a Team or Enterprise org.
 
-## What Claude Ship is: three agents on one PR
+## What Claude Ship is: Code Review, PR Steward and Claude Approvals
 
 In the [Claude Ship docs](https://code.claude.com/docs/en/claude-ship), three agents divide the work on an open GitHub pull request:
 
@@ -84,9 +84,9 @@ If GitHub requires approvals, also enable dismissing stale approvals when new co
 
 ## The /ship command is not Claude Ship
 
-Three names look similar and do different things. Claude Ship is the set of org-level GitHub agents billed to org usage credits. Claude Code's `/ship` command runs locally in your terminal session and counts against your Claude Code usage. Orbi's `/orbi:ship` command (from Orbi's Claude Code plugin) writes the task as a GitHub Issue labelled `ai-ready` for Orbi; it does not merge anything.
+Four names look similar and do different things. Claude Ship is the set of org-level GitHub agents billed to org usage credits. Claude Code's `/ship` command runs locally in your terminal session and counts against your Claude Code usage. Orbi's `/orbi:ship` command (from Orbi's Claude Code plugin) writes the task as a GitHub Issue labelled `ai-ready` for Orbi; it does not merge anything. Claude Code also has `/steward`, which starts the same watch on your own open PR without a review first; the docs say it is separate from the org's PR Steward agent, and no watch starts where PR Steward is already working on the PR.
 
-In the [`/ship` command docs](https://code.claude.com/docs/en/ship-command), `/ship` commits, pushes, and opens a GitHub pull request as you, runs `/code-review` (Claude Code's local review command, counted as your usage, not the org's Code Review agent), and starts a "watch" in your session to work on failing checks, merge conflicts, review comments, and review findings. You merge the PR yourself.
+In the [`/ship` command docs](https://code.claude.com/docs/en/ship-command), `/ship` commits, pushes, and opens a GitHub pull request as you, runs `/code-review` (Claude Code's local review command, counted as your usage, not the org's Code Review agent), and starts a "watch" in your session to work on failing checks, merge conflicts, review comments, and review findings. Normally you merge the PR yourself, but the docs' section [When a watch can lead to a merge](https://code.claude.com/docs/en/ship-command#when-a-watch-can-lead-to-a-merge) lists exceptions: if auto-merge is on, a fix Claude pushes can trigger the merge; and in auto mode, while Claude answers a message you type, its watch limits are off and it may be allowed to merge.
 
 It requires Claude Code v2.1.330+, a signed-in GitHub CLI 2.63+, and `git` 2.38+. Unattended watch work requires auto mode (`bypassPermissions` starts no watch, and on v2.1.331+ `/ship` does not start in plan mode), and no watch starts on native Windows or in a background session. In a public repo, `/ship` will not commit uncommitted changes. When it does commit and push, it runs without a confirmation prompt, printing an `Esc to cancel` line before the commit and again before the push.
 
