@@ -259,8 +259,12 @@ feed of the English posts: https://orbi.build/blog/feed.xml
 
 - Claude Ship: what it automates and where it stops (English):
   https://orbi.build/blog/claude-ship/
+- Orbi weekly #8: attach screenshots to requests (English):
+  https://orbi.build/blog/orbi-weekly-8/
 - Claude Ship：它自动做了什么，又停在哪一步 (Chinese):
   https://orbi.build/zh/blog/claude-ship/
+- Orbi 周报 #8：写需求可以附截图了，同事按 GitHub 权限一起用 (Chinese):
+  https://orbi.build/zh/blog/orbi-weekly-8/
 - Attach a screenshot to the issue your AI agent builds (English):
   https://orbi.build/blog/attach-screenshot-to-issue/
 - CLAUDE.md vs AGENTS.md: which file each agent reads (English):
