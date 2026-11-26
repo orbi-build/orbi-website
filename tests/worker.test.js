@@ -1625,6 +1625,31 @@ describe("/pricing alias (Issue #165)", () => {
   });
 });
 
+// Issue #1514: /docs is the URL visitors, crawlers and AI guess. The top bar's
+// "Docs / 文档" already points at the Cloud manual (#762), so /docs goes to the
+// same place — a cross-host 302, never a static-asset 404. 302 not 301: two doc
+// sites exist today, so the target may move and must stay withdrawable.
+describe("/docs alias (Issue #1514)", () => {
+  const env = () => ({ ASSETS: { fetch: vi.fn(() => Promise.reject(new Error("asset fallback"))) } });
+
+  it.each([
+    ["https://orbi.build/docs", "https://cloud-docs.orbi.build/"],
+    ["https://orbi.build/docs/", "https://cloud-docs.orbi.build/"],
+    ["https://beta.orbi.build/docs", "https://cloud-docs.orbi.build/"],
+    ["https://beta.orbi.build/docs/", "https://cloud-docs.orbi.build/"],
+    ["https://orbi.build/zh/docs", "https://cloud-docs.orbi.build/zh"],
+    ["https://orbi.build/zh/docs/", "https://cloud-docs.orbi.build/zh"],
+    ["https://beta.orbi.build/zh/docs", "https://cloud-docs.orbi.build/zh"],
+    ["https://beta.orbi.build/zh/docs/", "https://cloud-docs.orbi.build/zh"],
+  ])("302s %s to the Cloud manual without touching the assets", async (from, to) => {
+    const bindings = env();
+    const response = await handleFetch(new Request(from), bindings);
+    expect(response.status).toBe(302);
+    expect(response.headers.get("location")).toBe(to);
+    expect(bindings.ASSETS.fetch).not.toHaveBeenCalled();
+  });
+});
+
 // Issue #195: aiready.sh is the curl install entry and browser methodology page.
 // The script and HTML bytes come from env.ASSETS, never copies inside the worker.
 describe("aiready.sh install entry (Issue #174)", () => {

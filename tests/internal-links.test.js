@@ -34,6 +34,8 @@ const WORKER_ROUTES = new Set([
   "/pricing", // 301 to /cloud/#pricing
   "/zh/pricing", // 301 to /zh/cloud/#pricing
   "/apply", // 301 to /cloud/
+  "/docs", // 302 to the Cloud manual (Issue #1514)
+  "/zh/docs", // 302 to the Chinese Cloud manual (Issue #1514)
   "/x", // 302 to /?ref=x-bio
   "/stats", // statsResponse JSON
   // PATH_REDIRECTS: retired slugs that still answer 301 to their new page.
