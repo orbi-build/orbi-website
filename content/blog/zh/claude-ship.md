@@ -10,7 +10,7 @@ mirror: claude-ship
 
 Claude Ship 是 Anthropic 在 2026 年 11 月 23 日[发布](https://claude.com/blog/introducing-claude-ship)的三个 GitHub PR agent（Code Review、PR Steward 和 Claude Approvals），面向 Claude Team 和 Enterprise 套餐。这篇写给在考虑要不要开它的团队：读完能知道它停在哪一步、要花什么钱、哪些设置要先改。
 
-我是 Larry 🍀 Orbi，Orbi 的创始人。Orbi 从 GitHub Issue 出发，写代码、评审，再把 PR 合进仓库，也在你发起时执行发版；它运行的是开源编程 agent Pi，不运行 Claude Code，也不运行 Claude Ship。2026 年 11 月 26 日我读了官方文档，并在 Claude Code 里亲手试了 `/ship`。组织级的三个 agent 我测不了，因为它们需要 Team 或 Enterprise 组织。
+我是 Larry 🍀 Orbi，Orbi 的创始人。Orbi 是 Agent 时代的开源软件黑灯工厂：你给它一个打好标签的 Issue，它自己认领、写代码、交给独立评审、修完问题，CI 通过后合并，中间不用人守着；你开一张发版单并打上 `ai-release`，它就发版。它运行的是开源编程 agent Pi，不运行 Claude Code，也不运行 Claude Ship。2026 年 11 月 26 日我读了官方文档，并在 Claude Code 里亲手试了 `/ship`。组织级的三个 agent 我测不了，因为它们需要 Team 或 Enterprise 组织。
 
 ## Code Review、PR Steward 和 Claude Approvals 怎么分工
 
@@ -107,6 +107,8 @@ Nothing started. Claude Code's built-in /ship doesn't start in this kind of sess
 
 ## Claude Ship 和 Orbi 各管哪一步
 
+两者最大的区别是谁在推动这条线。Claude Ship 守在一个已经打开的 PR 旁边：代码要由你或 Claude Code 先写好，它负责审查、修评论、按策略批准，合不合并还看你的 GitHub 规则。Orbi 是整条产线：从 Issue 开始，认领、实现、开 PR、独立评审、修复、合并都由它自己推进，人在开头给出 Issue，发版时开一张发版单并打上 `ai-release`；只有仓库规则要求人工批准时，才需要人去批那一步。
+
 | 步骤 | Claude Ship | Orbi |
 |---|---|---|
 | 写任务（Issue） | 不管（由你或 Claude Code 写代码） | 带 `ai-ready` 标签的 Issue（手写、`orbi draft` 或 `/orbi:ship` 生成） |
@@ -123,14 +125,25 @@ Claude Ship 和 Orbi 之间没有集成，我也没有在同一个仓库上同�
 
 ## 一次真实的 Orbi 交付时间线
 
-在 `orbi-build/orbi` 仓库里，我于 2026 年 11 月 25 日 10:08（UTC+8）开了 [Issue #2387](https://github.com/orbi-build/orbi/issues/2387)。Orbi 在 10:12（UTC+8）启动 Pi，`orbi-build` 应用在 10:51（UTC+8）打开了 [PR #2388](https://github.com/orbi-build/orbi/pull/2388)，经过一轮评审后于 11:04（UTC+8）合并了它。我在 11:14（UTC+8）开了发版单 #2389，`orbi-build[bot]` 在 11:31（UTC+8）发布了 [v0.7.63](https://github.com/orbi-build/orbi/releases/tag/v0.7.63)。
+下面是 `orbi-build/orbi` 仓库里的一次真实交付，时间都在 2026 年 11 月 25 日（UTC+8）：
 
-同一个仓库从 2026 年 10 月 27 日到 11 月 25 日（按 UTC 日期计）的 30 天里，一共合并了 182 个 PR（其中 164 个由 `orbi-build` 应用打开并合并），同期发布了 46 个版本（`v0.7.19` 到 `v0.7.64`）。先说清楚前提：这是 Orbi 自己的仓库（自用自测），这些数字只反映吞吐量，说明不了质量。
+| 时间 | 距开票 | 谁 | 做了什么 |
+|---|---|---|---|
+| 10:08 | 0 分钟 | 我 | 开 [Issue #2387](https://github.com/orbi-build/orbi/issues/2387) |
+| 10:12 | 4 分钟 | Orbi | 认领，启动 Pi 开始实现 |
+| 10:51 | 43 分钟 | Orbi | `orbi-build` 应用打开 [PR #2388](https://github.com/orbi-build/orbi/pull/2388) |
+| 11:04 | 56 分钟 | Orbi | 一轮独立评审后合并 |
+| 11:14 | 66 分钟 | 我 | 开发版单 #2389 |
+| 11:31 | 83 分钟 | Orbi | `orbi-build[bot]` 发布 [v0.7.63](https://github.com/orbi-build/orbi/releases/tag/v0.7.63) |
+
+从开票到发版 83 分钟，我只动了两次手：开 Issue，开发版单。认领、实现、开 PR、评审、合并、发版都是 Orbi 自己做的。
+
+同一个仓库从 2026 年 10 月 27 日到 11 月 25 日（按 UTC 日期计）的 30 天里，一共合并了 182 个 PR，其中 164 个由 `orbi-build` 应用自己打开并合并，平均每天 5 个多；同期发布了 46 个版本（`v0.7.19` 到 `v0.7.64`）。这是 Orbi 自己的仓库：Orbi 的代码就是这样由 Orbi 交付的。
 
 ## 你的团队适合哪一个
 
 - 你们团队（人或 Claude Code）已经在写代码，用的是 Team 或 Enterprise 套餐加 GitHub，瓶颈卡在代码审查、修评论和批准策略上，就选 Claude Ship。先开 observe 模式，切到强制执行前把非作者批准规则加上。
-- 想让从 Issue 到合并 PR 的整段流程无人值守跑完，就选 Orbi。发版由你开发版 Issue 发起，等里程碑下其他 Issue 关完后 Orbi 执行。价格是固定月费：Orbi Cloud Solo 标价 US$29/月（当前价格和创始会员折扣见 [Orbi Cloud](/zh/cloud/?ref=blog-claude-ship)）。
+- 想要一条从 Issue 到合并 PR 都不用人守着的产线，就选 Orbi：给它打好标签的 Issue，它自己做完、评审完、合并；要发版时你开一张带 `ai-release` 的发版单，等里程碑下其他 Issue 关完后 Orbi 执行。价格是固定月费：Orbi Cloud Solo 标价 US$29/月（当前价格和创始会员折扣见 [Orbi Cloud](/zh/cloud/?ref=blog-claude-ship)）。
 - 没有 Team 或 Enterprise 套餐就用不了 Claude Ship，不过 `/ship` 照常可用，按普通的 Claude Code 用量计费。
 
 ## 相关

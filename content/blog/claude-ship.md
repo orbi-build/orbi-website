@@ -9,7 +9,7 @@ image: /img/blog-claude-ship-card.png
 
 Claude Ship is Anthropic's set of three agents for GitHub pull requests (Code Review, PR Steward, and Claude Approvals), [announced](https://claude.com/blog/introducing-claude-ship) on 23 November 2026 for Claude Team and Enterprise plans. Before turning it on, a team needs to know what each agent handles, how billing behaves, which settings let a PR merge with no human review, how the separate `/ship` command differs, and where Claude Ship stops compared with a pipeline that starts from the Issue.
 
-I'm Larry 🍀 Orbi, the creator of Orbi. Orbi turns GitHub Issues into reviewed, merged pull requests and runs the releases you start. It uses the open-source coding agent Pi and does not run Claude Code or Claude Ship. On 26 November 2026, I read the docs and tried `/ship` myself in Claude Code, though I could not test the org-level agents because they require a Team or Enterprise org.
+I'm Larry 🍀 Orbi, the creator of Orbi. Orbi is an open-source lights-out software factory for the agent era: give it a labelled Issue and it claims the work, writes the code, sends it to an independent review, fixes what the review finds and merges once CI passes, with nobody watching. Open a release ticket with `ai-release` and it ships the release. It uses the open-source coding agent Pi and does not run Claude Code or Claude Ship. On 26 November 2026, I read the docs and tried `/ship` myself in Claude Code, though I could not test the org-level agents because they require a Team or Enterprise org.
 
 ## What Claude Ship is: Code Review, PR Steward and Claude Approvals
 
@@ -106,6 +106,8 @@ Neither run committed, pushed, or opened a PR. Both refusals appear in the [`/sh
 
 ## Claude Ship vs Orbi: who owns each step
 
+The biggest difference is who drives the line. Claude Ship sits next to a pull request that already exists: you or Claude Code write the code first, then it reviews, fixes comments and approves by policy, and your GitHub rules still decide the merge. Orbi is the whole line: from the Issue on, it claims, implements, opens the PR, reviews independently, fixes and merges by itself. A person supplies the Issue at the start and opens a release ticket with `ai-release` to ship; only when a repository rule requires a human approval does someone need to approve that step.
+
 | Step | Claude Ship | Orbi |
 |---|---|---|
 | Write the task (Issue) | No (you or Claude Code write the code) | An Issue with `ai-ready` (written by you, `orbi draft` or `/orbi:ship`) |
@@ -122,14 +124,25 @@ Claude Ship and Orbi have no integration, and I have not run both on one reposit
 
 ## Timing one Orbi delivery
 
-In `orbi-build/orbi`, I opened [Issue #2387](https://github.com/orbi-build/orbi/issues/2387) on 25 November 2026 at 10:08 UTC+8. Orbi started Pi at 10:12 UTC+8. At 10:51 UTC+8, the `orbi-build` app opened [PR #2388](https://github.com/orbi-build/orbi/pull/2388), and after one review round it merged the PR at 11:04 UTC+8. I opened release ticket #2389 at 11:14 UTC+8, and `orbi-build[bot]` published [v0.7.63](https://github.com/orbi-build/orbi/releases/tag/v0.7.63) at 11:31 UTC+8.
+Here is one real delivery in `orbi-build/orbi`, all on 25 November 2026 (UTC+8):
 
-Over the 30-day window from 27 October to 25 November 2026 (UTC dates) in the same repository, 182 pull requests merged (164 opened and merged by the `orbi-build` app) alongside 46 releases (`v0.7.19` to `v0.7.64`). One caveat: this is Orbi's own repository (dogfooding), and those numbers measure throughput and say nothing about quality.
+| Time | Since the Issue | Who | What happened |
+|---|---|---|---|
+| 10:08 | 0 min | Me | Opened [Issue #2387](https://github.com/orbi-build/orbi/issues/2387) |
+| 10:12 | 4 min | Orbi | Claimed it and started Pi on the implementation |
+| 10:51 | 43 min | Orbi | The `orbi-build` app opened [PR #2388](https://github.com/orbi-build/orbi/pull/2388) |
+| 11:04 | 56 min | Orbi | Merged after one independent review round |
+| 11:14 | 66 min | Me | Opened release ticket #2389 |
+| 11:31 | 83 min | Orbi | `orbi-build[bot]` published [v0.7.63](https://github.com/orbi-build/orbi/releases/tag/v0.7.63) |
+
+From Issue to release took 83 minutes, and I acted twice: I opened the Issue and the release ticket. Orbi did the claiming, implementation, PR, review, merge and release.
+
+Over the 30 days from 27 October to 25 November 2026 (UTC dates), the same repository merged 182 pull requests. The `orbi-build` app opened and merged 164 of them, a little over five a day, and the repository shipped 46 releases (`v0.7.19` to `v0.7.64`). This is Orbi's own repository, and Orbi's own code ships this way.
 
 ## Which one fits your team
 
 - Pick Claude Ship if your team (people or Claude Code) already writes the code, you are on Team or Enterprise with GitHub, and your bottleneck is review, fixes, and approval policy. Start in observe mode and add the non-author rule before enforcing.
-- Pick Orbi if you want the Issue-to-merged-PR loop to run unattended, with releases run for you once you open the release Issue, at a fixed monthly price. Orbi Cloud Solo lists at US$29/month (see [Orbi Cloud](/cloud/?ref=blog-claude-ship) for the current price and any founding-member discount).
+- Pick Orbi if you want a line that runs from Issue to merged PR with nobody watching: give it a labelled Issue and it builds, reviews and merges the change, and when you open a release ticket with `ai-release` it ships the release once the milestone's other Issues close, at a fixed monthly price. Orbi Cloud Solo lists at US$29/month (see [Orbi Cloud](/cloud/?ref=blog-claude-ship) for the current price and any founding-member discount).
 - Without a Team or Enterprise plan, Claude Ship is unavailable, though `/ship` still works under regular Claude Code usage.
 
 ## Related
