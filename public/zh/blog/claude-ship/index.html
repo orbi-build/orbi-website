@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Claude Ship：它自动做了什么，又停在哪一步 | Orbi</title>
+  <meta name="description" content="Claude Ship 是 Anthropic 给 Team/Enterprise 的三个 GitHub PR agent，它们都不合并 PR。能不能合由 GitHub 分支规则决定，规则没配好，PR 可能没经过真人审查就合进去。">
+  <link rel="canonical" href="https://orbi.build/zh/blog/claude-ship/">
+  <link rel="alternate" hreflang="en" href="https://orbi.build/blog/claude-ship/">
+  <link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/blog/claude-ship/">
+  <link rel="alternate" hreflang="x-default" href="https://orbi.build/blog/claude-ship/">
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="Claude Ship：它自动做了什么，又停在哪一步">
+  <meta property="og:description" content="Claude Ship 是 Anthropic 给 Team/Enterprise 的三个 GitHub PR agent，它们都不合并 PR。能不能合由 GitHub 分支规则决定，规则没配好，PR 可能没经过真人审查就合进去。">
+  <meta property="og:url" content="https://orbi.build/zh/blog/claude-ship/">
+  <meta property="og:image" content="https://orbi.build/img/blog-claude-ship-card.png">
+  <meta property="og:image:alt" content="Claude Ship：它自动做了什么，又停在哪一步">
+  <meta property="article:published_time" content="2026-11-26">
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"Claude Ship：它自动做了什么，又停在哪一步","datePublished":"2026-11-26","author":{"@type":"Person","name":"Larry 🍀 Orbi","url":"https://orbi.build/zh/about/larry-orbi/","sameAs":["https://github.com/xqliu","https://x.com/xqliu"]},"publisher":{"@type":"Organization","name":"Orbi","url":"https://orbi.build/","logo":{"@type":"ImageObject","url":"https://orbi.build/logo-mark.svg"}},"mainEntityOfPage":"https://orbi.build/zh/blog/claude-ship/","image":"https://orbi.build/img/blog-claude-ship-card.png","inLanguage":"zh-CN","description":"Claude Ship 是 Anthropic 给 Team/Enterprise 的三个 GitHub PR agent，它们都不合并 PR。能不能合由 GitHub 分支规则决定，规则没配好，PR 可能没经过真人审查就合进去。","url":"https://orbi.build/zh/blog/claude-ship/"}</script>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <meta name="theme-color" content="#06151b">
+
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="stylesheet" href="/fonts/fonts.css">
+  <link rel="stylesheet" href="/styles.css">
+
+  <style>
+    /* Blog-only layout: the shared .shell/.compare-hero rules stay unchanged. */
+    .post-grid { max-width: 52rem; margin: 0 auto; padding: 0 24px; }
+    .post-hero { padding: 84px 0 68px; }
+    /* Issue #860: the body text column is wider than --hero-copy-width, so the
+       hero fills it and the h1/lede right edge lands on the body text. */
+    .post-hero h1, .post-hero .hero-lede { max-width: none; }
+    .post-body { padding-top: 12px; padding-bottom: 30px; }
+    .post-body h2, .post-body .related-links h2 { font-family: var(--display); font-size: 1.5rem; line-height: 1.25; margin: 42px 0 10px; scroll-margin-top: 24px; }
+    .post-body .related-links { margin: 0; }
+    .post-cta {
+      margin: 42px 0 12px;
+      padding: 30px;
+      border-radius: var(--radius-card);
+      background: var(--night);
+      color: #edf5f0;
+      text-align: center;
+    }
+    .post-cta h2 { margin: 0 0 18px; color: #edf5f0; font-family: var(--display); font-size: 1.5rem; line-height: 1.25; }
+    .post-cta .button { margin: 0 auto; color: var(--night); text-decoration: none; }
+    .post-cta-note { margin: 10px 0 18px; color: #aec2bd; font-size: 0.9rem; }
+    .post-cta .post-cta-link { color: #edf5f0; font-size: 0.9rem; text-underline-offset: 3px; }
+    .post-cta .post-cta-link:hover { color: #fff; }
+    .post-cta-inline {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin: 28px 0;
+      padding: 12px 16px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-card);
+      background: var(--paper-2);
+    }
+    .post-cta-inline span { color: var(--ink); font-size: 0.95rem; }
+    .post-cta-inline .button { flex: 0 0 auto; min-height: 40px; padding: 0 14px; font-size: 0.85rem; }
+    .post-toc { position: sticky; top: 24px; max-height: calc(100vh - 48px); overflow-y: auto; align-self: start; padding-top: 26px; }
+    .post-toc h2 { margin: 0 0 10px; padding: 0; font: 500 0.75rem/1.5rem var(--mono); letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-soft); }
+    .post-toc ol { list-style: none; margin: 0; padding: 0; border-left: 1px solid var(--line); }
+    .post-toc ol ol { border-left: 0; }
+    .post-body .post-toc-inline ol { margin: 0; padding-left: 2.2em; }
+    .post-body .post-toc-inline ol ol { list-style: none; padding-left: 1em; margin-top: 0; }
+    .post-toc li { margin: 0; }
+    .post-toc-inline li { margin: 6px 0; }
+    .post-toc-link { display: block; color: var(--ink-soft); font-size: 0.92rem; line-height: 1.4; text-decoration: none; overflow-wrap: anywhere; }
+    .post-toc .post-toc-link { padding: 6px 0 6px 15px; margin-left: -1px; border-left: 1px solid transparent; font-size: 0.875rem; line-height: 1.25rem; }
+    .post-toc ol ol .post-toc-link { padding-left: 27px; }
+    .post-toc-link:hover, .post-toc-link.is-current { color: var(--ink); }
+    .post-toc .post-toc-link.is-current { border-left-color: var(--ink); color: var(--ink); font-weight: 600; }
+    .post-toc-inline { display: none; margin: 0 0 28px; border: 1px solid var(--line); border-radius: var(--radius-card); padding: 12px 16px; }
+    .post-toc-inline summary { cursor: pointer; font-weight: 600; }
+    .post-toc-inline ol { margin-top: 12px; }
+
+    .post-body h3 { font-family: var(--display); font-size: 1.13rem; line-height: 1.3; margin: 30px 0 6px; }
+    .post-body p { margin: 14px 0; }
+    /* Issue #833: this line sits on the dark .night hero, so it uses the dark-band secondary color. */
+    .post-series { margin: 10px 0 6px; color: #9aada9; font-size: 0.95rem; }
+    .post-series a { color: inherit; text-decoration: underline; text-underline-offset: 3px; }
+    /* Issue #887 shipped the byline here; Issue #1465 moved its rules to
+       styles.css so the comparison, guide and benchmark pages share them. */
+    .post-body ul, .post-body ol { margin: 14px 0; padding-left: 22px; }
+    .post-body li { margin: 6px 0; }
+    .post-body a { color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
+    .post-body code { font-family: var(--mono); font-size: 0.88em; background: var(--paper-2); border: 1px solid var(--line); border-radius: var(--radius-control); padding: 1px 5px; white-space: nowrap; display: inline-block; max-width: 100%; overflow-x: auto; vertical-align: bottom; }
+    .post-body code.post-code--spaced { white-space: normal; display: inline; }
+    .post-body pre { background: var(--paper-2); border: 1px solid var(--line); border-radius: var(--radius-card); padding: 14px 16px; overflow-x: auto; margin: 18px 0; }
+    .post-body pre code, .post-body pre code.post-code--spaced, .post-body pre code.post-code--single { background: none; border: none; padding: 0; font-size: 0.85rem; white-space: pre; overflow-wrap: normal; display: inline; max-width: none; overflow: visible; }
+    .post-table-scroll { overflow-x: auto; }
+    .post-body table { width: 100%; border-collapse: collapse; }
+    .post-body th, .post-body td { border: 1px solid var(--line); padding: 8px 10px; text-align: left; }
+    .post-body th { background: var(--paper-2); }
+    .post-body strong { font-weight: 600; }
+    .post-media { margin: 24px 0; }
+    .post-body svg { max-width: 100%; height: auto; }
+    .post-media img, .post-media iframe, .post-media svg { display: block; width: 100%; border: 0; border-radius: var(--radius-card); }
+    .post-media img, .post-media svg { height: auto; }
+    .post-media iframe { aspect-ratio: 16 / 9; }
+    .post-media figcaption { color: var(--muted); font-size: 0.9rem; margin-top: 8px; }
+    @media (min-width: 1200px) {
+      .post-grid { display: grid; grid-template-columns: minmax(0, 52rem) 200px; column-gap: 56px; max-width: calc(52rem + 256px); padding: 0; }
+      .post-hero, .post-body { grid-column: 1; padding-left: 16px; padding-right: 16px; }
+      .post-toc { grid-column: 2; grid-row: 1; }
+    }
+    @media (max-width: 1199px) {
+      .post-toc { display: none; }
+      .post-toc-inline { display: block; }
+    }
+    @media (max-width: 760px) {
+      .post-hero { padding-top: 64px; padding-bottom: 48px; }
+      .post-cta { padding: 24px 18px; }
+      .post-cta .button { width: 100%; }
+      .post-cta-inline { align-items: stretch; flex-direction: column; gap: 10px; }
+      .post-cta-inline .button { width: 100%; }
+    }
+  </style>
+
+</head>
+<body>
+  <a class="skip-link" href="#main-content">跳到正文</a>
+
+  <div class="night nav-shell">
+    <header class="site-header">
+      <a class="wordmark" href="/zh/" aria-label="Orbi 首页">
+        <img class="wordmark-mark" src="/logo-mark-on-dark.svg" width="28" height="28" alt="">
+        <span>Orbi</span>
+      </a>
+      <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="primary-navigation-zh" aria-label="打开导航菜单" data-label-open="打开导航菜单" data-label-close="关闭导航菜单" data-menu-toggle>
+        <span aria-hidden="true"><i></i><i></i><i></i></span>
+      </button>
+      <nav id="primary-navigation-zh" aria-label="主导航" data-primary-nav>
+        <a href="/zh/#system">产品怎么运作</a>
+        <a href="/zh/cloud/#pricing">价格</a>
+        <a href="https://cloud-docs.orbi.build/zh/?ref=nav">文档</a>
+        <a data-cta="nav-github" href="https://github.com/orbi-build/orbi">GitHub</a>
+        <a class="nav-apply" data-cta="nav-start" href="/zh/cloud/login">用 GitHub 试用 Cloud</a>
+      </nav>
+    </header>
+  </div>
+
+  <main id="main-content">
+    <div class="night">
+      <div class="post-grid">
+        <section class="post-hero" aria-labelledby="post-title">
+          <p class="eyebrow">博客</p>
+          <h1 id="post-title">Claude Ship：它自动做了什么，又停在哪一步</h1>
+          <p class="post-byline"><a href="/zh/about/larry-orbi/">Larry 🍀 Orbi</a> · <time datetime="2026-11-26">2026-11-26</time></p>
+
+          <p class="hero-lede">Claude Ship 是 Anthropic 给 Team/Enterprise 的三个 GitHub PR agent，它们都不合并 PR。能不能合由 GitHub 分支规则决定，规则没配好，PR 可能没经过真人审查就合进去。</p>
+        </section>
+      </div>
+    </div>
+
+    <div class="post-grid">
+        <nav class="post-toc" aria-label="本页目录">
+          <h2>本页目录</h2>
+          <ol>
+          <li><a class="post-toc-link" href="#code-review-pr-steward-和-claude-approvals-怎么分工">Code Review、PR Steward 和 Claude Approvals 怎么分工</a></li>
+          <li><a class="post-toc-link" href="#谁能用-claude-ship-怎么计费">谁能用 Claude Ship，怎么计费</a></li>
+          <li><a class="post-toc-link" href="#什么设置下-pr-没人审也能合并">什么设置下，PR 没人审也能合并</a></li>
+          <li><a class="post-toc-link" href="#ship-命令不是-claude-ship">/ship 命令不是 Claude Ship</a></li>
+          <li><a class="post-toc-link" href="#claude-ship-和-orbi-各管哪一步">Claude Ship 和 Orbi 各管哪一步</a></li>
+          <li><a class="post-toc-link" href="#一次真实的-orbi-交付时间线">一次真实的 Orbi 交付时间线</a></li>
+          <li><a class="post-toc-link" href="#你的团队适合哪一个">你的团队适合哪一个</a></li>
+          <li><a class="post-toc-link" href="#相关">相关</a></li>
+          </ol>
+        </nav>
+      <article class="post-body">
+        <details class="post-toc-inline">
+          <summary>本页目录 · 8 节</summary>
+          <ol>
+          <li><a class="post-toc-link" href="#code-review-pr-steward-和-claude-approvals-怎么分工">Code Review、PR Steward 和 Claude Approvals 怎么分工</a></li>
+          <li><a class="post-toc-link" href="#谁能用-claude-ship-怎么计费">谁能用 Claude Ship，怎么计费</a></li>
+          <li><a class="post-toc-link" href="#什么设置下-pr-没人审也能合并">什么设置下，PR 没人审也能合并</a></li>
+          <li><a class="post-toc-link" href="#ship-命令不是-claude-ship">/ship 命令不是 Claude Ship</a></li>
+          <li><a class="post-toc-link" href="#claude-ship-和-orbi-各管哪一步">Claude Ship 和 Orbi 各管哪一步</a></li>
+          <li><a class="post-toc-link" href="#一次真实的-orbi-交付时间线">一次真实的 Orbi 交付时间线</a></li>
+          <li><a class="post-toc-link" href="#你的团队适合哪一个">你的团队适合哪一个</a></li>
+          <li><a class="post-toc-link" href="#相关">相关</a></li>
+          </ol>
+        </details>
+<p>Claude Ship 是 Anthropic 在 2026 年 11 月 23 日<a href="https://claude.com/blog/introducing-claude-ship">发布</a>的三个 GitHub PR agent（Code Review、PR Steward 和 Claude Approvals），面向 Claude Team 和 Enterprise 套餐。这篇写给在考虑要不要开它的团队。</p>
+<p>我是 Larry 🍀 Orbi，Orbi 的创始人。Orbi 是 Agent 时代的开源软件黑灯工厂：你给它一个打好标签的 Issue，它自己认领、写代码、交给独立评审、修完问题，CI 通过后合并，中间不用人守着；你开一张发版单并打上 <code class="post-code--single">ai-release</code>，等里程碑下其他 Issue 关完，它就发版。它运行的是开源编程 agent Pi，不运行 Claude Code，也不运行 Claude Ship。2026 年 11 月 26 日我读了官方文档，并在 Claude Code 里试着运行 <code class="post-code--single">/ship</code>（两次都被拒，见后文）。组织级的三个 agent 我测不了，因为它们需要 Team 或 Enterprise 组织。</p><aside class="post-cta-inline"><span>Orbi 把你的 Issue 一路做到发版。</span><a class="button button-signal" data-cta="post-inline-start" href="/zh/cloud/login">免费试用 Orbi Cloud →</a></aside>
+<h2 id="code-review-pr-steward-和-claude-approvals-怎么分工">Code Review、PR Steward 和 Claude Approvals 怎么分工</h2>
+<p>按 <a href="https://code.claude.com/docs/en/claude-ship">Claude Ship 文档</a>，三个 agent 分工处理已经打开的 GitHub PR：</p>
+<p class="post-table-hint" hidden>左右滑动查看所有列。</p><div class="post-table-scroll" tabindex="0" role="region" aria-label="左右滑动查看所有列。"><table class="table-comparison">
+<thead>
+<tr>
+<th scope="col">Agent</th>
+<th scope="col">做什么</th>
+<th scope="col">状态</th>
+<th scope="col">计费方式</th>
+</tr>
+</thead>
+<tbody><tr>
+<th scope="row">Code Review</th>
+<td>结合周边代码读改动，按严重程度发内联审查意见</td>
+<td>正式版（GA）</td>
+<td>组织用量额度（按 token）</td>
+</tr>
+<tr>
+<th scope="row">PR Steward</th>
+<td>修失败的检查、合并冲突和审查意见，直接推送 commit</td>
+<td>公测（Public beta）</td>
+<td>组织用量额度（按 token），默认无消费上限</td>
+</tr>
+<tr>
+<th scope="row">Claude Approvals</th>
+<td>按 <code class="post-code--single">.claude/approvals.yml</code> 跑 PR 检查；策略允许时可给出批准</td>
+<td>公测（Public beta）</td>
+<td>分类器调用及策略触发的 Code Review（observe 模式同样计费）</td>
+</tr>
+</tbody></table></div>
+<p>Code Review 已经是正式版，主要查 bug，不管代码格式偏好。组织 Owner 可以按仓库选择 Quick、Standard（默认）或 Deep 审查级别。Code Review 自己既不批准 PR，也不拦截合并。</p>
+<p>PR Steward 目前处于公测。按 <a href="https://code.claude.com/docs/en/pr-steward">PR Steward 文档</a>，它会处理失败的检查、合并冲突，以及人和审查机器人（比如 Code Review）留下的审查意见，再直接推送 commit。每次推送后，它会发评论说明改了什么、怎么撤销；在 PR 里评论 <code class="post-code--spaced">@claude stop</code> 或移除 <code class="post-code--single">claude-pr-steward-watching</code> 标签，它就会停手。文档注明它“设计为不批准也不合并 PR”，而且在你手动设限之前，它没有自己的消费上限。</p>
+<p>同样在公测的 Claude Approvals 会增加一项 PR 检查，对照默认分支里的 <code class="post-code--single">.claude/approvals.yml</code> 策略文件，列出还缺谁的批准，策略允许时也会由 Claude 发出批准评审。这项检查只有在 GitHub 里设为必需检查（required check）时才会拦截合并。策略文件默认就是强制执行；Anthropic 建议先写 <code class="post-code--spaced">mode: observe</code> 观察一段时间，不过 observe 模式照样计费。</p>
+<p>这三个 agent 都不负责合并，一个 PR 能不能合进去，还是由你的 GitHub 分支规则决定。</p>
+<h2 id="谁能用-claude-ship-怎么计费">谁能用 Claude Ship，怎么计费</h2>
+<p>Claude Ship 需要 Claude Team 或 Enterprise 套餐，且只支持 GitHub 仓库。启用了 Zero Data Retention、HIPAA 配置或客户自管加密密钥（customer-managed encryption keys）的组织无法使用；如果组织启用了 FERPA 或 Access Transparency 设置，Approvals 也无法启动。改配置需要 Claude 组织的 Owner 角色，但 Approvals 是例外：只要前置条件满足（已连接 Claude GitHub App），任何能把策略文件合进仓库默认分支的人都能把它打开并开始计费，除非 Owner 在组织层面关掉了 Approvals。</p>
+<p>三个 agent 都按 token 用量从组织的 usage credits 里扣费，和套餐本身包含的用量分开算。Approvals 没有基础月费，但根据 <a href="https://code.claude.com/docs/en/approvals-setup">Approvals 配置文档</a>，分类器运行会计费，如果策略里要求跑 Code Review，即便处于 observe 模式也会触发计费审查。</p>
+<p>在组织设置里关掉 usage credits 并不会停掉已经打开的 agent，它们还会继续跑，按文档会继续向组织计费。要停用必须直接关掉 agent，并且按顺序来：先关 Approvals，再关 PR Steward，最后关 Code Review。Approvals 要最先关，因为策略里只要要求了 Code Review，就算你关掉了自动 Code Review，策略仍会继续触发计费的审查。</p>
+<p>根据<a href="https://claude.com/blog/introducing-claude-ship">发布公告</a>，符合条件的 Enterprise 组织在 2027 年 1 月 15 日前可以领取至少 10,000 美元的 Claude Ship 额度，领取后 30 天内有效。</p>
+<h2 id="什么设置下-pr-没人审也能合并">什么设置下，PR 没人审也能合并</h2>
+<p>Claude Ship 没有合并步骤。PR Steward 按设计不会合并，<a href="https://code.claude.com/docs/en/pr-steward-security">PR Steward 安全文档</a>也写明，它拦截合并和自动合并命令靠的是文本规则加模型判断，换种写法就能绕过，所以能拦住合并的还是你的 GitHub 分支规则。PR 没经过真人审查就合进去，一种典型情况是 Claude Approvals 这项检查没在 GitHub 里设为必需检查，等于什么都拦不住（按文档，observe 模式下这项检查通常也不拦合并）。</p>
+<p>就算把这项检查设成了必需且强制执行，<a href="https://code.claude.com/docs/en/approvals-github-rules">Approvals 与 GitHub 规则文档</a>还列出了几种不需要作者以外的真人也能通过的情况：</p>
+<ul>
+<li><code class="post-code--spaced">seats: 0</code>，不要求任何人批准，所以机器人打开的 PR 可以在没人看的情况下通过。</li>
+<li><code class="post-code--spaced">seats: 1</code>，PR 作者自己就能占满这个席位。</li>
+<li><code class="post-code--single">from</code> 列表里放行了机器人。</li>
+<li>机器账号（machine user，也就是脚本或 agent 驱动的账号），Approvals 会把它算作一个人。</li>
+<li><code class="post-code--single">reuse</code> 在新提交推送后沿用了早先的批准席位。</li>
+<li>没有任何规则覆盖到的文件，GitHub 会把 neutral 结果当成通过。</li>
+<li>用了分类器判断的条件（写在 <code class="post-code--single">if</code>、override 的 <code class="post-code--single">if</code> 或 <code class="post-code--single">reuse</code> 里），PR 自身的文本可能把分类器带偏。</li>
+</ul>
+<p>直接推送到默认分支不会触发任何检查，所以 GitHub 分支规则依然要设成必须通过 PR 合并。如果同时开了 GitHub auto-merge 或 merge queue，再加上策略不要求真人，改动就能在没人动手的情况下合进去。当策略允许 Claude 批准时，Claude 发出的批准评审也能满足 GitHub 里“需要 1 个批准”的规则。</p>
+<p>要把“没审过”和“没真人审过”分开看。一条写了 <code class="post-code--spaced">claude: approves</code> 又没配 <code class="post-code--spaced">claude/code_review = pass</code> 条件的规则，会让 Claude 在完全没做审查的情况下就批准 PR。如果是 Code Review 通过，但规则是 <code class="post-code--spaced">seats: 1</code>（由作者自己填满）或 <code class="post-code--spaced">seats: 0</code>，那这个 PR 只有 AI 审查，作者之外并没有真人看过。</p>
+<p>要让每一条路径都至少经过一位非作者的批准，就在 <code class="post-code--single">.claude/approvals.yml</code> 里强制执行下面这段规则，同时在 GitHub 里把 Claude Approvals 设为必需检查、来源指定为 Claude app，并要求默认分支只能通过 PR 合并。这段 YAML 是我从 <a href="https://code.claude.com/docs/en/approvals-github-rules">Approvals GitHub 规则文档</a>原样复制的；我只检查过它能按 YAML 正常解析，没有在 Approvals 下实际跑过。照原样放进默认分支就会立即强制执行；想先观察，就在顶层加一行 <code class="post-code--spaced">mode: observe</code>。删掉这行切到强制执行后，已打开的 PR 在你逐个评论 <code class="post-code--spaced">@claude approvals rerun</code> 之前，可能仍带着 GitHub 当作通过的检查，见<a href="https://code.claude.com/docs/en/approvals-setup">强制执行步骤</a>。</p>
+<div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="已复制">复制</button><pre><code class="language-yaml" data-copy-source># .claude/approvals.yml
+version: 1
+rules:
+  - purpose: &quot;A change takes one person who isn&#39;t an author.&quot;
+    paths: [&quot;**&quot;]
+    nested: inherit
+    verdict:
+      claude: comments
+      seats: [{ count: 1, from: [humans, &quot;!pr/authors&quot;] }]
+    advisory: [claude/code_review]
+</code></pre></div>
+<p>每一项的作用：</p>
+<ul>
+<li>不写 <code class="post-code--single">if</code> 和 <code class="post-code--single">override</code>，避免分类器回答把规则放宽；<code class="post-code--spaced">nested: inherit</code> 让它在子目录策略文件下继续生效。</li>
+<li><code class="post-code--spaced">claude: comments</code> 防止 Claude 发出批准评审。</li>
+<li><code class="post-code--single">&quot;!pr/authors&quot;</code> 把 PR 作者排除在席位之外。对于来自 fork 的 PR，任何批准都不会计入这个席位，所以把这项检查设为必需检查后，这条规则会让所有来自 fork 的 PR 都无法通过。</li>
+<li><code class="post-code--single">humans</code> 依然包含机器账号，脚本驱动的账号也能占这个席位，所以这条规则要的是一位非作者批准者，这位批准者可能是机器账号。要把某个机器账号排除掉，用 <code class="post-code--single">&quot;!&quot;</code> 加上它的登录名，比如 <code class="post-code--spaced">[humans, &quot;!pr/authors&quot;, &quot;!acme-ci&quot;]</code>。</li>
+<li><code class="post-code--spaced">advisory: [claude/code_review]</code> 让自动 Code Review 继续运行（否则文件一旦被策略覆盖，只要规则里没写 <code class="post-code--single">claude/code_review</code>，自动审查就会关掉）。</li>
+</ul>
+<p>如果 GitHub 规则要求批准，也要打开“推送新提交时使旧批准失效”（或要求批准最新的可审查推送），免得早先的批准在后面新推的提交上继续生效。</p>
+<h2 id="ship-命令不是-claude-ship">/ship 命令不是 Claude Ship</h2>
+<p>四个名字长得很像，干的是不同的事。Claude Ship 是组织级的三个 GitHub agent，走组织 usage credits 计费。Claude Code 的 <code class="post-code--single">/ship</code> 命令跑在你本地终端会话里，算你自己的 Claude Code 用量。Orbi 的 <code class="post-code--single">/orbi:ship</code> 命令（来自 Orbi 的 Claude Code 插件）把任务写成带 <code class="post-code--single">ai-ready</code> 标签的 GitHub Issue 交给 Orbi，它不合并任何东西。Claude Code 还有个 <code class="post-code--single">/steward</code>，跳过审查，直接在你已打开的 PR 上启动和 <code class="post-code--single">/ship</code> 相同的 watch；文档说明它和组织级的 PR Steward 是两回事，PR Steward 已在处理的 PR 上它不会启动。</p>
+<p>在 <a href="https://code.claude.com/docs/en/ship-command"><code class="post-code--single">/ship</code> 命令文档</a>里，<code class="post-code--single">/ship</code> 会以你的身份提交、推送并打开 GitHub PR，跑一次 <code class="post-code--single">/code-review</code>（这是 Claude Code 的本地审查命令，算你自己的用量，不是组织级的 Code Review agent），再在当前会话里启动一个“watch”，持续处理失败的检查、合并冲突、审查评论和审查问题。PR 通常由你自己合并。文档里<a href="https://code.claude.com/docs/en/ship-command#when-a-watch-can-lead-to-a-merge">「When a watch can lead to a merge」</a>一节列了例外，其中包括：PR 开了 auto-merge 时，Claude 推上去的修复可能直接触发合并；在 auto 模式下，Claude 回复你输入的消息期间，watch 的限制不生效，它可能被允许合并。</p>
+<p>使用 <code class="post-code--single">/ship</code> 需要 Claude Code v2.1.330+、已登录的 GitHub CLI 2.63+ 和 <code class="post-code--single">git</code> 2.38+。无人看守的 watch 需要 auto 模式（<code class="post-code--single">bypassPermissions</code> 不会启动 watch，v2.1.331+ 上 <code class="post-code--single">/ship</code> 在 plan 模式下也不会启动），原生 Windows 和后台会话里同样不会启动 watch。在公开仓库里，<code class="post-code--single">/ship</code> 不会替你提交工作区里还没提交的改动；在允许提交和推送的仓库里，它不会弹确认提示，只会在提交前和推送前各打出一行 <code class="post-code--spaced">Esc to cancel</code>。</p>
+<p>2026 年 11 月 26 日，我在一个私有的临时仓库里用 Claude Code 2.1.331 实测了 <code class="post-code--single">/ship</code> 命令。在由另一个 agent 会话启动的会话里输入 <code class="post-code--single">/ship</code>，返回的是：</p>
+<div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="已复制">复制</button><pre><code class="language-text" data-copy-source>This session was started by another session, so /ship can&#39;t run here. Run it in a session you started yourself.
+</code></pre></div>
+<p>运行 <code class="post-code--spaced">claude -p &quot;/ship&quot;</code> 返回的是：</p>
+<div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="已复制">复制</button><pre><code class="language-text" data-copy-source>Nothing started. Claude Code&#39;s built-in /ship doesn&#39;t start in this kind of session. Run claude in a terminal, and type it there.
+</code></pre></div>
+<p>两次运行都没有提交、推送或打开 PR。这两条拒绝提示都在 <a href="https://code.claude.com/docs/en/ship-command-troubleshooting"><code class="post-code--single">/ship</code> 排障表</a>里有记录：<code class="post-code--single">/ship</code> 只能由坐在键盘前的人亲手输入触发，程序、定时任务或另一个 agent 都调不起来。我没有在自己手动启动的会话里跑完整个流程。</p>
+<h2 id="claude-ship-和-orbi-各管哪一步">Claude Ship 和 Orbi 各管哪一步</h2>
+<p>两者最大的区别是谁在推动这条线。Claude Ship 守在一个已经打开的 PR 旁边：代码要由你或 Claude Code 先写好，它负责审查、修评论、按策略批准，合不合并还看你的 GitHub 规则。Orbi 是整条产线：从 Issue 开始，认领、实现、开 PR、独立评审、修复、合并都由它自己推进，人在开头给出 Issue，发版时开一张发版单并打上 <code class="post-code--single">ai-release</code>；只有仓库规则要求人工批准时，才需要人去批那一步。</p>
+<p class="post-table-hint" hidden>左右滑动查看所有列。</p><div class="post-table-scroll" tabindex="0" role="region" aria-label="左右滑动查看所有列。"><table class="table-comparison">
+<thead>
+<tr>
+<th scope="col">步骤</th>
+<th scope="col">Claude Ship</th>
+<th scope="col">Orbi</th>
+</tr>
+</thead>
+<tbody><tr>
+<th scope="row">写任务（Issue）</th>
+<td>不管（由你或 Claude Code 写代码）</td>
+<td>带 <code class="post-code--single">ai-ready</code> 标签的 Issue（手写、<code class="post-code--spaced">orbi draft</code> 或 <code class="post-code--single">/orbi:ship</code> 生成）</td>
+</tr>
+<tr>
+<th scope="row">认领并实现</th>
+<td>不管</td>
+<td>认领后在 runner 上用 Pi 实现</td>
+</tr>
+<tr>
+<th scope="row">打开 PR</th>
+<td><code class="post-code--single">/ship</code> 可以以你的身份开；组织级 agent 从已有 PR 开始</td>
+<td>自动打开并做核验（基于最新 base，带 <code class="post-code--spaced">Fixes #N</code>）</td>
+</tr>
+<tr>
+<th scope="row">审查</th>
+<td>Code Review</td>
+<td>在精确的 base 和 head SHA 上开独立评审会话</td>
+</tr>
+<tr>
+<th scope="row">修审查问题 / 失败 CI</th>
+<td>PR Steward</td>
+<td>在同一评审会话里修复；修不掉的问题打上 <code class="post-code--single">ai-fix-needed</code>，留到同一 PR 的下一轮评审</td>
+</tr>
+<tr>
+<th scope="row">批准判定</th>
+<td>按你的策略跑 Claude Approvals 检查</td>
+<td>无策略文件；遇到 Orbi 满足不了的仓库规则（比如需要人工批准），会把 Issue 停在 <code class="post-code--single">ai-awaiting-merge</code> 并写明维护者需要做的那一步，人工操作完成后由 Orbi 合并</td>
+</tr>
+<tr>
+<th scope="row">合并</th>
+<td>GitHub 分支规则、人工合并或 auto-merge</td>
+<td>合并门禁通过后由 Orbi 合并：head 包含最新 base、CI 跑完且无失败项、PR 可合并、head 未变动</td>
+</tr>
+<tr>
+<th scope="row">发版</th>
+<td>不覆盖</td>
+<td>你来开一张发版 Issue 并打上 <code class="post-code--single">ai-release</code>（只有人能贴这个标签）；里程碑下其他 Issue 全部关闭后，Orbi 认领并跑确定性的发版状态机（不跑 Pi，不开 PR）</td>
+</tr>
+<tr>
+<th scope="row">没人敲键盘能不能跑</th>
+<td>Code Review 会在已启用仓库的 PR 上自动跑；PR Steward 只有设为 On 才会自己启动（文档建议先用 Manual，靠 <code class="post-code--spaced">@claude steward</code> 触发）；Approvals 按策略文件自动跑；<code class="post-code--single">/ship</code> 需要你亲手敲</td>
+<td>可以，从打好标签的 Issue 一路跑到 PR 合并；发版要你开一张发版 Issue，且等里程碑下其他 Issue 关完</td>
+</tr>
+</tbody></table></div>
+<p>Claude Ship 和 Orbi 之间没有集成，我也没有在同一个仓库上同时跑过两者。Claude Code 和 Orbi 之间唯一的交接点，就是插件把 Issue 交过去。Orbi 的常规交付到 PR 合并为止。发版从不自动触发：由人来开一张发版 Issue，再交给 Orbi 执行。</p>
+<h2 id="一次真实的-orbi-交付时间线">一次真实的 Orbi 交付时间线</h2>
+<p>下面是 <code class="post-code--single">orbi-build/orbi</code> 仓库里的一次真实交付，时间都在 2026 年 11 月 25 日（UTC+8）：</p>
+<p class="post-table-hint" hidden>左右滑动查看所有列。</p><div class="post-table-scroll" tabindex="0" role="region" aria-label="左右滑动查看所有列。"><table class="table-comparison">
+<thead>
+<tr>
+<th scope="col">时间</th>
+<th scope="col">距开票</th>
+<th scope="col">做了什么</th>
+</tr>
+</thead>
+<tbody><tr>
+<th scope="row">10:08</th>
+<td>0 分钟</td>
+<td>我开了 <a href="https://github.com/orbi-build/orbi/issues/2387">Issue #2387</a></td>
+</tr>
+<tr>
+<th scope="row">10:12</th>
+<td>4 分钟</td>
+<td>Orbi 认领，启动 Pi 开始实现</td>
+</tr>
+<tr>
+<th scope="row">10:51</th>
+<td>43 分钟</td>
+<td>Orbi 打开 <a href="https://github.com/orbi-build/orbi/pull/2388">PR #2388</a></td>
+</tr>
+<tr>
+<th scope="row">11:04</th>
+<td>56 分钟</td>
+<td>Orbi 一轮独立评审后合并</td>
+</tr>
+<tr>
+<th scope="row">11:14</th>
+<td>66 分钟</td>
+<td>我开了发版单 #2389</td>
+</tr>
+<tr>
+<th scope="row">11:31</th>
+<td>83 分钟</td>
+<td>Orbi 发布 <a href="https://github.com/orbi-build/orbi/releases/tag/v0.7.63">v0.7.63</a></td>
+</tr>
+</tbody></table></div>
+<p>从开票到发版 83 分钟，我只动了两次手：开 Issue，开一张发版单。认领、实现、开 PR、评审、合并、发版都是 Orbi 自己做的。</p>
+<p>同一个仓库从 2026 年 10 月 27 日到 11 月 25 日（按 UTC 日期计）的 30 天里，一共合并了 182 个 PR，其中 164 个由 <code class="post-code--single">orbi-build</code> 应用自己打开并合并，平均每天 5 个多；同期发布了 46 个版本（<code class="post-code--single">v0.7.19</code> 到 <code class="post-code--single">v0.7.64</code>）。这是 Orbi 自己的仓库。</p>
+<h2 id="你的团队适合哪一个">你的团队适合哪一个</h2>
+<ul>
+<li>你们团队（人或 Claude Code）已经在写代码，用的是 Team 或 Enterprise 套餐加 GitHub，瓶颈卡在代码审查、修评论和批准策略上，就选 Claude Ship。先开 observe 模式，切到强制执行前把非作者批准规则加上。</li>
+<li>想要一条从 Issue 到合并 PR 都不用人守着的产线，就选 Orbi：给它打好标签的 Issue，它自己做完、评审完、合并；要发版时你开一张带 <code class="post-code--single">ai-release</code> 的发版单，等里程碑下其他 Issue 关完后 Orbi 执行。价格是固定月费：Orbi Cloud Solo 标价 US$29/月（当前价格和创始会员折扣见 <a href="/zh/cloud/?ref=blog-claude-ship">Orbi Cloud</a>）。</li>
+<li>没有 Team 或 Enterprise 套餐就用不了 Claude Ship，不过 <code class="post-code--single">/ship</code> 照常可用，按普通的 Claude Code 用量计费。</li>
+</ul>
+<aside class="post-cta">
+  <h2>Orbi 把你的 Issue 一路做到发版。</h2>
+  <a class="button button-signal" data-cta="post-start" href="/zh/cloud/login">免费试用 Orbi Cloud →</a>
+  <p class="post-cta-note">不用绑定信用卡 · 只授权你选的仓库</p>
+  <a class="post-cta-link" data-cta="post-selfhost" href="https://github.com/orbi-build/orbi">想自己部署？开源免费（AGPL）→</a>
+</aside><h2 id="相关">相关</h2>
+<p>想看合并门禁和 CI 检查怎么保护自动生成的 PR，可以读<a href="/zh/guides/auto-merge-ai-prs/?ref=blog-claude-ship">自动合并 AI PR</a>和<a href="/zh/guides/ci-gates/?ref=blog-claude-ship">CI 门禁</a>。GitHub Actions 停在哪一步我写过<a href="/zh/blog/claude-code-github-actions-who-merges/">Claude Code 跑完之后，谁来合并 PR</a>，合并后的等待时间实测见<a href="/zh/blog/ai-code-review-bottleneck/">AI 代码评审是瓶颈吗？我们的 PR 卡在合并之后</a>。逐项流程对比见<a href="/zh/compare/claude-code/?ref=blog-claude-ship">Orbi vs Claude Code</a>，托管版价格见<a href="/zh/cloud/?ref=blog-claude-ship">Orbi Cloud</a>。</p>
+
+<!--orbi:related-posts-->
+      </article>
+    </div>
+  </main>
+
+<section class="subscribe-box shell" aria-labelledby="subscribe-title">
+  <h2 class="subscribe-title" id="subscribe-title">Orbi 这周又能多做什么</h2>
+  <form class="subscribe-form" action="/subscribe" method="post" data-subscribe-form data-success="请到邮箱点确认链接，确认后就订阅好了。" data-invalid="邮箱格式不对" data-unavailable="暂时无法订阅，请重试。">
+    <label class="sr-only" for="subscribe-email-zh">邮箱地址</label>
+    <input id="subscribe-email-zh" type="email" name="email" autocomplete="email" required placeholder="你的邮箱">
+    <input type="hidden" name="lang" value="zh">
+    <button class="button button-ghost" type="submit">订阅</button>
+    <p class="subscribe-status" data-subscribe-status aria-live="polite"></p>
+  </form>
+  <p class="subscribe-note">每周一封：新功能、实测文章，还有我们自己用 Orbi 干活的数据。随时退订。</p>
+</section>
+
+  <script src="/subscribe.js" defer></script>
+
+  <footer class="site-footer shell">
+    <div class="footer-brand">
+      <a class="wordmark wordmark-footer" href="/zh/" aria-label="Orbi 首页">
+        <img class="wordmark-mark" src="/logo-mark.svg" width="28" height="28" alt="">
+        <span>Orbi</span>
+      </a>
+      <p class="orbi-site-footer-p">不会随 Session 消失的软件生产。</p>
+    </div>
+    <nav aria-label="页脚导航">
+      <div class="footer-group">
+        <h2>产品</h2>
+        <ul><li><a href="/zh/cloud/">Cloud</a></li><li><a href="/zh/cloud/#pricing">价格</a></li><li><a href="/zh/#system">产品怎么运作</a></li><li><a href="/zh/evidence/">Orbi 交付自己的记录</a></li><li><a href="/zh/trust/">信任与安全</a></li><li><a href="https://github.com/orbi-build/orbi/releases">发布记录</a></li><li><a href="https://status.orbi.build">状态</a></li></ul>
+      </div>
+      <div class="footer-group">
+        <h2>资源</h2>
+        <ul><li><a href="/zh/evidence/">Orbi 交付自己的记录</a></li><li><a href="/zh/benchmark/">我们怎么测 harness</a></li><li><a href="/zh/guides/pi-coding-agent/">Pi 系列：Orbi 是怎么实现的</a></li><li><a href="/zh/cost/">每个 PR 花多少钱</a></li><li><a href="/aiready/zh/">ai-ready 12 要素</a></li><li><a href="/zh/compare/">与同类工具对比</a></li><li><a href="/zh/blog/">博客</a></li><li><a href="/zh/blog/ai-contribute-to-open-source/">开源贡献</a></li><li><a href="https://docs.orbi.build/zh">自托管文档</a></li><li><a href="https://cloud-docs.orbi.build/?ref=footer">Cloud 文档</a></li><li><a href="/zh/#faq">常见问题</a></li></ul>
+      </div>
+      <div class="footer-group footer-guides">
+        <h2>指南</h2>
+        <ul><li><a href="/zh/guides/">指南</a></li><li><a href="/zh/guides/issue-to-release/">Issue 到发版</a></li><li><a href="/zh/guides/ci-gates/">CI 门禁</a></li><li><a href="/zh/guides/auto-merge-ai-prs/">自动合并 AI PR</a></li><li><a href="/zh/guides/autonomous-coding-agent/">自主编程 agent</a></li><li><a href="/zh/guides/self-hosted-coding-agent/">自托管编程 agent</a></li><li><a href="/zh/guides/codex-github-issues/">Codex 处理 GitHub Issue</a></li><li><a href="https://aiready.sh/zh/">ai-ready 十二要素</a></li></ul>
+      </div>
+      <div class="footer-group footer-compare">
+        <h2>对比</h2>
+        <ul><li><a href="/zh/compare/orca/">Orbi vs Orca</a></li><li><a href="/zh/compare/openclaw/">Orbi vs OpenClaw</a></li><li><a href="/zh/compare/github-copilot-coding-agent/">Orbi vs GitHub Copilot cloud agent</a></li><li><a href="/zh/compare/managed-agents/">Orbi vs Claude Managed Agents</a></li><li><a href="/zh/compare/claude-code/">Orbi vs Claude Code</a></li><li><a href="/zh/compare/openhands/">Orbi vs OpenHands</a></li><li><a href="/zh/compare/hermes-agent/">Orbi vs Hermes Agent</a></li><li><a href="/zh/compare/keelen/">Orbi vs Keelen</a></li><li><a href="/zh/compare/codex/">Orbi vs OpenAI Codex</a></li><li><a href="/zh/compare/devin/">Orbi vs Devin</a></li><li><a href="/zh/compare/jules/">Orbi vs Google Jules</a></li><li><a href="/zh/compare/cursor/">Orbi vs Cursor Cloud Agents</a></li><li><a href="/zh/compare/">全部对比</a></li></ul>
+      </div>
+      <div class="footer-group">
+        <h2>公司</h2>
+        <ul><li><a href="/zh/about/">关于</a></li><li><a href="/zh/support/">支持</a></li><li><a href="https://github.com/orbi-build/orbi/milestones">路线图</a></li><li><a href="/zh/privacy/">隐私政策</a></li><li><a href="/zh/terms/">服务条款</a></li><li><a href="https://github.com/orbi-build/orbi">GitHub</a></li><li><a href="https://x.com/xqliu" rel="me">X</a></li><li><a href="https://www.youtube.com/@orbibuild" rel="me">YouTube</a></li><li><a href="https://www.reddit.com/r/OrbiBuild/">Reddit</a></li></ul>
+      </div>
+    </nav>
+    <div class="footer-language language" role="group" aria-label="语言"><span aria-current="page">ZH</span><a href="/blog/claude-ship/" lang="en" aria-label="English">EN</a></div>
+    <p class="footer-legal">© 2026 Low Code, LLC</p>
+  </footer>
+
+  <script src="/demo.js" defer></script>
+
+<script>(()=>{try{const links=[...document.querySelectorAll('.post-toc-link')];const targetOf=(link)=>link.getAttribute('href').slice(1);const headings=[...new Set(links.map(link=>document.getElementById(targetOf(link))).filter(Boolean))];const setCurrent=(heading)=>{links.forEach((link)=>link.classList.toggle('is-current',targetOf(link)===heading.id));};if('IntersectionObserver' in window){const update=()=>{const current=headings.findLast((heading)=>heading.getBoundingClientRect().top<=innerHeight*.4)??headings[0];if(current)setCurrent(current);};const observer=new IntersectionObserver(update,{rootMargin:'-24px 0px -60% 0px',threshold:0});headings.forEach((heading)=>observer.observe(heading));addEventListener('scroll',update,{passive:true});update();}}catch(error){console.warn('post_toc_observer_failed',error);}})();</script><script>(()=>{
+  const endpoint="/cloud/e", start=Date.now();
+  let visible=document.visibilityState!=="hidden", visibleAt=visible?start:0, visibleMs=0, interacted=false, engagedSent=false, depthSent=false, maxDepth=0;
+  const send=(kind,detail,extra)=>{const body={kind,path:location.pathname};if(detail!==undefined)body.detail=String(detail);if(extra)Object.assign(body,extra);try{if(!navigator.sendBeacon(endpoint,new Blob([JSON.stringify(body)],{type:"application/json"})))console.warn("engagement_report_failed","sendBeacon returned false");}catch(error){console.warn("engagement_report_failed",error);}};
+  send("visit",undefined,{search:location.search,referrer:document.referrer});
+  const elapsed=()=>visibleMs+(visible?Date.now()-visibleAt:0);
+  const check=()=>{if(!engagedSent&&interacted&&elapsed()>=10000){engagedSent=true;send("engaged");}};
+  const schedule=()=>setTimeout(check,Math.max(0,10000-elapsed()));
+  const markInteraction=()=>{interacted=true;check();};
+  ["scroll","pointerdown","keydown","touchstart"].forEach(type=>addEventListener(type,markInteraction,{passive:true}));
+  const depth=()=>{const height=document.documentElement.scrollHeight;maxDepth=Math.max(maxDepth,height<=0?100:Math.min(100,Math.floor((scrollY+innerHeight)/height*100)));};
+  addEventListener("scroll",depth,{passive:true});
+  schedule();
+  const hide=()=>{depth();if(visible){visibleMs+=Date.now()-visibleAt;visible=false;}check();if(!depthSent){depthSent=true;send("scroll_depth",Math.max(25,Math.min(100,Math.floor(maxDepth/25)*25)));}};
+  const show=()=>{if(!visible){visible=true;visibleAt=Date.now();schedule();}};
+  addEventListener("visibilitychange",()=>document.visibilityState==="hidden"?hide():show());
+  addEventListener("pagehide",hide);
+  addEventListener("click",event=>{const link=event.target.closest?.("[data-cta]");if(link)send("cta_click",link.dataset.cta);},{passive:true});
+  const sectionViews=new Set();
+  const sectionDetail=section=>section.id||section.classList?.[0];
+  if(typeof IntersectionObserver!=="undefined"){
+    const sections=[...document.querySelectorAll("main section")].filter(section=>!section.parentElement?.closest("section"));
+    const thresholds=[.3,...sections.map(section=>{const height=section.getBoundingClientRect().height;return height>0?Math.min(.3,innerHeight*.5/height):.3;})];
+    const sectionObserver=new IntersectionObserver(entries=>{entries.forEach(entry=>{
+      const detail=sectionDetail(entry.target);
+      if(detail&&!sectionViews.has(entry.target)&&((entry.intersectionRatio||0)>=.3||(entry.intersectionRect?.height||0)>=innerHeight*.5)){
+        sectionViews.add(entry.target);send("section_view",detail);sectionObserver.unobserve(entry.target);
+      }
+    });},{threshold:thresholds});
+    sections.forEach(section=>sectionObserver.observe(section));
+  }
+})();</script><script data-login-handoff>(()=>{
+  const login=new RegExp("^(?:/zh)?/cloud/login/?$"), pending=new Map();
+  const pendingLabel=/^zh/i.test(document.documentElement.lang)?"正在打开 GitHub…":"Opening GitHub…";
+  addEventListener("click",event=>{
+    if(event.metaKey||event.ctrlKey||event.shiftKey||event.altKey)return;
+    const link=event.target.closest?.("a[href]");
+    if(!link||!login.test(link.pathname))return;
+    if(pending.has(link)){event.preventDefault();return;}
+    pending.set(link,link.innerHTML);
+    link.setAttribute("aria-disabled","true");
+    setTimeout(()=>{link.textContent=pendingLabel;},0);
+  },true);
+  addEventListener("pageshow",event=>{
+    if(!event.persisted)return;
+    pending.forEach((html,link)=>{link.innerHTML=html;link.removeAttribute("aria-disabled");});
+    pending.clear();
+  });
+})();</script><script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "44c2c3310e2e46b7955bb09f04c93fd1"}'></script><script>(function(){
+  var start=function(){
+    !function(t,e){var o,n,p,r;e.__SV||(window.posthog=e,e._i=[],e.init=function(i,s,a){function g(t,e){var o=e.split(".");2==o.length&&(t=t[o[0]],e=o[1]),t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}}(p=t.createElement("script")).type="text/javascript",p.crossOrigin="anonymous",p.async=!0,p.src=s.api_host.replace(".i.posthog.com","-assets.i.posthog.com")+"/static/array.js",(r=t.getElementsByTagName("script")[0]).parentNode.insertBefore(p,r);var u=e;for(void 0!==a?u=e[a]=[]:a="posthog",u.people=u.people||[],Object.defineProperty(u,"toString",{configurable:!0,enumerable:!0,writable:!0,value:function(t){var e="posthog";return"posthog"!==a&&(e+="."+a),t||(e+=" (stub)"),e}}),Object.defineProperty(u.people,"toString",{configurable:!0,enumerable:!0,writable:!0,value:function(){return u.toString(1)+".people (stub)"}}),o="init capture register register_once register_for_session unregister unregister_for_session getFeatureFlag getFeatureFlagResult isFeatureEnabled reloadFeatureFlags updateEarlyAccessFeatureEnrollment getEarlyAccessFeatures on onFeatureFlags onSessionId getSurveys getActiveMatchingSurveys renderSurvey canRenderSurvey getNextSurveyStep identify setPersonProperties group resetGroups setPersonPropertiesForFlags resetPersonPropertiesForFlags setGroupPropertiesForFlags resetGroupPropertiesForFlags reset get_distinct_id getGroups get_session_id get_session_replay_url alias set_config startSessionRecording stopSessionRecording sessionRecordingStarted captureException loadToolbar get_property getSessionProperty createPersonProfile opt_in_capturing opt_out_capturing has_opted_in_capturing has_opted_out_capturing clear_opt_in_out_capturing debug".split(" "),n=0;n<o.length;n++)g(u,o[n]);e._i.push([i,s,a])},e.__SV=1)}(document,window.posthog||[]);
+    posthog.init("phc_nhxAwie7BY0blOSHfAbNzRGcb2rGDJInLUGPh93i8Mx",{api_host:"/api/ph",ui_host:"https://us.posthog.com",autocapture:true,disable_session_recording:false});
+  };
+  if(document.readyState==="complete")start();else addEventListener("load",start,{once:true});
+})();</script></body>
+</html>

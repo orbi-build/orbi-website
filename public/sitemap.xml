@@ -398,6 +398,18 @@
     <xhtml:link rel="alternate" hreflang="x-default" href="https://orbi.build/trust/"/>
   </url>
   <url>
+    <loc>https://orbi.build/blog/claude-ship/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/blog/claude-ship/"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/blog/claude-ship/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://orbi.build/blog/claude-ship/"/>
+  </url>
+  <url>
+    <loc>https://orbi.build/zh/blog/claude-ship/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/blog/claude-ship/"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/blog/claude-ship/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://orbi.build/blog/claude-ship/"/>
+  </url>
+  <url>
     <loc>https://orbi.build/blog/attach-screenshot-to-issue/</loc>
     <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/blog/attach-screenshot-to-issue/"/>
     <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/blog/attach-screenshot-to-issue/"/>
