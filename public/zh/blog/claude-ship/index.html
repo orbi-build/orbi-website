@@ -185,7 +185,7 @@
           </ol>
         </details>
 <p>Claude Ship 是 Anthropic 在 2026 年 11 月 23 日<a href="https://claude.com/blog/introducing-claude-ship">发布</a>的三个 GitHub PR agent（Code Review、PR Steward 和 Claude Approvals），面向 Claude Team 和 Enterprise 套餐。这篇写给在考虑要不要开它的团队。</p>
-<p>我是 Larry 🍀 Orbi，Orbi 的创始人。Orbi 是 Agent 时代的开源软件黑灯工厂：你给它一个打好标签的 Issue，它自己认领、写代码、交给独立评审、修完问题，CI 通过后合并，中间不用人守着；你开一张发版单并打上 <code class="post-code--single">ai-release</code>，等里程碑下其他 Issue 关完，它就发版。它运行的是开源编程 agent Pi，不运行 Claude Code，也不运行 Claude Ship。2026 年 11 月 26 日我读了官方文档，并在 Claude Code 里亲手试了 <code class="post-code--single">/ship</code>。组织级的三个 agent 我测不了，因为它们需要 Team 或 Enterprise 组织。</p><aside class="post-cta-inline"><span>Orbi 把你的 Issue 一路做到发版。</span><a class="button button-signal" data-cta="post-inline-start" href="/zh/cloud/login">免费试用 Orbi Cloud →</a></aside>
+<p>我是 Larry 🍀 Orbi，Orbi 的创始人。Orbi 是 Agent 时代的开源软件黑灯工厂：你给它一个打好标签的 Issue，它自己认领、写代码、交给独立评审、修完问题，CI 通过后合并，中间不用人守着；你开一张发版单并打上 <code class="post-code--single">ai-release</code>，等里程碑下其他 Issue 关完，它就发版。它运行的是开源编程 agent Pi，不运行 Claude Code，也不运行 Claude Ship。2026 年 11 月 26 日我读了官方文档，并在 Claude Code 里试着运行 <code class="post-code--single">/ship</code>（两次都被拒，见后文）。组织级的三个 agent 我测不了，因为它们需要 Team 或 Enterprise 组织。</p><aside class="post-cta-inline"><span>Orbi 把你的 Issue 一路做到发版。</span><a class="button button-signal" data-cta="post-inline-start" href="/zh/cloud/login">免费试用 Orbi Cloud →</a></aside>
 <h2 id="code-review-pr-steward-和-claude-approvals-怎么分工">Code Review、PR Steward 和 Claude Approvals 怎么分工</h2>
 <p>按 <a href="https://code.claude.com/docs/en/claude-ship">Claude Ship 文档</a>，三个 agent 分工处理已经打开的 GitHub PR：</p>
 <p class="post-table-hint" hidden>左右滑动查看所有列。</p><div class="post-table-scroll" tabindex="0" role="region" aria-label="左右滑动查看所有列。"><table class="table-comparison">
@@ -223,13 +223,13 @@
 <h2 id="谁能用-claude-ship-怎么计费">谁能用 Claude Ship，怎么计费</h2>
 <p>Claude Ship 需要 Claude Team 或 Enterprise 套餐，且只支持 GitHub 仓库。启用了 Zero Data Retention、HIPAA 配置或客户自管加密密钥（customer-managed encryption keys）的组织无法使用；如果组织启用了 FERPA 或 Access Transparency 设置，Approvals 也无法启动。改配置需要 Claude 组织的 Owner 角色，但 Approvals 是例外：只要前置条件满足（已连接 Claude GitHub App），任何能把策略文件合进仓库默认分支的人都能把它打开并开始计费，除非 Owner 在组织层面关掉了 Approvals。</p>
 <p>三个 agent 都按 token 用量从组织的 usage credits 里扣费，和套餐本身包含的用量分开算。Approvals 没有基础月费，但根据 <a href="https://code.claude.com/docs/en/approvals-setup">Approvals 配置文档</a>，分类器运行会计费，如果策略里要求跑 Code Review，即便处于 observe 模式也会触发计费审查。</p>
-<p>在组织设置里关掉 usage credits 并不会停掉已经打开的 agent，它们还会继续跑、继续计费。要停用必须直接关掉 agent，并且按顺序来：先关 Approvals，再关 PR Steward，最后关 Code Review。Approvals 要最先关，因为策略里只要要求了 Code Review，就算你关掉了自动 Code Review，策略仍会继续触发计费的审查。</p>
+<p>在组织设置里关掉 usage credits 并不会停掉已经打开的 agent，它们还会继续跑，按文档会继续向组织计费。要停用必须直接关掉 agent，并且按顺序来：先关 Approvals，再关 PR Steward，最后关 Code Review。Approvals 要最先关，因为策略里只要要求了 Code Review，就算你关掉了自动 Code Review，策略仍会继续触发计费的审查。</p>
 <p>根据<a href="https://claude.com/blog/introducing-claude-ship">发布公告</a>，符合条件的 Enterprise 组织在 2027 年 1 月 15 日前可以领取至少 10,000 美元的 Claude Ship 额度，领取后 30 天内有效。</p>
 <h2 id="什么设置下-pr-没人审也能合并">什么设置下，PR 没人审也能合并</h2>
 <p>Claude Ship 没有合并步骤。PR Steward 按设计不会合并，<a href="https://code.claude.com/docs/en/pr-steward-security">PR Steward 安全文档</a>也写明，它拦截合并和自动合并命令靠的是文本规则加模型判断，换种写法就能绕过，所以能拦住合并的还是你的 GitHub 分支规则。PR 没经过真人审查就合进去，一种典型情况是 Claude Approvals 这项检查没在 GitHub 里设为必需检查，等于什么都拦不住（按文档，observe 模式下这项检查通常也不拦合并）。</p>
 <p>就算把这项检查设成了必需且强制执行，<a href="https://code.claude.com/docs/en/approvals-github-rules">Approvals 与 GitHub 规则文档</a>还列出了几种不需要作者以外的真人也能通过的情况：</p>
 <ul>
-<li><code class="post-code--spaced">seats: 0</code>，允许机器人打开的 PR 在没人看的情况下通过。</li>
+<li><code class="post-code--spaced">seats: 0</code>，不要求任何人批准，所以机器人打开的 PR 可以在没人看的情况下通过。</li>
 <li><code class="post-code--spaced">seats: 1</code>，PR 作者自己就能占满这个席位。</li>
 <li><code class="post-code--single">from</code> 列表里放行了机器人。</li>
 <li>机器账号（machine user，也就是脚本或 agent 驱动的账号），Approvals 会把它算作一个人。</li>
@@ -239,7 +239,7 @@
 </ul>
 <p>直接推送到默认分支不会触发任何检查，所以 GitHub 分支规则依然要设成必须通过 PR 合并。如果同时开了 GitHub auto-merge 或 merge queue，再加上策略不要求真人，改动就能在没人动手的情况下合进去。当策略允许 Claude 批准时，Claude 发出的批准评审也能满足 GitHub 里“需要 1 个批准”的规则。</p>
 <p>要把“没审过”和“没真人审过”分开看。一条写了 <code class="post-code--spaced">claude: approves</code> 又没配 <code class="post-code--spaced">claude/code_review = pass</code> 条件的规则，会让 Claude 在完全没做审查的情况下就批准 PR。如果是 Code Review 通过，但规则是 <code class="post-code--spaced">seats: 1</code>（由作者自己填满）或 <code class="post-code--spaced">seats: 0</code>，那这个 PR 只有 AI 审查，作者之外并没有真人看过。</p>
-<p>要让每一条路径都至少经过一位非作者的批准，就在 <code class="post-code--single">.claude/approvals.yml</code> 里强制执行下面这段规则，同时在 GitHub 里把 Claude Approvals 设为必需检查、来源指定为 Claude app。这段 YAML 是我从 <a href="https://code.claude.com/docs/en/approvals-github-rules">Approvals GitHub 规则文档</a>原样复制的；我只检查过它能按 YAML 正常解析，没有在 Approvals 下实际跑过。照原样放进默认分支就会立即强制执行；想先观察，就在顶层加一行 <code class="post-code--spaced">mode: observe</code>。删掉这行切到强制执行后，已打开的 PR 在你逐个评论 <code class="post-code--spaced">@claude approvals rerun</code> 之前，可能仍带着 GitHub 当作通过的检查，见<a href="https://code.claude.com/docs/en/approvals-setup">强制执行步骤</a>。</p>
+<p>要让每一条路径都至少经过一位非作者的批准，就在 <code class="post-code--single">.claude/approvals.yml</code> 里强制执行下面这段规则，同时在 GitHub 里把 Claude Approvals 设为必需检查、来源指定为 Claude app，并要求默认分支只能通过 PR 合并。这段 YAML 是我从 <a href="https://code.claude.com/docs/en/approvals-github-rules">Approvals GitHub 规则文档</a>原样复制的；我只检查过它能按 YAML 正常解析，没有在 Approvals 下实际跑过。照原样放进默认分支就会立即强制执行；想先观察，就在顶层加一行 <code class="post-code--spaced">mode: observe</code>。删掉这行切到强制执行后，已打开的 PR 在你逐个评论 <code class="post-code--spaced">@claude approvals rerun</code> 之前，可能仍带着 GitHub 当作通过的检查，见<a href="https://code.claude.com/docs/en/approvals-setup">强制执行步骤</a>。</p>
 <div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="已复制">复制</button><pre><code class="language-yaml" data-copy-source># .claude/approvals.yml
 version: 1
 rules:

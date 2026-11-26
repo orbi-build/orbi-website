@@ -9,7 +9,7 @@ image: /img/blog-claude-ship-card.png
 
 Claude Ship is Anthropic's set of three agents for GitHub pull requests (Code Review, PR Steward, and Claude Approvals), [announced](https://claude.com/blog/introducing-claude-ship) on 23 November 2026 for Claude Team and Enterprise plans. This post is for teams deciding whether to turn it on.
 
-I'm Larry 🍀 Orbi, the creator of Orbi. Orbi is an open-source lights-out software factory for the agent era: give it a labelled Issue and it claims the work, writes the code, sends it to an independent review, fixes what the review finds and merges once CI passes, with nobody watching. Open a release ticket with `ai-release` and it ships the release once the milestone's other Issues close. It uses the open-source coding agent Pi and does not run Claude Code or Claude Ship. On 26 November 2026, I read the docs and tried `/ship` myself in Claude Code, though I could not test the org-level agents because they require a Team or Enterprise org.
+I'm Larry 🍀 Orbi, the creator of Orbi. Orbi is an open-source lights-out software factory for the agent era: give it a labelled Issue and it claims the work, writes the code, sends it to an independent review, fixes what the review finds and merges once CI passes, with nobody watching. Open a release ticket with `ai-release` and it ships the release once the milestone's other Issues close. It uses the open-source coding agent Pi and does not run Claude Code or Claude Ship. On 26 November 2026, I read the docs and tried to run `/ship` in Claude Code (both attempts were refused; details below), though I could not test the org-level agents because they require a Team or Enterprise org.
 
 ## What Claude Ship is: Code Review, PR Steward and Claude Approvals
 
@@ -35,7 +35,7 @@ Claude Ship requires a Claude Team or Enterprise plan and works with GitHub repo
 
 All three agents bill token usage against the org's usage credits, separate from the plan's included usage. Approvals has no base charge, though the [Approvals setup docs](https://code.claude.com/docs/en/approvals-setup) state that classifier runs are billed, and a policy that asks for Code Review triggers billed reviews even in observe mode.
 
-Turning off usage credits in org settings does not stop an agent that is already on; it keeps running and billing. You have to turn the agents off directly, in order: Approvals first, then PR Steward, then Code Review. Approvals goes first because a policy that asks for Code Review keeps starting billed reviews even after automatic Code Review is switched off.
+Turning off usage credits in org settings does not stop an agent that is already on; it keeps running and billing your organization, per the docs. You have to turn the agents off directly, in order: Approvals first, then PR Steward, then Code Review. Approvals goes first because a policy that asks for Code Review keeps starting billed reviews even after automatic Code Review is switched off.
 
 The [announcement](https://claude.com/blog/introducing-claude-ship) says eligible Enterprise organizations can claim at least $10,000 in Claude Ship credits by 15 January 2027, with 30 days to use them after claiming.
 
@@ -45,7 +45,7 @@ Claude Ship has no merge step. PR Steward is designed not to merge, and the [PR 
 
 Even when the check is required and enforced, the [Approvals and GitHub rules docs](https://code.claude.com/docs/en/approvals-github-rules) list ways it can pass with no person besides the author:
 
-- `seats: 0`, which lets a bot-opened PR pass with no human looking at it.
+- `seats: 0`, which requires no approver at all, so a bot-opened PR can pass with no human looking at it.
 - `seats: 1`, which the PR author can fill.
 - A `from` list that admits bots.
 - A machine user (an account a script or agent drives), which Approvals counts as a person.
@@ -57,7 +57,7 @@ Direct pushes to the default branch get no check, so GitHub branch rules still n
 
 "No review" and "no human review" are two different cases. A rule with `claude: approves` and no `claude/code_review = pass` condition lets Claude approve with no review at all. When Code Review passes under `seats: 1` (filled by the author) or `seats: 0`, the PR gets an AI review, while no human besides the author reviews it.
 
-To require one approver who is not an author on every path, enforce the rule below in `.claude/approvals.yml` and require the Claude Approvals check in GitHub, with the Claude app as its source. I copied this YAML verbatim from the [Approvals GitHub rules docs](https://code.claude.com/docs/en/approvals-github-rules). I only checked that it parses as YAML and have not run it under Approvals. As written it enforces as soon as it lands on the default branch; to start in observe mode, add a top-level `mode: observe` line. When you delete it to enforce, open pull requests can keep a check GitHub counts as passing until you comment `@claude approvals rerun` on each of them, as the [enforcement steps](https://code.claude.com/docs/en/approvals-setup) describe.
+To require one approver who is not an author on every path, enforce the rule below in `.claude/approvals.yml` and require the Claude Approvals check in GitHub, with the Claude app as its source, plus pull requests on the default branch. I copied this YAML verbatim from the [Approvals GitHub rules docs](https://code.claude.com/docs/en/approvals-github-rules). I only checked that it parses as YAML and have not run it under Approvals. As written it enforces as soon as it lands on the default branch; to start in observe mode, add a top-level `mode: observe` line. When you delete the `mode: observe` line to enforce, open pull requests can keep a check GitHub counts as passing until you comment `@claude approvals rerun` on each of them, as the [enforcement steps](https://code.claude.com/docs/en/approvals-setup) describe.
 
 ```yaml
 # .claude/approvals.yml
