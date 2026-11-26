@@ -13,6 +13,13 @@
       <description>Claude Ship adds three GitHub PR agents for Team and Enterprise. None of them merges, so your branch rules decide if a PR gets in with no human review.</description>
     </item>
     <item>
+      <title>Orbi weekly #8: attach screenshots to requests</title>
+      <link>https://orbi.build/blog/orbi-weekly-8/</link>
+      <guid isPermaLink="true">https://orbi.build/blog/orbi-weekly-8/</guid>
+      <pubDate>Thu, 26 Nov 2026 00:00:00 GMT</pubDate>
+      <description>Requests can now include screenshots, and Orbi also follows a screenshot pasted into a GitHub Issue.</description>
+    </item>
+    <item>
       <title>Attach a screenshot to the issue your AI agent builds</title>
       <link>https://orbi.build/blog/attach-screenshot-to-issue/</link>
       <guid isPermaLink="true">https://orbi.build/blog/attach-screenshot-to-issue/</guid>

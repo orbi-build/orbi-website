@@ -8,6 +8,14 @@
     "related": []
   },
   {
+    "slug": "orbi-weekly-8",
+    "title": "Orbi weekly #8: attach screenshots to requests",
+    "summary": "Requests can now include screenshots, and Orbi also follows a screenshot pasted into a GitHub Issue.",
+    "zhSlug": "orbi-weekly-8",
+    "zhTitle": "Orbi 周报 #8：写需求可以附截图了，同事按 GitHub 权限一起用",
+    "related": []
+  },
+  {
     "slug": "attach-screenshot-to-issue",
     "title": "Attach a screenshot to the issue your AI agent builds",
     "summary": "orbi draft --attach puts screenshots, HTML and text files in the GitHub Issue, where drafting, delivery and review read them. A real run and the limits.",
