@@ -1,16 +1,16 @@
 ---
 title: Claude Ship：它自动做了什么，又停在哪一步
 date: 2026-11-26
-summary: Claude Ship 是 Anthropic 给 Team/Enterprise 的三个 GitHub PR agent，它们都不合并 PR，能不能合由 GitHub 分支规则决定；规则没配好，PR 可能没人审就合进去。
+summary: Claude Ship 是 Anthropic 给 Team/Enterprise 的三个 GitHub PR agent，它们都不合并 PR。能不能合由 GitHub 分支规则决定，规则没配好，PR 可能没经过真人审查就合进去。
 lang: zh
 author: Larry 🍀 Orbi
 image: /img/blog-claude-ship-card.png
 mirror: claude-ship
 ---
 
-Claude Ship 是 Anthropic 在 2026 年 11 月 23 日[发布](https://claude.com/blog/introducing-claude-ship)的三个 GitHub PR agent（Code Review、PR Steward 和 Claude Approvals），面向 Claude Team 和 Enterprise 套餐。这篇写给在考虑要不要开它的团队：读完能知道它停在哪一步、要花什么钱、哪些设置要先改。
+Claude Ship 是 Anthropic 在 2026 年 11 月 23 日[发布](https://claude.com/blog/introducing-claude-ship)的三个 GitHub PR agent（Code Review、PR Steward 和 Claude Approvals），面向 Claude Team 和 Enterprise 套餐。这篇写给在考虑要不要开它的团队。
 
-我是 Larry 🍀 Orbi，Orbi 的创始人。Orbi 是 Agent 时代的开源软件黑灯工厂：你给它一个打好标签的 Issue，它自己认领、写代码、交给独立评审、修完问题，CI 通过后合并，中间不用人守着；你开一张发版单并打上 `ai-release`，它就发版。它运行的是开源编程 agent Pi，不运行 Claude Code，也不运行 Claude Ship。2026 年 11 月 26 日我读了官方文档，并在 Claude Code 里亲手试了 `/ship`。组织级的三个 agent 我测不了，因为它们需要 Team 或 Enterprise 组织。
+我是 Larry 🍀 Orbi，Orbi 的创始人。Orbi 是 Agent 时代的开源软件黑灯工厂：你给它一个打好标签的 Issue，它自己认领、写代码、交给独立评审、修完问题，CI 通过后合并，中间不用人守着；你开一张发版单并打上 `ai-release`，等里程碑下其他 Issue 关完，它就发版。它运行的是开源编程 agent Pi，不运行 Claude Code，也不运行 Claude Ship。2026 年 11 月 26 日我读了官方文档，并在 Claude Code 里亲手试了 `/ship`。组织级的三个 agent 我测不了，因为它们需要 Team 或 Enterprise 组织。
 
 ## Code Review、PR Steward 和 Claude Approvals 怎么分工
 
@@ -42,14 +42,14 @@ Claude Ship 需要 Claude Team 或 Enterprise 套餐，且只支持 GitHub 仓�
 
 ## 什么设置下，PR 没人审也能合并
 
-Claude Ship 没有合并步骤。PR Steward 设计为不执行合并，[PR Steward 安全文档](https://code.claude.com/docs/en/pr-steward-security)也写明，它拦截合并和自动合并命令靠的是文本规则加模型判断，换种写法就能绕过，所以能拦住合并的还是你的 GitHub 分支规则。PR 没人审就合进去，一种典型情况是 Claude Approvals 这项检查没在 GitHub 里设为必需检查，等于什么都拦不住（按文档，observe 模式下这项检查通常也不拦合并）。
+Claude Ship 没有合并步骤。PR Steward 按设计不会合并，[PR Steward 安全文档](https://code.claude.com/docs/en/pr-steward-security)也写明，它拦截合并和自动合并命令靠的是文本规则加模型判断，换种写法就能绕过，所以能拦住合并的还是你的 GitHub 分支规则。PR 没经过真人审查就合进去，一种典型情况是 Claude Approvals 这项检查没在 GitHub 里设为必需检查，等于什么都拦不住（按文档，observe 模式下这项检查通常也不拦合并）。
 
 就算把这项检查设成了必需且强制执行，[Approvals 与 GitHub 规则文档](https://code.claude.com/docs/en/approvals-github-rules)还列出了几种不需要作者以外的真人也能通过的情况：
 
 - `seats: 0`，允许机器人打开的 PR 在没人看的情况下通过。
 - `seats: 1`，PR 作者自己就能占满这个席位。
 - `from` 列表里放行了机器人。
-- 机器账号（machine user，也就是脚本或 agent 驱动的账号），Approvals 会把它算作一个人（person）。
+- 机器账号（machine user，也就是脚本或 agent 驱动的账号），Approvals 会把它算作一个人。
 - `reuse` 在新提交推送后沿用了早先的批准席位。
 - 没有任何规则覆盖到的文件，GitHub 会把 neutral 结果当成通过。
 - 用了分类器判断的条件（写在 `if`、override 的 `if` 或 `reuse` 里），PR 自身的文本可能把分类器带偏。
@@ -85,9 +85,9 @@ rules:
 
 ## /ship 命令不是 Claude Ship
 
-四个名字长得很像，干的是不同的事。Claude Ship 是组织级的三个 GitHub agent，走组织 usage credits 计费。Claude Code 的 `/ship` 命令跑在你本地终端会话里，算你自己的 Claude Code 用量。Orbi 的 `/orbi:ship` 命令（来自 Orbi 的 Claude Code 插件）把任务写成带 `ai-ready` 标签的 GitHub Issue 交给 Orbi，它不合并任何东西。Claude Code 还有个 `/steward`，在你自己已打开的 PR 上直接开始同样的 watch、不先审查；文档说明它和组织级的 PR Steward 是两回事，PR Steward 已在处理的 PR 上它不会启动。
+四个名字长得很像，干的是不同的事。Claude Ship 是组织级的三个 GitHub agent，走组织 usage credits 计费。Claude Code 的 `/ship` 命令跑在你本地终端会话里，算你自己的 Claude Code 用量。Orbi 的 `/orbi:ship` 命令（来自 Orbi 的 Claude Code 插件）把任务写成带 `ai-ready` 标签的 GitHub Issue 交给 Orbi，它不合并任何东西。Claude Code 还有个 `/steward`，跳过审查，直接在你已打开的 PR 上启动和 `/ship` 相同的 watch；文档说明它和组织级的 PR Steward 是两回事，PR Steward 已在处理的 PR 上它不会启动。
 
-在 [`/ship` 命令文档](https://code.claude.com/docs/en/ship-command)里，`/ship` 会以你的身份提交、推送并打开 GitHub PR，跑一次 `/code-review`（这是 Claude Code 的本地审查命令，算你自己的用量，不是组织级的 Code Review agent），再在当前会话里启动一个“watch”，持续处理失败的检查、合并冲突、审查评论和审查问题；通常由你自己合并 PR，但文档里[「When a watch can lead to a merge」](https://code.claude.com/docs/en/ship-command#when-a-watch-can-lead-to-a-merge)一节列了例外：PR 开了 auto-merge 时，Claude 推上去的修复可能直接触发合并；在 auto 模式下，Claude 回复你输入的消息期间，watch 的限制是关着的，它可能被允许合并。
+在 [`/ship` 命令文档](https://code.claude.com/docs/en/ship-command)里，`/ship` 会以你的身份提交、推送并打开 GitHub PR，跑一次 `/code-review`（这是 Claude Code 的本地审查命令，算你自己的用量，不是组织级的 Code Review agent），再在当前会话里启动一个“watch”，持续处理失败的检查、合并冲突、审查评论和审查问题。PR 通常由你自己合并。文档里[「When a watch can lead to a merge」](https://code.claude.com/docs/en/ship-command#when-a-watch-can-lead-to-a-merge)一节列了例外，其中包括：PR 开了 auto-merge 时，Claude 推上去的修复可能直接触发合并；在 auto 模式下，Claude 回复你输入的消息期间，watch 的限制不生效，它可能被允许合并。
 
 使用 `/ship` 需要 Claude Code v2.1.330+、已登录的 GitHub CLI 2.63+ 和 `git` 2.38+。无人看守的 watch 需要 auto 模式（`bypassPermissions` 不会启动 watch，v2.1.331+ 上 `/ship` 在 plan 模式下也不会启动），原生 Windows 和后台会话里同样不会启动 watch。在公开仓库里，`/ship` 不会替你提交工作区里还没提交的改动；在允许提交和推送的仓库里，它不会弹确认提示，只会在提交前和推送前各打出一行 `Esc to cancel`。
 
@@ -118,27 +118,27 @@ Nothing started. Claude Code's built-in /ship doesn't start in this kind of sess
 | 修审查问题 / 失败 CI | PR Steward | 在同一评审会话里修复；修不掉的问题打上 `ai-fix-needed`，留到同一 PR 的下一轮评审 |
 | 批准判定 | 按你的策略跑 Claude Approvals 检查 | 无策略文件；遇到 Orbi 满足不了的仓库规则（比如需要人工批准），会把 Issue 停在 `ai-awaiting-merge` 并写明维护者需要做的那一步，人工操作完成后由 Orbi 合并 |
 | 合并 | GitHub 分支规则、人工合并或 auto-merge | 合并门禁通过后由 Orbi 合并：head 包含最新 base、CI 跑完且无失败项、PR 可合并、head 未变动 |
-| 发版 | 不覆盖 | 你来开发版 Issue 并打上 `ai-release`（只有人能贴这个标签）；里程碑下其他 Issue 全部关闭后，Orbi 认领并跑确定性的发版状态机（不跑 Pi，不开 PR） |
-| 没人敲键盘能不能跑 | Code Review 会在已启用仓库的 PR 上自动跑；PR Steward 只有设为 On 才会自己启动（文档建议先用 Manual，靠 `@claude steward` 触发）；Approvals 按策略文件自动跑；`/ship` 需要你亲手敲 | 可以，从打好标签的 Issue 一路跑到 PR 合并；发版要你开发版 Issue，且等里程碑下其他 Issue 关完 |
+| 发版 | 不覆盖 | 你来开一张发版 Issue 并打上 `ai-release`（只有人能贴这个标签）；里程碑下其他 Issue 全部关闭后，Orbi 认领并跑确定性的发版状态机（不跑 Pi，不开 PR） |
+| 没人敲键盘能不能跑 | Code Review 会在已启用仓库的 PR 上自动跑；PR Steward 只有设为 On 才会自己启动（文档建议先用 Manual，靠 `@claude steward` 触发）；Approvals 按策略文件自动跑；`/ship` 需要你亲手敲 | 可以，从打好标签的 Issue 一路跑到 PR 合并；发版要你开一张发版 Issue，且等里程碑下其他 Issue 关完 |
 
-Claude Ship 和 Orbi 之间没有集成，我也没有在同一个仓库上同时跑过两者。Claude Code 和 Orbi 之间唯一的交接点，就是插件把 Issue 交过去。Orbi 的常规交付到 PR 合并为止。发版从不自动触发：由人来开发版 Issue，再交给 Orbi 执行。
+Claude Ship 和 Orbi 之间没有集成，我也没有在同一个仓库上同时跑过两者。Claude Code 和 Orbi 之间唯一的交接点，就是插件把 Issue 交过去。Orbi 的常规交付到 PR 合并为止。发版从不自动触发：由人来开一张发版 Issue，再交给 Orbi 执行。
 
 ## 一次真实的 Orbi 交付时间线
 
 下面是 `orbi-build/orbi` 仓库里的一次真实交付，时间都在 2026 年 11 月 25 日（UTC+8）：
 
-| 时间 | 距开票 | 谁 | 做了什么 |
-|---|---|---|---|
-| 10:08 | 0 分钟 | 我 | 开 [Issue #2387](https://github.com/orbi-build/orbi/issues/2387) |
-| 10:12 | 4 分钟 | Orbi | 认领，启动 Pi 开始实现 |
-| 10:51 | 43 分钟 | Orbi | `orbi-build` 应用打开 [PR #2388](https://github.com/orbi-build/orbi/pull/2388) |
-| 11:04 | 56 分钟 | Orbi | 一轮独立评审后合并 |
-| 11:14 | 66 分钟 | 我 | 开发版单 #2389 |
-| 11:31 | 83 分钟 | Orbi | `orbi-build[bot]` 发布 [v0.7.63](https://github.com/orbi-build/orbi/releases/tag/v0.7.63) |
+| 时间 | 距开票 | 做了什么 |
+|---|---|---|
+| 10:08 | 0 分钟 | 我开了 [Issue #2387](https://github.com/orbi-build/orbi/issues/2387) |
+| 10:12 | 4 分钟 | Orbi 认领，启动 Pi 开始实现 |
+| 10:51 | 43 分钟 | Orbi 打开 [PR #2388](https://github.com/orbi-build/orbi/pull/2388) |
+| 11:04 | 56 分钟 | Orbi 一轮独立评审后合并 |
+| 11:14 | 66 分钟 | 我开了发版单 #2389 |
+| 11:31 | 83 分钟 | Orbi 发布 [v0.7.63](https://github.com/orbi-build/orbi/releases/tag/v0.7.63) |
 
-从开票到发版 83 分钟，我只动了两次手：开 Issue，开发版单。认领、实现、开 PR、评审、合并、发版都是 Orbi 自己做的。
+从开票到发版 83 分钟，我只动了两次手：开 Issue，开一张发版单。认领、实现、开 PR、评审、合并、发版都是 Orbi 自己做的。
 
-同一个仓库从 2026 年 10 月 27 日到 11 月 25 日（按 UTC 日期计）的 30 天里，一共合并了 182 个 PR，其中 164 个由 `orbi-build` 应用自己打开并合并，平均每天 5 个多；同期发布了 46 个版本（`v0.7.19` 到 `v0.7.64`）。这是 Orbi 自己的仓库：Orbi 的代码就是这样由 Orbi 交付的。
+同一个仓库从 2026 年 10 月 27 日到 11 月 25 日（按 UTC 日期计）的 30 天里，一共合并了 182 个 PR，其中 164 个由 `orbi-build` 应用自己打开并合并，平均每天 5 个多；同期发布了 46 个版本（`v0.7.19` 到 `v0.7.64`）。这是 Orbi 自己的仓库。
 
 ## 你的团队适合哪一个
 
