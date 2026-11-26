@@ -1150,9 +1150,7 @@ describe("server-rendered homepage stats (Issue #873)", () => {
     const readMs = 200;
     const env = await homepageEnvironment();
     env.STATS_KV = recordingKv({ delayMs: readMs, values: snapshotValues() });
-    const started = Date.now();
     const response = await handleFetch(new Request("https://orbi.build/"), env, { waitUntil: () => {} });
-    const elapsed = Date.now() - started;
     expect(response.status).toBe(200);
     const html = await response.text();
     // Both reads really happened and both filled the page.
@@ -1160,12 +1158,10 @@ describe("server-rendered homepage stats (Issue #873)", () => {
       .toEqual([FOUNDING_AVATARS_KV_KEY, STATS_KV_KEY].sort());
     expect(statText(html, "orbi", "prs")).toBe("615");
     expect(html).toContain('title="alice"');
-    // The two reads overlapped, which is the behavior itself — the machine's
-    // clock only has to confirm the consequence.
+    // The two reads overlapped: the fake KV saw both open at once. This is the
+    // behavior itself, so no wall-clock duration is measured here — a loaded
+    // machine's clock says nothing about whether the reads were concurrent.
     expect(env.STATS_KV.maxInFlight).toBe(2);
-    // The visitor waited for one read, not the sum of two.
-    expect(elapsed).toBeGreaterThanOrEqual(readMs);
-    expect(elapsed).toBeLessThan(readMs * 2);
   });
 
   it("writes the colo cache through ctx.waitUntil so the response does not wait for it", async () => {
