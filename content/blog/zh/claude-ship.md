@@ -1,18 +1,18 @@
 ---
 title: Claude Ship：它自动做了什么，又停在哪一步
 date: 2026-11-26
-summary: Claude Ship 是 Anthropic 给 Team/Enterprise 的三个 GitHub PR agent：各自职责、计费、无人审合并、/ship，以及和 Orbi 的对比。
+summary: Claude Ship 是 Anthropic 给 Team/Enterprise 的三个 GitHub PR agent，它们都不合并 PR，能不能合由 GitHub 分支规则决定；规则没配好，PR 可能没人审就合进去。
 lang: zh
 author: Larry 🍀 Orbi
 image: /img/blog-claude-ship-card.png
 mirror: claude-ship
 ---
 
-Claude Ship 是 Anthropic 在 2026 年 11 月 23 日[发布](https://claude.com/blog/introducing-claude-ship)的三个 GitHub PR agent（Code Review、PR Steward 和 Claude Approvals），面向 Claude Team 和 Enterprise 套餐。决定要不要打开它之前，团队通常要先看清几件事：三个 agent 各自管什么、怎么计费、什么设置会让 PR 没人审就合并、单独的 `/ship` 命令做什么，以及和从 Issue 起步的交付流水线相比，Claude Ship 停在哪一步。
+Claude Ship 是 Anthropic 在 2026 年 11 月 23 日[发布](https://claude.com/blog/introducing-claude-ship)的三个 GitHub PR agent（Code Review、PR Steward 和 Claude Approvals），面向 Claude Team 和 Enterprise 套餐。这篇写给在考虑要不要开它的团队：读完能知道它停在哪一步、要花什么钱、哪些设置要先改。
 
-我是 Larry 🍀 Orbi，Orbi 的创始人。Orbi 会把 GitHub Issue 做成经过评审并合进仓库的 PR，也在你发起时执行发版；它运行的是开源编程 agent Pi，不运行 Claude Code，也不运行 Claude Ship。2026 年 11 月 26 日我读了官方文档，并在 Claude Code 里亲手试了 `/ship`。组织级的三个 agent 我测不了，因为它们需要 Team 或 Enterprise 组织。
+我是 Larry 🍀 Orbi，Orbi 的创始人。Orbi 从 GitHub Issue 出发，写代码、评审，再把 PR 合进仓库，也在你发起时执行发版；它运行的是开源编程 agent Pi，不运行 Claude Code，也不运行 Claude Ship。2026 年 11 月 26 日我读了官方文档，并在 Claude Code 里亲手试了 `/ship`。组织级的三个 agent 我测不了，因为它们需要 Team 或 Enterprise 组织。
 
-## Claude Ship 是什么：三个 agent 处理同一个 PR
+## Claude Ship 的三个 agent 怎么分工
 
 按 [Claude Ship 文档](https://code.claude.com/docs/en/claude-ship)，三个 agent 分工处理已经打开的 GitHub PR：
 
@@ -24,7 +24,7 @@ Claude Ship 是 Anthropic 在 2026 年 11 月 23 日[发布](https://claude.com/
 
 Code Review 已经是正式版，主要查 bug，不管代码格式偏好。组织 Owner 可以按仓库选择 Quick、Standard（默认）或 Deep 审查级别。Code Review 自己既不批准 PR，也不拦截合并。
 
-处于公测阶段的 PR Steward 根据 [PR Steward 文档](https://code.claude.com/docs/en/pr-steward)的说明，会处理失败的检查、合并冲突，以及人和审查机器人（比如 Code Review）留下的审查意见，再直接推送 commit。每次推送后，它会发评论说明改了什么、怎么撤销；在 PR 里评论 `@claude stop` 或移除 `claude-pr-steward-watching` 标签，它就会停手。文档注明它“设计为不批准也不合并 PR”，而且在你手动设限之前，它没有自己的消费上限。
+PR Steward 目前处于公测。按 [PR Steward 文档](https://code.claude.com/docs/en/pr-steward)，它会处理失败的检查、合并冲突，以及人和审查机器人（比如 Code Review）留下的审查意见，再直接推送 commit。每次推送后，它会发评论说明改了什么、怎么撤销；在 PR 里评论 `@claude stop` 或移除 `claude-pr-steward-watching` 标签，它就会停手。文档注明它“设计为不批准也不合并 PR”，而且在你手动设限之前，它没有自己的消费上限。
 
 同样在公测的 Claude Approvals 会增加一项 PR 检查，对照默认分支里的 `.claude/approvals.yml` 策略文件，列出还缺谁的批准，策略允许时也会由 Claude 发出批准评审。这项检查只有在 GitHub 里设为必需检查（required check）时才会拦截合并。策略文件默认就是强制执行；Anthropic 建议先写 `mode: observe` 观察一段时间，不过 observe 模式照样计费。
 
@@ -42,7 +42,7 @@ Claude Ship 需要 Claude Team 或 Enterprise 套餐，且只支持 GitHub 仓�
 
 ## 什么设置下，PR 没人审也能合并
 
-Claude Ship 没有合并步骤。PR Steward 设计为不执行合并，[PR Steward 安全文档](https://code.claude.com/docs/en/pr-steward-security)也写明，它拦截合并和自动合并命令靠的是文本规则加模型判断，换种写法就能绕过，所以能拦住合并的还是你的 GitHub 分支规则。PR 没人审就合进去，最主要的原因是 Claude Approvals 这项检查没在 GitHub 里设为必需检查，等于什么都拦不住（observe 模式通常也会算通过）。
+Claude Ship 没有合并步骤。PR Steward 设计为不执行合并，[PR Steward 安全文档](https://code.claude.com/docs/en/pr-steward-security)也写明，它拦截合并和自动合并命令靠的是文本规则加模型判断，换种写法就能绕过，所以能拦住合并的还是你的 GitHub 分支规则。PR 没人审就合进去，一种典型情况是 Claude Approvals 这项检查没在 GitHub 里设为必需检查，等于什么都拦不住（按文档，observe 模式下这项检查通常也不拦合并）。
 
 就算把这项检查设成了必需且强制执行，[Approvals 与 GitHub 规则文档](https://code.claude.com/docs/en/approvals-github-rules)还列出了几种不需要作者以外的真人也能通过的情况：
 
@@ -89,7 +89,7 @@ rules:
 
 在 [`/ship` 命令文档](https://code.claude.com/docs/en/ship-command)里，`/ship` 会以你的身份提交、推送并打开 GitHub PR，跑一次 `/code-review`，再在当前会话里启动一个“watch”，持续处理失败的检查、合并冲突、审查评论和审查问题；合并 PR 仍要你自己操作。
 
-使用 `/ship` 需要 Claude Code v2.1.330+、已登录的 GitHub CLI 2.63+ 和 `git` 2.38+。无人看守的 watch 需要 auto 模式（`bypassPermissions` 不会启动 watch，v2.1.331+ 上 `/ship` 在 plan 模式下也不会启动），原生 Windows 和后台会话里同样不会启动 watch。在公开仓库里，`/ship` 不会提交未提交的改动；在允许提交和推送的仓库里，它不会弹确认提示，只会在提交前和推送前各打出一行 `Esc to cancel`。
+使用 `/ship` 需要 Claude Code v2.1.330+、已登录的 GitHub CLI 2.63+ 和 `git` 2.38+。无人看守的 watch 需要 auto 模式（`bypassPermissions` 不会启动 watch，v2.1.331+ 上 `/ship` 在 plan 模式下也不会启动），原生 Windows 和后台会话里同样不会启动 watch。在公开仓库里，`/ship` 不会替你提交工作区里还没提交的改动；在允许提交和推送的仓库里，它不会弹确认提示，只会在提交前和推送前各打出一行 `Esc to cancel`。
 
 2026 年 11 月 26 日，我在一个私有的临时仓库里用 Claude Code 2.1.331 实测了 `/ship` 命令。在由另一个 agent 会话启动的会话里输入 `/ship`，返回的是：
 
@@ -105,7 +105,7 @@ Nothing started. Claude Code's built-in /ship doesn't start in this kind of sess
 
 两次运行都没有提交、推送或打开 PR。这两条拒绝提示都在 [`/ship` 排障表](https://code.claude.com/docs/en/ship-command-troubleshooting)里有记录：`/ship` 只能由坐在键盘前的人亲手输入触发，程序、定时任务或另一个 agent 都调不起来。我没有在自己手动启动的会话里跑完整个流程。
 
-## Claude Ship 和 Orbi：每一步归谁管
+## Claude Ship 和 Orbi 各管哪一步
 
 | 步骤 | Claude Ship | Orbi |
 |---|---|---|
@@ -117,7 +117,7 @@ Nothing started. Claude Code's built-in /ship doesn't start in this kind of sess
 | 批准判定 | 按你的策略跑 Claude Approvals 检查 | 无策略文件；遇到 Orbi 满足不了的仓库规则（比如需要人工批准），会把 Issue 停在 `ai-awaiting-merge` 并写明维护者需要做的那一步，人工操作完成后由 Orbi 合并 |
 | 合并 | GitHub 分支规则、人工合并或 auto-merge | 合并门禁通过后由 Orbi 合并：head 包含最新 base、CI 跑完且无失败项、PR 可合并、head 未变动 |
 | 发版 | 不覆盖 | 你来开发版 Issue 并打上 `ai-release`（只有人能贴这个标签）；里程碑下其他 Issue 全部关闭后，Orbi 认领并跑确定性的发版状态机（不跑 Pi，不开 PR） |
-| 没人敲键盘能不能跑 | Code Review 会在已启用仓库的 PR 上自动跑；PR Steward 只有设为 On 才会自己启动（文档建议先用 Manual，靠 `@claude steward` 触发）；Approvals 按策略文件自动跑；`/ship` 需要你亲手敲 | 可以，从打好标签的 Issue 一路跑到 PR 合并；发版在你开发版 Issue 后启动 |
+| 没人敲键盘能不能跑 | Code Review 会在已启用仓库的 PR 上自动跑；PR Steward 只有设为 On 才会自己启动（文档建议先用 Manual，靠 `@claude steward` 触发）；Approvals 按策略文件自动跑；`/ship` 需要你亲手敲 | 可以，从打好标签的 Issue 一路跑到 PR 合并；发版要你开发版 Issue，且等里程碑下其他 Issue 关完 |
 
 Claude Ship 和 Orbi 之间没有集成，我也没有在同一个仓库上同时跑过两者。Claude Code 和 Orbi 之间唯一的交接点，就是插件把 Issue 交过去。Orbi 的常规交付到 PR 合并为止。发版从不自动触发：由人来开发版 Issue，再交给 Orbi 执行。
 
@@ -130,7 +130,7 @@ Claude Ship 和 Orbi 之间没有集成，我也没有在同一个仓库上同�
 ## 你的团队适合哪一个
 
 - 你们团队（人或 Claude Code）已经在写代码，用的是 Team 或 Enterprise 套餐加 GitHub，瓶颈卡在代码审查、修评论和批准策略上，就选 Claude Ship。先开 observe 模式，切到强制执行前把非作者批准规则加上。
-- 想让从 Issue 到合并 PR 的整段流程无人值守跑完、发版也只要你开发版 Issue 就自动执行，并且想要固定月费，就选 Orbi。Orbi Cloud Solo 标价 US$29/月（当前价格和创始会员折扣见 [Orbi Cloud](/zh/cloud/?ref=blog-claude-ship)）。
+- 想让从 Issue 到合并 PR 的整段流程无人值守跑完，就选 Orbi。发版由你开发版 Issue 发起，等里程碑下其他 Issue 关完后 Orbi 执行。价格是固定月费：Orbi Cloud Solo 标价 US$29/月（当前价格和创始会员折扣见 [Orbi Cloud](/zh/cloud/?ref=blog-claude-ship)）。
 - 没有 Team 或 Enterprise 套餐就用不了 Claude Ship，不过 `/ship` 照常可用，按普通的 Claude Code 用量计费。
 
 ## 相关

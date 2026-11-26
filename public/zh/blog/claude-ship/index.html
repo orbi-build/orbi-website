@@ -4,19 +4,19 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Claude Ship：它自动做了什么，又停在哪一步 | Orbi</title>
-  <meta name="description" content="Claude Ship 是 Anthropic 给 Team/Enterprise 的三个 GitHub PR agent：各自职责、计费、无人审合并、/ship，以及和 Orbi 的对比。">
+  <meta name="description" content="Claude Ship 是 Anthropic 给 Team/Enterprise 的三个 GitHub PR agent，它们都不合并 PR，能不能合由 GitHub 分支规则决定；规则没配好，PR 可能没人审就合进去。">
   <link rel="canonical" href="https://orbi.build/zh/blog/claude-ship/">
   <link rel="alternate" hreflang="en" href="https://orbi.build/blog/claude-ship/">
   <link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/blog/claude-ship/">
   <link rel="alternate" hreflang="x-default" href="https://orbi.build/blog/claude-ship/">
   <meta property="og:type" content="article">
   <meta property="og:title" content="Claude Ship：它自动做了什么，又停在哪一步">
-  <meta property="og:description" content="Claude Ship 是 Anthropic 给 Team/Enterprise 的三个 GitHub PR agent：各自职责、计费、无人审合并、/ship，以及和 Orbi 的对比。">
+  <meta property="og:description" content="Claude Ship 是 Anthropic 给 Team/Enterprise 的三个 GitHub PR agent，它们都不合并 PR，能不能合由 GitHub 分支规则决定；规则没配好，PR 可能没人审就合进去。">
   <meta property="og:url" content="https://orbi.build/zh/blog/claude-ship/">
   <meta property="og:image" content="https://orbi.build/img/blog-claude-ship-card.png">
   <meta property="og:image:alt" content="Claude Ship：它自动做了什么，又停在哪一步">
   <meta property="article:published_time" content="2026-11-26">
-  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"Claude Ship：它自动做了什么，又停在哪一步","datePublished":"2026-11-26","author":{"@type":"Person","name":"Larry 🍀 Orbi","url":"https://orbi.build/zh/about/larry-orbi/","sameAs":["https://github.com/xqliu","https://x.com/xqliu"]},"publisher":{"@type":"Organization","name":"Orbi","url":"https://orbi.build/","logo":{"@type":"ImageObject","url":"https://orbi.build/logo-mark.svg"}},"mainEntityOfPage":"https://orbi.build/zh/blog/claude-ship/","image":"https://orbi.build/img/blog-claude-ship-card.png","inLanguage":"zh-CN","description":"Claude Ship 是 Anthropic 给 Team/Enterprise 的三个 GitHub PR agent：各自职责、计费、无人审合并、/ship，以及和 Orbi 的对比。","url":"https://orbi.build/zh/blog/claude-ship/"}</script>
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"Claude Ship：它自动做了什么，又停在哪一步","datePublished":"2026-11-26","author":{"@type":"Person","name":"Larry 🍀 Orbi","url":"https://orbi.build/zh/about/larry-orbi/","sameAs":["https://github.com/xqliu","https://x.com/xqliu"]},"publisher":{"@type":"Organization","name":"Orbi","url":"https://orbi.build/","logo":{"@type":"ImageObject","url":"https://orbi.build/logo-mark.svg"}},"mainEntityOfPage":"https://orbi.build/zh/blog/claude-ship/","image":"https://orbi.build/img/blog-claude-ship-card.png","inLanguage":"zh-CN","description":"Claude Ship 是 Anthropic 给 Team/Enterprise 的三个 GitHub PR agent，它们都不合并 PR，能不能合由 GitHub 分支规则决定；规则没配好，PR 可能没人审就合进去。","url":"https://orbi.build/zh/blog/claude-ship/"}</script>
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <meta name="theme-color" content="#06151b">
 
@@ -151,7 +151,7 @@
           <h1 id="post-title">Claude Ship：它自动做了什么，又停在哪一步</h1>
           <p class="post-byline"><a href="/zh/about/larry-orbi/">Larry 🍀 Orbi</a> · <time datetime="2026-11-26">2026-11-26</time></p>
 
-          <p class="hero-lede">Claude Ship 是 Anthropic 给 Team/Enterprise 的三个 GitHub PR agent：各自职责、计费、无人审合并、/ship，以及和 Orbi 的对比。</p>
+          <p class="hero-lede">Claude Ship 是 Anthropic 给 Team/Enterprise 的三个 GitHub PR agent，它们都不合并 PR，能不能合由 GitHub 分支规则决定；规则没配好，PR 可能没人审就合进去。</p>
         </section>
       </div>
     </div>
@@ -160,11 +160,11 @@
         <nav class="post-toc" aria-label="本页目录">
           <h2>本页目录</h2>
           <ol>
-          <li><a class="post-toc-link" href="#claude-ship-是什么-三个-agent-处理同一个-pr">Claude Ship 是什么：三个 agent 处理同一个 PR</a></li>
+          <li><a class="post-toc-link" href="#claude-ship-的三个-agent-怎么分工">Claude Ship 的三个 agent 怎么分工</a></li>
           <li><a class="post-toc-link" href="#谁能用-claude-ship-怎么计费">谁能用 Claude Ship，怎么计费</a></li>
           <li><a class="post-toc-link" href="#什么设置下-pr-没人审也能合并">什么设置下，PR 没人审也能合并</a></li>
           <li><a class="post-toc-link" href="#ship-命令不是-claude-ship">/ship 命令不是 Claude Ship</a></li>
-          <li><a class="post-toc-link" href="#claude-ship-和-orbi-每一步归谁管">Claude Ship 和 Orbi：每一步归谁管</a></li>
+          <li><a class="post-toc-link" href="#claude-ship-和-orbi-各管哪一步">Claude Ship 和 Orbi 各管哪一步</a></li>
           <li><a class="post-toc-link" href="#一次真实的-orbi-交付时间线">一次真实的 Orbi 交付时间线</a></li>
           <li><a class="post-toc-link" href="#你的团队适合哪一个">你的团队适合哪一个</a></li>
           <li><a class="post-toc-link" href="#相关">相关</a></li>
@@ -174,19 +174,19 @@
         <details class="post-toc-inline">
           <summary>本页目录 · 8 节</summary>
           <ol>
-          <li><a class="post-toc-link" href="#claude-ship-是什么-三个-agent-处理同一个-pr">Claude Ship 是什么：三个 agent 处理同一个 PR</a></li>
+          <li><a class="post-toc-link" href="#claude-ship-的三个-agent-怎么分工">Claude Ship 的三个 agent 怎么分工</a></li>
           <li><a class="post-toc-link" href="#谁能用-claude-ship-怎么计费">谁能用 Claude Ship，怎么计费</a></li>
           <li><a class="post-toc-link" href="#什么设置下-pr-没人审也能合并">什么设置下，PR 没人审也能合并</a></li>
           <li><a class="post-toc-link" href="#ship-命令不是-claude-ship">/ship 命令不是 Claude Ship</a></li>
-          <li><a class="post-toc-link" href="#claude-ship-和-orbi-每一步归谁管">Claude Ship 和 Orbi：每一步归谁管</a></li>
+          <li><a class="post-toc-link" href="#claude-ship-和-orbi-各管哪一步">Claude Ship 和 Orbi 各管哪一步</a></li>
           <li><a class="post-toc-link" href="#一次真实的-orbi-交付时间线">一次真实的 Orbi 交付时间线</a></li>
           <li><a class="post-toc-link" href="#你的团队适合哪一个">你的团队适合哪一个</a></li>
           <li><a class="post-toc-link" href="#相关">相关</a></li>
           </ol>
         </details>
-<p>Claude Ship 是 Anthropic 在 2026 年 11 月 23 日<a href="https://claude.com/blog/introducing-claude-ship">发布</a>的三个 GitHub PR agent（Code Review、PR Steward 和 Claude Approvals），面向 Claude Team 和 Enterprise 套餐。决定要不要打开它之前，团队通常要先看清几件事：三个 agent 各自管什么、怎么计费、什么设置会让 PR 没人审就合并、单独的 <code class="post-code--single">/ship</code> 命令做什么，以及和从 Issue 起步的交付流水线相比，Claude Ship 停在哪一步。</p>
-<p>我是 Larry 🍀 Orbi，Orbi 的创始人。Orbi 会把 GitHub Issue 做成经过评审并合进仓库的 PR，也在你发起时执行发版；它运行的是开源编程 agent Pi，不运行 Claude Code，也不运行 Claude Ship。2026 年 11 月 26 日我读了官方文档，并在 Claude Code 里亲手试了 <code class="post-code--single">/ship</code>。组织级的三个 agent 我测不了，因为它们需要 Team 或 Enterprise 组织。</p><aside class="post-cta-inline"><span>Orbi 把你的 Issue 一路做到发版。</span><a class="button button-signal" data-cta="post-inline-start" href="/zh/cloud/login">免费试用 Orbi Cloud →</a></aside>
-<h2 id="claude-ship-是什么-三个-agent-处理同一个-pr">Claude Ship 是什么：三个 agent 处理同一个 PR</h2>
+<p>Claude Ship 是 Anthropic 在 2026 年 11 月 23 日<a href="https://claude.com/blog/introducing-claude-ship">发布</a>的三个 GitHub PR agent（Code Review、PR Steward 和 Claude Approvals），面向 Claude Team 和 Enterprise 套餐。这篇写给在考虑要不要开它的团队：读完能知道它停在哪一步、要花什么钱、哪些设置要先改。</p>
+<p>我是 Larry 🍀 Orbi，Orbi 的创始人。Orbi 从 GitHub Issue 出发，写代码、评审，再把 PR 合进仓库，也在你发起时执行发版；它运行的是开源编程 agent Pi，不运行 Claude Code，也不运行 Claude Ship。2026 年 11 月 26 日我读了官方文档，并在 Claude Code 里亲手试了 <code class="post-code--single">/ship</code>。组织级的三个 agent 我测不了，因为它们需要 Team 或 Enterprise 组织。</p><aside class="post-cta-inline"><span>Orbi 把你的 Issue 一路做到发版。</span><a class="button button-signal" data-cta="post-inline-start" href="/zh/cloud/login">免费试用 Orbi Cloud →</a></aside>
+<h2 id="claude-ship-的三个-agent-怎么分工">Claude Ship 的三个 agent 怎么分工</h2>
 <p>按 <a href="https://code.claude.com/docs/en/claude-ship">Claude Ship 文档</a>，三个 agent 分工处理已经打开的 GitHub PR：</p>
 <p class="post-table-hint" hidden>左右滑动查看所有列。</p><div class="post-table-scroll" tabindex="0" role="region" aria-label="左右滑动查看所有列。"><table class="table-comparison">
 <thead>
@@ -217,7 +217,7 @@
 </tr>
 </tbody></table></div>
 <p>Code Review 已经是正式版，主要查 bug，不管代码格式偏好。组织 Owner 可以按仓库选择 Quick、Standard（默认）或 Deep 审查级别。Code Review 自己既不批准 PR，也不拦截合并。</p>
-<p>处于公测阶段的 PR Steward 根据 <a href="https://code.claude.com/docs/en/pr-steward">PR Steward 文档</a>的说明，会处理失败的检查、合并冲突，以及人和审查机器人（比如 Code Review）留下的审查意见，再直接推送 commit。每次推送后，它会发评论说明改了什么、怎么撤销；在 PR 里评论 <code class="post-code--spaced">@claude stop</code> 或移除 <code class="post-code--single">claude-pr-steward-watching</code> 标签，它就会停手。文档注明它“设计为不批准也不合并 PR”，而且在你手动设限之前，它没有自己的消费上限。</p>
+<p>PR Steward 目前处于公测。按 <a href="https://code.claude.com/docs/en/pr-steward">PR Steward 文档</a>，它会处理失败的检查、合并冲突，以及人和审查机器人（比如 Code Review）留下的审查意见，再直接推送 commit。每次推送后，它会发评论说明改了什么、怎么撤销；在 PR 里评论 <code class="post-code--spaced">@claude stop</code> 或移除 <code class="post-code--single">claude-pr-steward-watching</code> 标签，它就会停手。文档注明它“设计为不批准也不合并 PR”，而且在你手动设限之前，它没有自己的消费上限。</p>
 <p>同样在公测的 Claude Approvals 会增加一项 PR 检查，对照默认分支里的 <code class="post-code--single">.claude/approvals.yml</code> 策略文件，列出还缺谁的批准，策略允许时也会由 Claude 发出批准评审。这项检查只有在 GitHub 里设为必需检查（required check）时才会拦截合并。策略文件默认就是强制执行；Anthropic 建议先写 <code class="post-code--spaced">mode: observe</code> 观察一段时间，不过 observe 模式照样计费。</p>
 <p>这三个 agent 都不负责合并，一个 PR 能不能合进去，还是由你的 GitHub 分支规则决定。</p>
 <h2 id="谁能用-claude-ship-怎么计费">谁能用 Claude Ship，怎么计费</h2>
@@ -226,7 +226,7 @@
 <p>在组织设置里关掉 usage credits 并不会停掉已经打开的 agent，它们还会继续跑、继续计费。要停用必须直接关掉 agent，并且按顺序来：先关 Approvals，再关 PR Steward，最后关 Code Review。Approvals 要最先关，因为就算你把 Code Review 关了，策略文件仍会继续触发计费的 Code Review。</p>
 <p>根据<a href="https://claude.com/blog/introducing-claude-ship">发布公告</a>，符合条件的 Enterprise 组织在 2027 年 1 月 15 日前可以领取至少 10,000 美元的 Claude Ship 额度，领取后 30 天内有效。</p>
 <h2 id="什么设置下-pr-没人审也能合并">什么设置下，PR 没人审也能合并</h2>
-<p>Claude Ship 没有合并步骤。PR Steward 设计为不执行合并，<a href="https://code.claude.com/docs/en/pr-steward-security">PR Steward 安全文档</a>也写明，它拦截合并和自动合并命令靠的是文本规则加模型判断，换种写法就能绕过，所以能拦住合并的还是你的 GitHub 分支规则。PR 没人审就合进去，最主要的原因是 Claude Approvals 这项检查没在 GitHub 里设为必需检查，等于什么都拦不住（observe 模式通常也会算通过）。</p>
+<p>Claude Ship 没有合并步骤。PR Steward 设计为不执行合并，<a href="https://code.claude.com/docs/en/pr-steward-security">PR Steward 安全文档</a>也写明，它拦截合并和自动合并命令靠的是文本规则加模型判断，换种写法就能绕过，所以能拦住合并的还是你的 GitHub 分支规则。PR 没人审就合进去，一种典型情况是 Claude Approvals 这项检查没在 GitHub 里设为必需检查，等于什么都拦不住（按文档，observe 模式下这项检查通常也不拦合并）。</p>
 <p>就算把这项检查设成了必需且强制执行，<a href="https://code.claude.com/docs/en/approvals-github-rules">Approvals 与 GitHub 规则文档</a>还列出了几种不需要作者以外的真人也能通过的情况：</p>
 <ul>
 <li><code class="post-code--spaced">seats: 0</code>，允许机器人打开的 PR 在没人看的情况下通过。</li>
@@ -263,7 +263,7 @@ rules:
 <h2 id="ship-命令不是-claude-ship">/ship 命令不是 Claude Ship</h2>
 <p>三个名字长得很像，干的是不同的事。Claude Ship 是组织级的三个 GitHub agent，走组织 usage credits 计费。Claude Code 的 <code class="post-code--single">/ship</code> 命令跑在你本地终端会话里，算你自己的 Claude Code 用量。Orbi 的 <code class="post-code--single">/orbi:ship</code> 命令（来自 Orbi 的 Claude Code 插件）把任务写成带 <code class="post-code--single">ai-ready</code> 标签的 GitHub Issue 交给 Orbi，它不合并任何东西。</p>
 <p>在 <a href="https://code.claude.com/docs/en/ship-command"><code class="post-code--single">/ship</code> 命令文档</a>里，<code class="post-code--single">/ship</code> 会以你的身份提交、推送并打开 GitHub PR，跑一次 <code class="post-code--single">/code-review</code>，再在当前会话里启动一个“watch”，持续处理失败的检查、合并冲突、审查评论和审查问题；合并 PR 仍要你自己操作。</p>
-<p>使用 <code class="post-code--single">/ship</code> 需要 Claude Code v2.1.330+、已登录的 GitHub CLI 2.63+ 和 <code class="post-code--single">git</code> 2.38+。无人看守的 watch 需要 auto 模式（<code class="post-code--single">bypassPermissions</code> 不会启动 watch，v2.1.331+ 上 <code class="post-code--single">/ship</code> 在 plan 模式下也不会启动），原生 Windows 和后台会话里同样不会启动 watch。在公开仓库里，<code class="post-code--single">/ship</code> 不会提交未提交的改动；在允许提交和推送的仓库里，它不会弹确认提示，只会在提交前和推送前各打出一行 <code class="post-code--spaced">Esc to cancel</code>。</p>
+<p>使用 <code class="post-code--single">/ship</code> 需要 Claude Code v2.1.330+、已登录的 GitHub CLI 2.63+ 和 <code class="post-code--single">git</code> 2.38+。无人看守的 watch 需要 auto 模式（<code class="post-code--single">bypassPermissions</code> 不会启动 watch，v2.1.331+ 上 <code class="post-code--single">/ship</code> 在 plan 模式下也不会启动），原生 Windows 和后台会话里同样不会启动 watch。在公开仓库里，<code class="post-code--single">/ship</code> 不会替你提交工作区里还没提交的改动；在允许提交和推送的仓库里，它不会弹确认提示，只会在提交前和推送前各打出一行 <code class="post-code--spaced">Esc to cancel</code>。</p>
 <p>2026 年 11 月 26 日，我在一个私有的临时仓库里用 Claude Code 2.1.331 实测了 <code class="post-code--single">/ship</code> 命令。在由另一个 agent 会话启动的会话里输入 <code class="post-code--single">/ship</code>，返回的是：</p>
 <div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="已复制">复制</button><pre><code class="language-text" data-copy-source>This session was started by another session, so /ship can&#39;t run here. Run it in a session you started yourself.
 </code></pre></div>
@@ -271,7 +271,7 @@ rules:
 <div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="已复制">复制</button><pre><code class="language-text" data-copy-source>Nothing started. Claude Code&#39;s built-in /ship doesn&#39;t start in this kind of session. Run claude in a terminal, and type it there.
 </code></pre></div>
 <p>两次运行都没有提交、推送或打开 PR。这两条拒绝提示都在 <a href="https://code.claude.com/docs/en/ship-command-troubleshooting"><code class="post-code--single">/ship</code> 排障表</a>里有记录：<code class="post-code--single">/ship</code> 只能由坐在键盘前的人亲手输入触发，程序、定时任务或另一个 agent 都调不起来。我没有在自己手动启动的会话里跑完整个流程。</p>
-<h2 id="claude-ship-和-orbi-每一步归谁管">Claude Ship 和 Orbi：每一步归谁管</h2>
+<h2 id="claude-ship-和-orbi-各管哪一步">Claude Ship 和 Orbi 各管哪一步</h2>
 <p class="post-table-hint" hidden>左右滑动查看所有列。</p><div class="post-table-scroll" tabindex="0" role="region" aria-label="左右滑动查看所有列。"><table class="table-comparison">
 <thead>
 <tr>
@@ -323,7 +323,7 @@ rules:
 <tr>
 <th scope="row">没人敲键盘能不能跑</th>
 <td>Code Review 会在已启用仓库的 PR 上自动跑；PR Steward 只有设为 On 才会自己启动（文档建议先用 Manual，靠 <code class="post-code--spaced">@claude steward</code> 触发）；Approvals 按策略文件自动跑；<code class="post-code--single">/ship</code> 需要你亲手敲</td>
-<td>可以，从打好标签的 Issue 一路跑到 PR 合并；发版在你开发版 Issue 后启动</td>
+<td>可以，从打好标签的 Issue 一路跑到 PR 合并；发版要你开发版 Issue，且等里程碑下其他 Issue 关完</td>
 </tr>
 </tbody></table></div>
 <p>Claude Ship 和 Orbi 之间没有集成，我也没有在同一个仓库上同时跑过两者。Claude Code 和 Orbi 之间唯一的交接点，就是插件把 Issue 交过去。Orbi 的常规交付到 PR 合并为止。发版从不自动触发：由人来开发版 Issue，再交给 Orbi 执行。</p>
@@ -333,7 +333,7 @@ rules:
 <h2 id="你的团队适合哪一个">你的团队适合哪一个</h2>
 <ul>
 <li>你们团队（人或 Claude Code）已经在写代码，用的是 Team 或 Enterprise 套餐加 GitHub，瓶颈卡在代码审查、修评论和批准策略上，就选 Claude Ship。先开 observe 模式，切到强制执行前把非作者批准规则加上。</li>
-<li>想让从 Issue 到合并 PR 的整段流程无人值守跑完、发版也只要你开发版 Issue 就自动执行，并且想要固定月费，就选 Orbi。Orbi Cloud Solo 标价 US$29/月（当前价格和创始会员折扣见 <a href="/zh/cloud/?ref=blog-claude-ship">Orbi Cloud</a>）。</li>
+<li>想让从 Issue 到合并 PR 的整段流程无人值守跑完，就选 Orbi。发版由你开发版 Issue 发起，等里程碑下其他 Issue 关完后 Orbi 执行。价格是固定月费：Orbi Cloud Solo 标价 US$29/月（当前价格和创始会员折扣见 <a href="/zh/cloud/?ref=blog-claude-ship">Orbi Cloud</a>）。</li>
 <li>没有 Team 或 Enterprise 套餐就用不了 Claude Ship，不过 <code class="post-code--single">/ship</code> 照常可用，按普通的 Claude Code 用量计费。</li>
 </ul>
 <aside class="post-cta">
