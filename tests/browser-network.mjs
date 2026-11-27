@@ -412,6 +412,16 @@ export const BADGE_PLACEHOLDER_SIZES = [
   // the vendor snippet declares the same 220x48 box). The free listing at
   // /p/orbi goes live after this badge is found in the server-rendered homepage.
   { host: "swipetolaunch.com", width: 220, height: 48 },
+  // 2026-11-27 ShapelessAI official card, logo-mark.png declared 54x30
+  // (source PNG 256x141, displayed at height 30px / width auto ≈ 54).
+  // The listing at /ai-tools/orbi stays followed after this card is found
+  // in the server-rendered homepage.
+  { host: "shapelessai.com", width: 54, height: 30 },
+  // 2026-11-27 AI SaaS Dir official badge, measured on the live URL:
+  // /badge.svg 220x56 (SVG, 1109 bytes, width/height and viewBox 0 0 220 56;
+  // the vendor snippet declares the same 220x56 box). The free listing at
+  // /tools/orbi is awaiting_badge until this badge is on the homepage.
+  { host: "aisaasdir.com", width: 220, height: 56 },
 ];
 const FALLBACK_PLACEHOLDER_SIZE = { width: 1, height: 1 };
 
