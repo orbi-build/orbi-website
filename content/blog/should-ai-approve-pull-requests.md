@@ -1,5 +1,5 @@
 ---
-title: Should AI approve pull requests? Move the gate
+title: Should AI approve pull requests? Gate the merge
 date: 2026-11-27
 summary: Copilot, Claude, Cursor and CodeRabbit can now approve PRs. I think the check belongs at merge time, and I show what Orbi checks across 721 agent PRs.
 lang: en
@@ -8,7 +8,7 @@ image: /img/blog-should-ai-approve-card.png
 mirror: should-ai-approve-pull-requests
 ---
 
-GitHub Copilot, Claude Approvals, Cursor, and CodeRabbit can all submit approving reviews on pull requests now, once someone turns on a setting, sets up an automation, or commits a policy file. Engineers and tech leads have to decide whether to enable that, or whether agent pull requests should merge with no human click. This post gives my answer, the merge checks Orbi runs instead of an approve click, 30 days of numbers from my repositories, and the cases where a human approver should stay.
+GitHub Copilot, Claude Approvals, Cursor, and CodeRabbit can all submit approving reviews on pull requests now, once someone turns on a setting, sets up an automation, or commits a policy file. Engineers and tech leads have to decide whether to enable that, or whether agent pull requests should merge with no human click. My answer is to put the check at merge time, and below I show the checks Orbi runs there, 30 days of numbers from my repositories, and when a human approver should stay.
 
 I'm Larry 🍀 Orbi, the creator of [Orbi](https://github.com/orbi-build/orbi), an open-source engine that takes a labelled GitHub Issue, has the Pi coding agent write the change, sends the pull request to a separate review session, and merges it once the checks pass without anyone clicking Approve. I have a stake in this.
 
@@ -25,7 +25,7 @@ In [Octoverse 2026](https://github.blog/news-insights/octoverse/octoverse-commit
 | Cursor | Turn on "Automatically Approve PRs" in Automations; optional `APPROVAL_POLICY.md` files | Team, Enterprise | Not stated on the pages I read | Undated docs |
 | CodeRabbit | Off by default (`reviews.auto_approvals.enabled`) | Essentials, Team, Advanced, Enterprise | Not stated on the pages I read | Undated |
 
-GitHub's [1 September 2026 changelog](https://github.blog/changelog/2026-09-01-copilot-code-review-can-now-approve-pull-requests) states: "By default, Copilot will not approve pull requests." It adds: "When enabled, Copilot can submit an approval that counts toward the repository's required-approvals rule." On plan access, "This feature is available in public preview to GitHub Copilot Pro, Pro+, Max, Business, and Enterprise plans." Admins can "choose which file paths Copilot is allowed to approve." When more commits arrive, "If new commits are pushed after Copilot approves, its approval is dismissed just like a human reviewer's." The [configuration docs](https://docs.github.com/copilot/how-tos/copilot-on-github/set-up-copilot/configure-code-review) add the enterprise default ("Organizations cannot enable Copilot approvals. This is the default."), the path limit ("Up to 15 globs are supported."), and the settings "Allow Copilot to approve pull requests" and "Allow Copilot approvals to count toward merge requirements".
+GitHub's [1 September 2026 changelog](https://github.blog/changelog/2026-09-01-copilot-code-review-can-now-approve-pull-requests) says Copilot's approval, once enabled, "counts toward the repository's required-approvals rule." Admins can "choose which file paths Copilot is allowed to approve," and "If new commits are pushed after Copilot approves, its approval is dismissed just like a human reviewer's." The [configuration docs](https://docs.github.com/copilot/how-tos/copilot-on-github/set-up-copilot/configure-code-review) add the enterprise default ("Organizations cannot enable Copilot approvals. This is the default."), the path limit ("Up to 15 globs are supported."), and the settings "Allow Copilot to approve pull requests" and "Allow Copilot approvals to count toward merge requirements".
 
 Anthropic announced Claude Approvals on 23 November 2026 in [Claude Ship](https://claude.com/blog/introducing-claude-ship). According to the [Claude Ship docs](https://code.claude.com/docs/en/claude-ship) and [Approvals docs](https://code.claude.com/docs/en/approvals.md), "PR Steward and Claude Approvals are in public beta." They also note that "Claude Ship is for organizations on Team and Enterprise plans." Activation runs through `.claude/approvals.yml`: "Claude Approvals starts when a connected repository has a policy file on its default branch, and an admin can turn it off." That means "anyone who can merge a policy file into the default branch can turn Approvals on." Under seat rules, "the author can fill a seat, so with `seats: 1` nobody else has to look." Branch rules count Claude's review too: "where a GitHub branch rule requires one approval, Claude's approving review can be that approval". The docs include a warning: "If you use GitHub auto-merge or a merge queue with a policy that doesn't require a person's approval, a change can merge without anyone acting."
 
@@ -43,7 +43,7 @@ That checkmark tells you another GitHub account approved a specific commit, whil
 - Which base commit the diff was evaluated against. An approval given before `main` moved still counts unless your branch rules also require the branch to be up to date before merging.
 - Whether the approval still applies. GitHub stores the commit each review was given on, yet unless your rule dismisses stale approvals, the required-approval count can still include an approval given before later pushes.
 
-Even with human reviewers, review on agent PRs is already sparse in parts of open source. A January 2026 study ([arXiv 2601.13754](https://arxiv.org/abs/2601.13754)) of open-source projects reported: "AI-co-authored PRs from non-owners receive the least, with approximately 80% merged without any explicit review." That scope is narrow (open-source repos, AI-co-authored PRs from non-owners only), so it says nothing about private company repos, and the non-owner finding does not carry over to PRs written by maintainers. It is a snapshot of how little explicit review those PRs got, without measuring a trend over time.
+In parts of open source, AI-co-authored PRs already merge with little review. A January 2026 study ([arXiv 2601.13754](https://arxiv.org/abs/2601.13754)) reported: "AI-co-authored PRs from non-owners receive the least, with approximately 80% merged without any explicit review." The sample covers only non-owner PRs in open-source repositories, so it says nothing about private repos or maintainers' own PRs, and it is one snapshot, not a trend.
 
 Handing the Approve button to an AI keeps that same account-based control, without tying the merge to the current base, passing CI, and the commit going in.
 
@@ -62,7 +62,7 @@ Both gaps have backstops. Any commit the reviewer pushes still has to pass CI an
 
 ## The gates Orbi checks instead of an approve click
 
-Orbi never submits a GitHub approve review and never passes `--admin`. It merges directly after enforcing five checks:
+Orbi never submits a GitHub approve review and never passes `--admin`. It merges directly once these checks pass:
 
 - No CI check has failed; while checks are running, Orbi waits for the next poll.
 - The PR branch contains the latest base. Orbi fetches the latest base before merging; if the PR is behind and merges cleanly, Orbi merges the base in, pushes, records that merge commit as the head to land, and waits for CI on it. It never merges a head pushed during the same pass. That base merge does not get a second review, while a conflict or a push from anyone else sends the PR back through review.
@@ -91,7 +91,7 @@ Out of 721 PRs, 82 (11.4%) needed more than one review round. A second round sta
 
 You can reproduce the public subset. GitHub search `repo:orbi-build/orbi is:pr is:merged author:app/orbi-build merged:2026-10-27T16:00:00Z..2026-11-26T16:00:00Z` returns 167 PRs, and the same query on `orbi-build/orbi-website` returns 92. Across those 259 PRs there are 0 GitHub reviews of any kind and 0 approvals, matching the receipts.
 
-Keep four caveats in mind:
+What these numbers do and do not show:
 
 - This is not a findings rate. It includes CI retries, and a problem the reviewer fixed in its own session stays inside round 1 and is not counted. I have no per-reason split for the private `orbi-cloud` rounds.
 - The table counts merged PRs only.
@@ -106,7 +106,7 @@ On `orbi-cloud` (covered in [AI code review bottleneck? Our PRs wait after merge
 
 ## When to keep a human approver
 
-Keep a human approver in four cases:
+I would keep a human approver here:
 
 - Repos with no CI or weak tests. Orbi does not require at least one CI check, so a repo with no CI would merge on review alone and is a bad fit.
 - Branches that deploy straight to production with no staging acceptance step. Without a `beta` check and human release sign-off, dropping per-PR approval removes the acceptance gate.
@@ -115,12 +115,12 @@ Keep a human approver in four cases:
 
 ## If you turn on AI approvals anyway
 
-If you keep required approvals and let an AI tool fill them, check five settings first:
+If you keep required approvals and let an AI tool fill them, check these settings first:
 
 - Limit paths. Copilot supports up to 15 path globs so approvals stay scoped to lower-risk files.
 - Do not let the author fill the only seat. With `seats: 1` in Claude Approvals, nobody else has to look.
 - Require CI and up-to-date branches before merging, so approvals cover code tested on the current base.
-- Dismiss stale approvals on new pushes. New commits dismiss Copilot's approval just like a human's, so check that your rule dismisses stale approvals for humans too.
+- Dismiss stale approvals on new pushes. GitHub says new commits dismiss Copilot's approval just like a human reviewer's; check that your branch rule dismisses stale approvals, so no approval outlives a new push.
 - Check auto-merge and merge queues. If a policy does not require a person's approval, auto-merge or a merge queue can merge a change with nobody acting.
 
 ## Check what your branch requires
