@@ -1,5 +1,13 @@
 [
   {
+    "slug": "should-ai-approve-pull-requests",
+    "title": "Should AI approve pull requests? Gate the merge",
+    "summary": "Copilot, Claude, Cursor and CodeRabbit can now approve PRs. I think the check belongs at merge time, and I show what Orbi checks across 721 agent PRs.",
+    "zhSlug": "should-ai-approve-pull-requests",
+    "zhTitle": "AI 该不该批准 PR？在合并这一步把关",
+    "related": []
+  },
+  {
     "slug": "claude-ship",
     "title": "Claude Ship: what it automates and where it stops",
     "summary": "Claude Ship adds three GitHub PR agents for Team and Enterprise. None of them merges, so your branch rules decide if a PR gets in with no human review.",

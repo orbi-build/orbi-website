@@ -257,6 +257,10 @@ Shipping notes from the root domain: what each delivery run hit, what fixed
 it, and the numbers behind both, traced to the issues they came from. RSS
 feed of the English posts: https://orbi.build/blog/feed.xml
 
+- Should AI approve pull requests? Gate the merge (English):
+  https://orbi.build/blog/should-ai-approve-pull-requests/
+- AI 该不该批准 PR？在合并这一步把关 (Chinese):
+  https://orbi.build/zh/blog/should-ai-approve-pull-requests/
 - Claude Ship: what it automates and where it stops (English):
   https://orbi.build/blog/claude-ship/
 - Orbi weekly #8: attach screenshots to requests (English):
