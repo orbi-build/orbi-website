@@ -14,7 +14,7 @@ I'm Larry 🍀 Orbi, the creator of [Orbi](https://github.com/orbi-build/orbi), 
 
 To a GitHub branch rule, an approval means one eligible account approved one commit. The rule does not ask what the approver checked or which base the diff was tested against, and Copilot, Claude Approvals and CodeRabbit all say their AI approval can fill that required slot. My view: review should be independent of whoever wrote the code, even when the reviewer is not a person, and a person should own the rules and release acceptance instead of the per-PR click. Orbi's own reviewer is also an AI saying yes; the difference I care about is what that yes is tied to, which the rest of this post spells out. Orbi never submits a GitHub approval. It merges unattended only where the branch requires zero approvals, as my three repositories do; where a branch requires one, it stops and waits for a person.
 
-## Who can approve a pull request now
+## Can Copilot approve pull requests? Who else can now
 
 In [Octoverse 2026](https://github.blog/news-insights/octoverse/octoverse-commits-pushes-reach-new-highs-in-2026-as-developers-build-with-agents/) (28 October 2026), GitHub reported: "By September 2026, more than 40% of pull requests on GitHub started with an agent's first draft, up from 17% in March." Of these four tools, two dated their AI approval feature: Copilot on 1 September 2026 and Claude Approvals on 23 November 2026. The Cursor and CodeRabbit docs pages I read have no date. Every one of the four needs someone to turn it on or write a policy file.
 
@@ -113,7 +113,7 @@ I would keep a human approver here:
 - Policy and governance files. Whoever can merge `.claude/approvals.yml` can turn Claude Approvals on, so changes to policy files and CI rules need a human approver.
 - Compliance or team rules requiring a human approval per PR. Keep `required_approving_review_count >= 1` so GitHub enforces it (Orbi parks at `ai-awaiting-merge`), and leave AI approvals off in that repository, because Copilot, Claude or CodeRabbit can fill that count once enabled.
 
-## If you turn on AI approvals anyway
+## If you let AI approve pull requests anyway
 
 If you keep required approvals and let an AI tool fill them, check these settings first:
 

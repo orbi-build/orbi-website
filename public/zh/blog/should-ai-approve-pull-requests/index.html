@@ -160,14 +160,14 @@
         <nav class="post-toc" aria-label="本页目录">
           <h2>本页目录</h2>
           <ol>
-          <li><a class="post-toc-link" href="#现在哪些工具能批准-pr">现在哪些工具能批准 PR</a></li>
+          <li><a class="post-toc-link" href="#copilot-能批准-pr-吗-现在还有谁能">Copilot 能批准 PR 吗？现在还有谁能</a></li>
           <li><a class="post-toc-link" href="#批准评审只记账号和-commit">批准评审只记账号和 commit</a></li>
           <li><a class="post-toc-link" href="#orbi-里的-独立评审-指什么">Orbi 里的“独立评审”指什么</a></li>
           <li><a class="post-toc-link" href="#orbi-不点批准-合并前查什么">Orbi 不点批准，合并前查什么</a></li>
           <li><a class="post-toc-link" href="#三个仓库-30-天的合并数据">三个仓库 30 天的合并数据</a></li>
           <li><a class="post-toc-link" href="#人还守在哪里">人还守在哪里</a></li>
           <li><a class="post-toc-link" href="#哪些情况应该保留人工批准">哪些情况应该保留人工批准</a></li>
-          <li><a class="post-toc-link" href="#如果你还是打算开-ai-自动批准">如果你还是打算开 AI 自动批准</a></li>
+          <li><a class="post-toc-link" href="#如果你还是打算让-ai-批准-pr">如果你还是打算让 AI 批准 PR</a></li>
           <li><a class="post-toc-link" href="#查一下你的分支到底要求什么">查一下你的分支到底要求什么</a></li>
           <li><a class="post-toc-link" href="#相关">相关</a></li>
           </ol>
@@ -176,14 +176,14 @@
         <details class="post-toc-inline">
           <summary>本页目录 · 10 节</summary>
           <ol>
-          <li><a class="post-toc-link" href="#现在哪些工具能批准-pr">现在哪些工具能批准 PR</a></li>
+          <li><a class="post-toc-link" href="#copilot-能批准-pr-吗-现在还有谁能">Copilot 能批准 PR 吗？现在还有谁能</a></li>
           <li><a class="post-toc-link" href="#批准评审只记账号和-commit">批准评审只记账号和 commit</a></li>
           <li><a class="post-toc-link" href="#orbi-里的-独立评审-指什么">Orbi 里的“独立评审”指什么</a></li>
           <li><a class="post-toc-link" href="#orbi-不点批准-合并前查什么">Orbi 不点批准，合并前查什么</a></li>
           <li><a class="post-toc-link" href="#三个仓库-30-天的合并数据">三个仓库 30 天的合并数据</a></li>
           <li><a class="post-toc-link" href="#人还守在哪里">人还守在哪里</a></li>
           <li><a class="post-toc-link" href="#哪些情况应该保留人工批准">哪些情况应该保留人工批准</a></li>
-          <li><a class="post-toc-link" href="#如果你还是打算开-ai-自动批准">如果你还是打算开 AI 自动批准</a></li>
+          <li><a class="post-toc-link" href="#如果你还是打算让-ai-批准-pr">如果你还是打算让 AI 批准 PR</a></li>
           <li><a class="post-toc-link" href="#查一下你的分支到底要求什么">查一下你的分支到底要求什么</a></li>
           <li><a class="post-toc-link" href="#相关">相关</a></li>
           </ol>
@@ -191,7 +191,7 @@
 <p>GitHub Copilot、Claude Approvals、Cursor 和 CodeRabbit 现在都能在 PR 上提交批准评审，不过都要先有人打开开关、启用自动化，或者提交策略文件，才会开始批准。这篇写给在考虑开不开这项功能、或者想让 agent 的 PR 不经人点批准就合并的工程师和技术负责人。我的答案是在合并这一步把关，文中有 Orbi 合并前的检查、我三个仓库 30 天的数据，以及该留真人批准的情况。</p>
 <p>我是 Larry 🍀 Orbi，Orbi 的创始人。<a href="https://github.com/orbi-build/orbi">Orbi</a> 是个开源交付引擎：给它一个打好标签的 GitHub Issue，它就让编程 agent Pi 写完改动，把 PR 交给独立的评审会话，检查通过直接合并，全程没人点 Approve。所以这件事和我有利益关系。</p><aside class="post-cta-inline"><span>Orbi 把你的 Issue 一路做到发版。</span><a class="button button-signal" data-cta="post-inline-start" href="/zh/cloud/login">免费试用 Orbi Cloud →</a></aside>
 <p>对 GitHub 的分支规则来说，一次批准只表示“某个有资格的账号批准了某个 commit”，规则不问批准的人查了什么，也不问改动在哪个 base 上测过。现在 Copilot、Claude Approvals 和 CodeRabbit 的文档都写明，AI 的批准能顶上这个必需名额。那 AI 到底该不该批准 PR？我的看法是：评审要独立于写代码的一方，但评审者不必是真人；人管好规则和发版验收，不用逐个 PR 去点批准。Orbi 自己的评审也是 AI 在说“行”，区别在于这个“行”绑在什么上，后文逐条讲。Orbi 从不提交 GitHub 批准，只在分支要求 0 个批准时无人值守地合并（我的三个仓库都是这样）；分支要求批准时，它停下来等人。</p>
-<h2 id="现在哪些工具能批准-pr">现在哪些工具能批准 PR</h2>
+<h2 id="copilot-能批准-pr-吗-现在还有谁能">Copilot 能批准 PR 吗？现在还有谁能</h2>
 <p>GitHub 在 2026 年 10 月 28 日的 <a href="https://github.blog/news-insights/octoverse/octoverse-commits-pushes-reach-new-highs-in-2026-as-developers-build-with-agents/">Octoverse 2026</a> 报告里写道：&quot;By September 2026, more than 40% of pull requests on GitHub started with an agent&#39;s first draft, up from 17% in March.&quot;（截至 2026 年 9 月，GitHub 上超过 40% 的 PR 初稿来自 agent，3 月时还是 17%。）下面四款工具里，只有两款写明了 AI 批准功能的发布日期：Copilot 是 2026 年 9 月 1 日，Claude Approvals 是 2026 年 11 月 23 日；我读的 Cursor 和 CodeRabbit 文档页都没标日期。四款都得先有人开启，或者写好策略文件。</p>
 <p class="post-table-hint" hidden>左右滑动查看所有列。</p><div class="post-table-scroll" tabindex="0" role="region" aria-label="左右滑动查看所有列。"><table class="table-comparison">
 <thead>
@@ -333,7 +333,7 @@
 <li>策略和治理类文件。谁能合入 <code class="post-code--single">.claude/approvals.yml</code>，谁就能打开 Claude Approvals，所以改策略文件和 CI 规则的 PR 要留人把关。</li>
 <li>合规要求或团队制度规定每个 PR 必须真人批准。保持 <code class="post-code--spaced">required_approving_review_count &gt;= 1</code>，交给 GitHub 强制拦截（Orbi 会把单子停在 <code class="post-code--single">ai-awaiting-merge</code> 等人处理），同时在这个仓库里别开 AI 批准，因为 Copilot、Claude 或 CodeRabbit 一旦开启就能占掉这个名额。</li>
 </ul>
-<h2 id="如果你还是打算开-ai-自动批准">如果你还是打算开 AI 自动批准</h2>
+<h2 id="如果你还是打算让-ai-批准-pr">如果你还是打算让 AI 批准 PR</h2>
 <p>如果你还是打算保留必需批准规则，让 AI 工具顶上这个名额，开之前先核对这些设置：</p>
 <ul>
 <li>限制路径范围。Copilot 最多支持 15 条 path glob，把自动批准收在低风险文件里。</li>

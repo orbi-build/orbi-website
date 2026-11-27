@@ -160,14 +160,14 @@
         <nav class="post-toc" aria-label="On this page">
           <h2>On this page</h2>
           <ol>
-          <li><a class="post-toc-link" href="#who-can-approve-a-pull-request-now">Who can approve a pull request now</a></li>
+          <li><a class="post-toc-link" href="#can-copilot-approve-pull-requests-who-else-can-now">Can Copilot approve pull requests? Who else can now</a></li>
           <li><a class="post-toc-link" href="#what-an-approval-records-and-what-it-leaves-out">What an approval records, and what it leaves out</a></li>
           <li><a class="post-toc-link" href="#what-independent-means-in-orbi">What &quot;independent&quot; means in Orbi</a></li>
           <li><a class="post-toc-link" href="#the-gates-orbi-checks-instead-of-an-approve-click">The gates Orbi checks instead of an approve click</a></li>
           <li><a class="post-toc-link" href="#30-days-of-agent-prs-merged-with-no-approval">30 days of agent PRs merged with no approval</a></li>
           <li><a class="post-toc-link" href="#where-a-person-still-sits">Where a person still sits</a></li>
           <li><a class="post-toc-link" href="#when-to-keep-a-human-approver">When to keep a human approver</a></li>
-          <li><a class="post-toc-link" href="#if-you-turn-on-ai-approvals-anyway">If you turn on AI approvals anyway</a></li>
+          <li><a class="post-toc-link" href="#if-you-let-ai-approve-pull-requests-anyway">If you let AI approve pull requests anyway</a></li>
           <li><a class="post-toc-link" href="#check-what-your-branch-requires">Check what your branch requires</a></li>
           <li><a class="post-toc-link" href="#related">Related</a></li>
           </ol>
@@ -176,14 +176,14 @@
         <details class="post-toc-inline">
           <summary>On this page · 10 sections</summary>
           <ol>
-          <li><a class="post-toc-link" href="#who-can-approve-a-pull-request-now">Who can approve a pull request now</a></li>
+          <li><a class="post-toc-link" href="#can-copilot-approve-pull-requests-who-else-can-now">Can Copilot approve pull requests? Who else can now</a></li>
           <li><a class="post-toc-link" href="#what-an-approval-records-and-what-it-leaves-out">What an approval records, and what it leaves out</a></li>
           <li><a class="post-toc-link" href="#what-independent-means-in-orbi">What &quot;independent&quot; means in Orbi</a></li>
           <li><a class="post-toc-link" href="#the-gates-orbi-checks-instead-of-an-approve-click">The gates Orbi checks instead of an approve click</a></li>
           <li><a class="post-toc-link" href="#30-days-of-agent-prs-merged-with-no-approval">30 days of agent PRs merged with no approval</a></li>
           <li><a class="post-toc-link" href="#where-a-person-still-sits">Where a person still sits</a></li>
           <li><a class="post-toc-link" href="#when-to-keep-a-human-approver">When to keep a human approver</a></li>
-          <li><a class="post-toc-link" href="#if-you-turn-on-ai-approvals-anyway">If you turn on AI approvals anyway</a></li>
+          <li><a class="post-toc-link" href="#if-you-let-ai-approve-pull-requests-anyway">If you let AI approve pull requests anyway</a></li>
           <li><a class="post-toc-link" href="#check-what-your-branch-requires">Check what your branch requires</a></li>
           <li><a class="post-toc-link" href="#related">Related</a></li>
           </ol>
@@ -191,7 +191,7 @@
 <p>GitHub Copilot, Claude Approvals, Cursor, and CodeRabbit can all submit approving reviews on pull requests now, once someone turns on a setting, sets up an automation, or commits a policy file. Engineers and tech leads have to decide whether to enable that, or whether agent pull requests should merge with no human click. My answer is to put the check at merge time, and below I show the checks Orbi runs there, 30 days of numbers from my repositories, and when a human approver should stay.</p>
 <p>I&#39;m Larry 🍀 Orbi, the creator of <a href="https://github.com/orbi-build/orbi">Orbi</a>, an open-source engine that takes a labelled GitHub Issue, has the Pi coding agent write the change, sends the pull request to a separate review session, and merges it once the checks pass without anyone clicking Approve. I have a stake in this.</p><aside class="post-cta-inline"><span>Orbi takes your Issues all the way to a release.</span><a class="button button-signal" data-cta="post-inline-start" href="/cloud/login">Try Orbi Cloud free →</a></aside>
 <p>To a GitHub branch rule, an approval means one eligible account approved one commit. The rule does not ask what the approver checked or which base the diff was tested against, and Copilot, Claude Approvals and CodeRabbit all say their AI approval can fill that required slot. My view: review should be independent of whoever wrote the code, even when the reviewer is not a person, and a person should own the rules and release acceptance instead of the per-PR click. Orbi&#39;s own reviewer is also an AI saying yes; the difference I care about is what that yes is tied to, which the rest of this post spells out. Orbi never submits a GitHub approval. It merges unattended only where the branch requires zero approvals, as my three repositories do; where a branch requires one, it stops and waits for a person.</p>
-<h2 id="who-can-approve-a-pull-request-now">Who can approve a pull request now</h2>
+<h2 id="can-copilot-approve-pull-requests-who-else-can-now">Can Copilot approve pull requests? Who else can now</h2>
 <p>In <a href="https://github.blog/news-insights/octoverse/octoverse-commits-pushes-reach-new-highs-in-2026-as-developers-build-with-agents/">Octoverse 2026</a> (28 October 2026), GitHub reported: &quot;By September 2026, more than 40% of pull requests on GitHub started with an agent&#39;s first draft, up from 17% in March.&quot; Of these four tools, two dated their AI approval feature: Copilot on 1 September 2026 and Claude Approvals on 23 November 2026. The Cursor and CodeRabbit docs pages I read have no date. Every one of the four needs someone to turn it on or write a policy file.</p>
 <p class="post-table-hint" hidden>Swipe horizontally to see all columns.</p><div class="post-table-scroll" tabindex="0" role="region" aria-label="Swipe horizontally to see all columns."><table class="table-comparison">
 <thead>
@@ -333,7 +333,7 @@
 <li>Policy and governance files. Whoever can merge <code class="post-code--single">.claude/approvals.yml</code> can turn Claude Approvals on, so changes to policy files and CI rules need a human approver.</li>
 <li>Compliance or team rules requiring a human approval per PR. Keep <code class="post-code--spaced">required_approving_review_count &gt;= 1</code> so GitHub enforces it (Orbi parks at <code class="post-code--single">ai-awaiting-merge</code>), and leave AI approvals off in that repository, because Copilot, Claude or CodeRabbit can fill that count once enabled.</li>
 </ul>
-<h2 id="if-you-turn-on-ai-approvals-anyway">If you turn on AI approvals anyway</h2>
+<h2 id="if-you-let-ai-approve-pull-requests-anyway">If you let AI approve pull requests anyway</h2>
 <p>If you keep required approvals and let an AI tool fill them, check these settings first:</p>
 <ul>
 <li>Limit paths. Copilot supports up to 15 path globs so approvals stay scoped to lower-risk files.</li>
