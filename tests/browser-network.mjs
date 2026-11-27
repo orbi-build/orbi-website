@@ -428,6 +428,10 @@ export const BADGE_PLACEHOLDER_SIZES = [
   // 236x54 (viewBox 0 0 236 54); mylaunchstash badge.png 234x54;
   // launchclash badge.png 197x54; aitechviral badge.png 192x54.
   { host: "www.indietool.io", width: 236, height: 54 },
+  // 2026-11-27 VouchDex badge (orbi-growth #1706): /badge/orbi.svg measured on
+  // the live URL (200 image/svg+xml, 1011 bytes, width/height and viewBox
+  // 0 0 190 52; the vendor's "Get the code" snippet declares the same box).
+  { host: "vouchdex.com", width: 190, height: 52 },
   { host: "mylaunchstash.com", width: 234, height: 54 },
   { host: "launchclash.com", width: 197, height: 54 },
   { host: "aitechviral.com", width: 192, height: 54 },
