@@ -12,7 +12,7 @@ GitHub Copilot、Claude Approvals、Cursor 和 CodeRabbit 现在都能在 PR 上
 
 我是 Larry 🍀 Orbi，Orbi 的创始人。[Orbi](https://github.com/orbi-build/orbi) 是个开源交付引擎：给它一个打好标签的 GitHub Issue，它就让编程 agent Pi 写完改动，把 PR 交给独立的评审会话，检查通过直接合并，全程没人点 Approve。所以这件事和我有利益关系。
 
-GitHub 的批准评审只记了哪个账号在哪个 commit 上点过头，不记查过什么，也不记改动在哪个 base 上测过。现在 Copilot 和 Claude Approvals 都允许 AI 点这个按钮，并顶上必需批准的名额。那 AI 到底该不该批准 PR？我的看法是：评审要独立于写代码的一方，但评审者不必是真人；人管好规则和最终验收就行，不用逐个 PR 去点批准。Orbi 完全不用 GitHub 批准：我的三个仓库把必需批准数都设成了 0，把门禁挪到了合并这一侧。
+对 GitHub 的分支规则来说，一次批准只表示“某个有资格的账号批准了某个 commit”，规则不问批准的人查了什么，也不问改动在哪个 base 上测过。现在 Copilot 和 Claude Approvals 都允许 AI 的批准顶上这个必需名额。那 AI 到底该不该批准 PR？我的看法是：评审要独立于写代码的一方，但评审者不必是真人；人管好规则和发版验收，不用逐个 PR 去点批准。Orbi 自己的评审也是 AI 在说“行”，区别在于这个“行”绑在什么上，后文逐条讲。Orbi 从不提交 GitHub 批准，只在分支要求 0 个批准时无人值守地合并（我的三个仓库都是这样）；分支要求批准时，它停下来等人。
 
 ## 现在哪些工具能批准 PR
 
@@ -25,9 +25,9 @@ GitHub 在 2026 年 10 月 28 日的 [Octoverse 2026](https://github.blog/news-i
 | Cursor | 在 Automations 开启 "Automatically Approve PRs"；可选放 `APPROVAL_POLICY.md` | Team、Enterprise | 我读的页面未注明 | 我读的页面未注明 |
 | CodeRabbit | 默认关闭（`reviews.auto_approvals.enabled`） | Essentials、Team、Advanced、Enterprise | 我读的页面未注明 | 我读的页面未注明 |
 
-GitHub 在 [2026 年 9 月 1 日更新日志](https://github.blog/changelog/2026-09-01-copilot-code-review-can-now-approve-pull-requests)里写道："By default, Copilot will not approve pull requests."（默认不批准 PR。）打开后，Copilot 的批准会 "counts toward the repository's required-approvals rule"，也就是计入必需批准数。管理员还能 "choose which file paths Copilot is allowed to approve."（指定允许 Copilot 批准的文件路径。）有新提交推上来时，它的批准会和真人的一样失效（"its approval is dismissed just like a human reviewer's"）。[配置文档](https://docs.github.com/copilot/how-tos/copilot-on-github/set-up-copilot/configure-code-review)另外列出了企业级默认限制（"Organizations cannot enable Copilot approvals. This is the default."，默认禁止组织启用）、路径上限（"Up to 15 globs are supported."，最多支持 15 条 glob 规则），以及两个开关："Allow Copilot to approve pull requests" 和 "Allow Copilot approvals to count toward merge requirements"。
+GitHub 在 [2026 年 9 月 1 日更新日志](https://github.blog/changelog/2026-09-01-copilot-code-review-can-now-approve-pull-requests)里写道："By default, Copilot will not approve pull requests."（默认不批准 PR。）打开后，Copilot 的批准会计入必需批准数（"counts toward the repository's required-approvals rule"）。管理员还能 "choose which file paths Copilot is allowed to approve."（指定允许 Copilot 批准的文件路径。）有新提交推上来时，它的批准会和真人的一样失效（"its approval is dismissed just like a human reviewer's"）。[配置文档](https://docs.github.com/copilot/how-tos/copilot-on-github/set-up-copilot/configure-code-review)另外列出了企业级默认限制，即企业管理员放开之前，组织自己开不了（"Organizations cannot enable Copilot approvals. This is the default."，默认禁止组织启用）、路径上限（"Up to 15 globs are supported."，最多支持 15 条 glob 规则），以及两个开关："Allow Copilot to approve pull requests" 和 "Allow Copilot approvals to count toward merge requirements"。
 
-Anthropic 在 2026 年 11 月 23 日发布 [Claude Ship](https://claude.com/blog/introducing-claude-ship) 时推出了 Claude Approvals。按 [Claude Ship 文档](https://code.claude.com/docs/en/claude-ship)和 [Approvals 文档](https://code.claude.com/docs/en/approvals.md)的说法，"PR Steward and Claude Approvals are in public beta."（目前处于公测），并且 "Claude Ship is for organizations on Team and Enterprise plans."（面向 Team 和 Enterprise 组织）。启用靠 `.claude/approvals.yml`："Claude Approvals starts when a connected repository has a policy file on its default branch, and an admin can turn it off."（已连接仓库的默认分支只要有策略文件就会启动，管理员可以关掉。）也就是说，"anyone who can merge a policy file into the default branch can turn Approvals on."（任何能把策略文件合进默认分支的人都能把它打开。）席位规则里，"the author can fill a seat, so with `seats: 1` nobody else has to look."（作者自己就能占满一个席位，配成 `seats: 1` 时别人可以完全不看。）落到分支规则上，"where a GitHub branch rule requires one approval, Claude's approving review can be that approval"（分支要求 1 个批准时，Claude 给出的批准评审就能顶上）。文档特意提醒："If you use GitHub auto-merge or a merge queue with a policy that doesn't require a person's approval, a change can merge without anyone acting."（策略不要求真人批准，同时开了 auto-merge 或 merge queue，没人动手，改动也会直接合进去。）
+Anthropic 在 2026 年 11 月 23 日发布 [Claude Ship](https://claude.com/blog/introducing-claude-ship) 时推出了 Claude Approvals。按 [Claude Ship 文档](https://code.claude.com/docs/en/claude-ship)和 [Approvals 文档](https://code.claude.com/docs/en/approvals.md)的说法，"PR Steward and Claude Approvals are in public beta."（目前处于公测；PR Steward 是 Claude Ship 里的另一个 agent，负责批准的是 Claude Approvals），并且 "Claude Ship is for organizations on Team and Enterprise plans."（面向 Team 和 Enterprise 组织）。启用靠 `.claude/approvals.yml`："Claude Approvals starts when a connected repository has a policy file on its default branch, and an admin can turn it off."（已连接仓库的默认分支只要有策略文件就会启动，管理员可以关掉。）文档还写道："anyone who can merge a policy file into the default branch can turn Approvals on."（任何能把策略文件合进默认分支的人都能把它打开。）席位指策略文件里要求的一个批准人名额："the author can fill a seat, so with `seats: 1` nobody else has to look."（作者自己就能占满一个席位，配成 `seats: 1` 时别人可以完全不看。）落到分支规则上，"where a GitHub branch rule requires one approval, Claude's approving review can be that approval"（分支要求 1 个批准时，Claude 给出的批准评审就能顶上）。文档特意提醒："If you use GitHub auto-merge or a merge queue with a policy that doesn't require a person's approval, a change can merge without anyone acting."（策略不要求真人批准，同时开了 auto-merge 或 merge queue，没人动手，改动也会直接合进去。）
 
 Cursor 的 [Approval Agents 文档](https://cursor.com/docs/approval-agents)写着："PR Routing & Approval routes pull requests to the right reviewers and can approve low-risk changes."（负责把 PR 分给合适的评审人，并可以批准低风险改动。）入口设在 Cursor Automations 里："Automatically Approve PRs approves low-risk PRs after you configure approval criteria."（配好批准条件后会自动批准低风险 PR。）仓库里的 `APPROVAL_POLICY.md` 是可选项，agent 会自动发现并按里面的规则判断。文档里还提到："If Bugbot or Security Agents report findings that need human review, PR Routing & Approval will not approve the PR."（如果 Bugbot 或 Security Agents 报出需要人工复核的问题，它就不会批准。）
 
@@ -58,7 +58,7 @@ GitHub 的必需评审规则查的是账号身份。按 [GitHub 文档](https://
 - 默认不会换用另一家厂商的模型。Orbi 支持单独配评审模型（`review_pi_provider` 和 `review_pi_model`），没配就复用实现阶段那个。
 - 评审员会在同一个会话里直接把 Blocker 和 Major 问题修掉、跑测试、推送提交，然后给出最终结论。这些在会话里顺手修好的改动，不会再进第二个评审会话。
 
-这两个缺口靠后面的机制兜底。评审员推上去的任何 commit，后面都必须重新过 CI 和下一节的合并门禁。遇到它修不掉的问题，单子会贴上 `ai-fix-needed` 标签退回去重修，再走一轮流程。评审最多跑五轮，超过五轮就把 Issue 标成 `ai-blocked` 交给人拍板；同一个问题连着两轮出现，评审也会停下来问人。
+这两个缺口靠后面的机制兜底。评审员推上去的任何 commit，后面都必须重新过 CI 和下一节的合并门禁。遇到它修不掉的问题，单子会贴上 `ai-fix-needed` 标签退回去重修，再走一轮流程。跑满五轮评审仍没有通过，Issue 就会被标成 `ai-blocked` 交给人拍板；同一个问题连着两轮出现，评审也会停下来问人。
 
 ## Orbi 不点批准，合并前查什么
 
@@ -66,13 +66,13 @@ Orbi 从不提交 GitHub 批准评审，也不传 `--admin`，而是直接走合
 
 - 没有任何 CI 检查失败；检查还在跑，就等下一轮轮询再看。
 - PR 分支必须包含最新的 base。合并前 Orbi 先拉取最新 base；如果 PR 落后且合并没有冲突，Orbi 就把 base 合进 PR 分支、推送，把这个合并 commit 记成待落地的 head，等它跑完 CI。同一轮里刚推上去的 head 绝不直接合并。这次合并 base 不会触发第二次评审；一旦有冲突，或者其他人往分支推了新提交，Orbi 就把 PR 退回重新评审。
-- 真正合进去的 head 必须是刚验过的那个。Orbi 用 `gh pr merge --match-head-commit <head>` 来合并，上次检查完之后只要分支又动过，合并就直接报错退出，不会把没检查过的提交合进去。
+- 合进去的 head 必须是 CI 刚通过的那个。Orbi 用 `gh pr merge --match-head-commit <head>` 来合并，上次检查完之后只要分支又动过，合并就直接报错退出。无冲突合入 base 之后，这个 head 过了 CI，但评审没有再读；评审覆盖的是 PR 自己的改动。
 - 如果某项检查在 base 分支上本身就失败，Orbi 会暂停当前 PR，另开一张修 base 故障的 Issue。
 - 只要 Issue 上挂着 `ai-blocked` 标签，就算评审和 CI 全过，Orbi 也不会放行合并。
 
 如果仓库的分支规则要求批准（`required_approving_review_count >= 1`），Orbi 不会自己批准自己，而是给 Issue 贴上 `ai-awaiting-merge` 标签，评论里写明需要人做什么，之后再重试。这条路径在我自己的仓库里还没跑过，因为我这边要求 0 个批准；上面写的是 Orbi 的设计行为，不是我实际跑过的记录。
 
-有一类改动不走 PR：发版时，Orbi 会确认当前里程碑下没有未完成的工作，直接把递增版本号的 commit 推到 base 分支，等这个 commit 的 CI 全绿后再打 tag、发布。
+有一类改动不走 PR：发版时，Orbi 会确认当前里程碑下没有未完成的工作，直接把递增版本号的 commit 推到 base 分支（前提是分支规则允许直接推送），等这个 commit 的 CI 全绿后再打 tag、发布。
 
 ## 三个仓库 30 天的合并数据
 
@@ -87,9 +87,9 @@ Orbi 从不提交 GitHub 批准评审，也不传 `--admin`，而是直接走合
 | `orbi-website` | 92 | 86 | 6 | 0 | 2 |
 | 合计 | 721 | 639 | 65 | 17 | 4 |
 
-721 个 PR 里有 82 个（11.4%）跑了不止一轮评审。触发第二轮的原因有两种：评审查出自己会话内修不掉的问题，或者合并门禁阶段有 CI 挂掉。公开仓库里跑了不止一轮的一共 14 个 PR：10 个是合并门禁阶段 CI 失败，4 个是评审发现问题。这 721 个 PR 合并时没有一个需要批准：仓库把要求设成了 0，Orbi 也从不提交批准。
+721 个 PR 里有 82 个（11.4%）跑了不止一轮评审。触发第二轮的原因有两种：评审查出自己会话内修不掉的问题，或者合并门禁阶段有 CI 挂掉。公开仓库里跑了不止一轮的一共 14 个 PR：10 个是合并门禁阶段 CI 失败，4 个是 Orbi 评审发现了问题（这些结论以评论形式贴出，不是 GitHub 评审）。这 721 个 PR 合并时没有一个需要批准：仓库把要求设成了 0，Orbi 也从不提交批准。
 
-公开仓库的数据可以直接复现。在 GitHub 搜索 `repo:orbi-build/orbi is:pr is:merged author:app/orbi-build merged:2026-10-27T16:00:00Z..2026-11-26T16:00:00Z` 会返回 167 个 PR，换成 `orbi-build/orbi-website` 会返回 92 个。这 259 个 PR 上没有任何 GitHub 评审记录，批准数也是 0，和上面的回执完全对得上。
+公开仓库的数据可以直接复现。在 GitHub 搜索 `repo:orbi-build/orbi is:pr is:merged author:app/orbi-build merged:2026-10-27T16:00:00Z..2026-11-26T16:00:00Z` 会返回 167 个 PR，换成 `orbi-build/orbi-website` 会返回 92 个。这 259 个 PR 上没有任何 GitHub 评审记录，批准数也是 0（我用 GraphQL 搜索接口逐个 PR 数了评审），PR 数和上面的回执对得上。
 
 这组数据能说明什么、不能说明什么：
 
@@ -100,7 +100,7 @@ Orbi 从不提交 GitHub 批准评审，也不传 `--admin`，而是直接走合
 
 ## 人还守在哪里
 
-拿掉逐个 PR 点批准以后，人退到了两个位置：规则和发版验收。上游由人写 Issue、管分支和 CI 规则；碰到评审满五轮、问题重复出现或返回 `blocked_on_human_decision`，人再出面处理 `ai-blocked` 的单子。
+拿掉逐个 PR 点批准以后，人的工作挪到了规则、例外处理和发版验收上。上游由人写 Issue、管分支和 CI 规则；碰到跑满五轮仍未通过、问题重复出现或返回 `blocked_on_human_decision`，人再出面处理 `ai-blocked` 的单子。
 
 下游拿 `orbi-cloud` 来说（具体过程我写过[AI 代码评审是瓶颈吗？我们的 PR 卡在合并之后](/zh/blog/ai-code-review-bottleneck/)），推向生产依然由人把关：打完 tag 先部署到 `beta`，在 `beta` 上跑端到端新用户检查，我签字确认后再把晋升合进 `main`，最后生产部署还要人再点一次确认。验收挪到了跑起来的发布版本上，不再拆成一个个 PR 看 diff。
 
@@ -111,7 +111,7 @@ Orbi 从不提交 GitHub 批准评审，也不传 `--admin`，而是直接走合
 - 没有 CI 或测试薄弱的仓库。Orbi 不要求仓库至少配一项 CI 检查；不配 CI，PR 只凭评审就能合并。缺测试兜底的项目，不适合关掉人工批准。
 - 合完直接上生产、没有预发验收步骤的分支。少了 `beta` 验证和人工发版签字，撤掉逐 PR 批准就等于撤掉了验收门禁。
 - 策略和治理类文件。谁能合入 `.claude/approvals.yml`，谁就能打开 Claude Approvals，所以改策略文件和 CI 规则的 PR 要留人把关。
-- 合规要求或团队制度规定每个 PR 必须真人批准。保持 `required_approving_review_count >= 1`，交给 GitHub 强制拦截（Orbi 会把单子停在 `ai-awaiting-merge` 等人处理）。
+- 合规要求或团队制度规定每个 PR 必须真人批准。保持 `required_approving_review_count >= 1`，交给 GitHub 强制拦截（Orbi 会把单子停在 `ai-awaiting-merge` 等人处理），同时在这个仓库里别开 AI 批准，因为 Copilot 或 Claude 一旦开启就能占掉这个名额。
 
 ## 如果你还是打算开 AI 自动批准
 
@@ -120,7 +120,7 @@ Orbi 从不提交 GitHub 批准评审，也不传 `--admin`，而是直接走合
 - 限制路径范围。Copilot 最多支持 15 条 path glob，把自动批准收在低风险文件里。
 - 别让作者一个人占满唯一席位。Claude Approvals 配成 `seats: 1` 时，别人可以完全不看。
 - 让 CI 保持为必需检查，并要求合并前分支先同步最新 base，确保批准对应的是在最新 base 上测过的代码。
-- 推送新提交时让旧批准失效。GitHub 说新提交会让 Copilot 的批准和真人的一样失效；核对分支规则开了“旧批准失效”，新推送之后不留任何旧批准。
+- 推送新提交时让旧批准失效。核对分支规则开了“有新提交时旧批准失效”，不管是人还是 AI 的批准，新推送之后都不再算数。
 - 检查 auto-merge 和 merge queue。只要策略不要求真人批准，配合 auto-merge 或 merge queue，没人动手，改动也能直接合进去。
 
 ## 查一下你的分支到底要求什么
