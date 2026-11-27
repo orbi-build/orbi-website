@@ -1905,6 +1905,27 @@ describe("one unified footer on every content page", () => {
     }
   });
 
+  // VouchDex (orbi-growth #1706) lists Orbi at /tools/orbi and re-checks the
+  // server-rendered homepage every three days; once the badge is found and the
+  // author is verified, the entry's backlink flips from nofollow to dofollow.
+  // The official snippet is 190x52 (viewBox 0 0 190 52, 1011 bytes, checked
+  // 2026-11-27; until the entry goes live the file renders "Pending review").
+  // The shared strip ships that snippet once on each language's home page,
+  // with rel="noopener noreferrer" only (no nofollow).
+  it("carries the VouchDex badge in the footer, on en and zh", () => {
+    const badgeHref = "https://vouchdex.com/tools/orbi/?ref=badge";
+    const badge = `<a href="${badgeHref}" target="_blank" rel="noopener noreferrer">`
+      + '<img src="https://vouchdex.com/badge/orbi.svg" alt="Orbi on VouchDex" width="190" height="52" /></a>';
+    for (const output of ["index.html", "zh/index.html"]) {
+      const footer = footerRegion(shipped.get(output));
+      const occurrences = footer.split(badge).length - 1;
+      expect(occurrences, `${output}: the VouchDex badge must ship exactly once in the footer`)
+        .toBe(1);
+      expect(footerAnchorTag(footer, badgeHref), `${output}: the badge must stay a crawlable backlink`)
+        .not.toContain("nofollow");
+    }
+  });
+
   it("carries the 11 compare deep dives, in the right language tree", () => {
     for (const page of content()) {
       const footer = footerRegion(shipped.get(page.output));
