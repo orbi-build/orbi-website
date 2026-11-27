@@ -100,7 +100,7 @@ What these numbers do and do not show:
 
 ## Where a person still sits
 
-Dropping per-PR clicks moves human work to the rules, the exceptions and release acceptance. Before merge, a person writes Issues, maintains branch and CI rules, and resolves `ai-blocked` Issues when five review rounds end without a pass, a finding repeats, or returns `blocked_on_human_decision`.
+Dropping per-PR clicks moves human work to the rules, the exceptions and release acceptance. Before merge, a person writes Issues, maintains branch and CI rules, and resolves `ai-blocked` Issues when five review rounds end without a pass, when a finding repeats, or when the reviewer returns `blocked_on_human_decision`.
 
 On `orbi-cloud` (covered in [AI code review bottleneck? Our PRs wait after merge](/blog/ai-code-review-bottleneck/)), promotion to production stays owned by a person. After a tag, `beta` deploys it, and an end-to-end new-user check runs on `beta`. Once I sign off, the promotion merges into `main`, and the production deploy needs a one-click approval.
 

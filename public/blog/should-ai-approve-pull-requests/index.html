@@ -323,7 +323,7 @@
 <li><code class="post-code--single">orbi-cloud</code> is private, while <code class="post-code--single">orbi</code> and <code class="post-code--single">orbi-website</code> are public, so you can open only those 259 PRs.</li>
 </ul>
 <h2 id="where-a-person-still-sits">Where a person still sits</h2>
-<p>Dropping per-PR clicks moves human work to the rules, the exceptions and release acceptance. Before merge, a person writes Issues, maintains branch and CI rules, and resolves <code class="post-code--single">ai-blocked</code> Issues when five review rounds end without a pass, a finding repeats, or returns <code class="post-code--single">blocked_on_human_decision</code>.</p>
+<p>Dropping per-PR clicks moves human work to the rules, the exceptions and release acceptance. Before merge, a person writes Issues, maintains branch and CI rules, and resolves <code class="post-code--single">ai-blocked</code> Issues when five review rounds end without a pass, when a finding repeats, or when the reviewer returns <code class="post-code--single">blocked_on_human_decision</code>.</p>
 <p>On <code class="post-code--single">orbi-cloud</code> (covered in <a href="/blog/ai-code-review-bottleneck/">AI code review bottleneck? Our PRs wait after merge</a>), promotion to production stays owned by a person. After a tag, <code class="post-code--single">beta</code> deploys it, and an end-to-end new-user check runs on <code class="post-code--single">beta</code>. Once I sign off, the promotion merges into <code class="post-code--single">main</code>, and the production deploy needs a one-click approval.</p>
 <h2 id="when-to-keep-a-human-approver">When to keep a human approver</h2>
 <p>I would keep a human approver here:</p>
