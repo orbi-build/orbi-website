@@ -3,8 +3,8 @@
     "slug": "should-ai-approve-pull-requests",
     "title": "Should AI approve pull requests? Move the gate",
     "summary": "Copilot, Claude Approvals, Cursor, and CodeRabbit can now approve PRs. Why the approve button is the wrong gate, Orbi's merge checks, and 30 days of data.",
-    "zhSlug": null,
-    "zhTitle": null,
+    "zhSlug": "should-ai-approve-pull-requests",
+    "zhTitle": "AI 该不该批准 PR？批准按钮放错了地方",
     "related": []
   },
   {

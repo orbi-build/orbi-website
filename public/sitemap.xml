@@ -399,6 +399,15 @@
   </url>
   <url>
     <loc>https://orbi.build/blog/should-ai-approve-pull-requests/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/blog/should-ai-approve-pull-requests/"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/blog/should-ai-approve-pull-requests/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://orbi.build/blog/should-ai-approve-pull-requests/"/>
+  </url>
+  <url>
+    <loc>https://orbi.build/zh/blog/should-ai-approve-pull-requests/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/blog/should-ai-approve-pull-requests/"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/blog/should-ai-approve-pull-requests/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://orbi.build/blog/should-ai-approve-pull-requests/"/>
   </url>
   <url>
     <loc>https://orbi.build/blog/claude-ship/</loc>

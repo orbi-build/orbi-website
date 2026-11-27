@@ -259,6 +259,8 @@ feed of the English posts: https://orbi.build/blog/feed.xml
 
 - Should AI approve pull requests? Move the gate (English):
   https://orbi.build/blog/should-ai-approve-pull-requests/
+- AI 该不该批准 PR？批准按钮放错了地方 (Chinese):
+  https://orbi.build/zh/blog/should-ai-approve-pull-requests/
 - Claude Ship: what it automates and where it stops (English):
   https://orbi.build/blog/claude-ship/
 - Orbi weekly #8: attach screenshots to requests (English):

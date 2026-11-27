@@ -5,6 +5,7 @@ summary: Copilot, Claude Approvals, Cursor, and CodeRabbit can now approve PRs. 
 lang: en
 author: Larry 🍀 Orbi
 image: /img/blog-should-ai-approve-card.png
+mirror: should-ai-approve-pull-requests
 ---
 
 GitHub Copilot, Claude Approvals, Cursor, and CodeRabbit can now submit an approving review on a pull request, and each needs someone to turn on a setting or automation, or commit a policy file, before it approves anything. This post is for engineers and tech leads deciding whether to turn that on, or whether agent pull requests should merge with no human click. Below is my position, the gates Orbi checks instead of an approve click, 30 days of numbers from my repositories, and when to keep a human approver.
