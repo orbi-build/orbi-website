@@ -1,18 +1,18 @@
 ---
-title: AI 该不该批准 PR？把关卡放在合并这一步
+title: AI 该不该批准 PR？在合并这一步把关
 date: 2026-11-27
-summary: Copilot、Claude、Cursor 和 CodeRabbit 都能批准 PR 了。我认为该在合并时把关，并给出 Orbi 在 721 个 agent PR 上查的东西。
+summary: Copilot、Claude、Cursor 和 CodeRabbit 都能批准 PR 了。我认为该在合并时把关，说明 Orbi 合并前查什么，以及 721 个 agent PR 的数据。
 lang: zh
 author: Larry 🍀 Orbi
 image: /img/blog-should-ai-approve-card.png
 mirror: should-ai-approve-pull-requests
 ---
 
-GitHub Copilot、Claude Approvals、Cursor 和 CodeRabbit 现在都能在 PR 上提交批准评审，不过都要先有人打开开关、启用自动化，或者提交策略文件，才会开始批准。如果你是工程师或技术负责人，正在考虑要不要开这项功能，或者在想 agent 提的 PR 能不能不经人点批准就合并，可以看看我的做法：在合并这一步把关。下文是 Orbi 在合并时查的东西、我三个仓库 30 天的数据，以及哪些情况还是该留真人批准。
+GitHub Copilot、Claude Approvals、Cursor 和 CodeRabbit 现在都能在 PR 上提交批准评审，不过都要先有人打开开关、启用自动化，或者提交策略文件，才会开始批准。这篇写给在考虑开不开这项功能、或者想让 agent 的 PR 不经人点批准就合并的工程师和技术负责人。我的答案是在合并这一步把关，文中有 Orbi 合并前的检查、我三个仓库 30 天的数据，以及该留真人批准的情况。
 
 我是 Larry 🍀 Orbi，Orbi 的创始人。[Orbi](https://github.com/orbi-build/orbi) 是个开源交付引擎：给它一个打好标签的 GitHub Issue，它就让编程 agent Pi 写完改动，把 PR 交给独立的评审会话，检查通过直接合并，全程没人点 Approve。所以这件事和我有利益关系。
 
-GitHub 的批准评审只记了哪个账号在哪个 commit 上点过头，不记查过什么，也不记改动在哪个 base 上测过。现在各家平台都允许 AI 来点这个按钮，顶上必需批准的名额。那 AI 到底该不该批准 PR？我的看法是：评审要独立于写代码的一方，但评审者不必是真人；人管好规则和最终验收就行，不用逐个 PR 去点批准。Orbi 完全不用 GitHub 批准：我的三个仓库把必需批准数都设成了 0，把门禁挪到了合并这一侧。
+GitHub 的批准评审只记了哪个账号在哪个 commit 上点过头，不记查过什么，也不记改动在哪个 base 上测过。现在 Copilot 和 Claude Approvals 都允许 AI 点这个按钮，并顶上必需批准的名额。那 AI 到底该不该批准 PR？我的看法是：评审要独立于写代码的一方，但评审者不必是真人；人管好规则和最终验收就行，不用逐个 PR 去点批准。Orbi 完全不用 GitHub 批准：我的三个仓库把必需批准数都设成了 0，把门禁挪到了合并这一侧。
 
 ## 现在哪些工具能批准 PR
 
@@ -25,7 +25,7 @@ GitHub 在 2026 年 10 月 28 日的 [Octoverse 2026](https://github.blog/news-i
 | Cursor | 在 Automations 开启 "Automatically Approve PRs"；可选放 `APPROVAL_POLICY.md` | Team、Enterprise | 我读的页面未注明 | 我读的页面未注明 |
 | CodeRabbit | 默认关闭（`reviews.auto_approvals.enabled`） | Essentials、Team、Advanced、Enterprise | 我读的页面未注明 | 我读的页面未注明 |
 
-GitHub 在 [2026 年 9 月 1 日更新日志](https://github.blog/changelog/2026-09-01-copilot-code-review-can-now-approve-pull-requests)里写道："By default, Copilot will not approve pull requests."（默认不批准 PR。）打开之后，"When enabled, Copilot can submit an approval that counts toward the repository's required-approvals rule."（Copilot 提交的批准会计入仓库的必需批准规则。）这项功能面向对应套餐公测："This feature is available in public preview to GitHub Copilot Pro, Pro+, Max, Business, and Enterprise plans."（向上述套餐公测开放。）管理员还能 "choose which file paths Copilot is allowed to approve."（指定允许 Copilot 批准的文件路径。）一旦有新提交推上来，"If new commits are pushed after Copilot approves, its approval is dismissed just like a human reviewer's."（Copilot 的批准会和真人一样自动失效。）[配置文档](https://docs.github.com/copilot/how-tos/copilot-on-github/set-up-copilot/configure-code-review)另外列出了企业级默认限制（"Organizations cannot enable Copilot approvals. This is the default."，默认禁止组织启用）、路径上限（"Up to 15 globs are supported."，最多支持 15 条 glob 规则），以及两个开关："Allow Copilot to approve pull requests" 和 "Allow Copilot approvals to count toward merge requirements"。
+GitHub 在 [2026 年 9 月 1 日更新日志](https://github.blog/changelog/2026-09-01-copilot-code-review-can-now-approve-pull-requests)里写道："By default, Copilot will not approve pull requests."（默认不批准 PR。）打开后，Copilot 的批准会 "counts toward the repository's required-approvals rule"，也就是计入必需批准数。管理员还能 "choose which file paths Copilot is allowed to approve."（指定允许 Copilot 批准的文件路径。）有新提交推上来时，它的批准会和真人的一样失效（"its approval is dismissed just like a human reviewer's"）。[配置文档](https://docs.github.com/copilot/how-tos/copilot-on-github/set-up-copilot/configure-code-review)另外列出了企业级默认限制（"Organizations cannot enable Copilot approvals. This is the default."，默认禁止组织启用）、路径上限（"Up to 15 globs are supported."，最多支持 15 条 glob 规则），以及两个开关："Allow Copilot to approve pull requests" 和 "Allow Copilot approvals to count toward merge requirements"。
 
 Anthropic 在 2026 年 11 月 23 日发布 [Claude Ship](https://claude.com/blog/introducing-claude-ship) 时推出了 Claude Approvals。按 [Claude Ship 文档](https://code.claude.com/docs/en/claude-ship)和 [Approvals 文档](https://code.claude.com/docs/en/approvals.md)的说法，"PR Steward and Claude Approvals are in public beta."（目前处于公测），并且 "Claude Ship is for organizations on Team and Enterprise plans."（面向 Team 和 Enterprise 组织）。启用靠 `.claude/approvals.yml`："Claude Approvals starts when a connected repository has a policy file on its default branch, and an admin can turn it off."（已连接仓库的默认分支只要有策略文件就会启动，管理员可以关掉。）也就是说，"anyone who can merge a policy file into the default branch can turn Approvals on."（任何能把策略文件合进默认分支的人都能把它打开。）席位规则里，"the author can fill a seat, so with `seats: 1` nobody else has to look."（作者自己就能占满一个席位，配成 `seats: 1` 时别人可以完全不看。）落到分支规则上，"where a GitHub branch rule requires one approval, Claude's approving review can be that approval"（分支要求 1 个批准时，Claude 给出的批准评审就能顶上）。文档特意提醒："If you use GitHub auto-merge or a merge queue with a policy that doesn't require a person's approval, a change can merge without anyone acting."（策略不要求真人批准，同时开了 auto-merge 或 merge queue，没人动手，改动也会直接合进去。）
 
@@ -55,7 +55,7 @@ GitHub 的必需评审规则查的是账号身份。按 [GitHub 文档](https://
 
 这种“独立”有两处比听上去弱：
 
-- 默认不会换用另一家厂商的模型。Orbi 支持单独配评审模型（`review_pi_provider` 和 `review_pi_model`），没配就复用实现阶段那个。我不会声称自己的仓库用了不同厂商的模型。
+- 默认不会换用另一家厂商的模型。Orbi 支持单独配评审模型（`review_pi_provider` 和 `review_pi_model`），没配就复用实现阶段那个。
 - 评审员会在同一个会话里直接把 Blocker 和 Major 问题修掉、跑测试、推送提交，然后给出最终结论。这些在会话里顺手修好的改动，不会再进第二个评审会话。
 
 这两个缺口靠后面的机制兜底。评审员推上去的任何 commit，后面都必须重新过 CI 和下一节的合并门禁。遇到它修不掉的问题，单子会贴上 `ai-fix-needed` 标签退回去重修，再走一轮流程。评审最多跑五轮，超过五轮就把 Issue 标成 `ai-blocked` 交给人拍板；同一个问题连着两轮出现，评审也会停下来问人。
