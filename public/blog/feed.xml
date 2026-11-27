@@ -10,7 +10,7 @@
       <link>https://orbi.build/blog/should-ai-approve-pull-requests/</link>
       <guid isPermaLink="true">https://orbi.build/blog/should-ai-approve-pull-requests/</guid>
       <pubDate>Fri, 27 Nov 2026 00:00:00 GMT</pubDate>
-      <description>Copilot, Claude Approvals, Cursor and CodeRabbit can now approve PRs. Why an approve click is the wrong check, what Orbi checks, and 30 days of my data.</description>
+      <description>Copilot, Claude, Cursor and CodeRabbit can now approve PRs. I think the check belongs at merge time, and I show what Orbi checks across 721 agent PRs.</description>
     </item>
     <item>
       <title>Claude Ship: what it automates and where it stops</title>
