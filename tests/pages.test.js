@@ -1844,6 +1844,44 @@ describe("one unified footer on every content page", () => {
     }
   });
 
+  // ShapelessAI (orbi-growth #1760) lists Orbi at /ai-tools/orbi as pending
+  // until the server-rendered homepage carries a followed link to that
+  // listing whose visible text includes "ShapelessAI". The official card
+  // snippet (checked 2026-11-27) is used verbatim, including the vendor
+  // href and 54x30 logo-mark.png. The shared strip ships it once on each
+  // language's home page (rel="noopener noreferrer" only, no nofollow).
+  it("carries the ShapelessAI badge in the footer, on en and zh", () => {
+    const badge = '<a href="https://shapelessai.com/ai-tools/orbi?utm_source=orbi.build" target="_blank" rel="noopener noreferrer" title="Orbi - Featured on ShapelessAI" style="display:inline-flex;align-items:center;gap:12px;height:56px;padding:0 20px 0 14px;border-radius:14px;background:#f8f8f4;border:1.5px solid #cbd9f2;box-sizing:border-box;text-decoration:none;font-family:-apple-system, BlinkMacSystemFont, \'Segoe UI\', Inter, Helvetica, Arial, sans-serif;line-height:1"><img src="https://shapelessai.com/brand/logo-mark.png" alt="" width="54" height="30" style="display:block;height:30px;width:auto"><span style="display:flex;flex-direction:column;gap:4px"><span style="font-size:10px;font-weight:700;letter-spacing:.16em;color:#595f66">FEATURED ON</span><span style="font-size:20px;font-weight:700;letter-spacing:-.02em;color:#08090b">Shapeless<span style="color:#2e66db">AI</span></span></span></a>';
+    for (const output of ["index.html", "zh/index.html"]) {
+      const footer = footerRegion(shipped.get(output));
+      const occurrences = footer.split(badge).length - 1;
+      expect(occurrences, `${output}: the ShapelessAI badge must ship exactly once in the footer`)
+        .toBe(1);
+      expect(footerAnchorTag(footer, "https://shapelessai.com/ai-tools/orbi?utm_source=orbi.build"), `${output}: the badge must stay a crawlable backlink`)
+        .not.toContain("nofollow");
+      expect(footer, `${output}: the badge text must include ShapelessAI`).toContain("Shapeless");
+    }
+  });
+
+  // AI SaaS Dir (orbi-growth #1763) holds the free listing at /tools/orbi
+  // in awaiting_badge until the server-rendered homepage has a followed
+  // link to aisaasdir.com. The official snippet is 220x56 (viewBox 0 0
+  // 220 56, 1109 bytes, checked 2026-11-27). The shared strip ships that
+  // snippet once on each language's home page, with rel="noopener" only
+  // (no nofollow).
+  it("carries the AI SaaS Dir badge in the footer, on en and zh", () => {
+    const badge = '<a href="https://aisaasdir.com/tools/orbi?ref=badge" target="_blank" rel="noopener">'
+      + '<img src="https://aisaasdir.com/badge.svg" alt="Featured on AI SaaS Dir" width="220" height="56" /></a>';
+    for (const output of ["index.html", "zh/index.html"]) {
+      const footer = footerRegion(shipped.get(output));
+      const occurrences = footer.split(badge).length - 1;
+      expect(occurrences, `${output}: the AI SaaS Dir badge must ship exactly once in the footer`)
+        .toBe(1);
+      expect(footerAnchorTag(footer, "https://aisaasdir.com/tools/orbi?ref=badge"), `${output}: the badge must stay a crawlable backlink`)
+        .not.toContain("nofollow");
+    }
+  });
+
   it("carries the 11 compare deep dives, in the right language tree", () => {
     for (const page of content()) {
       const footer = footerRegion(shipped.get(page.output));
