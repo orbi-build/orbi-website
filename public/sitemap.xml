@@ -398,6 +398,9 @@
     <xhtml:link rel="alternate" hreflang="x-default" href="https://orbi.build/trust/"/>
   </url>
   <url>
+    <loc>https://orbi.build/blog/should-ai-approve-pull-requests/</loc>
+  </url>
+  <url>
     <loc>https://orbi.build/blog/claude-ship/</loc>
     <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/blog/claude-ship/"/>
     <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/blog/claude-ship/"/>
