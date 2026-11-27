@@ -1882,6 +1882,29 @@ describe("one unified footer on every content page", () => {
     }
   });
 
+  // IndieTool, My Launch Stash, LaunchClash and AI Tech Viral (orbi-growth
+  // backlinks.md, 2026-11-27 login batch) each verify a followed badge on
+  // the server-rendered homepage before the free submit form unlocks. The
+  // shared strip ships each official snippet once on each language's home
+  // page, with rel="noopener" only (no nofollow).
+  it("carries the IndieTool, My Launch Stash, LaunchClash and AI Tech Viral badges in the footer, on en and zh", () => {
+    const badges = [
+      ["https://www.indietool.io", "<a href=\"https://www.indietool.io\" target=\"_blank\" rel=\"noopener\"><img src=\"https://www.indietool.io/badge.svg\" alt=\"Featured on IndieTool\" width=\"236\" height=\"54\" /></a>"],
+      ["https://mylaunchstash.com/product/orbi", "<a href=\"https://mylaunchstash.com/product/orbi\" target=\"_blank\" rel=\"noopener\"><img src=\"https://mylaunchstash.com/assets/images/badge.png\" alt=\"My Launch Stash\" width=\"234\" height=\"54\" loading=\"lazy\"></a>"],
+      ["https://launchclash.com/product/orbi", "<a href=\"https://launchclash.com/product/orbi\" target=\"_blank\" rel=\"noopener\"><img src=\"https://launchclash.com/assets/images/badge.png\" alt=\"LaunchClash\" width=\"197\" height=\"54\" loading=\"lazy\"></a>"],
+      ["https://aitechviral.com/ai/orbi", "<a href=\"https://aitechviral.com/ai/orbi\" target=\"_blank\" rel=\"noopener\"><img src=\"https://aitechviral.com/assets/images/badge.png\" alt=\"AI Tech Viral\" width=\"192\" height=\"54\" loading=\"lazy\"></a>"],
+    ];
+    for (const output of ["index.html", "zh/index.html"]) {
+      const footer = footerRegion(shipped.get(output));
+      for (const [href, badge] of badges) {
+        expect(footer.split(badge).length - 1, `${output}: ${href} badge must ship exactly once in the footer`)
+          .toBe(1);
+        expect(footerAnchorTag(footer, href), `${output}: ${href} badge must stay a crawlable backlink`)
+          .not.toContain("nofollow");
+      }
+    }
+  });
+
   it("carries the 11 compare deep dives, in the right language tree", () => {
     for (const page of content()) {
       const footer = footerRegion(shipped.get(page.output));

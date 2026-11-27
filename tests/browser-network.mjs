@@ -422,6 +422,15 @@ export const BADGE_PLACEHOLDER_SIZES = [
   // the vendor snippet declares the same 220x56 box). The free listing at
   // /tools/orbi is awaiting_badge until this badge is on the homepage.
   { host: "aisaasdir.com", width: 220, height: 56 },
+  // 2026-11-27 four free listings that verify a followed homepage badge
+  // before the submit form unlocks (orbi-growth backlinks.md, 2026-11-27
+  // login batch). Sizes measured on the live URLs: indietool.io /badge.svg
+  // 236x54 (viewBox 0 0 236 54); mylaunchstash badge.png 234x54;
+  // launchclash badge.png 197x54; aitechviral badge.png 192x54.
+  { host: "www.indietool.io", width: 236, height: 54 },
+  { host: "mylaunchstash.com", width: 234, height: 54 },
+  { host: "launchclash.com", width: 197, height: 54 },
+  { host: "aitechviral.com", width: 192, height: 54 },
 ];
 const FALLBACK_PLACEHOLDER_SIZE = { width: 1, height: 1 };
 

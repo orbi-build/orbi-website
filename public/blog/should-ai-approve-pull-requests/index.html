@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Should AI approve pull requests? Gate the merge | Orbi</title>
+  <meta name="description" content="Copilot, Claude, Cursor and CodeRabbit can now approve PRs. I think the check belongs at merge time, and I show what Orbi checks across 721 agent PRs.">
+  <link rel="canonical" href="https://orbi.build/blog/should-ai-approve-pull-requests/">
+  <link rel="alternate" hreflang="en" href="https://orbi.build/blog/should-ai-approve-pull-requests/">
+  <link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/blog/should-ai-approve-pull-requests/">
+  <link rel="alternate" hreflang="x-default" href="https://orbi.build/blog/should-ai-approve-pull-requests/">
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="Should AI approve pull requests? Gate the merge">
+  <meta property="og:description" content="Copilot, Claude, Cursor and CodeRabbit can now approve PRs. I think the check belongs at merge time, and I show what Orbi checks across 721 agent PRs.">
+  <meta property="og:url" content="https://orbi.build/blog/should-ai-approve-pull-requests/">
+  <meta property="og:image" content="https://orbi.build/img/blog-should-ai-approve-card.png">
+  <meta property="og:image:alt" content="Should AI approve pull requests? Gate the merge">
+  <meta property="article:published_time" content="2026-11-27">
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"Should AI approve pull requests? Gate the merge","datePublished":"2026-11-27","author":{"@type":"Person","name":"Larry 🍀 Orbi","url":"https://orbi.build/about/larry-orbi/","sameAs":["https://github.com/xqliu","https://x.com/xqliu"]},"publisher":{"@type":"Organization","name":"Orbi","url":"https://orbi.build/","logo":{"@type":"ImageObject","url":"https://orbi.build/logo-mark.svg"}},"mainEntityOfPage":"https://orbi.build/blog/should-ai-approve-pull-requests/","image":"https://orbi.build/img/blog-should-ai-approve-card.png","inLanguage":"en","description":"Copilot, Claude, Cursor and CodeRabbit can now approve PRs. I think the check belongs at merge time, and I show what Orbi checks across 721 agent PRs.","url":"https://orbi.build/blog/should-ai-approve-pull-requests/"}</script>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <meta name="theme-color" content="#06151b">
+
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="stylesheet" href="/fonts/fonts.css">
+  <link rel="stylesheet" href="/styles.css">
+
+  <style>
+    /* Blog-only layout: the shared .shell/.compare-hero rules stay unchanged. */
+    .post-grid { max-width: 52rem; margin: 0 auto; padding: 0 24px; }
+    .post-hero { padding: 84px 0 68px; }
+    /* Issue #860: the body text column is wider than --hero-copy-width, so the
+       hero fills it and the h1/lede right edge lands on the body text. */
+    .post-hero h1, .post-hero .hero-lede { max-width: none; }
+    .post-body { padding-top: 12px; padding-bottom: 30px; }
+    .post-body h2, .post-body .related-links h2 { font-family: var(--display); font-size: 1.5rem; line-height: 1.25; margin: 42px 0 10px; scroll-margin-top: 24px; }
+    .post-body .related-links { margin: 0; }
+    .post-cta {
+      margin: 42px 0 12px;
+      padding: 30px;
+      border-radius: var(--radius-card);
+      background: var(--night);
+      color: #edf5f0;
+      text-align: center;
+    }
+    .post-cta h2 { margin: 0 0 18px; color: #edf5f0; font-family: var(--display); font-size: 1.5rem; line-height: 1.25; }
+    .post-cta .button { margin: 0 auto; color: var(--night); text-decoration: none; }
+    .post-cta-note { margin: 10px 0 18px; color: #aec2bd; font-size: 0.9rem; }
+    .post-cta .post-cta-link { color: #edf5f0; font-size: 0.9rem; text-underline-offset: 3px; }
+    .post-cta .post-cta-link:hover { color: #fff; }
+    .post-cta-inline {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin: 28px 0;
+      padding: 12px 16px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-card);
+      background: var(--paper-2);
+    }
+    .post-cta-inline span { color: var(--ink); font-size: 0.95rem; }
+    .post-cta-inline .button { flex: 0 0 auto; min-height: 40px; padding: 0 14px; font-size: 0.85rem; }
+    .post-toc { position: sticky; top: 24px; max-height: calc(100vh - 48px); overflow-y: auto; align-self: start; padding-top: 26px; }
+    .post-toc h2 { margin: 0 0 10px; padding: 0; font: 500 0.75rem/1.5rem var(--mono); letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-soft); }
+    .post-toc ol { list-style: none; margin: 0; padding: 0; border-left: 1px solid var(--line); }
+    .post-toc ol ol { border-left: 0; }
+    .post-body .post-toc-inline ol { margin: 0; padding-left: 2.2em; }
+    .post-body .post-toc-inline ol ol { list-style: none; padding-left: 1em; margin-top: 0; }
+    .post-toc li { margin: 0; }
+    .post-toc-inline li { margin: 6px 0; }
+    .post-toc-link { display: block; color: var(--ink-soft); font-size: 0.92rem; line-height: 1.4; text-decoration: none; overflow-wrap: anywhere; }
+    .post-toc .post-toc-link { padding: 6px 0 6px 15px; margin-left: -1px; border-left: 1px solid transparent; font-size: 0.875rem; line-height: 1.25rem; }
+    .post-toc ol ol .post-toc-link { padding-left: 27px; }
+    .post-toc-link:hover, .post-toc-link.is-current { color: var(--ink); }
+    .post-toc .post-toc-link.is-current { border-left-color: var(--ink); color: var(--ink); font-weight: 600; }
+    .post-toc-inline { display: none; margin: 0 0 28px; border: 1px solid var(--line); border-radius: var(--radius-card); padding: 12px 16px; }
+    .post-toc-inline summary { cursor: pointer; font-weight: 600; }
+    .post-toc-inline ol { margin-top: 12px; }
+
+    .post-body h3 { font-family: var(--display); font-size: 1.13rem; line-height: 1.3; margin: 30px 0 6px; }
+    .post-body p { margin: 14px 0; }
+    /* Issue #833: this line sits on the dark .night hero, so it uses the dark-band secondary color. */
+    .post-series { margin: 10px 0 6px; color: #9aada9; font-size: 0.95rem; }
+    .post-series a { color: inherit; text-decoration: underline; text-underline-offset: 3px; }
+    /* Issue #887 shipped the byline here; Issue #1465 moved its rules to
+       styles.css so the comparison, guide and benchmark pages share them. */
+    .post-body ul, .post-body ol { margin: 14px 0; padding-left: 22px; }
+    .post-body li { margin: 6px 0; }
+    .post-body a { color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
+    .post-body code { font-family: var(--mono); font-size: 0.88em; background: var(--paper-2); border: 1px solid var(--line); border-radius: var(--radius-control); padding: 1px 5px; white-space: nowrap; display: inline-block; max-width: 100%; overflow-x: auto; vertical-align: bottom; }
+    .post-body code.post-code--spaced { white-space: normal; display: inline; }
+    .post-body pre { background: var(--paper-2); border: 1px solid var(--line); border-radius: var(--radius-card); padding: 14px 16px; overflow-x: auto; margin: 18px 0; }
+    .post-body pre code, .post-body pre code.post-code--spaced, .post-body pre code.post-code--single { background: none; border: none; padding: 0; font-size: 0.85rem; white-space: pre; overflow-wrap: normal; display: inline; max-width: none; overflow: visible; }
+    .post-table-scroll { overflow-x: auto; }
+    .post-body table { width: 100%; border-collapse: collapse; }
+    .post-body th, .post-body td { border: 1px solid var(--line); padding: 8px 10px; text-align: left; }
+    .post-body th { background: var(--paper-2); }
+    .post-body strong { font-weight: 600; }
+    .post-media { margin: 24px 0; }
+    .post-body svg { max-width: 100%; height: auto; }
+    .post-media img, .post-media iframe, .post-media svg { display: block; width: 100%; border: 0; border-radius: var(--radius-card); }
+    .post-media img, .post-media svg { height: auto; }
+    .post-media iframe { aspect-ratio: 16 / 9; }
+    .post-media figcaption { color: var(--muted); font-size: 0.9rem; margin-top: 8px; }
+    @media (min-width: 1200px) {
+      .post-grid { display: grid; grid-template-columns: minmax(0, 52rem) 200px; column-gap: 56px; max-width: calc(52rem + 256px); padding: 0; }
+      .post-hero, .post-body { grid-column: 1; padding-left: 16px; padding-right: 16px; }
+      .post-toc { grid-column: 2; grid-row: 1; }
+    }
+    @media (max-width: 1199px) {
+      .post-toc { display: none; }
+      .post-toc-inline { display: block; }
+    }
+    @media (max-width: 760px) {
+      .post-hero { padding-top: 64px; padding-bottom: 48px; }
+      .post-cta { padding: 24px 18px; }
+      .post-cta .button { width: 100%; }
+      .post-cta-inline { align-items: stretch; flex-direction: column; gap: 10px; }
+      .post-cta-inline .button { width: 100%; }
+    }
+  </style>
+
+</head>
+<body>
+  <a class="skip-link" href="#main-content">Skip to content</a>
+
+  <div class="night nav-shell">
+    <header class="site-header">
+      <a class="wordmark" href="/" aria-label="Orbi home">
+        <img class="wordmark-mark" src="/logo-mark-on-dark.svg" width="28" height="28" alt="">
+        <span>Orbi</span>
+      </a>
+      <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="primary-navigation" aria-label="Open navigation" data-label-open="Open navigation" data-label-close="Close navigation" data-menu-toggle>
+        <span aria-hidden="true"><i></i><i></i><i></i></span>
+      </button>
+      <nav id="primary-navigation" aria-label="Primary navigation" data-primary-nav>
+        <a href="/#system">How it works</a>
+        <a href="/cloud/#pricing">Pricing</a>
+        <a href="https://cloud-docs.orbi.build/?ref=nav">Docs</a>
+        <a data-cta="nav-github" href="https://github.com/orbi-build/orbi">GitHub</a>
+        <a class="nav-apply" data-cta="nav-start" href="/cloud/login">Try Cloud with GitHub</a>
+      </nav>
+    </header>
+  </div>
+
+  <main id="main-content">
+    <div class="night">
+      <div class="post-grid">
+        <section class="post-hero" aria-labelledby="post-title">
+          <p class="eyebrow">Blog</p>
+          <h1 id="post-title">Should AI approve pull requests? Gate the merge</h1>
+          <p class="post-byline"><a href="/about/larry-orbi/">Larry 🍀 Orbi</a> · <time datetime="2026-11-27">2026-11-27</time></p>
+
+          <p class="hero-lede">Copilot, Claude, Cursor and CodeRabbit can now approve PRs. I think the check belongs at merge time, and I show what Orbi checks across 721 agent PRs.</p>
+        </section>
+      </div>
+    </div>
+
+    <div class="post-grid">
+        <nav class="post-toc" aria-label="On this page">
+          <h2>On this page</h2>
+          <ol>
+          <li><a class="post-toc-link" href="#can-copilot-approve-pull-requests-which-other-tools-can-approve-them">Can Copilot approve pull requests? Which other tools can approve them</a></li>
+          <li><a class="post-toc-link" href="#what-an-approval-records-and-what-it-leaves-out">What an approval records, and what it leaves out</a></li>
+          <li><a class="post-toc-link" href="#what-independent-means-in-orbi">What &quot;independent&quot; means in Orbi</a></li>
+          <li><a class="post-toc-link" href="#the-gates-orbi-checks-instead-of-an-approve-click">The gates Orbi checks instead of an approve click</a></li>
+          <li><a class="post-toc-link" href="#30-days-of-agent-prs-merged-with-no-approval">30 days of agent PRs merged with no approval</a></li>
+          <li><a class="post-toc-link" href="#where-a-person-still-sits">Where a person still sits</a></li>
+          <li><a class="post-toc-link" href="#when-to-keep-a-human-approver">When to keep a human approver</a></li>
+          <li><a class="post-toc-link" href="#if-you-let-ai-approve-pull-requests-anyway">If you let AI approve pull requests anyway</a></li>
+          <li><a class="post-toc-link" href="#check-what-your-branch-requires">Check what your branch requires</a></li>
+          <li><a class="post-toc-link" href="#related">Related</a></li>
+          </ol>
+        </nav>
+      <article class="post-body">
+        <details class="post-toc-inline">
+          <summary>On this page · 10 sections</summary>
+          <ol>
+          <li><a class="post-toc-link" href="#can-copilot-approve-pull-requests-which-other-tools-can-approve-them">Can Copilot approve pull requests? Which other tools can approve them</a></li>
+          <li><a class="post-toc-link" href="#what-an-approval-records-and-what-it-leaves-out">What an approval records, and what it leaves out</a></li>
+          <li><a class="post-toc-link" href="#what-independent-means-in-orbi">What &quot;independent&quot; means in Orbi</a></li>
+          <li><a class="post-toc-link" href="#the-gates-orbi-checks-instead-of-an-approve-click">The gates Orbi checks instead of an approve click</a></li>
+          <li><a class="post-toc-link" href="#30-days-of-agent-prs-merged-with-no-approval">30 days of agent PRs merged with no approval</a></li>
+          <li><a class="post-toc-link" href="#where-a-person-still-sits">Where a person still sits</a></li>
+          <li><a class="post-toc-link" href="#when-to-keep-a-human-approver">When to keep a human approver</a></li>
+          <li><a class="post-toc-link" href="#if-you-let-ai-approve-pull-requests-anyway">If you let AI approve pull requests anyway</a></li>
+          <li><a class="post-toc-link" href="#check-what-your-branch-requires">Check what your branch requires</a></li>
+          <li><a class="post-toc-link" href="#related">Related</a></li>
+          </ol>
+        </details>
+<p>GitHub Copilot, Claude Approvals, Cursor, and CodeRabbit can all submit approving reviews on pull requests now, once someone turns on a setting, sets up an automation, or commits a policy file. Engineers and tech leads have to decide whether to enable that, or whether agent pull requests should merge with no human click. My answer is to put the check at merge time, and below I show the checks Orbi runs there, 30 days of numbers from my repositories, and when a human approver should stay.</p>
+<p>I&#39;m Larry 🍀 Orbi, the creator of <a href="https://github.com/orbi-build/orbi">Orbi</a>, an open-source engine that takes a labelled GitHub Issue, has the Pi coding agent write the change, sends the pull request to a separate review session, and merges it once the checks pass without anyone clicking Approve. I have a stake in this.</p><aside class="post-cta-inline"><span>Orbi takes your Issues all the way to a release.</span><a class="button button-signal" data-cta="post-inline-start" href="/cloud/login">Try Orbi Cloud free →</a></aside>
+<p>To a GitHub branch rule, an approval means one eligible account approved one commit. The rule does not ask what the approver checked or which base the diff was tested against, and Copilot, Claude Approvals and CodeRabbit all say their AI approval can fill that required slot. My view: review should be independent of whoever wrote the code, even when the reviewer is not a person, and a person should own the rules and release acceptance instead of the per-PR click. Orbi&#39;s own reviewer is also an AI saying yes; the difference I care about is what that yes is tied to, which the rest of this post spells out. Orbi never submits a GitHub approval. It merges unattended only where the branch requires zero approvals, as my three repositories do; where a branch requires one, it stops and waits for a person.</p>
+<h2 id="can-copilot-approve-pull-requests-which-other-tools-can-approve-them">Can Copilot approve pull requests? Which other tools can approve them</h2>
+<p>In <a href="https://github.blog/news-insights/octoverse/octoverse-commits-pushes-reach-new-highs-in-2026-as-developers-build-with-agents/">Octoverse 2026</a> (28 October 2026), GitHub reported: &quot;By September 2026, more than 40% of pull requests on GitHub started with an agent&#39;s first draft, up from 17% in March.&quot; Of these four tools, two dated their AI approval feature: Copilot on 1 September 2026 and Claude Approvals on 23 November 2026. The Cursor and CodeRabbit docs pages I read have no date. Every one of the four needs someone to turn it on or write a policy file.</p>
+<p class="post-table-hint" hidden>Swipe horizontally to see all columns.</p><div class="post-table-scroll" tabindex="0" role="region" aria-label="Swipe horizontally to see all columns."><table class="table-comparison">
+<thead>
+<tr>
+<th scope="col">Tool</th>
+<th scope="col">Default / activation</th>
+<th scope="col">Plans</th>
+<th scope="col">Status</th>
+<th scope="col">Date</th>
+</tr>
+</thead>
+<tbody><tr>
+<th scope="row">GitHub Copilot</th>
+<td>Off by default</td>
+<td>Pro, Pro+, Max, Business, Enterprise</td>
+<td>Public preview</td>
+<td>1 Sep 2026</td>
+</tr>
+<tr>
+<th scope="row">Claude Approvals</th>
+<td>Policy file <code class="post-code--single">.claude/approvals.yml</code> on default branch</td>
+<td>Team, Enterprise</td>
+<td>Public beta</td>
+<td>23 Nov 2026</td>
+</tr>
+<tr>
+<th scope="row">Cursor</th>
+<td>Turn on &quot;Automatically Approve PRs&quot; in Automations; optional <code class="post-code--single">APPROVAL_POLICY.md</code> files</td>
+<td>Team, Enterprise</td>
+<td>Not stated on the pages I read</td>
+<td>Undated docs</td>
+</tr>
+<tr>
+<th scope="row">CodeRabbit</th>
+<td>Off by default (<code class="post-code--single">reviews.auto_approvals.enabled</code>)</td>
+<td>Essentials, Team, Advanced, Enterprise</td>
+<td>Not stated on the pages I read</td>
+<td>Undated</td>
+</tr>
+</tbody></table></div>
+<p>GitHub&#39;s <a href="https://github.blog/changelog/2026-09-01-copilot-code-review-can-now-approve-pull-requests">1 September 2026 changelog</a> says Copilot&#39;s approval, once enabled, &quot;counts toward the repository&#39;s required-approvals rule.&quot; Admins can &quot;choose which file paths Copilot is allowed to approve,&quot; and &quot;If new commits are pushed after Copilot approves, its approval is dismissed just like a human reviewer&#39;s.&quot; The <a href="https://docs.github.com/copilot/how-tos/copilot-on-github/set-up-copilot/configure-code-review">configuration docs</a> add the enterprise-level default, under which organizations can&#39;t turn it on until an enterprise admin allows it (&quot;Organizations cannot enable Copilot approvals. This is the default.&quot;), the path limit (&quot;Up to 15 globs are supported.&quot;), and the settings &quot;Allow Copilot to approve pull requests&quot; and &quot;Allow Copilot approvals to count toward merge requirements&quot;.</p>
+<p>Anthropic announced Claude Approvals on 23 November 2026 in <a href="https://claude.com/blog/introducing-claude-ship">Claude Ship</a>. According to the <a href="https://code.claude.com/docs/en/claude-ship">Claude Ship docs</a> and <a href="https://code.claude.com/docs/en/approvals.md">Approvals docs</a>, &quot;PR Steward and Claude Approvals are in public beta.&quot; (PR Steward is another Claude Ship agent; Claude Approvals is the one that approves.) They also note that &quot;Claude Ship is for organizations on Team and Enterprise plans.&quot; Activation runs through <code class="post-code--single">.claude/approvals.yml</code>: &quot;Claude Approvals starts when a connected repository has a policy file on its default branch, and an admin can turn it off.&quot; The docs also say that &quot;anyone who can merge a policy file into the default branch can turn Approvals on.&quot; A seat is one required approver in the policy file, and &quot;the author can fill a seat, so with <code class="post-code--spaced">seats: 1</code> nobody else has to look.&quot; Branch rules count Claude&#39;s review too: &quot;where a GitHub branch rule requires one approval, Claude&#39;s approving review can be that approval&quot;. The docs include a warning: &quot;If you use GitHub auto-merge or a merge queue with a policy that doesn&#39;t require a person&#39;s approval, a change can merge without anyone acting.&quot;</p>
+<p>In Cursor&#39;s <a href="https://cursor.com/docs/approval-agents">Approval Agents docs</a>, &quot;PR Routing &amp; Approval routes pull requests to the right reviewers and can approve low-risk changes.&quot; You turn it on inside Cursor Automations, where &quot;Automatically Approve PRs approves low-risk PRs after you configure approval criteria.&quot; <code class="post-code--single">APPROVAL_POLICY.md</code> files in the repository are optional; the agent discovers and applies them before deciding. There is a stop condition as well: &quot;If Bugbot or Security Agents report findings that need human review, PR Routing &amp; Approval will not approve the PR.&quot;</p>
+<p>CodeRabbit&#39;s <a href="https://docs.coderabbit.ai/pr-reviews/automatic-approvals.md">Automatic Approvals docs</a> put it plainly: &quot;Automatic Approvals is off by default.&quot; You turn it on with <code class="post-code--single">reviews.auto_approvals.enabled</code>, and &quot;CodeRabbit approves only when every approval requirement is met.&quot; The same page says &quot;CodeRabbit&#39;s approval counts toward your Git provider&#39;s required approvals.&quot;</p>
+<h2 id="what-an-approval-records-and-what-it-leaves-out">What an approval records, and what it leaves out</h2>
+<p>GitHub&#39;s required-review rule checks account identity. As <a href="https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/reviewing-changes-in-pull-requests/approving-a-pull-request-with-required-reviews">GitHub&#39;s docs</a> put it: &quot;Pull request authors cannot approve their own pull requests.&quot;</p>
+<p>That checkmark tells you another GitHub account approved a specific commit, while leaving out the conditions that decide whether a merge is safe:</p>
+<ul>
+<li>What was checked. The approval looks identical whether someone verified acceptance criteria or skimmed the title.</li>
+<li>Which base commit the diff was evaluated against. An approval given before <code class="post-code--single">main</code> moved still counts unless your branch rules also require the branch to be up to date before merging.</li>
+<li>Whether the approval still applies. GitHub stores the commit each review was given on, yet unless your rule dismisses stale approvals, the required-approval count can still include an approval given before later pushes.</li>
+</ul>
+<p>In parts of open source, AI-co-authored PRs already merge with little review. A January 2026 study (<a href="https://arxiv.org/abs/2601.13754">arXiv 2601.13754</a>) reported: &quot;AI-co-authored PRs from non-owners receive the least, with approximately 80% merged without any explicit review.&quot; The sample covers only non-owner PRs in open-source repositories, so it says nothing about private repos or maintainers&#39; own PRs, and it is one snapshot, not a trend.</p>
+<p>Handing the Approve button to an AI keeps that same account-based control, without tying the merge to the current base, passing CI, and the commit going in.</p>
+<h2 id="what-independent-means-in-orbi">What &quot;independent&quot; means in Orbi</h2>
+<p>In <a href="https://github.com/orbi-build/orbi">Orbi</a> (<code class="post-code--single">main</code>, commit <code class="post-code--single">d11224a5</code>), review runs in a separate process with its own prompt (<code class="post-code--single">prompts/prompt_review.md</code>) and a fresh session, never continuing the implementer&#39;s conversation. The reviewer reads the Issue, trusted comments, human PR feedback, and a frozen base/head SHA pair.</p>
+<p>The reviewer returns one of three verdicts: <code class="post-code--single">pass</code>, <code class="post-code--single">findings</code>, or <code class="post-code--single">blocked_on_human_decision</code>. A <code class="post-code--single">pass</code> cannot carry a Blocker or Major finding, and the verdict names the head commit it reviewed. An unreadable verdict fails as an error and never passes.</p>
+<p>That independence is weaker than it sounds in two ways:</p>
+<ul>
+<li>It is not a different company&#39;s model by default. Orbi supports a separate review model (<code class="post-code--single">review_pi_provider</code> and <code class="post-code--single">review_pi_model</code>), and when unset it uses the implementer&#39;s model. I do not claim my repos use a different vendor.</li>
+<li>The reviewer fixes Blocker and Major findings itself in the same session, runs tests, pushes, and returns the final verdict. No second session reviews those in-session fixes.</li>
+</ul>
+<p>Both gaps have backstops. Any commit the reviewer pushes still has to pass CI and the merge gate. Findings it cannot fix go back as a fix round (label <code class="post-code--single">ai-fix-needed</code>) for a fresh cycle. If five review rounds end without a pass, the Issue becomes <code class="post-code--single">ai-blocked</code> and a person decides. If the same problem repeats two rounds in a row, the reviewer stops and asks a person.</p>
+<h2 id="the-gates-orbi-checks-instead-of-an-approve-click">The gates Orbi checks instead of an approve click</h2>
+<p>Orbi never submits a GitHub approve review and never passes <code class="post-code--single">--admin</code>. It merges directly once these checks pass:</p>
+<ul>
+<li>No CI check has failed; while checks are running, Orbi waits for the next poll.</li>
+<li>The PR branch contains the latest base. Orbi fetches the latest base before merging; if the PR is behind and merges cleanly, Orbi merges the base in, pushes, records that merge commit as the head to land, and waits for CI on it. It never merges a head pushed during the same pass. That base merge does not get a second review, while a conflict or a push from anyone else sends the PR back through review.</li>
+<li>The head matches what Orbi last checked. Orbi runs <code class="post-code--spaced">gh pr merge --match-head-commit &lt;head&gt;</code>, so if the branch moved after the last check, the merge fails. After a clean base merge, that head went through the merge gate (and CI, where the repository has CI) but was not re-read by the reviewer; the review covered the PR&#39;s own changes.</li>
+<li>If a failing check is also failing on the base branch, Orbi pauses the PR and opens a separate fix ticket for the base failure.</li>
+<li>An <code class="post-code--single">ai-blocked</code> label on the Issue stops the merge even after review and CI pass.</li>
+</ul>
+<p>When a branch rule requires an approval (<code class="post-code--spaced">required_approving_review_count &gt;= 1</code>), Orbi does not self-approve. It labels the Issue <code class="post-code--single">ai-awaiting-merge</code>, comments what a person must do, and retries later. My own repos require zero approvals, so I have not hit this path myself; this is how Orbi behaves when a branch requires approvals.</p>
+<p>One exception sits outside the PR flow. For releases, Orbi checks that no work is unfinished in the milestone, pushes the version-bump commit straight to the base branch (which only works where the branch rules allow a direct push), and waits for green CI on that pushed commit before it tags and publishes the release.</p>
+<h2 id="30-days-of-agent-prs-merged-with-no-approval">30 days of agent PRs merged with no approval</h2>
+<p>I checked my three repositories through the GitHub API on 27 November 2026, and none of them requires an approving review. On <code class="post-code--single">orbi-build/orbi-website</code>, rulesets on <code class="post-code--single">beta</code> and <code class="post-code--single">main</code> require a PR with <code class="post-code--single">required_approving_review_count</code> set to <code class="post-code--single">0</code>. <code class="post-code--single">orbi-build/orbi-cloud</code> has a ruleset blocking only deletion and force-push, with no pull-request rule, while <code class="post-code--single">orbi-build/orbi</code> has no ruleset applying to <code class="post-code--single">main</code> (empty include list) and no classic protection. Classic branch protection returned &quot;Branch not protected&quot; (404) on all three. The GitHub App <code class="post-code--single">orbi-build</code> (<code class="post-code--single">app/orbi-build</code>) opens and merges runner PRs, also checked on 27 November 2026.</p>
+<p>Orbi Cloud&#39;s production delivery receipts for PRs merged between 28 October 2026 00:00 and 27 November 2026 00:00 (+08) show the following counts, including only PRs the Orbi runner delivered and merged:</p>
+<p class="post-table-hint" hidden>Swipe horizontally to see all columns.</p><div class="post-table-scroll" tabindex="0" role="region" aria-label="Swipe horizontally to see all columns."><table class="table-comparison">
+<thead>
+<tr>
+<th scope="col">Repo</th>
+<th scope="col" align="right">Merged</th>
+<th scope="col" align="right">1 review round</th>
+<th scope="col" align="right">2 rounds</th>
+<th scope="col" align="right">3+ rounds</th>
+<th scope="col" align="right">Max</th>
+</tr>
+</thead>
+<tbody><tr>
+<th scope="row"><code class="post-code--single">orbi</code></th>
+<td align="right">167</td>
+<td align="right">159</td>
+<td align="right">6</td>
+<td align="right">2</td>
+<td align="right">3</td>
+</tr>
+<tr>
+<th scope="row"><code class="post-code--single">orbi-cloud</code></th>
+<td align="right">462</td>
+<td align="right">394</td>
+<td align="right">53</td>
+<td align="right">15</td>
+<td align="right">4</td>
+</tr>
+<tr>
+<th scope="row"><code class="post-code--single">orbi-website</code></th>
+<td align="right">92</td>
+<td align="right">86</td>
+<td align="right">6</td>
+<td align="right">0</td>
+<td align="right">2</td>
+</tr>
+<tr>
+<th scope="row">Total</th>
+<td align="right">721</td>
+<td align="right">639</td>
+<td align="right">65</td>
+<td align="right">17</td>
+<td align="right">4</td>
+</tr>
+</tbody></table></div>
+<p>Out of 721 PRs, 82 (11.4%) needed more than one review round. A second round starts when the review returns findings it could not fix in its own session, or when a CI check fails at the merge gate. In the public repositories, 14 PRs needed more than one round: 10 because a CI check failed at the merge gate, and 4 because of findings from Orbi&#39;s reviewer, which it posts as comments, not as GitHub reviews. None of the 721 needed an approval to merge: the repositories require zero, and Orbi never submits one.</p>
+<p>You can reproduce the public subset. GitHub search <code class="post-code--spaced">repo:orbi-build/orbi is:pr is:merged author:app/orbi-build merged:2026-10-27T16:00:00Z..2026-11-26T16:00:00Z</code> returns 167 PRs, and the same query on <code class="post-code--single">orbi-build/orbi-website</code> returns 92. Across those 259 PRs there are 0 GitHub reviews of any kind and 0 approvals (I counted reviews per PR through the GraphQL search API), and the PR counts match the receipts.</p>
+<p>What these numbers do and do not show:</p>
+<ul>
+<li>This is not a findings rate. It includes CI retries, and a problem the reviewer fixed in its own session stays inside round 1 and is not counted. I have no per-reason split for the private <code class="post-code--single">orbi-cloud</code> rounds.</li>
+<li>The table counts merged PRs only.</li>
+<li>These numbers show that the review-and-CI loop sends PRs back for more work, though they do not prove that merging without a human is safe. The safety argument rests on the gates and on acceptance at release time.</li>
+<li><code class="post-code--single">orbi-cloud</code> is private, while <code class="post-code--single">orbi</code> and <code class="post-code--single">orbi-website</code> are public, so you can open only those 259 PRs.</li>
+</ul>
+<h2 id="where-a-person-still-sits">Where a person still sits</h2>
+<p>Dropping per-PR clicks moves human work to the rules, the exceptions and release acceptance. Before merge, a person writes Issues, maintains branch and CI rules, and resolves <code class="post-code--single">ai-blocked</code> Issues when five review rounds end without a pass, when a finding repeats, or when the reviewer returns <code class="post-code--single">blocked_on_human_decision</code>.</p>
+<p>On <code class="post-code--single">orbi-cloud</code> (covered in <a href="/blog/ai-code-review-bottleneck/">AI code review bottleneck? Our PRs wait after merge</a>), promotion to production stays owned by a person. After a tag, <code class="post-code--single">beta</code> deploys it, and an end-to-end new-user check runs on <code class="post-code--single">beta</code>. Once I sign off, the promotion merges into <code class="post-code--single">main</code>, and the production deploy needs a one-click approval.</p>
+<h2 id="when-to-keep-a-human-approver">When to keep a human approver</h2>
+<p>I would keep a human approver here:</p>
+<ul>
+<li>Repos with no CI or weak tests. Orbi does not require at least one CI check, so a repo with no CI would merge on review alone and is a bad fit.</li>
+<li>Branches that deploy straight to production with no staging acceptance step. Without a <code class="post-code--single">beta</code> check and human release sign-off, dropping per-PR approval removes the acceptance gate.</li>
+<li>Policy and governance files. Whoever can merge <code class="post-code--single">.claude/approvals.yml</code> can turn Claude Approvals on, so changes to policy files and CI rules need a human approver.</li>
+<li>Compliance or team rules requiring a human approval per PR. Keep <code class="post-code--spaced">required_approving_review_count &gt;= 1</code> so GitHub enforces it (Orbi parks at <code class="post-code--single">ai-awaiting-merge</code>), and leave AI approvals off in that repository, because Copilot, Claude or CodeRabbit can fill that count once enabled.</li>
+</ul>
+<h2 id="if-you-let-ai-approve-pull-requests-anyway">If you let AI approve pull requests anyway</h2>
+<p>If you keep required approvals and let an AI tool fill them, check these settings first:</p>
+<ul>
+<li>Limit paths. Copilot supports up to 15 path globs so approvals stay scoped to lower-risk files.</li>
+<li>Do not let the author fill the only seat. With <code class="post-code--spaced">seats: 1</code> in Claude Approvals, nobody else has to look.</li>
+<li>Require CI and up-to-date branches before merging, so approvals cover code tested on the current base.</li>
+<li>Dismiss stale approvals on new pushes. Check that your branch rule dismisses stale approvals when new commits arrive, so no approval, human or AI, outlives a new push.</li>
+<li>Check auto-merge and merge queues. If a policy does not require a person&#39;s approval, auto-merge or a merge queue can merge a change with nobody acting.</li>
+</ul>
+<h2 id="check-what-your-branch-requires">Check what your branch requires</h2>
+<p>Rulesets and classic branch protection use separate APIs. To check whether a branch&#39;s rulesets require an approval:</p>
+<div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="Copied">Copy</button><pre><code class="language-bash" data-copy-source>gh api repos/OWNER/REPO/rules/branches/BRANCH \
+  --jq &#39;.[] | select(.type==&quot;pull_request&quot;) | .parameters.required_approving_review_count&#39;
+</code></pre></div>
+<p>I tested this on 27 November 2026: <code class="post-code--single">orbi-website</code> <code class="post-code--single">beta</code> printed <code class="post-code--single">0</code>; <code class="post-code--single">orbi-cloud</code> <code class="post-code--single">beta</code> printed nothing (no <code class="post-code--single">pull_request</code> rule); a nonexistent branch also printed nothing with exit <code class="post-code--single">0</code>; a nonexistent repo returned HTTP 404 with exit <code class="post-code--single">1</code>. Empty output means &quot;no ruleset requires a pull request&quot; (distinct from &quot;zero approvals&quot;), and a typo in the branch name looks identical.</p>
+<p>This endpoint covers rulesets only. Check classic branch protection separately:</p>
+<div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="Copied">Copy</button><pre><code class="language-bash" data-copy-source>gh api repos/OWNER/REPO/branches/BRANCH/protection \
+  --jq &#39;.required_pull_request_reviews.required_approving_review_count&#39;
+</code></pre></div>
+<p>Reading classic branch protection may need admin access. On all three of my branches, this returned <code class="post-code--spaced">{&quot;message&quot;:&quot;Branch not protected&quot;,...,&quot;status&quot;:&quot;404&quot;}</code> and <code class="post-code--spaced">gh: Branch not protected (HTTP 404)</code>, exit <code class="post-code--single">1</code>.</p>
+<aside class="post-cta">
+  <h2>Orbi takes your Issues all the way to a release.</h2>
+  <a class="button button-signal" data-cta="post-start" href="/cloud/login">Try Orbi Cloud free →</a>
+  <p class="post-cta-note">No credit card required · Orbi only sees the repos you pick</p>
+  <a class="post-cta-link" data-cta="post-selfhost" href="https://github.com/orbi-build/orbi">Prefer to self-host? It's open source (AGPL) →</a>
+</aside><h2 id="related">Related</h2>
+<p>See <a href="/blog/claude-ship/">Claude Ship: what it automates and where it stops</a> on <code class="post-code--single">.claude/approvals.yml</code>, and <a href="/blog/claude-code-github-actions-who-merges/">Claude Code in Actions: who presses merge?</a> on where Actions stops. <a href="/guides/auto-merge-ai-prs/">Auto-merge AI pull requests</a> goes into merge gates, <a href="/blog/ai-code-review-bottleneck/">AI code review bottleneck? Our PRs wait after merge</a> details release promotion, and <a href="/guides/ci-gates/">CI gates: what you put in CI is what Orbi guarantees</a> explains which checks to require. <a href="/compare/github-copilot-coding-agent/">Orbi vs Copilot cloud agent</a> compares the two, and the hosted version is <a href="/cloud/?ref=blog-ai-approve">Orbi Cloud</a>.</p>
+
+<!--orbi:related-posts-->
+      </article>
+    </div>
+  </main>
+
+<section class="subscribe-box shell" aria-labelledby="subscribe-title">
+  <h2 class="subscribe-title" id="subscribe-title">What is new in Orbi, every week</h2>
+  <form class="subscribe-form" action="/subscribe" method="post" data-subscribe-form data-success="Check your inbox and click the confirmation link to finish subscribing." data-invalid="That email address doesn't look right" data-unavailable="Subscription is temporarily unavailable. Please try again.">
+    <label class="sr-only" for="subscribe-email-en">Email address</label>
+    <input id="subscribe-email-en" type="email" name="email" autocomplete="email" required placeholder="you@example.com">
+    <input type="hidden" name="lang" value="en">
+    <button class="button button-ghost" type="submit">Subscribe</button>
+    <p class="subscribe-status" data-subscribe-status aria-live="polite"></p>
+  </form>
+  <p class="subscribe-note">One email a week: new features, hands-on posts and numbers from our own work with Orbi. Unsubscribe anytime.</p>
+</section>
+
+  <script src="/subscribe.js" defer></script>
+
+  <footer class="site-footer shell">
+    <div class="footer-brand">
+      <a class="wordmark wordmark-footer" href="/" aria-label="Orbi home">
+        <img class="wordmark-mark" src="/logo-mark.svg" width="28" height="28" alt="">
+        <span>Orbi</span>
+      </a>
+      <p class="orbi-site-footer-p">Software production that survives the session.</p>
+    </div>
+    <nav aria-label="Footer navigation">
+      <div class="footer-group">
+        <h2>Product</h2>
+        <ul><li><a href="/cloud/">Cloud</a></li><li><a href="/cloud/#pricing">Pricing</a></li><li><a href="/#system">How it works</a></li><li><a href="/evidence/">Orbi builds Orbi</a></li><li><a href="/trust/">Trust & security</a></li><li><a href="https://github.com/orbi-build/orbi/releases">Releases</a></li><li><a href="https://status.orbi.build">Status</a></li></ul>
+      </div>
+      <div class="footer-group">
+        <h2>Resources</h2>
+        <ul><li><a href="/evidence/">Orbi builds Orbi</a></li><li><a href="/benchmark/">How we test the harness</a></li><li><a href="/guides/pi-coding-agent/">Pi series: how Orbi is built</a></li><li><a href="/cost/">Cost per merged PR</a></li><li><a href="/aiready/">ai-ready: 12 factors</a></li><li><a href="/compare/">Orbi vs alternatives</a></li><li><a href="/blog/">Blog</a></li><li><a href="/blog/ai-contribute-to-open-source/">Open source contributions</a></li><li><a href="https://docs.orbi.build">Self-hosted Docs</a></li><li><a href="https://cloud-docs.orbi.build/?ref=footer">Cloud Docs</a></li><li><a href="/#faq">FAQ</a></li></ul>
+      </div>
+      <div class="footer-group footer-guides">
+        <h2>Guides</h2>
+        <ul><li><a href="/guides/">Guides</a></li><li><a href="/guides/issue-to-release/">Issue to release</a></li><li><a href="/guides/ci-gates/">CI gates</a></li><li><a href="/guides/auto-merge-ai-prs/">Auto-merge AI PRs</a></li><li><a href="/guides/autonomous-coding-agent/">Autonomous coding agent</a></li><li><a href="/guides/self-hosted-coding-agent/">Self-hosted coding agent</a></li><li><a href="/guides/codex-github-issues/">Codex on GitHub Issues</a></li><li><a href="https://aiready.sh/">ai-ready: 12 factors</a></li></ul>
+      </div>
+      <div class="footer-group footer-compare">
+        <h2>Compare</h2>
+        <ul><li><a href="/compare/orca/">Orbi vs Orca</a></li><li><a href="/compare/openclaw/">Orbi vs OpenClaw</a></li><li><a href="/compare/github-copilot-coding-agent/">Orbi vs GitHub Copilot cloud agent</a></li><li><a href="/compare/managed-agents/">Orbi vs Claude Managed Agents</a></li><li><a href="/compare/claude-code/">Orbi vs Claude Code</a></li><li><a href="/compare/openhands/">Orbi vs OpenHands</a></li><li><a href="/compare/hermes-agent/">Orbi vs Hermes Agent</a></li><li><a href="/compare/keelen/">Orbi vs Keelen</a></li><li><a href="/compare/codex/">Orbi vs OpenAI Codex</a></li><li><a href="/compare/devin/">Orbi vs Devin</a></li><li><a href="/compare/jules/">Orbi vs Google Jules</a></li><li><a href="/compare/cursor/">Orbi vs Cursor Cloud Agents</a></li><li><a href="/compare/">All comparisons</a></li></ul>
+      </div>
+      <div class="footer-group">
+        <h2>Company</h2>
+        <ul><li><a href="/about/">About</a></li><li><a href="/support/">Support</a></li><li><a href="https://github.com/orbi-build/orbi/milestones">Roadmap</a></li><li><a href="/privacy/">Privacy</a></li><li><a href="/terms/">Terms</a></li><li><a href="https://github.com/orbi-build/orbi">GitHub</a></li><li><a href="https://x.com/xqliu" rel="me">X</a></li><li><a href="https://www.youtube.com/@orbibuild" rel="me">YouTube</a></li><li><a href="https://www.reddit.com/r/OrbiBuild/">Reddit</a></li></ul>
+      </div>
+    </nav>
+    <div class="footer-language language" role="group" aria-label="Language"><span aria-current="page">EN</span><a href="/zh/blog/should-ai-approve-pull-requests/" lang="zh-CN" aria-label="简体中文">ZH</a></div>
+    <p class="footer-legal">© 2026 Low Code, LLC</p>
+  </footer>
+
+  <script src="/demo.js" defer></script>
+
+<script>(()=>{try{const links=[...document.querySelectorAll('.post-toc-link')];const targetOf=(link)=>link.getAttribute('href').slice(1);const headings=[...new Set(links.map(link=>document.getElementById(targetOf(link))).filter(Boolean))];const setCurrent=(heading)=>{links.forEach((link)=>link.classList.toggle('is-current',targetOf(link)===heading.id));};if('IntersectionObserver' in window){const update=()=>{const current=headings.findLast((heading)=>heading.getBoundingClientRect().top<=innerHeight*.4)??headings[0];if(current)setCurrent(current);};const observer=new IntersectionObserver(update,{rootMargin:'-24px 0px -60% 0px',threshold:0});headings.forEach((heading)=>observer.observe(heading));addEventListener('scroll',update,{passive:true});update();}}catch(error){console.warn('post_toc_observer_failed',error);}})();</script><script>(()=>{
+  const endpoint="/cloud/e", start=Date.now();
+  let visible=document.visibilityState!=="hidden", visibleAt=visible?start:0, visibleMs=0, interacted=false, engagedSent=false, depthSent=false, maxDepth=0;
+  const send=(kind,detail,extra)=>{const body={kind,path:location.pathname};if(detail!==undefined)body.detail=String(detail);if(extra)Object.assign(body,extra);try{if(!navigator.sendBeacon(endpoint,new Blob([JSON.stringify(body)],{type:"application/json"})))console.warn("engagement_report_failed","sendBeacon returned false");}catch(error){console.warn("engagement_report_failed",error);}};
+  send("visit",undefined,{search:location.search,referrer:document.referrer});
+  const elapsed=()=>visibleMs+(visible?Date.now()-visibleAt:0);
+  const check=()=>{if(!engagedSent&&interacted&&elapsed()>=10000){engagedSent=true;send("engaged");}};
+  const schedule=()=>setTimeout(check,Math.max(0,10000-elapsed()));
+  const markInteraction=()=>{interacted=true;check();};
+  ["scroll","pointerdown","keydown","touchstart"].forEach(type=>addEventListener(type,markInteraction,{passive:true}));
+  const depth=()=>{const height=document.documentElement.scrollHeight;maxDepth=Math.max(maxDepth,height<=0?100:Math.min(100,Math.floor((scrollY+innerHeight)/height*100)));};
+  addEventListener("scroll",depth,{passive:true});
+  schedule();
+  const hide=()=>{depth();if(visible){visibleMs+=Date.now()-visibleAt;visible=false;}check();if(!depthSent){depthSent=true;send("scroll_depth",Math.max(25,Math.min(100,Math.floor(maxDepth/25)*25)));}};
+  const show=()=>{if(!visible){visible=true;visibleAt=Date.now();schedule();}};
+  addEventListener("visibilitychange",()=>document.visibilityState==="hidden"?hide():show());
+  addEventListener("pagehide",hide);
+  addEventListener("click",event=>{const link=event.target.closest?.("[data-cta]");if(link)send("cta_click",link.dataset.cta);},{passive:true});
+  const sectionViews=new Set();
+  const sectionDetail=section=>section.id||section.classList?.[0];
+  if(typeof IntersectionObserver!=="undefined"){
+    const sections=[...document.querySelectorAll("main section")].filter(section=>!section.parentElement?.closest("section"));
+    const thresholds=[.3,...sections.map(section=>{const height=section.getBoundingClientRect().height;return height>0?Math.min(.3,innerHeight*.5/height):.3;})];
+    const sectionObserver=new IntersectionObserver(entries=>{entries.forEach(entry=>{
+      const detail=sectionDetail(entry.target);
+      if(detail&&!sectionViews.has(entry.target)&&((entry.intersectionRatio||0)>=.3||(entry.intersectionRect?.height||0)>=innerHeight*.5)){
+        sectionViews.add(entry.target);send("section_view",detail);sectionObserver.unobserve(entry.target);
+      }
+    });},{threshold:thresholds});
+    sections.forEach(section=>sectionObserver.observe(section));
+  }
+})();</script><script data-login-handoff>(()=>{
+  const login=new RegExp("^(?:/zh)?/cloud/login/?$"), pending=new Map();
+  const pendingLabel=/^zh/i.test(document.documentElement.lang)?"正在打开 GitHub…":"Opening GitHub…";
+  addEventListener("click",event=>{
+    if(event.metaKey||event.ctrlKey||event.shiftKey||event.altKey)return;
+    const link=event.target.closest?.("a[href]");
+    if(!link||!login.test(link.pathname))return;
+    if(pending.has(link)){event.preventDefault();return;}
+    pending.set(link,link.innerHTML);
+    link.setAttribute("aria-disabled","true");
+    setTimeout(()=>{link.textContent=pendingLabel;},0);
+  },true);
+  addEventListener("pageshow",event=>{
+    if(!event.persisted)return;
+    pending.forEach((html,link)=>{link.innerHTML=html;link.removeAttribute("aria-disabled");});
+    pending.clear();
+  });
+})();</script><script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "44c2c3310e2e46b7955bb09f04c93fd1"}'></script><script>(function(){
+  var start=function(){
+    !function(t,e){var o,n,p,r;e.__SV||(window.posthog=e,e._i=[],e.init=function(i,s,a){function g(t,e){var o=e.split(".");2==o.length&&(t=t[o[0]],e=o[1]),t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}}(p=t.createElement("script")).type="text/javascript",p.crossOrigin="anonymous",p.async=!0,p.src=s.api_host.replace(".i.posthog.com","-assets.i.posthog.com")+"/static/array.js",(r=t.getElementsByTagName("script")[0]).parentNode.insertBefore(p,r);var u=e;for(void 0!==a?u=e[a]=[]:a="posthog",u.people=u.people||[],Object.defineProperty(u,"toString",{configurable:!0,enumerable:!0,writable:!0,value:function(t){var e="posthog";return"posthog"!==a&&(e+="."+a),t||(e+=" (stub)"),e}}),Object.defineProperty(u.people,"toString",{configurable:!0,enumerable:!0,writable:!0,value:function(){return u.toString(1)+".people (stub)"}}),o="init capture register register_once register_for_session unregister unregister_for_session getFeatureFlag getFeatureFlagResult isFeatureEnabled reloadFeatureFlags updateEarlyAccessFeatureEnrollment getEarlyAccessFeatures on onFeatureFlags onSessionId getSurveys getActiveMatchingSurveys renderSurvey canRenderSurvey getNextSurveyStep identify setPersonProperties group resetGroups setPersonPropertiesForFlags resetPersonPropertiesForFlags setGroupPropertiesForFlags resetGroupPropertiesForFlags reset get_distinct_id getGroups get_session_id get_session_replay_url alias set_config startSessionRecording stopSessionRecording sessionRecordingStarted captureException loadToolbar get_property getSessionProperty createPersonProfile opt_in_capturing opt_out_capturing has_opted_in_capturing has_opted_out_capturing clear_opt_in_out_capturing debug".split(" "),n=0;n<o.length;n++)g(u,o[n]);e._i.push([i,s,a])},e.__SV=1)}(document,window.posthog||[]);
+    posthog.init("phc_nhxAwie7BY0blOSHfAbNzRGcb2rGDJInLUGPh93i8Mx",{api_host:"/api/ph",ui_host:"https://us.posthog.com",autocapture:true,disable_session_recording:false});
+  };
+  if(document.readyState==="complete")start();else addEventListener("load",start,{once:true});
+})();</script></body>
+</html>
