@@ -12,7 +12,7 @@ GitHub Copilot, Claude Approvals, Cursor, and CodeRabbit can all submit approvin
 
 I'm Larry 🍀 Orbi, the creator of [Orbi](https://github.com/orbi-build/orbi), an open-source engine that takes a labelled GitHub Issue, has the Pi coding agent write the change, sends the pull request to a separate review session, and merges it once the checks pass without anyone clicking Approve. I have a stake in this.
 
-To a GitHub branch rule, an approval means one eligible account approved one commit. The rule does not ask what the approver checked or which base the diff was tested against, and Copilot and Claude Approvals now let an AI approval fill that required slot. My view: review should be independent of whoever wrote the code, even when the reviewer is not a person, and a person should own the rules and release acceptance instead of the per-PR click. Orbi's own reviewer is also an AI saying yes; the difference I care about is what that yes is tied to, which the rest of this post spells out. Orbi never submits a GitHub approval. It merges unattended only where the branch requires zero approvals, as my three repositories do; where a branch requires one, it stops and waits for a person.
+To a GitHub branch rule, an approval means one eligible account approved one commit. The rule does not ask what the approver checked or which base the diff was tested against, and Copilot, Claude Approvals and CodeRabbit all say their AI approval can fill that required slot. My view: review should be independent of whoever wrote the code, even when the reviewer is not a person, and a person should own the rules and release acceptance instead of the per-PR click. Orbi's own reviewer is also an AI saying yes; the difference I care about is what that yes is tied to, which the rest of this post spells out. Orbi never submits a GitHub approval. It merges unattended only where the branch requires zero approvals, as my three repositories do; where a branch requires one, it stops and waits for a person.
 
 ## Who can approve a pull request now
 
@@ -31,7 +31,7 @@ Anthropic announced Claude Approvals on 23 November 2026 in [Claude Ship](https:
 
 In Cursor's [Approval Agents docs](https://cursor.com/docs/approval-agents), "PR Routing & Approval routes pull requests to the right reviewers and can approve low-risk changes." You turn it on inside Cursor Automations, where "Automatically Approve PRs approves low-risk PRs after you configure approval criteria." `APPROVAL_POLICY.md` files in the repository are optional; the agent discovers and applies them before deciding. There is a stop condition as well: "If Bugbot or Security Agents report findings that need human review, PR Routing & Approval will not approve the PR."
 
-CodeRabbit's [Automatic Approvals docs](https://docs.coderabbit.ai/pr-reviews/automatic-approvals.md) put it plainly: "Automatic Approvals is off by default." You turn it on with `reviews.auto_approvals.enabled`, and "CodeRabbit approves only when every approval requirement is met."
+CodeRabbit's [Automatic Approvals docs](https://docs.coderabbit.ai/pr-reviews/automatic-approvals.md) put it plainly: "Automatic Approvals is off by default." You turn it on with `reviews.auto_approvals.enabled`, and "CodeRabbit approves only when every approval requirement is met." The same page says "CodeRabbit's approval counts toward your Git provider's required approvals."
 
 ## What an approval records, and what it leaves out
 
@@ -66,7 +66,7 @@ Orbi never submits a GitHub approve review and never passes `--admin`. It merges
 
 - No CI check has failed; while checks are running, Orbi waits for the next poll.
 - The PR branch contains the latest base. Orbi fetches the latest base before merging; if the PR is behind and merges cleanly, Orbi merges the base in, pushes, records that merge commit as the head to land, and waits for CI on it. It never merges a head pushed during the same pass. That base merge does not get a second review, while a conflict or a push from anyone else sends the PR back through review.
-- The head matches the one CI passed on. Orbi runs `gh pr merge --match-head-commit <head>`, so if the branch moved after the last check, the merge fails. After a clean base merge, that head was checked by CI but not re-read by the reviewer; the review covered the PR's own changes.
+- The head matches what Orbi last checked. Orbi runs `gh pr merge --match-head-commit <head>`, so if the branch moved after the last check, the merge fails. After a clean base merge, that head went through the merge gate (and CI, where the repository has CI) but was not re-read by the reviewer; the review covered the PR's own changes.
 - If a failing check is also failing on the base branch, Orbi pauses the PR and opens a separate fix ticket for the base failure.
 - An `ai-blocked` label on the Issue stops the merge even after review and CI pass.
 
@@ -100,7 +100,7 @@ What these numbers do and do not show:
 
 ## Where a person still sits
 
-Dropping per-PR clicks moves human work to the rules, the exceptions and release acceptance. Before merge, a person writes Issues, maintains branch and CI rules, and resolves `ai-blocked` Issues when review hits five rounds, repeats a finding, or returns `blocked_on_human_decision`.
+Dropping per-PR clicks moves human work to the rules, the exceptions and release acceptance. Before merge, a person writes Issues, maintains branch and CI rules, and resolves `ai-blocked` Issues when five review rounds end without a pass, a finding repeats, or returns `blocked_on_human_decision`.
 
 On `orbi-cloud` (covered in [AI code review bottleneck? Our PRs wait after merge](/blog/ai-code-review-bottleneck/)), promotion to production stays owned by a person. After a tag, `beta` deploys it, and an end-to-end new-user check runs on `beta`. Once I sign off, the promotion merges into `main`, and the production deploy needs a one-click approval.
 
@@ -111,7 +111,7 @@ I would keep a human approver here:
 - Repos with no CI or weak tests. Orbi does not require at least one CI check, so a repo with no CI would merge on review alone and is a bad fit.
 - Branches that deploy straight to production with no staging acceptance step. Without a `beta` check and human release sign-off, dropping per-PR approval removes the acceptance gate.
 - Policy and governance files. Whoever can merge `.claude/approvals.yml` can turn Claude Approvals on, so changes to policy files and CI rules need a human approver.
-- Compliance or team rules requiring a human approval per PR. Keep `required_approving_review_count >= 1` so GitHub enforces it (Orbi parks at `ai-awaiting-merge`), and leave AI approvals off in that repository, because Copilot or Claude can fill that count once they are enabled.
+- Compliance or team rules requiring a human approval per PR. Keep `required_approving_review_count >= 1` so GitHub enforces it (Orbi parks at `ai-awaiting-merge`), and leave AI approvals off in that repository, because Copilot, Claude or CodeRabbit can fill that count once enabled.
 
 ## If you turn on AI approvals anyway
 

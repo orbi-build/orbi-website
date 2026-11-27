@@ -12,7 +12,7 @@ GitHub Copilot、Claude Approvals、Cursor 和 CodeRabbit 现在都能在 PR 上
 
 我是 Larry 🍀 Orbi，Orbi 的创始人。[Orbi](https://github.com/orbi-build/orbi) 是个开源交付引擎：给它一个打好标签的 GitHub Issue，它就让编程 agent Pi 写完改动，把 PR 交给独立的评审会话，检查通过直接合并，全程没人点 Approve。所以这件事和我有利益关系。
 
-对 GitHub 的分支规则来说，一次批准只表示“某个有资格的账号批准了某个 commit”，规则不问批准的人查了什么，也不问改动在哪个 base 上测过。现在 Copilot 和 Claude Approvals 都允许 AI 的批准顶上这个必需名额。那 AI 到底该不该批准 PR？我的看法是：评审要独立于写代码的一方，但评审者不必是真人；人管好规则和发版验收，不用逐个 PR 去点批准。Orbi 自己的评审也是 AI 在说“行”，区别在于这个“行”绑在什么上，后文逐条讲。Orbi 从不提交 GitHub 批准，只在分支要求 0 个批准时无人值守地合并（我的三个仓库都是这样）；分支要求批准时，它停下来等人。
+对 GitHub 的分支规则来说，一次批准只表示“某个有资格的账号批准了某个 commit”，规则不问批准的人查了什么，也不问改动在哪个 base 上测过。现在 Copilot、Claude Approvals 和 CodeRabbit 的文档都写明，AI 的批准能顶上这个必需名额。那 AI 到底该不该批准 PR？我的看法是：评审要独立于写代码的一方，但评审者不必是真人；人管好规则和发版验收，不用逐个 PR 去点批准。Orbi 自己的评审也是 AI 在说“行”，区别在于这个“行”绑在什么上，后文逐条讲。Orbi 从不提交 GitHub 批准，只在分支要求 0 个批准时无人值守地合并（我的三个仓库都是这样）；分支要求批准时，它停下来等人。
 
 ## 现在哪些工具能批准 PR
 
@@ -31,7 +31,7 @@ Anthropic 在 2026 年 11 月 23 日发布 [Claude Ship](https://claude.com/blog
 
 Cursor 的 [Approval Agents 文档](https://cursor.com/docs/approval-agents)写着："PR Routing & Approval routes pull requests to the right reviewers and can approve low-risk changes."（负责把 PR 分给合适的评审人，并可以批准低风险改动。）入口设在 Cursor Automations 里："Automatically Approve PRs approves low-risk PRs after you configure approval criteria."（配好批准条件后会自动批准低风险 PR。）仓库里的 `APPROVAL_POLICY.md` 是可选项，agent 会自动发现并按里面的规则判断。文档里还提到："If Bugbot or Security Agents report findings that need human review, PR Routing & Approval will not approve the PR."（如果 Bugbot 或 Security Agents 报出需要人工复核的问题，它就不会批准。）
 
-CodeRabbit 的 [Automatic Approvals 文档](https://docs.coderabbit.ai/pr-reviews/automatic-approvals.md)写得很直接："Automatic Approvals is off by default."（默认关闭。）对应开关是 `reviews.auto_approvals.enabled`，"CodeRabbit approves only when every approval requirement is met."（只有满足全部批准条件时才会批准。）
+CodeRabbit 的 [Automatic Approvals 文档](https://docs.coderabbit.ai/pr-reviews/automatic-approvals.md)写得很直接："Automatic Approvals is off by default."（默认关闭。）对应开关是 `reviews.auto_approvals.enabled`，"CodeRabbit approves only when every approval requirement is met."（只有满足全部批准条件时才会批准。）同一页还写明："CodeRabbit's approval counts toward your Git provider's required approvals."（它的批准计入代码托管平台的必需批准数。）
 
 ## 批准评审只记账号和 commit
 
@@ -66,7 +66,7 @@ Orbi 从不提交 GitHub 批准评审，也不传 `--admin`，而是直接走合
 
 - 没有任何 CI 检查失败；检查还在跑，就等下一轮轮询再看。
 - PR 分支必须包含最新的 base。合并前 Orbi 先拉取最新 base；如果 PR 落后且合并没有冲突，Orbi 就把 base 合进 PR 分支、推送，把这个合并 commit 记成待落地的 head，等它跑完 CI。同一轮里刚推上去的 head 绝不直接合并。这次合并 base 不会触发第二次评审；一旦有冲突，或者其他人往分支推了新提交，Orbi 就把 PR 退回重新评审。
-- 合进去的 head 必须是 CI 刚通过的那个。Orbi 用 `gh pr merge --match-head-commit <head>` 来合并，上次检查完之后只要分支又动过，合并就直接报错退出。无冲突合入 base 之后，这个 head 过了 CI，但评审没有再读；评审覆盖的是 PR 自己的改动。
+- 合进去的 head 必须是 Orbi 最后检查过的那个。Orbi 用 `gh pr merge --match-head-commit <head>` 来合并，上次检查完之后只要分支又动过，合并就直接报错退出。无冲突合入 base 之后，这个 head 过了合并门禁（仓库配了 CI 的话也过了 CI），但评审没有再读；评审覆盖的是 PR 自己的改动。
 - 如果某项检查在 base 分支上本身就失败，Orbi 会暂停当前 PR，另开一张修 base 故障的 Issue。
 - 只要 Issue 上挂着 `ai-blocked` 标签，就算评审和 CI 全过，Orbi 也不会放行合并。
 
@@ -111,7 +111,7 @@ Orbi 从不提交 GitHub 批准评审，也不传 `--admin`，而是直接走合
 - 没有 CI 或测试薄弱的仓库。Orbi 不要求仓库至少配一项 CI 检查；不配 CI，PR 只凭评审就能合并。缺测试兜底的项目，不适合关掉人工批准。
 - 合完直接上生产、没有预发验收步骤的分支。少了 `beta` 验证和人工发版签字，撤掉逐 PR 批准就等于撤掉了验收门禁。
 - 策略和治理类文件。谁能合入 `.claude/approvals.yml`，谁就能打开 Claude Approvals，所以改策略文件和 CI 规则的 PR 要留人把关。
-- 合规要求或团队制度规定每个 PR 必须真人批准。保持 `required_approving_review_count >= 1`，交给 GitHub 强制拦截（Orbi 会把单子停在 `ai-awaiting-merge` 等人处理），同时在这个仓库里别开 AI 批准，因为 Copilot 或 Claude 一旦开启就能占掉这个名额。
+- 合规要求或团队制度规定每个 PR 必须真人批准。保持 `required_approving_review_count >= 1`，交给 GitHub 强制拦截（Orbi 会把单子停在 `ai-awaiting-merge` 等人处理），同时在这个仓库里别开 AI 批准，因为 Copilot、Claude 或 CodeRabbit 一旦开启就能占掉这个名额。
 
 ## 如果你还是打算开 AI 自动批准
 
