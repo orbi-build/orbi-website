@@ -3,20 +3,20 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>AI 该不该批准 PR？批准按钮放错了地方 | Orbi</title>
-  <meta name="description" content="Copilot、Claude Approvals、Cursor 和 CodeRabbit 都能批准 PR。说明为何不该靠批准按钮把关、Orbi 的合并门禁和 30 天数据。">
+  <title>AI 该不该批准 PR？把关卡放在合并这一步 | Orbi</title>
+  <meta name="description" content="Copilot、Claude、Cursor 和 CodeRabbit 都能批准 PR 了。我认为该在合并时把关，并给出 Orbi 在 721 个 agent PR 上查的东西。">
   <link rel="canonical" href="https://orbi.build/zh/blog/should-ai-approve-pull-requests/">
   <link rel="alternate" hreflang="en" href="https://orbi.build/blog/should-ai-approve-pull-requests/">
   <link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/blog/should-ai-approve-pull-requests/">
   <link rel="alternate" hreflang="x-default" href="https://orbi.build/blog/should-ai-approve-pull-requests/">
   <meta property="og:type" content="article">
-  <meta property="og:title" content="AI 该不该批准 PR？批准按钮放错了地方">
-  <meta property="og:description" content="Copilot、Claude Approvals、Cursor 和 CodeRabbit 都能批准 PR。说明为何不该靠批准按钮把关、Orbi 的合并门禁和 30 天数据。">
+  <meta property="og:title" content="AI 该不该批准 PR？把关卡放在合并这一步">
+  <meta property="og:description" content="Copilot、Claude、Cursor 和 CodeRabbit 都能批准 PR 了。我认为该在合并时把关，并给出 Orbi 在 721 个 agent PR 上查的东西。">
   <meta property="og:url" content="https://orbi.build/zh/blog/should-ai-approve-pull-requests/">
   <meta property="og:image" content="https://orbi.build/img/blog-should-ai-approve-card.png">
-  <meta property="og:image:alt" content="AI 该不该批准 PR？批准按钮放错了地方">
+  <meta property="og:image:alt" content="AI 该不该批准 PR？把关卡放在合并这一步">
   <meta property="article:published_time" content="2026-11-27">
-  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"AI 该不该批准 PR？批准按钮放错了地方","datePublished":"2026-11-27","author":{"@type":"Person","name":"Larry 🍀 Orbi","url":"https://orbi.build/zh/about/larry-orbi/","sameAs":["https://github.com/xqliu","https://x.com/xqliu"]},"publisher":{"@type":"Organization","name":"Orbi","url":"https://orbi.build/","logo":{"@type":"ImageObject","url":"https://orbi.build/logo-mark.svg"}},"mainEntityOfPage":"https://orbi.build/zh/blog/should-ai-approve-pull-requests/","image":"https://orbi.build/img/blog-should-ai-approve-card.png","inLanguage":"zh-CN","description":"Copilot、Claude Approvals、Cursor 和 CodeRabbit 都能批准 PR。说明为何不该靠批准按钮把关、Orbi 的合并门禁和 30 天数据。","url":"https://orbi.build/zh/blog/should-ai-approve-pull-requests/"}</script>
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"AI 该不该批准 PR？把关卡放在合并这一步","datePublished":"2026-11-27","author":{"@type":"Person","name":"Larry 🍀 Orbi","url":"https://orbi.build/zh/about/larry-orbi/","sameAs":["https://github.com/xqliu","https://x.com/xqliu"]},"publisher":{"@type":"Organization","name":"Orbi","url":"https://orbi.build/","logo":{"@type":"ImageObject","url":"https://orbi.build/logo-mark.svg"}},"mainEntityOfPage":"https://orbi.build/zh/blog/should-ai-approve-pull-requests/","image":"https://orbi.build/img/blog-should-ai-approve-card.png","inLanguage":"zh-CN","description":"Copilot、Claude、Cursor 和 CodeRabbit 都能批准 PR 了。我认为该在合并时把关，并给出 Orbi 在 721 个 agent PR 上查的东西。","url":"https://orbi.build/zh/blog/should-ai-approve-pull-requests/"}</script>
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <meta name="theme-color" content="#06151b">
 
@@ -148,10 +148,10 @@
       <div class="post-grid">
         <section class="post-hero" aria-labelledby="post-title">
           <p class="eyebrow">博客</p>
-          <h1 id="post-title">AI 该不该批准 PR？批准按钮放错了地方</h1>
+          <h1 id="post-title">AI 该不该批准 PR？把关卡放在合并这一步</h1>
           <p class="post-byline"><a href="/zh/about/larry-orbi/">Larry 🍀 Orbi</a> · <time datetime="2026-11-27">2026-11-27</time></p>
 
-          <p class="hero-lede">Copilot、Claude Approvals、Cursor 和 CodeRabbit 都能批准 PR。说明为何不该靠批准按钮把关、Orbi 的合并门禁和 30 天数据。</p>
+          <p class="hero-lede">Copilot、Claude、Cursor 和 CodeRabbit 都能批准 PR 了。我认为该在合并时把关，并给出 Orbi 在 721 个 agent PR 上查的东西。</p>
         </section>
       </div>
     </div>
@@ -161,10 +161,10 @@
           <h2>本页目录</h2>
           <ol>
           <li><a class="post-toc-link" href="#现在哪些工具能批准-pr">现在哪些工具能批准 PR</a></li>
-          <li><a class="post-toc-link" href="#一次批准记下了什么-又漏掉了什么">一次批准记下了什么，又漏掉了什么</a></li>
-          <li><a class="post-toc-link" href="#没有真人时的独立评审-orbi-里的-独立-指什么">没有真人时的独立评审：Orbi 里的“独立”指什么</a></li>
+          <li><a class="post-toc-link" href="#批准评审只记账号和-commit">批准评审只记账号和 commit</a></li>
+          <li><a class="post-toc-link" href="#orbi-里的-独立评审-指什么">Orbi 里的“独立评审”指什么</a></li>
           <li><a class="post-toc-link" href="#orbi-不点批准-合并前查什么">Orbi 不点批准，合并前查什么</a></li>
-          <li><a class="post-toc-link" href="#30-天-零批准合并的-agent-pr-数据">30 天，零批准合并的 agent PR 数据</a></li>
+          <li><a class="post-toc-link" href="#三个仓库-30-天的合并数据">三个仓库 30 天的合并数据</a></li>
           <li><a class="post-toc-link" href="#人还守在哪里">人还守在哪里</a></li>
           <li><a class="post-toc-link" href="#哪些情况应该保留人工批准">哪些情况应该保留人工批准</a></li>
           <li><a class="post-toc-link" href="#如果你还是打算开-ai-自动批准">如果你还是打算开 AI 自动批准</a></li>
@@ -177,10 +177,10 @@
           <summary>本页目录 · 10 节</summary>
           <ol>
           <li><a class="post-toc-link" href="#现在哪些工具能批准-pr">现在哪些工具能批准 PR</a></li>
-          <li><a class="post-toc-link" href="#一次批准记下了什么-又漏掉了什么">一次批准记下了什么，又漏掉了什么</a></li>
-          <li><a class="post-toc-link" href="#没有真人时的独立评审-orbi-里的-独立-指什么">没有真人时的独立评审：Orbi 里的“独立”指什么</a></li>
+          <li><a class="post-toc-link" href="#批准评审只记账号和-commit">批准评审只记账号和 commit</a></li>
+          <li><a class="post-toc-link" href="#orbi-里的-独立评审-指什么">Orbi 里的“独立评审”指什么</a></li>
           <li><a class="post-toc-link" href="#orbi-不点批准-合并前查什么">Orbi 不点批准，合并前查什么</a></li>
-          <li><a class="post-toc-link" href="#30-天-零批准合并的-agent-pr-数据">30 天，零批准合并的 agent PR 数据</a></li>
+          <li><a class="post-toc-link" href="#三个仓库-30-天的合并数据">三个仓库 30 天的合并数据</a></li>
           <li><a class="post-toc-link" href="#人还守在哪里">人还守在哪里</a></li>
           <li><a class="post-toc-link" href="#哪些情况应该保留人工批准">哪些情况应该保留人工批准</a></li>
           <li><a class="post-toc-link" href="#如果你还是打算开-ai-自动批准">如果你还是打算开 AI 自动批准</a></li>
@@ -188,7 +188,7 @@
           <li><a class="post-toc-link" href="#相关">相关</a></li>
           </ol>
         </details>
-<p>GitHub Copilot、Claude Approvals、Cursor 和 CodeRabbit 现在都能在 PR 上提交批准评审，不过都要先有人打开开关、启用自动化，或者提交策略文件，才会开始批准。如果你是工程师或技术负责人，正在考虑要不要开这项功能，或者在想 agent 提的 PR 能不能不经人点批准就合并，这篇正好是写给你的。文章会交代我的立场、Orbi 替代批准按钮的合并门禁、我三个仓库 30 天的真实数据，以及哪些场景还是该留真人批准。</p>
+<p>GitHub Copilot、Claude Approvals、Cursor 和 CodeRabbit 现在都能在 PR 上提交批准评审，不过都要先有人打开开关、启用自动化，或者提交策略文件，才会开始批准。如果你是工程师或技术负责人，正在考虑要不要开这项功能，或者在想 agent 提的 PR 能不能不经人点批准就合并，可以看看我的做法：在合并这一步把关。下文是 Orbi 在合并时查的东西、我三个仓库 30 天的数据，以及哪些情况还是该留真人批准。</p>
 <p>我是 Larry 🍀 Orbi，Orbi 的创始人。<a href="https://github.com/orbi-build/orbi">Orbi</a> 是个开源交付引擎：给它一个打好标签的 GitHub Issue，它就让编程 agent Pi 写完改动，把 PR 交给独立的评审会话，检查通过直接合并，全程没人点 Approve。所以这件事和我有利益关系。</p><aside class="post-cta-inline"><span>Orbi 把你的 Issue 一路做到发版。</span><a class="button button-signal" data-cta="post-inline-start" href="/zh/cloud/login">免费试用 Orbi Cloud →</a></aside>
 <p>GitHub 的批准评审只记了哪个账号在哪个 commit 上点过头，不记查过什么，也不记改动在哪个 base 上测过。现在各家平台都允许 AI 来点这个按钮，顶上必需批准的名额。那 AI 到底该不该批准 PR？我的看法是：评审要独立于写代码的一方，但评审者不必是真人；人管好规则和最终验收就行，不用逐个 PR 去点批准。Orbi 完全不用 GitHub 批准：我的三个仓库把必需批准数都设成了 0，把门禁挪到了合并这一侧。</p>
 <h2 id="现在哪些工具能批准-pr">现在哪些工具能批准 PR</h2>
@@ -222,21 +222,21 @@
 <td>在 Automations 开启 &quot;Automatically Approve PRs&quot;；可选放 <code class="post-code--single">APPROVAL_POLICY.md</code></td>
 <td>Team、Enterprise</td>
 <td>我读的页面未注明</td>
-<td>文档未标注日期</td>
+<td>我读的页面未注明</td>
 </tr>
 <tr>
 <th scope="row">CodeRabbit</th>
 <td>默认关闭（<code class="post-code--single">reviews.auto_approvals.enabled</code>）</td>
 <td>Essentials、Team、Advanced、Enterprise</td>
 <td>我读的页面未注明</td>
-<td>未标注日期</td>
+<td>我读的页面未注明</td>
 </tr>
 </tbody></table></div>
 <p>GitHub 在 <a href="https://github.blog/changelog/2026-09-01-copilot-code-review-can-now-approve-pull-requests">2026 年 9 月 1 日更新日志</a>里写道：&quot;By default, Copilot will not approve pull requests.&quot;（默认不批准 PR。）打开之后，&quot;When enabled, Copilot can submit an approval that counts toward the repository&#39;s required-approvals rule.&quot;（Copilot 提交的批准会计入仓库的必需批准规则。）这项功能面向对应套餐公测：&quot;This feature is available in public preview to GitHub Copilot Pro, Pro+, Max, Business, and Enterprise plans.&quot;（向上述套餐公测开放。）管理员还能 &quot;choose which file paths Copilot is allowed to approve.&quot;（指定允许 Copilot 批准的文件路径。）一旦有新提交推上来，&quot;If new commits are pushed after Copilot approves, its approval is dismissed just like a human reviewer&#39;s.&quot;（Copilot 的批准会和真人一样自动失效。）<a href="https://docs.github.com/copilot/how-tos/copilot-on-github/set-up-copilot/configure-code-review">配置文档</a>另外列出了企业级默认限制（&quot;Organizations cannot enable Copilot approvals. This is the default.&quot;，默认禁止组织启用）、路径上限（&quot;Up to 15 globs are supported.&quot;，最多支持 15 条 glob 规则），以及两个开关：&quot;Allow Copilot to approve pull requests&quot; 和 &quot;Allow Copilot approvals to count toward merge requirements&quot;。</p>
 <p>Anthropic 在 2026 年 11 月 23 日发布 <a href="https://claude.com/blog/introducing-claude-ship">Claude Ship</a> 时推出了 Claude Approvals。按 <a href="https://code.claude.com/docs/en/claude-ship">Claude Ship 文档</a>和 <a href="https://code.claude.com/docs/en/approvals.md">Approvals 文档</a>的说法，&quot;PR Steward and Claude Approvals are in public beta.&quot;（目前处于公测），并且 &quot;Claude Ship is for organizations on Team and Enterprise plans.&quot;（面向 Team 和 Enterprise 组织）。启用靠 <code class="post-code--single">.claude/approvals.yml</code>：&quot;Claude Approvals starts when a connected repository has a policy file on its default branch, and an admin can turn it off.&quot;（已连接仓库的默认分支只要有策略文件就会启动，管理员可以关掉。）也就是说，&quot;anyone who can merge a policy file into the default branch can turn Approvals on.&quot;（任何能把策略文件合进默认分支的人都能把它打开。）席位规则里，&quot;the author can fill a seat, so with <code class="post-code--spaced">seats: 1</code> nobody else has to look.&quot;（作者自己就能占满一个席位，配成 <code class="post-code--spaced">seats: 1</code> 时别人可以完全不看。）落到分支规则上，&quot;where a GitHub branch rule requires one approval, Claude&#39;s approving review can be that approval&quot;（分支要求 1 个批准时，Claude 给出的批准评审就能顶上）。文档特意提醒：&quot;If you use GitHub auto-merge or a merge queue with a policy that doesn&#39;t require a person&#39;s approval, a change can merge without anyone acting.&quot;（策略不要求真人批准，同时开了 auto-merge 或 merge queue，没人动手，改动也会直接合进去。）</p>
 <p>Cursor 的 <a href="https://cursor.com/docs/approval-agents">Approval Agents 文档</a>写着：&quot;PR Routing &amp; Approval routes pull requests to the right reviewers and can approve low-risk changes.&quot;（负责把 PR 分给合适的评审人，并可以批准低风险改动。）入口设在 Cursor Automations 里：&quot;Automatically Approve PRs approves low-risk PRs after you configure approval criteria.&quot;（配好批准条件后会自动批准低风险 PR。）仓库里的 <code class="post-code--single">APPROVAL_POLICY.md</code> 是可选项，agent 会自动发现并按里面的规则判断。文档里还提到：&quot;If Bugbot or Security Agents report findings that need human review, PR Routing &amp; Approval will not approve the PR.&quot;（如果 Bugbot 或 Security Agents 报出需要人工复核的问题，它就不会批准。）</p>
 <p>CodeRabbit 的 <a href="https://docs.coderabbit.ai/pr-reviews/automatic-approvals.md">Automatic Approvals 文档</a>写得很直接：&quot;Automatic Approvals is off by default.&quot;（默认关闭。）对应开关是 <code class="post-code--single">reviews.auto_approvals.enabled</code>，&quot;CodeRabbit approves only when every approval requirement is met.&quot;（只有满足全部批准条件时才会批准。）</p>
-<h2 id="一次批准记下了什么-又漏掉了什么">一次批准记下了什么，又漏掉了什么</h2>
+<h2 id="批准评审只记账号和-commit">批准评审只记账号和 commit</h2>
 <p>GitHub 的必需评审规则查的是账号身份。按 <a href="https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/reviewing-changes-in-pull-requests/approving-a-pull-request-with-required-reviews">GitHub 文档</a>：&quot;Pull request authors cannot approve their own pull requests.&quot;（PR 作者不能批准自己的 PR。）</p>
 <p>一条批准评审只留下“另一个 GitHub 账号批准过某个 commit”，决定一次合并安不安全的关键信息却全没记：</p>
 <ul>
@@ -244,9 +244,9 @@
 <li>diff 是对照哪个 base commit 看的。<code class="post-code--single">main</code> 往前推进以后，早先给的批准依然算数，除非分支规则同时要求先同步到最新 base 再合并。</li>
 <li>这条批准现在还算不算数。GitHub 确实存了每条评审对应的 commit，但只要规则没开“推送新提交时使旧批准失效”，必需批准数里就可能还把旧提交上的批准算进去。</li>
 </ul>
-<p>就算留着真人评审，一部分开源项目里 agent PR 实际得到的审查本来也不多。2026 年 1 月有一篇论文（<a href="https://arxiv.org/abs/2601.13754">arXiv 2601.13754</a>），专门统计开源项目里由非仓库所有者提交、AI 共同编写的 PR，结论是：&quot;AI-co-authored PRs from non-owners receive the least, with approximately 80% merged without any explicit review.&quot;（非所有者提交的 AI 共同编写 PR 得到的审查最少，大约 80% 没有任何显式审查就合并了。）这项统计口径很窄（只覆盖开源仓库，只看非所有者提交的 AI 共同编写 PR），不能用来推断公司私有仓库的情况，也不能套到维护者自己提的 PR 上。它只说明这批 PR 实际得到的显式审查很少，并不代表随时间变化的趋势。</p>
+<p>在一部分开源项目里，AI 共同编写的 PR 本来就很少有人审。2026 年 1 月有一篇论文（<a href="https://arxiv.org/abs/2601.13754">arXiv 2601.13754</a>），专门统计开源项目里由非仓库所有者提交、AI 共同编写的 PR，结论是：&quot;AI-co-authored PRs from non-owners receive the least, with approximately 80% merged without any explicit review.&quot;（非所有者提交的 AI 共同编写 PR 得到的审查最少，大约 80% 没有任何显式审查就合并了。）样本只有开源仓库里非所有者提交的这类 PR，推不到公司私有仓库和维护者自己的 PR 上；它也只是一个时间点的统计，看不出趋势。</p>
 <p>把点 Approve 的动作交给 AI，用的还是同一套机制：只认某个账号点过头，依然没把检查绑到最新的 base、通过的 CI 和最终要合并的那个 commit 上。</p>
-<h2 id="没有真人时的独立评审-orbi-里的-独立-指什么">没有真人时的独立评审：Orbi 里的“独立”指什么</h2>
+<h2 id="orbi-里的-独立评审-指什么">Orbi 里的“独立评审”指什么</h2>
 <p>在 <a href="https://github.com/orbi-build/orbi">Orbi</a>（<code class="post-code--single">main</code>，commit <code class="post-code--single">d11224a5</code>）里，评审在单独的进程里运行，用自己的提示词（<code class="post-code--single">prompts/prompt_review.md</code>）另起全新会话，不接续实现阶段的上下文。它读的是 Issue 原文、可信评论、人在 PR 上留的反馈，以及一对冻结的 base/head SHA。</p>
 <p>评审结束必须给出三种结论之一：<code class="post-code--single">pass</code>、<code class="post-code--single">findings</code> 或 <code class="post-code--single">blocked_on_human_decision</code>。只要查出 Blocker 或 Major 级别的问题，就不能给 <code class="post-code--single">pass</code>，结论里也会写明这次审的是哪个 head commit。输出要是解析不了，一律按报错处理，绝不当成 <code class="post-code--single">pass</code>。</p>
 <p>这种“独立”有两处比听上去弱：</p>
@@ -256,7 +256,7 @@
 </ul>
 <p>这两个缺口靠后面的机制兜底。评审员推上去的任何 commit，后面都必须重新过 CI 和下一节的合并门禁。遇到它修不掉的问题，单子会贴上 <code class="post-code--single">ai-fix-needed</code> 标签退回去重修，再走一轮流程。评审最多跑五轮，超过五轮就把 Issue 标成 <code class="post-code--single">ai-blocked</code> 交给人拍板；同一个问题连着两轮出现，评审也会停下来问人。</p>
 <h2 id="orbi-不点批准-合并前查什么">Orbi 不点批准，合并前查什么</h2>
-<p>Orbi 从不提交 GitHub 批准评审，也不传 <code class="post-code--single">--admin</code>，而是直接走合并流程，合并前强制查五道门禁：</p>
+<p>Orbi 从不提交 GitHub 批准评审，也不传 <code class="post-code--single">--admin</code>，而是直接走合并流程，下面这些检查都过了才合并：</p>
 <ul>
 <li>没有任何 CI 检查失败；检查还在跑，就等下一轮轮询再看。</li>
 <li>PR 分支必须包含最新的 base。合并前 Orbi 先拉取最新 base；如果 PR 落后且合并没有冲突，Orbi 就把 base 合进 PR 分支、推送，把这个合并 commit 记成待落地的 head，等它跑完 CI。同一轮里刚推上去的 head 绝不直接合并。这次合并 base 不会触发第二次评审；一旦有冲突，或者其他人往分支推了新提交，Orbi 就把 PR 退回重新评审。</li>
@@ -266,7 +266,7 @@
 </ul>
 <p>如果仓库的分支规则要求批准（<code class="post-code--spaced">required_approving_review_count &gt;= 1</code>），Orbi 不会自己批准自己，而是给 Issue 贴上 <code class="post-code--single">ai-awaiting-merge</code> 标签，评论里写明需要人做什么，之后再重试。这条路径在我自己的仓库里还没跑过，因为我这边要求 0 个批准；上面写的是 Orbi 的设计行为，不是我实际跑过的记录。</p>
 <p>有一类改动不走 PR：发版时，Orbi 会确认当前里程碑下没有未完成的工作，直接把递增版本号的 commit 推到 base 分支，等这个 commit 的 CI 全绿后再打 tag、发布。</p>
-<h2 id="30-天-零批准合并的-agent-pr-数据">30 天，零批准合并的 agent PR 数据</h2>
+<h2 id="三个仓库-30-天的合并数据">三个仓库 30 天的合并数据</h2>
 <p>2026 年 11 月 27 日通过 GitHub API 核对，我的三个仓库都不要求批准评审：<code class="post-code--single">orbi-build/orbi-website</code> 在 <code class="post-code--single">beta</code> 和 <code class="post-code--single">main</code> 上的 ruleset 要求走 PR，但 <code class="post-code--single">required_approving_review_count</code> 是 <code class="post-code--single">0</code>；<code class="post-code--single">orbi-build/orbi-cloud</code> 的 ruleset 只拦删分支和强推，没有 pull-request 规则；<code class="post-code--single">orbi-build/orbi</code> 没有覆盖 <code class="post-code--single">main</code> 的 ruleset（include 列表为空），也没有经典分支保护。三个仓库查经典分支保护都返回 <code class="post-code--spaced">&quot;Branch not protected&quot;</code>（404）。同样在 2026 年 11 月 27 日核对过，runner 的 PR 全由 GitHub App <code class="post-code--single">orbi-build</code>（<code class="post-code--single">app/orbi-build</code>）创建并合并。</p>
 <p>下面这份统计来自 Orbi Cloud 生产交付回执，时间从 2026 年 10 月 28 日 00:00 到 2026 年 11 月 27 日 00:00（+08），只算 Orbi runner 交付并合并的 PR：</p>
 <p class="post-table-hint" hidden>左右滑动查看所有列。</p><div class="post-table-scroll" tabindex="0" role="region" aria-label="左右滑动查看所有列。"><table class="table-comparison">
@@ -315,7 +315,7 @@
 </tbody></table></div>
 <p>721 个 PR 里有 82 个（11.4%）跑了不止一轮评审。触发第二轮的原因有两种：评审查出自己会话内修不掉的问题，或者合并门禁阶段有 CI 挂掉。公开仓库里跑了不止一轮的一共 14 个 PR：10 个是合并门禁阶段 CI 失败，4 个是评审发现问题。这 721 个 PR 合并时没有一个需要批准：仓库把要求设成了 0，Orbi 也从不提交批准。</p>
 <p>公开仓库的数据可以直接复现。在 GitHub 搜索 <code class="post-code--spaced">repo:orbi-build/orbi is:pr is:merged author:app/orbi-build merged:2026-10-27T16:00:00Z..2026-11-26T16:00:00Z</code> 会返回 167 个 PR，换成 <code class="post-code--single">orbi-build/orbi-website</code> 会返回 92 个。这 259 个 PR 上没有任何 GitHub 评审记录，批准数也是 0，和上面的回执完全对得上。</p>
-<p>读这组数据要注意四件事：</p>
+<p>这组数据能说明什么、不能说明什么：</p>
 <ul>
 <li>这不是问题检出率。统计里混了 CI 重试，而评审员在自己会话里顺手修掉的问题留在第 1 轮里，没单独拆出来算。私有的 <code class="post-code--single">orbi-cloud</code> 我也没留按原因拆分的记录。</li>
 <li>表格只统计了最终合并的 PR。</li>
@@ -326,20 +326,20 @@
 <p>拿掉逐个 PR 点批准以后，人退到了两个位置：规则和发版验收。上游由人写 Issue、管分支和 CI 规则；碰到评审满五轮、问题重复出现或返回 <code class="post-code--single">blocked_on_human_decision</code>，人再出面处理 <code class="post-code--single">ai-blocked</code> 的单子。</p>
 <p>下游拿 <code class="post-code--single">orbi-cloud</code> 来说（具体过程我写过<a href="/zh/blog/ai-code-review-bottleneck/">AI 代码评审是瓶颈吗？我们的 PR 卡在合并之后</a>），推向生产依然由人把关：打完 tag 先部署到 <code class="post-code--single">beta</code>，在 <code class="post-code--single">beta</code> 上跑端到端新用户检查，我签字确认后再把晋升合进 <code class="post-code--single">main</code>，最后生产部署还要人再点一次确认。验收挪到了跑起来的发布版本上，不再拆成一个个 PR 看 diff。</p>
 <h2 id="哪些情况应该保留人工批准">哪些情况应该保留人工批准</h2>
-<p>下面四种情况还是该留着真人批准：</p>
+<p>这些情况我会留着真人批准：</p>
 <ul>
 <li>没有 CI 或测试薄弱的仓库。Orbi 不要求仓库至少配一项 CI 检查；不配 CI，PR 只凭评审就能合并。缺测试兜底的项目，不适合关掉人工批准。</li>
 <li>合完直接上生产、没有预发验收步骤的分支。少了 <code class="post-code--single">beta</code> 验证和人工发版签字，撤掉逐 PR 批准就等于撤掉了验收门禁。</li>
-<li>策略和治理类文件。在 Claude Approvals 里，只要能把 <code class="post-code--single">.claude/approvals.yml</code> 合进默认分支，就能打开 Approvals；改策略文件和 CI 规则的 PR，值得留人把关。</li>
+<li>策略和治理类文件。谁能合入 <code class="post-code--single">.claude/approvals.yml</code>，谁就能打开 Claude Approvals，所以改策略文件和 CI 规则的 PR 要留人把关。</li>
 <li>合规要求或团队制度规定每个 PR 必须真人批准。保持 <code class="post-code--spaced">required_approving_review_count &gt;= 1</code>，交给 GitHub 强制拦截（Orbi 会把单子停在 <code class="post-code--single">ai-awaiting-merge</code> 等人处理）。</li>
 </ul>
 <h2 id="如果你还是打算开-ai-自动批准">如果你还是打算开 AI 自动批准</h2>
-<p>如果你还是打算保留必需批准规则，让 AI 工具顶上这个名额，开之前先核对五项设置：</p>
+<p>如果你还是打算保留必需批准规则，让 AI 工具顶上这个名额，开之前先核对这些设置：</p>
 <ul>
 <li>限制路径范围。Copilot 最多支持 15 条 path glob，把自动批准收在低风险文件里。</li>
-<li>别让作者一个人占满唯一席位。在 Claude Approvals 里，<code class="post-code--spaced">seats: 1</code> 允许作者自己填满席位，别人完全不用看；另外，只要能把 <code class="post-code--single">.claude/approvals.yml</code> 合进默认分支，谁都能打开 Approvals。</li>
+<li>别让作者一个人占满唯一席位。Claude Approvals 配成 <code class="post-code--spaced">seats: 1</code> 时，别人可以完全不看。</li>
 <li>让 CI 保持为必需检查，并要求合并前分支先同步最新 base，确保批准对应的是在最新 base 上测过的代码。</li>
-<li>推送新提交时让旧批准失效。新提交推上去后，Copilot 的批准会和真人一样自动失效；顺手核对一下规则，确认对真人批准也开了同样的设置。</li>
+<li>推送新提交时让旧批准失效。GitHub 说新提交会让 Copilot 的批准和真人的一样失效；核对分支规则开了“旧批准失效”，新推送之后不留任何旧批准。</li>
 <li>检查 auto-merge 和 merge queue。只要策略不要求真人批准，配合 auto-merge 或 merge queue，没人动手，改动也能直接合进去。</li>
 </ul>
 <h2 id="查一下你的分支到底要求什么">查一下你的分支到底要求什么</h2>
