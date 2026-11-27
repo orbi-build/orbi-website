@@ -14,7 +14,7 @@ GitHub Copilot、Claude Approvals、Cursor 和 CodeRabbit 现在都能在 PR 上
 
 对 GitHub 的分支规则来说，一次批准只表示“某个有资格的账号批准了某个 commit”，规则不问批准的人查了什么，也不问改动在哪个 base 上测过。现在 Copilot、Claude Approvals 和 CodeRabbit 的文档都写明，AI 的批准能顶上这个必需名额。那 AI 到底该不该批准 PR？我的看法是：评审要独立于写代码的一方，但评审者不必是真人；人管好规则和发版验收，不用逐个 PR 去点批准。Orbi 自己的评审也是 AI 在说“行”，区别在于这个“行”绑在什么上，后文逐条讲。Orbi 从不提交 GitHub 批准，只在分支要求 0 个批准时无人值守地合并（我的三个仓库都是这样）；分支要求批准时，它停下来等人。
 
-## 现在哪些工具能批准 PR
+## Copilot 能批准 PR 吗？还有哪些工具能批准
 
 GitHub 在 2026 年 10 月 28 日的 [Octoverse 2026](https://github.blog/news-insights/octoverse/octoverse-commits-pushes-reach-new-highs-in-2026-as-developers-build-with-agents/) 报告里写道："By September 2026, more than 40% of pull requests on GitHub started with an agent's first draft, up from 17% in March."（截至 2026 年 9 月，GitHub 上超过 40% 的 PR 初稿来自 agent，3 月时还是 17%。）下面四款工具里，只有两款写明了 AI 批准功能的发布日期：Copilot 是 2026 年 9 月 1 日，Claude Approvals 是 2026 年 11 月 23 日；我读的 Cursor 和 CodeRabbit 文档页都没标日期。四款都得先有人开启，或者写好策略文件。
 
@@ -113,7 +113,7 @@ Orbi 从不提交 GitHub 批准评审，也不传 `--admin`，而是直接走合
 - 策略和治理类文件。谁能合入 `.claude/approvals.yml`，谁就能打开 Claude Approvals，所以改策略文件和 CI 规则的 PR 要留人把关。
 - 合规要求或团队制度规定每个 PR 必须真人批准。保持 `required_approving_review_count >= 1`，交给 GitHub 强制拦截（Orbi 会把单子停在 `ai-awaiting-merge` 等人处理），同时在这个仓库里别开 AI 批准，因为 Copilot、Claude 或 CodeRabbit 一旦开启就能占掉这个名额。
 
-## 如果你还是打算开 AI 自动批准
+## 如果你还是打算让 AI 批准 PR
 
 如果你还是打算保留必需批准规则，让 AI 工具顶上这个名额，开之前先核对这些设置：
 
