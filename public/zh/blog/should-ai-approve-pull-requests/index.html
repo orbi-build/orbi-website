@@ -323,7 +323,7 @@
 <li><code class="post-code--single">orbi-cloud</code> 是私有仓库，<code class="post-code--single">orbi</code> 和 <code class="post-code--single">orbi-website</code> 是公开的，所以你能点开核对的只有那 259 个公开 PR。</li>
 </ul>
 <h2 id="人还守在哪里">人还守在哪里</h2>
-<p>拿掉逐个 PR 点批准以后，人的工作挪到了规则、例外处理和发版验收上。上游由人写 Issue、管分支和 CI 规则；碰到跑满五轮仍未通过、问题重复出现或返回 <code class="post-code--single">blocked_on_human_decision</code>，人再出面处理 <code class="post-code--single">ai-blocked</code> 的单子。</p>
+<p>拿掉逐个 PR 点批准以后，人的工作挪到了规则、例外处理和发版验收上。上游由人写 Issue、管分支和 CI 规则；碰到跑满五轮仍未通过、问题重复出现，或评审返回 <code class="post-code--single">blocked_on_human_decision</code>，人再出面处理 <code class="post-code--single">ai-blocked</code> 的单子。</p>
 <p>下游拿 <code class="post-code--single">orbi-cloud</code> 来说（具体过程我写过<a href="/zh/blog/ai-code-review-bottleneck/">AI 代码评审是瓶颈吗？我们的 PR 卡在合并之后</a>），推向生产依然由人把关：打完 tag 先部署到 <code class="post-code--single">beta</code>，在 <code class="post-code--single">beta</code> 上跑端到端新用户检查，我签字确认后再把晋升合进 <code class="post-code--single">main</code>，最后生产部署还要人再点一次确认。验收挪到了跑起来的发布版本上，不再拆成一个个 PR 看 diff。</p>
 <h2 id="哪些情况应该保留人工批准">哪些情况应该保留人工批准</h2>
 <p>这些情况我会留着真人批准：</p>

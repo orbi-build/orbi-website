@@ -100,7 +100,7 @@ Orbi 从不提交 GitHub 批准评审，也不传 `--admin`，而是直接走合
 
 ## 人还守在哪里
 
-拿掉逐个 PR 点批准以后，人的工作挪到了规则、例外处理和发版验收上。上游由人写 Issue、管分支和 CI 规则；碰到跑满五轮仍未通过、问题重复出现或返回 `blocked_on_human_decision`，人再出面处理 `ai-blocked` 的单子。
+拿掉逐个 PR 点批准以后，人的工作挪到了规则、例外处理和发版验收上。上游由人写 Issue、管分支和 CI 规则；碰到跑满五轮仍未通过、问题重复出现，或评审返回 `blocked_on_human_decision`，人再出面处理 `ai-blocked` 的单子。
 
 下游拿 `orbi-cloud` 来说（具体过程我写过[AI 代码评审是瓶颈吗？我们的 PR 卡在合并之后](/zh/blog/ai-code-review-bottleneck/)），推向生产依然由人把关：打完 tag 先部署到 `beta`，在 `beta` 上跑端到端新用户检查，我签字确认后再把晋升合进 `main`，最后生产部署还要人再点一次确认。验收挪到了跑起来的发布版本上，不再拆成一个个 PR 看 diff。
 
