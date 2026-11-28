@@ -1953,6 +1953,27 @@ describe("one unified footer on every content page", () => {
     }
   });
 
+
+  // ToolSeekr (free submit) requires a followed, server-rendered homepage
+  // badge at https://toolseekr.com/tool/orbi before the listing can go live.
+  // The official snippet is the jsDelivr SVG (300x80 viewBox, 4462 bytes,
+  // checked 2026-11-28) displayed at width:250px; height:auto. The shared
+  // strip ships that snippet once on each language's home page, with
+  // rel="noopener" only (no nofollow).
+  it("carries the ToolSeekr badge in the footer, on en and zh", () => {
+    const badgeHref = "https://toolseekr.com/tool/orbi";
+    const badge = `<a href="${badgeHref}" target="_blank" rel="noopener">`
+      + '<img src="https://cdn.jsdelivr.net/gh/ToolSeekr/assets/featured-colored.svg" alt="Featured on ToolSeekr" style="width:250px; height:auto;"></a>';
+    for (const output of ["index.html", "zh/index.html"]) {
+      const footer = footerRegion(shipped.get(output));
+      const occurrences = footer.split(badge).length - 1;
+      expect(occurrences, `${output}: the ToolSeekr badge must ship exactly once in the footer`)
+        .toBe(1);
+      expect(footerAnchorTag(footer, badgeHref), `${output}: the badge must stay a crawlable backlink`)
+        .not.toContain("nofollow");
+    }
+  });
+
   it("carries the 11 compare deep dives, in the right language tree", () => {
     for (const page of content()) {
       const footer = footerRegion(shipped.get(page.output));

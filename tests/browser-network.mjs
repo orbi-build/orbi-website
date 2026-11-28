@@ -439,6 +439,13 @@ export const BADGE_PLACEHOLDER_SIZES = [
   { host: "nexoralaunch.com", width: 250, height: 54 },
   { host: "mylaunchstash.com", width: 234, height: 54 },
   { host: "launchclash.com", width: 197, height: 54 },
+  // 2026-11-28 ToolSeekr featured badge, measured on the live URL:
+  // cdn.jsdelivr.net/gh/ToolSeekr/assets/featured-colored.svg
+  // 300x80 (SVG, 4462 bytes, width/height and viewBox 0 0 300 80; the vendor
+  // snippet displays it at width:250px; height:auto, keeping the 300:80 ratio).
+  // The free listing unlocks after this followed badge is found in the
+  // server-rendered homepage. Do not add nofollow.
+  { host: "cdn.jsdelivr.net", width: 300, height: 80 },
   { host: "aitechviral.com", width: 192, height: 54 },
 ];
 const FALLBACK_PLACEHOLDER_SIZE = { width: 1, height: 1 };
