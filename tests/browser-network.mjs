@@ -432,6 +432,11 @@ export const BADGE_PLACEHOLDER_SIZES = [
   // the live URL (200 image/svg+xml, 1011 bytes, width/height and viewBox
   // 0 0 190 52; the vendor's "Get the code" snippet declares the same box).
   { host: "vouchdex.com", width: 190, height: 52 },
+  // 2026-11-28 Nexora Launch listed badge (Issue #1528), measured on the live
+  // URL: /badge/orbi.svg?kind=listed&shape=standard&mode=light&size=m&v=2
+  // 250x54 (SVG, 1131 bytes, width/height and viewBox 0 0 250 54; the vendor
+  // receipt declares the same 250x54 box).
+  { host: "nexoralaunch.com", width: 250, height: 54 },
   { host: "mylaunchstash.com", width: 234, height: 54 },
   { host: "launchclash.com", width: 197, height: 54 },
   { host: "aitechviral.com", width: 192, height: 54 },
