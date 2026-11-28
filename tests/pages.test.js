@@ -1926,6 +1926,33 @@ describe("one unified footer on every content page", () => {
     }
   });
 
+  // Nexora Launch (orbi-growth #1788) puts Orbi in its free queue for the week
+  // of 2026-11-30, and its receipt names the badge on orbi.build as the
+  // condition for that free slot. The vendor snippet keeps the link
+  // rel="nofollow" (the receipt's own code, with the script it appends left
+  // out), the file's own 250x54 box (measured on the live URL 2026-11-28: 200
+  // image/svg+xml, 1131 bytes, width/height and viewBox 0 0 250 54) and opens
+  // in a new tab. The entry page answers 404 until launch — the directory's
+  // own state, not a dead link on this site. The #1466 test above already
+  // walks every inner page and finds it free of the badge row.
+  it("carries the Nexora Launch badge in the footer, on en and zh (Issue #1528)", () => {
+    const badgeHref = "https://nexoralaunch.com/launch/orbi";
+    const badge = `<a href="${badgeHref}" rel="nofollow noopener noreferrer" target="_blank">`
+      + '<img src="https://nexoralaunch.com/badge/orbi.svg?kind=listed&amp;shape=standard&amp;mode=light&amp;size=m&amp;v=2" alt="Listed on Nexora Launch" width="250" height="54" loading="lazy" decoding="async"></a>';
+    for (const output of ["index.html", "zh/index.html"]) {
+      const footer = footerRegion(shipped.get(output));
+      const occurrences = footer.split(badge).length - 1;
+      expect(occurrences, `${output}: the Nexora Launch badge must ship exactly once in the footer`)
+        .toBe(1);
+      const anchor = footerAnchorTag(footer, badgeHref);
+      expect(anchor, `${output}: the Nexora Launch badge anchor must be found by its href`)
+        .toContain('target="_blank"');
+      // The vendor's code asks for nofollow, so this badge is the one backlink
+      // in the row that must stay unfollowed.
+      expect(anchor, `${output}: the vendor snippet's nofollow must be kept`).toContain("nofollow");
+    }
+  });
+
   it("carries the 11 compare deep dives, in the right language tree", () => {
     for (const page of content()) {
       const footer = footerRegion(shipped.get(page.output));
